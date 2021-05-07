@@ -1,0 +1,15 @@
+[submodule "students"]
+	path = students
+	url = https://github.com/browsermt/students.git
+[submodule "fast_align"]
+	path = fast_align
+	url = https://github.com/clab/fast_align
+[submodule "extract-lex"]
+	path = extract-lex
+	url = https://github.com/marian-nmt/extract-lex
+[submodule "marian-tensorboard"]
+	path = marian-tensorboard
+	url = https://github.com/eu9ene/marian-tensorboard
+[submodule "marian-dev"]
+	path = marian-dev
+	url = https://github.com/browsermt/marian-dev
