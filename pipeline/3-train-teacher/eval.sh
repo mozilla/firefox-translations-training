@@ -1,34 +1,39 @@
 #!/bin/bash -v
+##
+# Evaluate teacher model.
+#
+# Usage:
+#   bash eval.sh [datasets...]
+#
 
-MARIAN=../../../marian-dev/build
+set -x
+set -euo pipefail
 
-SRC=es
-TRG=en
+marian=${MARIAN:-"../../marian-dev/build"}
+workspace=${WORKSPACE:-4000}
+test_datasets=${TEST_DATASETS:-$@}
+test -v SRC
+test -v TRG
+test -v GPUS
 
-mkdir -p eval
+echo "Checking model files"
+test -e ${teacher_dir}/model.npz.best-bleu-detok.npz.decoder.yml || exit 1
 
-# WMT newstests.
-for prefix in wmt12 wmt13; do
+teacher_dir=${MODELS_DIR}/teacher
+eval_dir=${teacher_dir}/eval
+mkdir -p $dir
+
+echo "Evaluating teacher model"
+
+for prefix in ${test_datasets}; do
     echo "### Evaluating $prefix $SRC-$TRG"
     sacrebleu -t $prefix -l $SRC-$TRG --echo src \
-        | tee eval/$prefix.$SRC \
-        | $MARIAN/marian-decoder -c model.npz.best-bleu-detok.npz.decoder.yml -w 4000 --quiet --log eval/$prefix.log $@ \
-        | tee eval/$prefix.$TRG \
+        | tee ${eval_dir}/$prefix.$SRC \
+        | $marian/marian-decoder -c ${teacher_dir}/model.npz.best-bleu-detok.npz.decoder.yml -w ${workspace} \
+                                 --quiet --log ${eval_dir}/$prefix.log -d $GPUS \
+        | tee ${eval_dir}/$prefix.$TRG \
         | sacrebleu -d -t $prefix -l $SRC-$TRG \
-        | tee eval/$prefix.$TRG.bleu
-done
+        | tee ${eval_dir}/$prefix.$TRG.bleu
 
-exit
-
-# Custom test sets.
-DATA=../data
-
-for prefix in UNv1.0.testset IWSLT13.TED.tst2013; do
-    echo "### Evaluating $prefix $SRC-$TRG"
-    cat $DATA/$prefix.$SRC \
-        | tee eval/$prefix.$SRC \
-        | $MARIAN/marian-decoder -c model.npz.best-bleu-detok.npz.decoder.yml -w 4000 --quiet --log eval/$prefix.log $@ \
-        | tee eval/$prefix.$TRG \
-        | sacrebleu $DATA/$prefix.$TRG \
-        | tee eval/$prefix.$TRG.bleu
+    test -e ${eval_dir}/$prefix.$TRG.bleu || exit 1
 done

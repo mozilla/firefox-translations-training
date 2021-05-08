@@ -9,7 +9,7 @@
 set -x
 set -euo pipefail
 
-test -v CLEAN_TOOLS
+clean_tools=${CLEAN_TOOLS:-../../students/train-student/clean/tools}
 test -v SRC
 test -v TRG
 
@@ -22,11 +22,13 @@ mkdir -p $(dirname $output)
 test -s $data.$SRC.gz || exit 1
 test -s $data.$TRG.gz || exit 1
 
+echo "CLeaning ${data}"
+
 ######################################################################
-# Basic preprocessing
+echo "Basic preprocessing"
 for lng in $SRC $TRG; do
     pigz -dc $data.$lng.gz \
-        | parallel --no-notice --pipe -k -j16 --block 50M "perl $CLEAN_TOOLS/remove-non-printing-char.perl | perl $CLEAN_TOOLS/normalize-punctuation.perl -l $lng" \
+        | parallel --no-notice --pipe -k -j16 --block 50M "perl $clean_tools/remove-non-printing-char.perl | perl $clean_tools/normalize-punctuation.perl -l $lng" \
         | pigz > $output.$lng.nrm.gz
 done
 
@@ -34,7 +36,7 @@ test -s $output.$SRC.nrm.gz || exit 1
 test -s $output.$TRG.nrm.gz || exit 1
 
 ######################################################################
-# Deduplication
+echo "Deduplication"
 paste <(pigz -dc $output.$SRC.nrm.gz) <(pigz -dc $output.$TRG.nrm.gz) \
     | LC_ALL=C sort -S 10G | uniq \
     | pigz > $output.$SRC$TRG.nrm.uniq.gz
@@ -42,18 +44,18 @@ paste <(pigz -dc $output.$SRC.nrm.gz) <(pigz -dc $output.$TRG.nrm.gz) \
 test -s $output.$SRC$TRG.nrm.uniq.gz || exit 1
 
 ######################################################################
-# Rule-based filtering
+echo "Rule-based filtering"
 pigz -dc $output.$SRC$TRG.nrm.uniq.gz \
-    | parallel --no-notice --pipe -k -j16 --block 50M "python3 $CLEAN_TOOLS/clean-parallel.py -l1 $SRC -l2 $TRG --debug" \
+    | parallel --no-notice --pipe -k -j16 --block 50M "python3 $clean_tools/clean-parallel.py -l1 $SRC -l2 $TRG --debug" \
     2> $output.$SRC$TRG.clean.debug.txt \
     | pigz > $output.$SRC$TRG.rule-based.gz
 
 test -s $output.$SRC$TRG.rule-based.gz || exit 1
 
 ######################################################################
-# Language identification
+echo "Language identification"
 pigz -dc $output.$SRC$TRG.rule-based.gz \
-    | parallel --no-notice --pipe -k -j16 --block 50M "python3 -Wi $CLEAN_TOOLS/langid-fasttext.py -f 1 | python3 -Wi $CLEAN_TOOLS/langid-fasttext.py -f 1" \
+    | parallel --no-notice --pipe -k -j16 --block 50M "python3 -Wi $clean_tools/langid-fasttext.py -f 1 | python3 -Wi $clean_tools/langid-fasttext.py -f 1" \
     | grep -P "^$SRC\t$TRG\t" \
     | cut -f3,4 \
     | pigz > $output.$SRC$TRG.langid.gz
@@ -61,8 +63,7 @@ pigz -dc $output.$SRC$TRG.rule-based.gz \
 test -s $output.$SRC$TRG.langid.gz
 
 ######################################################################
-# Generate clean data in source and target languages
-# Remove leading and repetitive white spaces
+echo "Removing leading and repetitive white spaces"
 pigz -dc $output.$SRC$TRG.langid.gz | cut -f1 | sed -e 's/^[[:space:]]*//' | tr -s " " \
     | pigz > $output.$SRC.clean.gz
 pigz -dc $output.$SRC$TRG.langid.gz | cut -f2 | sed -e 's/^[[:space:]]*//' | tr -s " " \
@@ -71,8 +72,11 @@ pigz -dc $output.$SRC$TRG.langid.gz | cut -f2 | sed -e 's/^[[:space:]]*//' | tr 
 test -s $output.$SRC.clean.gz || exit 1
 test -s $output.$TRG.clean.gz || exit 1
 
-# Remove $data from intermediate steps
+echo "Remove $data from intermediate steps"
 rm -f $output.*.nrm.gz $output.*.nrm.uniq.gz $output.*.langid.gz
 #wc -l *.debug.txt
+
+
+echo "Clean data is written to  ${output}"
 
 
