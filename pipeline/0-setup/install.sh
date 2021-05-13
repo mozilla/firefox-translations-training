@@ -17,7 +17,7 @@ sudo apt-get install -y git cmake build-essential libboost-system-dev libprotobu
     protobuf-compiler libprotobuf-dev openssl libssl-dev libgoogle-perftools-dev
 
 echo "--- Installing extra dependencies ---"
-sudo apt-get install -y pigz htop wget
+sudo apt-get install -y pigz htop wget unzip parallel
 
 echo "--- Installing Intel MKL ---"
 wget -qO- 'https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB' | sudo apt-key add -
@@ -38,15 +38,15 @@ if [ ! -e /usr/local/bin/cmake ]; then
 fi
 
 
-if [ ! -e ${WORKDIR}/marian-dev/build/marian ]; then
+if [ ! -e "${WORKDIR}"/marian-dev/build/marian ]; then
   echo "--- Compiling marian-dev ---"
-  mkdir -p ${WORKDIR}/marian-dev/build
+  mkdir -p "${WORKDIR}"/marian-dev/build
   cd marian-dev/build
   /usr/local/bin/cmake .. -DUSE_SENTENCEPIECE=on -DUSE_FBGEMM=on -DCOMPILE_CPU=on -DCMAKE_BUILD_TYPE=Release \
-            -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_DIR}
+            -DCUDA_TOOLKIT_ROOT_DIR="${CUDA_DIR}"
   make -j$(nproc)
   cd ../..
-  test -s ${WORKDIR}/marian-dev/build/marian || exit 1
+  test -s "${WORKDIR}"/marian-dev/build/marian || exit 1
 fi
 
 
@@ -60,37 +60,37 @@ export PATH="/root/miniconda3/bin:${PATH}"
 conda create -y --name bergamot-training-env python=3.8
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate bergamot-training-env
-pip install -r ${WORKDIR}/pipeline/0-setup/requirements.txt
+pip install -r "${WORKDIR}"/pipeline/0-setup/requirements.txt
 
 
 echo "--- Installing fast_align dependencies ---"
 sudo apt-get install -y libgoogle-perftools-dev libsparsehash-dev libboost-all-dev
-mkdir -p ${WORKDIR}/bin
+mkdir -p "${WORKDIR}"/bin
 
 
 
-if [ ! -e ${WORKDIR}/bin/fast_align ]; then
+if [ ! -e "${WORKDIR}"/bin/fast_align ]; then
     echo "--- Compiling fast_align ---"
-    mkdir -p ${WORKDIR}/fast_align/build
-    cd ${WORKDIR}/fast_align/build
+    mkdir -p "${WORKDIR}"/fast_align/build
+    cd "${WORKDIR}"/fast_align/build
     cmake ..
     make -j$(nproc)
     cp fast_align atools ../../bin
     cd ../../
-    test -s ${WORKDIR}/bin/fast_align || exit 1
+    test -s "${WORKDIR}"/bin/fast_align || exit 1
 fi
 
 
 
-if [ ! -e ${WORKDIR}/bin/extract_lex ]; then
+if [ ! -e "${WORKDIR}"/bin/extract_lex ]; then
     echo "--- Compiling extract-lex ---"
-    mkdir -p ${WORKDIR}/extract-lex/build
-    cd ${WORKDIR}/extract-lex/build
+    mkdir -p "${WORKDIR}"/extract-lex/build
+    cd "${WORKDIR}"/extract-lex/build
     cmake ..
     make -j$(nproc)
     cp extract_lex ../../bin
     cd ../../
-    test -s ${WORKDIR}/bin/extract_lex || exit 1
+    test -s "${WORKDIR}"/bin/extract_lex || exit 1
 fi
 
 
