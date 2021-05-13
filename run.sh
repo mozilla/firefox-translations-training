@@ -35,13 +35,13 @@ conda activate bergamot-training-env
 original=${DATA_DIR}/original
 . ./pipeline/1-data/download-corpus.sh ${original}/corpus $TRAIN_DATASETS
 . ./pipeline/1-data/download-corpus.sh ${original}/devset $DEVTEST_DATASETS
-if [! -z "${MONO_DATASETS}" ]; then
+if [[ ${MONO_DATASETS} ]]; then
   . ./pipeline/1-data/download-mono.sh ${SRC} $MONO_MAX_SENTENCES ${original}/mono $MONO_DATASETS
 fi
 
 clean=${DATA_DIR}/clean
 . ./pipeline/2-clean/clean-corpus.sh ${original}/corpus ${clean}/corpus
-if [-e ${DATA_DIR}/original/mono.en.gz ]; then
+if [[ -e ${DATA_DIR}/original/mono.en.gz ]]; then
   . ./pipeline/2-clean/clean-mono.sh en ${original}/mono ${clean}/mono
 fi
 
