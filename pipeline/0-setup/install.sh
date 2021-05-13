@@ -12,12 +12,14 @@ echo "--- Update git submodules ---"
 git submodule init
 git submodule update
 
+echo "--- Installing extra dependencies ---"
+sudo apt-get install -y pigz htop wget unzip parallel
+
 echo "--- Installing marian dependencies ---"
 sudo apt-get install -y git cmake build-essential libboost-system-dev libprotobuf10 \
     protobuf-compiler libprotobuf-dev openssl libssl-dev libgoogle-perftools-dev
 
-echo "--- Installing extra dependencies ---"
-sudo apt-get install -y pigz htop wget unzip parallel
+
 
 echo "--- Installing Intel MKL ---"
 wget -qO- 'https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB' | sudo apt-key add -

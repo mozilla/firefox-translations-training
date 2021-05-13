@@ -9,7 +9,8 @@
 set -x
 set -euo pipefail
 
-clean_tools=${CLEAN_TOOLS:-../../students/train-student/clean/tools}
+clean_tools=${CLEAN_TOOLS:-./tools}
+export PYTHONPATH=$PYTHONPATH:$clean_tools
 test -v SRC
 test -v TRG
 
@@ -28,7 +29,7 @@ echo "CLeaning ${data}"
 echo "Basic preprocessing"
 for lng in $SRC $TRG; do
     pigz -dc $data.$lng.gz \
-        | parallel --no-notice --pipe -k -j16 --block 50M "perl $clean_tools/remove-non-printing-char.perl | perl $clean_tools/normalize-punctuation.perl -l $lng" \
+        | parallel --no-notice --pipe -k -j$(nproc) --block 50M "perl $clean_tools/remove-non-printing-char.perl | perl $clean_tools/normalize-punctuation.perl -l $lng" \
         | pigz > $output.$lng.nrm.gz
 done
 
@@ -46,7 +47,7 @@ test -s $output.$SRC$TRG.nrm.uniq.gz || exit 1
 ######################################################################
 echo "Rule-based filtering"
 pigz -dc $output.$SRC$TRG.nrm.uniq.gz \
-    | parallel --no-notice --pipe -k -j16 --block 50M "python3 $clean_tools/clean-parallel.py -l1 $SRC -l2 $TRG --debug" \
+    | parallel --no-notice --pipe -k -j$(nproc) --block 50M "python3 $clean_tools/clean-parallel.py -l1 $SRC -l2 $TRG --debug" \
     2> $output.$SRC$TRG.clean.debug.txt \
     | pigz > $output.$SRC$TRG.rule-based.gz
 
@@ -55,7 +56,7 @@ test -s $output.$SRC$TRG.rule-based.gz || exit 1
 ######################################################################
 echo "Language identification"
 pigz -dc $output.$SRC$TRG.rule-based.gz \
-    | parallel --no-notice --pipe -k -j16 --block 50M "python3 -Wi $clean_tools/langid-fasttext.py -f 1 | python3 -Wi $clean_tools/langid-fasttext.py -f 1" \
+    | parallel --no-notice --pipe -k -j$(nproc) --block 50M "python3 -Wi $clean_tools/langid-fasttext.py -f 1 | python3 -Wi $clean_tools/langid-fasttext.py -f 1" \
     | grep -P "^$SRC\t$TRG\t" \
     | cut -f3,4 \
     | pigz > $output.$SRC$TRG.langid.gz
