@@ -83,9 +83,9 @@ def clean_parallel(src, trg, src_lang, trg_lang):
         if num_alpha / float(src_len) < RATIO_ALPHA_WORDS:
             return "RATIO_ALPHA"
 
-    char_alpha = len(re.findall(CHARS[src_lang], src, re.IGNORECASE))
-    if char_alpha / float(len(src.replace(' ', ''))) < RATIO_ALPHA_CHARS:
-        return "RATIO_CHARS"
+        char_alpha = len(re.findall(CHARS[src_lang], src, re.IGNORECASE))
+        if char_alpha / float(len(src.replace(' ', ''))) < RATIO_ALPHA_CHARS:
+            return "RATIO_CHARS"
 
     return None
 

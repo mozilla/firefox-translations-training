@@ -1,9 +1,9 @@
 WORKDIR=$(pwd)
-CUDA_DIR=/usr/local/cuda-11.0
+CUDA_DIR=/usr/local/cuda-11.2
 DATA_DIR=${WORKDIR}/data
 MODELS_DIR=${WORKDIR}/models
 MARIAN=${WORKDIR}/marian-dev/build
-CLEAN_TOOLS=${WORKDIR}/students/train-student/clean/tools
+CLEAN_TOOLS=${WORKDIR}/pipeline/2-clean/tools
 TEACHER_PATH=${MODELS_DIR}/teacher
 
 SRC=ru
@@ -19,4 +19,5 @@ MONO_MAX_SENTENCES=100000000
 
 # marian --devices parameter for GPUs to use, for example 0 1 2 3
 GPUS=$(seq -s " " 0 $(( $(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)-1 )))
-WORKSPACE=14000
+# for 12 GB GPU
+WORKSPACE=8000

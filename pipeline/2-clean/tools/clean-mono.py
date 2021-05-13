@@ -42,14 +42,15 @@ def clean_mono(src, lang):
     if src_len > MAX_LENGTH:
         return "TOO_LONG"
 
-    num_alpha = sum(
-        [1 if re.match(CHARS[lang], t, re.IGNORECASE) else 0 for t in src_toks])
-    if num_alpha / float(src_len) < RATIO_ALPHA_WORDS:
-        return "RATIO_ALPHA"
+    if lang in CHARS:
+        num_alpha = sum(
+            [1 if re.match(CHARS[lang], t, re.IGNORECASE) else 0 for t in src_toks])
+        if num_alpha / float(src_len) < RATIO_ALPHA_WORDS:
+            return "RATIO_ALPHA"
 
-    char_alpha = len(re.findall(CHARS[lang], src, re.IGNORECASE))
-    if char_alpha / float(len(src.replace(' ', ''))) < RATIO_ALPHA_CHARS:
-        return "RATIO_CHARS"
+        char_alpha = len(re.findall(CHARS[lang], src, re.IGNORECASE))
+        if char_alpha / float(len(src.replace(' ', ''))) < RATIO_ALPHA_CHARS:
+            return "RATIO_CHARS"
 
     return None
 

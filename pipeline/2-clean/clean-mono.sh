@@ -23,7 +23,7 @@ test -s $input.$lang.gz || exit 1
 ######################################################################
 echo "Basic preprocessing"
 pigz -dc $input.$lang.gz \
-    | parallel --no-notice --pipe -k -j16 --block 50M "perl $CLEAN_TOOLS/remove-non-printing-char.perl | perl $CLEAN_TOOLS/normalize-punctuation.perl -l $lang" \
+    | parallel --no-notice --pipe -k -j$(nproc) --block 50M "perl $CLEAN_TOOLS/remove-non-printing-char.perl | perl $CLEAN_TOOLS/normalize-punctuation.perl -l $lang" \
     | pigz > $output.$lang.nrm.gz
 
 test -s $output.$lang.nrm.gz || exit 1
@@ -37,14 +37,14 @@ test -s $output.$lang.nrm.uniq.gz || exit 1
 ######################################################################
 echo "Language identification"
 pigz -dc $output.$lang.nrm.uniq.gz \
-    | parallel --no-notice --pipe -k -j16 --block 50M "python $CLEAN_TOOLS/langid-fasttext.py" \
+    | parallel --no-notice --pipe -k -j$(nproc) --block 50M "python $CLEAN_TOOLS/langid-fasttext.py" \
     | grep -P "^$lang\t" | cut -f2 \
     | pigz > $output.$lang.langid.gz
 
 ######################################################################
 echo "Rule-based filtering"
 pigz -dc $output.$lang.langid.gz \
-    | parallel --no-notice --pipe -k -j16 --block 50M "python $CLEAN_TOOLS/clean-mono.py -l $lang --debug" \
+    | parallel --no-notice --pipe -k -j$(nproc) --block 50M "python $CLEAN_TOOLS/clean-mono.py -l $lang --debug" \
     2> $output.$lang.clean.debug.txt \
     | pigz > $output.$lang.clean.gz
 
