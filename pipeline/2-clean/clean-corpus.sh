@@ -10,7 +10,7 @@ set -x
 set -euo pipefail
 
 clean_tools=${CLEAN_TOOLS:-./tools}
-export PYTHONPATH=$PYTHONPATH:$clean_tools
+export PYTHONPATH=$clean_tools
 test -v SRC
 test -v TRG
 
