@@ -49,7 +49,7 @@ test -s $output.$SRC$TRG.nrm.uniq.gz || exit 1
 echo "Rule-based filtering"
 test -s $output.$SRC$TRG.rule-based.gz || \
 pigz -dc $output.$SRC$TRG.nrm.uniq.gz \
-    | parallel --no-notice --pipe -k -j$(nproc) --block 50M "python3 $clean_tools/clean-parallel.py -l1 $SRC -l2 $TRG --debug" \
+    | parallel --no-notice --pipe -k -j$(nproc) --block 50M "python3 $clean_tools/clean_parallel.py -l1 $SRC -l2 $TRG --debug" \
     2> $output.$SRC$TRG.clean.debug.txt \
     | pigz > $output.$SRC$TRG.rule-based.gz
 
@@ -59,7 +59,7 @@ test -s $output.$SRC$TRG.rule-based.gz || exit 1
 echo "Language identification"
 test -s $output.$SRC$TRG.langid.gz \
 pigz -dc $output.$SRC$TRG.rule-based.gz \
-    | parallel --no-notice --pipe -k -j$(nproc) --block 50M "python3 -Wi $clean_tools/langid-fasttext.py -f 1 | python3 -Wi $clean_tools/langid-fasttext.py -f 1" \
+    | parallel --no-notice --pipe -k -j$(nproc) --block 50M "python3 -Wi $clean_tools/langid_fasttext.py -f 1 | python3 -Wi $clean_tools/langid_fasttext.py -f 1" \
     | grep -P "^$SRC\t$TRG\t" \
     | cut -f3,4 \
     | pigz > $output.$SRC$TRG.langid.gz
