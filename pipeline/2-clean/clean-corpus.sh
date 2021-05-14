@@ -38,6 +38,7 @@ test -s $output.$TRG.nrm.gz || exit 1
 
 ######################################################################
 echo "Deduplication"
+test -s $output.$SRC$TRG.nrm.uniq.gz || \
 paste <(pigz -dc $output.$SRC.nrm.gz) <(pigz -dc $output.$TRG.nrm.gz) \
     | LC_ALL=C sort -S 10G | uniq \
     | pigz > $output.$SRC$TRG.nrm.uniq.gz
@@ -46,6 +47,7 @@ test -s $output.$SRC$TRG.nrm.uniq.gz || exit 1
 
 ######################################################################
 echo "Rule-based filtering"
+test -s $output.$SRC$TRG.rule-based.gz || \
 pigz -dc $output.$SRC$TRG.nrm.uniq.gz \
     | parallel --no-notice --pipe -k -j$(nproc) --block 50M "python3 $clean_tools/clean-parallel.py -l1 $SRC -l2 $TRG --debug" \
     2> $output.$SRC$TRG.clean.debug.txt \
@@ -55,6 +57,7 @@ test -s $output.$SRC$TRG.rule-based.gz || exit 1
 
 ######################################################################
 echo "Language identification"
+test -s $output.$SRC$TRG.langid.gz \
 pigz -dc $output.$SRC$TRG.rule-based.gz \
     | parallel --no-notice --pipe -k -j$(nproc) --block 50M "python3 -Wi $clean_tools/langid-fasttext.py -f 1 | python3 -Wi $clean_tools/langid-fasttext.py -f 1" \
     | grep -P "^$SRC\t$TRG\t" \
@@ -74,8 +77,7 @@ test -s $output.$SRC.clean.gz || exit 1
 test -s $output.$TRG.clean.gz || exit 1
 
 echo "Remove $data from intermediate steps"
-rm -f $output.*.nrm.gz $output.*.nrm.uniq.gz $output.*.langid.gz
-#wc -l *.debug.txt
+rm -f $output.*.nrm.gz $output.*.nrm.uniq.gz $output.*.langid.gz $output.*.rule-based.gz
 
 
 echo "Clean data is written to  ${output}"
