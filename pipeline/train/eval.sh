@@ -16,12 +16,13 @@ test -v SRC
 test -v TRG
 test -v GPUS
 
+teacher_dir=${MODELS_DIR}/teacher
+eval_dir=${teacher_dir}/eval
+
 echo "Checking model files"
 test -e ${teacher_dir}/model.npz.best-bleu-detok.npz.decoder.yml || exit 1
 
-teacher_dir=${MODELS_DIR}/teacher
-eval_dir=${teacher_dir}/eval
-mkdir -p $dir
+mkdir -p $eval_dir
 
 echo "Evaluating teacher model"
 
@@ -30,7 +31,7 @@ for prefix in ${test_datasets}; do
     sacrebleu -t $prefix -l $SRC-$TRG --echo src \
         | tee ${eval_dir}/$prefix.$SRC \
         | $marian/marian-decoder -c ${teacher_dir}/model.npz.best-bleu-detok.npz.decoder.yml -w ${workspace} \
-                                 --quiet --log ${eval_dir}/$prefix.log -d $GPUS \
+                                 --quiet  --quiet-translation --log ${eval_dir}/$prefix.log -d $GPUS \
         | tee ${eval_dir}/$prefix.$TRG \
         | sacrebleu -d -t $prefix -l $SRC-$TRG \
         | tee ${eval_dir}/$prefix.$TRG.bleu

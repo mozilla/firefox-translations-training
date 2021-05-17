@@ -15,35 +15,34 @@ set -euo pipefail
 #│   │   ├ devset.ru.gz
 #│   │   └ devset.en.gz
 #│   ├ clean
-#│   ├ run-me.sh
-#│   └ vocab.spm
 #├ models
 #│   ├ teacher
 #│   ├ student
+#│   ├ reverse
 
 
 set -a
 . ./config.sh
 set +a
 
-. ./pipeline/0-setup/install.sh
+. ./pipeline/setup/install.sh
 
-export PATH="/root/miniconda3/bin:${PATH}"
+PATH="/root/miniconda3/bin:${PATH}"
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate bergamot-training-env
 
 original=${DATA_DIR}/original
-. ./pipeline/1-data/download-corpus.sh ${original}/corpus $TRAIN_DATASETS
-. ./pipeline/1-data/download-corpus.sh ${original}/devset $DEVTEST_DATASETS
+. ./pipeline/data/download-corpus.sh ${original}/corpus $TRAIN_DATASETS
+. ./pipeline/data/download-corpus.sh ${original}/devset $DEVTEST_DATASETS
 if [[ ${MONO_DATASETS} ]]; then
-  . ./pipeline/1-data/download-mono.sh ${SRC} $MONO_MAX_SENTENCES ${original}/mono $MONO_DATASETS
+  . ./pipeline/data/download-mono.sh ${SRC} $MONO_MAX_SENTENCES ${original}/mono $MONO_DATASETS
 fi
 
 clean=${DATA_DIR}/clean
-. ./pipeline/2-clean/clean-corpus.sh ${original}/corpus ${clean}/corpus
-if [[ -e ${DATA_DIR}/original/mono.en.gz ]]; then
-  . ./pipeline/2-clean/clean-mono.sh en ${original}/mono ${clean}/mono
+. ./pipeline/clean/clean-corpus.sh ${original}/corpus ${clean}/corpus
+if [[ -e ${DATA_DIR}/original/mono.${SRC}.gz ]]; then
+  . ./pipeline/clean/clean-mono.sh ${SRC} ${original}/mono ${clean}/mono
 fi
 
-. ./pipeline/3-train-teacher/train.sh
-. ./pipeline/3-train-teacher/eval.sh
+. ./pipeline/train/train.sh
+. ./pipeline/train/eval.sh

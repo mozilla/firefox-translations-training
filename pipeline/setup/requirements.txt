@@ -3,3 +3,4 @@ mtdata
 fasttext
 tensorboard
 tensorboardX
+click

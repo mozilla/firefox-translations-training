@@ -20,6 +20,9 @@
 #
 ##
 
+
+# TODO: port to bash
+
 SHELL:=/bin/bash
 THREADS=16
 

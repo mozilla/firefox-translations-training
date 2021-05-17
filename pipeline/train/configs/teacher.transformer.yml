@@ -1,0 +1,35 @@
+# https://github.com/marian-nmt/marian-examples/tree/master/transformer
+beam-size: 6
+clip-norm: 5
+cost-type: ce-mean-words
+dec-depth: 6
+dim-vocabs:
+  - 32000
+  - 32000
+disp-first: 10
+disp-freq: 500
+early-stopping: 10
+enc-depth: 6
+exponential-smoothing: True
+label-smoothing: 0.1
+learn-rate: 0.0003
+lr-decay-inv-sqrt: 16000
+lr-report: True
+lr-warmup: 16000
+max-length: 100
+maxi-batch: 1000
+mini-batch-fit: True
+normalize: 0.6
+optimizer-params:
+  - 0.9
+  - 0.98
+  - 1e-09
+save-freq: 5000
+tied-embeddings-all: true
+transformer-dropout: 0.1
+transformer-heads: 8
+transformer-postprocess-emb: d
+transformer-postprocess: dan
+type: transformer
+valid-freq: 5000
+valid-mini-batch: 64

@@ -1,8 +1,0 @@
-dec-depth: 6
-enc-depth: 6
-tied-embeddings-all: true
-transformer-heads: 8
-transformer-postprocess: dan
-transformer-postprocess-emb: d
-type: transformer
-

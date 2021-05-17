@@ -1,0 +1,18 @@
+$MARIAN_TRAIN \
+    --model model.back/model.npz --type s2s \
+    --train-sets data/corpus.bpe.de data/corpus.bpe.en \
+    --max-length 100 \
+    --vocabs model/vocab.ende.yml model/vocab.ende.yml \
+    --mini-batch-fit -w 3500 --maxi-batch 1000 \
+    --valid-freq 10000 --save-freq 10000 --disp-freq 1000 \
+    --valid-metrics ce-mean-words perplexity translation \
+    --valid-script-path "bash ./scripts/validate.en.sh" \
+    --valid-translation-output data/valid.bpe.de.output --quiet-translation \
+    --valid-sets data/valid.bpe.de data/valid.bpe.en \
+    --valid-mini-batch 64 --beam-size 12 --normalize=1 \
+    --overwrite --keep-best \
+    --early-stopping 5 --after-epochs 10 --cost-type=ce-mean-words \
+    --log model.back/train.log --valid-log model.back/valid.log \
+    --tied-embeddings-all --layer-normalization \
+    --devices $GPUS --seed 1111 \
+    --exponential-smoothing

@@ -9,7 +9,7 @@
 set -x
 set -euo pipefail
 
-clean_tools=${CLEAN_TOOLS:-../../students/train-student/clean/tools}
+clean_tools=${CLEAN_TOOLS:-./tools}
 
 lang=$1
 input=$2
