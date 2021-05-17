@@ -2,8 +2,8 @@ WORKDIR=$(pwd)
 CUDA_DIR=/usr/local/cuda-11.2
 DATA_DIR=${WORKDIR}/data
 MODELS_DIR=${WORKDIR}/models
-MARIAN=${WORKDIR}/marian-dev/build
-CLEAN_TOOLS=${WORKDIR}/pipeline/2-clean/tools
+MARIAN=${WORKDIR}/3rd_party/marian-dev/build
+CLEAN_TOOLS=${WORKDIR}/pipeline/clean/tools
 TEACHER_PATH=${MODELS_DIR}/teacher
 
 SRC=ru
