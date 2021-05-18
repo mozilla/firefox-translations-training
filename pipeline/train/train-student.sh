@@ -10,13 +10,13 @@ set -x
 set -euo pipefail
 
 bash ./train.sh \
-  configs/model/student.tiny11.yml \
-  configs/training/student.train.yml \
+  ${WORKDIR}/pipeline/train/configs/model/student.tiny11.yml \
+  ${WORKDIR}/pipeline/train/configs/training/student.train.yml \
   $SRC \
   $TRG \
   ${DATA_DIR}/augmented/corpus \
   ${DATA_DIR}/original/devset \
   ${MODELS_DIR}/student \
-  --guided-alignment corpus.aln.gz
+  --guided-alignment ${DATA_DIR}/alignment/corpus.aln.gz
 
 

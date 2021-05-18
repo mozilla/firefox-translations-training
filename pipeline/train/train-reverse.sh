@@ -10,8 +10,8 @@ set -x
 set -euo pipefail
 
 bash ./train.sh \
-  configs/model/reverse.s2s.yml \
-  configs/training/reverse.train.yml \
+  ${WORKDIR}/pipeline/train/configs/model/reverse.s2s.yml \
+  ${WORKDIR}/pipeline/train/configs/training/reverse.train.yml \
   $TRG \
   $SRC \
   ${DATA_DIR}/clean/corpus \

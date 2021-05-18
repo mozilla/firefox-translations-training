@@ -10,8 +10,8 @@ set -x
 set -euo pipefail
 
 bash ./train.sh \
-  configs/model/teacher.transformer.yml \
-  configs/training/teacher.transformer.train.yml \
+  ${WORKDIR}/pipeline/train/configs/model/teacher.transformer.yml \
+  ${WORKDIR}/pipeline/train/configs/training/teacher.transformer.train.yml \
   $SRC \
   $TRG \
   ${DATA_DIR}/clean/corpus \

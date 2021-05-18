@@ -4,7 +4,6 @@ DATA_DIR=${WORKDIR}/data
 MODELS_DIR=${WORKDIR}/models
 MARIAN=${WORKDIR}/3rd_party/marian-dev/build
 CLEAN_TOOLS=${WORKDIR}/pipeline/clean/tools
-TEACHER_PATH=${MODELS_DIR}/teacher
 
 SRC=ru
 TRG=en

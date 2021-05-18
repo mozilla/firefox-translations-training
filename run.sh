@@ -15,6 +15,8 @@ set -euo pipefail
 #│   │   ├ devset.ru.gz
 #│   │   └ devset.en.gz
 #│   ├ clean
+#│   ├ augmented
+#│   ├ alignment
 #├ models
 #│   ├ teacher
 #│   ├ student
@@ -25,7 +27,7 @@ set -a
 . ./config.sh
 set +a
 
-. ./pipeline/setup/install.sh
+. ./pipeline/setup/install-all.sh
 
 PATH="/root/miniconda3/bin:${PATH}"
 source /root/miniconda3/etc/profile.d/conda.sh
@@ -44,5 +46,9 @@ if [[ -e ${DATA_DIR}/original/mono.${SRC}.gz ]]; then
   . ./pipeline/clean/clean-mono.sh ${SRC} ${original}/mono ${clean}/mono
 fi
 
-. ./pipeline/train/train.sh
-. ./pipeline/train/eval.sh
+. ./pipeline/train/train-reverse.sh
+
+
+
+. ./pipeline/train/train-teacher-ens.sh
+. ./pipeline/train/eval.sh ${MODELS_DIR}/teacher-ens

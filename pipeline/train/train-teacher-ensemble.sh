@@ -16,8 +16,8 @@ n=$1
 for i in $(seq 1 $n)
 do
   bash ./train.sh \
-    configs/model/teacher.transformer.yml \
-    configs/training/teacher.transformer-ens.train.yml \
+    ${WORKDIR}/pipeline/train/configs/model/teacher.transformer.yml \
+    ${WORKDIR}/pipeline/train/configs/training/teacher.transformer-ens.train.yml \
     $SRC \
     $TRG \
     ${DATA_DIR}/clean/corpus \
@@ -28,8 +28,8 @@ done
 for i in $(seq 1 $n)
 do
   bash ./train.sh \
-    configs/model/teacher.transformer.yml \
-    configs/training/teacher.transformer-ens.train.yml \
+    ${WORKDIR}/pipeline/train/configs/model/teacher.transformer.yml \
+    ${WORKDIR}/pipeline/train/configs/training/teacher.transformer-ens.train.yml \
     $SRC \
     $TRG \
     ${DATA_DIR}/clean/corpus \
