@@ -1,0 +1,14 @@
+# https://github.com/marian-nmt/marian-examples/tree/master/wmt2017-uedin
+after-epochs: 10
+beam-size: 12
+cost-type: ce-mean-words
+disp-freq: 1000
+early-stopping: 5
+exponential-smoothing: True
+max-length: 100
+maxi-batch: 1000
+mini-batch-fit: True
+normalize: 1
+save-freq: 10000
+valid-freq: 10000
+valid-mini-batch: 64

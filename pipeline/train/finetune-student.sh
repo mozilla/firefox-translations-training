@@ -1,6 +1,6 @@
 #!/bin/bash -v
 ##
-# Train a student model.
+# Finetune a student model.
 #
 # Usage:
 #   bash train-student.sh
@@ -11,7 +11,7 @@ set -euo pipefail
 
 bash ./train.sh \
   configs/model/student.tiny11.yml \
-  configs/training/student.train.yml \
+  configs/training/student.finetune.yml \
   $SRC \
   $TRG \
   ${DATA_DIR}/augmented/corpus \

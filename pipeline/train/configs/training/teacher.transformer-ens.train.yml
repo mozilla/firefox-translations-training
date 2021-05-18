@@ -1,0 +1,21 @@
+# https://github.com/marian-nmt/marian-examples/tree/master/wmt2017-uedin
+beam-size: 12
+clip-norm: 5
+cost-type: ce-mean-words
+disp-freq: 500
+early-stopping: 5
+exponential-smoothing: True
+label-smoothing: 0.1
+learn-rate: 0.0003
+lr-decay-inv-sqrt: 16000
+lr-report: True
+lr-warmup: 16000
+max-length: 100
+maxi-batch: 1000
+mini-batch-fit: True
+mini-batch: 1000
+normalize: 1
+optimizer-params: [0.9, 0.98, 1e-09]
+save-freq: 5000
+valid-freq: 5000
+valid-mini-batch: 64

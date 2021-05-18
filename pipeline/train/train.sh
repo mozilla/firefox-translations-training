@@ -1,41 +1,58 @@
 #!/bin/bash -v
 ##
-# Train teacher model.
+# Train a model.
 #
 # Usage:
-#   bash train.sh
+#   bash train.sh model_config training_config src trg data_dir train_set_prefix \
+#                 valid_set_prefix model_dir [extra_marian_params...]
 #
 
 set -x
 set -euo pipefail
 
+#TODO too many positional args here
+
+model_config=$1
+training_config=$2
+src=$3
+trg=$4
+train_set_prefix=$5
+valid_set_prefix=$6
+model_dir=$7
+
 
 GPUS=${GPUS:-"0 1 2 3"}
 MARIAN=${MARIAN:-"../../marian-dev/build"}
-SRC=${SRC:-es}
-TRG=${TRG:-en}
 WORKSPACE=${WORKSPACE:-14000}
 
-test -e ${DATA_DIR}/clean/corpus.$SRC.clean.gz || exit 1
-test -e ${DATA_DIR}/clean/corpus.$TRG.clean.gz || exit 1
-
-test -e ${DATA_DIR}/original/devset.${SRC}.gz || exit 1
-test -e ${DATA_DIR}/original/devset.${TRG}.gz || exit 1
+test -e ${train_set_prefix}.${src}.gz || exit 1
+test -e ${train_set_prefix}.${trg}.gz || exit 1
+test -e ${valid_set_prefix}.${src}.gz || exit 1
+test -e ${valid_set_prefix}.${trg}.gz || exit 1
 
 mkdir -p tmp
-dir=${MODELS_DIR}/teacher
-mkdir -p $dir
+mkdir -p $model_dir
 
-echo "Training teacher model"
+echo "Training a model: ${model_dir}"
 
 $MARIAN/marian \
-    --model ${dir}/model.npz -c ${WORKDIR}/pipeline/3-train-teacher/teacher.yml \
-    --train-sets ${DATA_DIR}/clean/corpus.{$SRC,$TRG}.clean.gz -T tmp --shuffle-in-ram \
-    --vocabs ${dir}/vocab.spm ${dir}/vocab.spm \
+    --model ${model_dir}/model.npz \
+    -c ${model_config} ${training_config} \
+    --train-sets ${train_set_prefix}.{$src,$trg}.gz \
+    -T tmp \
+    --shuffle-in-ram \
+    --vocabs ${model_dir}/vocab.spm ${model_dir}/vocab.spm \
     -w $WORKSPACE \
-    --devices $GPUS --sync-sgd \
-    --valid-metrics bleu-detok ce-mean-words \
-    --valid-sets ${DATA_DIR}/original/devset.{$SRC,$TRG}.gz --valid-translation-output ${dir}/devset.out \
+    --devices $GPUS \
+    --sync-sgd \
+    --valid-metrics bleu-detok ce-mean-words perplexity translation \
+    --valid-sets ${valid_set_prefix}.{$src,$trg}.gz \
+    --valid-translation-output ${model_dir}/devset.out \
     --quiet-translation \
-    --overwrite --keep-best \
-    --log ${dir}/train.log --valid-log ${dir}/valid.log \
+    --overwrite \
+    --keep-best \
+    --log ${model_dir}/train.log \
+    --valid-log ${model_dir}/valid.log ${@:8}
+
+
+echo "Mode training is completed: ${model_dir}"

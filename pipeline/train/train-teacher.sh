@@ -1,6 +1,6 @@
 #!/bin/bash -v
 ##
-# Train a reverse model.
+# Train a teacher model.
 #
 # Usage:
 #   bash train-teacher.sh
@@ -10,11 +10,11 @@ set -x
 set -euo pipefail
 
 bash ./train.sh \
-  configs/model/reverse.s2s.yml \
-  configs/training/reverse.train.yml \
-  $TRG \
+  configs/model/teacher.transformer.yml \
+  configs/training/teacher.transformer.train.yml \
   $SRC \
+  $TRG \
   ${DATA_DIR}/clean/corpus \
   ${DATA_DIR}/original/devset \
-  ${MODELS_DIR}/reverse
+  ${MODELS_DIR}/teacher
 
