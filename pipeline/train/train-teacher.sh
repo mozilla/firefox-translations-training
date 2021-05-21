@@ -9,7 +9,7 @@
 set -x
 set -euo pipefail
 
-bash ./train.sh \
+bash ${WORKDIR}/pipeline/train/train.sh \
   ${WORKDIR}/pipeline/train/configs/model/teacher.transformer.yml \
   ${WORKDIR}/pipeline/train/configs/training/teacher.transformer.train.yml \
   $SRC \

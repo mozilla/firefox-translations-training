@@ -13,7 +13,7 @@ src=${1:-SRC}
 trg=${2:-TRG}
 
 
-bash ./train.sh \
+bash ${WORKDIR}/pipeline/train/train.sh \
   ${WORKDIR}/pipeline/train/configs/model/s2s.yml \
   ${WORKDIR}/pipeline/train/configs/training/s2s.train.yml \
   $src \

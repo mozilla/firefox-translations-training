@@ -46,8 +46,11 @@ conda activate bergamot-training-env
 original=${DATA_DIR}/original
 . ./pipeline/data/download-corpus.sh ${original}/corpus $TRAIN_DATASETS
 . ./pipeline/data/download-corpus.sh ${original}/devset $DEVTEST_DATASETS
-if [[ ${MONO_DATASETS} ]]; then
-  . ./pipeline/data/download-mono.sh ${SRC} $MONO_MAX_SENTENCES ${original}/mono $MONO_DATASETS
+if [[ ${MONO_DATASETS_SRC} ]]; then
+  . ./pipeline/data/download-mono.sh ${SRC} $MONO_MAX_SENTENCES_SRC ${original}/mono $MONO_DATASETS_SRC
+fi
+if [[ ${MONO_DATASETS_TRG} ]]; then
+  . ./pipeline/data/download-mono.sh ${TRG} $MONO_MAX_SENTENCES_TRG ${original}/mono $MONO_DATASETS_TRG
 fi
 
 clean=${DATA_DIR}/clean
@@ -55,9 +58,14 @@ clean=${DATA_DIR}/clean
 if [[ -e ${DATA_DIR}/original/mono.${SRC}.gz ]]; then
   . ./pipeline/clean/clean-mono.sh ${SRC} ${original}/mono ${clean}/mono
 fi
+if [[ -e ${DATA_DIR}/original/mono.${TRG}.gz ]]; then
+  . ./pipeline/clean/clean-mono.sh ${TRG} ${original}/mono ${clean}/mono
+fi
 
 . ./pipeline/train/train-s2s.sh $TRG $SRC
+. ./pipeline/train/eval.sh ${MODELS_DIR}/teacher-ens $TRG $SRC
 
+# TODO: backtranslate and augment corpus
 
 
 . ./pipeline/train/train-teacher-ens.sh

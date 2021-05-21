@@ -15,7 +15,7 @@ n=$1
 
 for i in $(seq 1 $n)
 do
-  bash ./train.sh \
+  bash ${WORKDIR}/pipeline/train/train.sh \
     ${WORKDIR}/pipeline/train/configs/model/teacher.transformer.yml \
     ${WORKDIR}/pipeline/train/configs/training/teacher.transformer-ens.train.yml \
     $SRC \
