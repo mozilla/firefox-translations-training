@@ -14,12 +14,12 @@ mkdir -p "${WORKDIR}"/bin
 
 if [ ! -e "${WORKDIR}"/bin/fast_align ]; then
     echo "--- Compiling fast_align ---"
-    mkdir -p "${WORKDIR}"/fast_align/build
-    cd "${WORKDIR}"/fast_align/build
+    mkdir -p "${WORKDIR}"/3rd_party/fast_align/build
+    cd "${WORKDIR}"/3rd_party/fast_align/build
     cmake ..
     make -j$(nproc)
-    cp fast_align atools ../../bin
-    cd ../../
+    cp fast_align atools ${WORKDIR}/bin
+    cd "${WORKDIR}"
     test -s "${WORKDIR}"/bin/fast_align || exit 1
 fi
 
@@ -27,12 +27,12 @@ fi
 
 if [ ! -e "${WORKDIR}"/bin/extract_lex ]; then
     echo "--- Compiling extract-lex ---"
-    mkdir -p "${WORKDIR}"/extract-lex/build
-    cd "${WORKDIR}"/extract-lex/build
+    mkdir -p "${WORKDIR}"/3rd_party/extract-lex/build
+    cd "${WORKDIR}"/3rd_party/extract-lex/build
     cmake ..
     make -j$(nproc)
-    cp extract_lex ../../bin
-    cd ../../
+    cp extract_lex ${WORKDIR}/bin
+    cd "${WORKDIR}"
     test -s "${WORKDIR}"/bin/extract_lex || exit 1
 fi
 

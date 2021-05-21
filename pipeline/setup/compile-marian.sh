@@ -32,13 +32,13 @@ if [ ! -e /usr/local/bin/cmake ]; then
 fi
 
 
-if [ ! -e "${WORKDIR}"/marian-dev/build/marian ]; then
+if [ ! -e ${MARIAN}/build/marian ]; then
   echo "--- Compiling marian-dev ---"
-  mkdir -p "${WORKDIR}"/marian-dev/build
-  cd marian-dev/build
+  mkdir -p ${MARIAN}/build
+  cd ${MARIAN}/build
   /usr/local/bin/cmake .. -DUSE_SENTENCEPIECE=on -DUSE_FBGEMM=on -DCOMPILE_CPU=on -DCMAKE_BUILD_TYPE=Release \
             -DCUDA_TOOLKIT_ROOT_DIR="${CUDA_DIR}"
   make -j$(nproc)
-  cd ../..
-  test -s "${WORKDIR}"/marian-dev/build/marian || exit 1
+  cd ${WORKDIR}
+  test -s ${MARIAN}/build/marian || exit 1
 fi

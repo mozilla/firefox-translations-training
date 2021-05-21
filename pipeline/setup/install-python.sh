@@ -16,4 +16,4 @@ export PATH="/root/miniconda3/bin:${PATH}"
 conda create -y --name bergamot-training-env python=3.8
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate bergamot-training-env
-pip install -r "${WORKDIR}"/pipeline/0-setup/requirements.txt
+pip install -r "${WORKDIR}"/pipeline/setup/requirements.txt
