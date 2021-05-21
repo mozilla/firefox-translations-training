@@ -16,5 +16,5 @@ bash ./train.sh \
   $TRG \
   ${DATA_DIR}/clean/corpus \
   ${DATA_DIR}/original/devset \
-  ${MODELS_DIR}/teacher
+  ${MODELS_DIR}/$SRC-$TRG/teacher
 

@@ -3,21 +3,22 @@
 # Evaluate a model.
 #
 # Usage:
-#   bash eval.sh model_dir [datasets...]
+#   bash eval.sh model_dir [src] [trg] [datasets...]
 #
 
 set -x
 set -euo pipefail
 
-marian=${MARIAN:-"../../marian-dev/build"}
-workspace=${WORKSPACE:-4000}
-test_datasets=${TEST_DATASETS:-${@:2}}
+test -v GPUS
+test -v MARIAN
+tests -v WORKSPACE
 
 model_dir=$1
+src="${2:-$SRC}"
+trg="${3:-$TRG}"
+test_datasets=${{@:4}:-$TEST_DATASETS}
 
-test -v SRC
-test -v TRG
-test -v GPUS
+
 
 eval_dir=${model_dir}/eval
 
@@ -29,14 +30,14 @@ mkdir -p $eval_dir
 echo "Evaluating a model ${model_dir}"
 
 for prefix in ${test_datasets}; do
-    echo "### Evaluating $prefix $SRC-$TRG"
-    sacrebleu -t $prefix -l $SRC-$TRG --echo src \
-        | tee ${eval_dir}/$prefix.$SRC \
-        | $marian/marian-decoder -c ${model_dir}/model.npz.best-bleu-detok.npz.decoder.yml -w ${workspace} \
+    echo "### Evaluating $prefix $src-$trg"
+    sacrebleu -t $prefix -l $src-$trg --echo src \
+        | tee ${eval_dir}/$prefix.$src \
+        | $MARIAN/marian-decoder -c ${model_dir}/model.npz.best-bleu-detok.npz.decoder.yml -w ${WORKSPACE} \
                                  --quiet  --quiet-translation --log ${eval_dir}/$prefix.log -d $GPUS \
-        | tee ${eval_dir}/$prefix.$TRG \
-        | sacrebleu -d -t $prefix -l $SRC-$TRG \
-        | tee ${eval_dir}/$prefix.$TRG.bleu
+        | tee ${eval_dir}/$prefix.$trg \
+        | sacrebleu -d -t $prefix -l $src-$trg \
+        | tee ${eval_dir}/$prefix.$trg.bleu
 
-    test -e ${eval_dir}/$prefix.$TRG.bleu || exit 1
+    test -e ${eval_dir}/$prefix.$trg.bleu || exit 1
 done

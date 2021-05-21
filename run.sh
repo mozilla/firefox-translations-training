@@ -15,12 +15,22 @@ set -euo pipefail
 #│   │   ├ devset.ru.gz
 #│   │   └ devset.en.gz
 #│   ├ clean
+#│   │   ├ corpus.ru.gz
+#│   │   ├ corpus.en.gz
+#│   │   ├ mono.ru.gz
+#│   │   ├ mono.en.gz
 #│   ├ augmented
+#│   │   ├ corpus.ru.gz
+#│   │   ├ corpus.en.gz
 #│   ├ alignment
+#│   │   ├ corpus.aln.gz
 #├ models
-#│   ├ teacher
-#│   ├ student
-#│   ├ reverse
+#│   ├ ru-en
+#│   │   ├ teacher
+#│   │   ├ student
+#│   ├ en-ru
+#│   │   ├ s2s
+
 
 
 set -a
@@ -46,7 +56,7 @@ if [[ -e ${DATA_DIR}/original/mono.${SRC}.gz ]]; then
   . ./pipeline/clean/clean-mono.sh ${SRC} ${original}/mono ${clean}/mono
 fi
 
-. ./pipeline/train/train-reverse.sh
+. ./pipeline/train/train-s2s.sh $TRG $SRC
 
 
 

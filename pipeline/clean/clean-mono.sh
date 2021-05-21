@@ -48,13 +48,13 @@ test -s $output.$lang.langid.gz || exit 1
 
 ######################################################################
 echo "Rule-based filtering"
-test -s $output.$lang.clean.gz || \
+test -s $output.$lang.gz || \
 pigz -dc $output.$lang.langid.gz \
     | parallel --no-notice --pipe -k -j$(nproc) --block 50M "python $CLEAN_TOOLS/clean_mono.py -l $lang --debug" \
     2> $output.$lang.clean.debug.txt \
-    | pigz > $output.$lang.clean.gz
+    | pigz > $output.$lang.gz
 
-test -s $output.$lang.clean.gz || exit 1
+test -s $output.$lang.gz || exit 1
 
 echo "Remove data from intermediate steps"
 rm -f $output.*.nrm.gz $output.*.nrm.uniq.gz $output.*.langid.gz

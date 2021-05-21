@@ -22,18 +22,5 @@ do
     $TRG \
     ${DATA_DIR}/clean/corpus \
     ${DATA_DIR}/original/devset \
-    ${MODELS_DIR}/teacher-ens$i
-done
-
-for i in $(seq 1 $n)
-do
-  bash ./train.sh \
-    ${WORKDIR}/pipeline/train/configs/model/teacher.transformer.yml \
-    ${WORKDIR}/pipeline/train/configs/training/teacher.transformer-ens.train.yml \
-    $SRC \
-    $TRG \
-    ${DATA_DIR}/clean/corpus \
-    ${DATA_DIR}/original/devset \
-    ${MODELS_DIR}/teacher-ens-rtl$i \
-    --right-left
+    ${MODELS_DIR}/$SRC-$TRG/teacher-ens$i
 done

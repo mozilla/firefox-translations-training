@@ -16,7 +16,7 @@ bash ./train.sh \
   $TRG \
   ${DATA_DIR}/augmented/corpus \
   ${DATA_DIR}/original/devset \
-  ${MODELS_DIR}/student \
+  ${MODELS_DIR}/$SRC-$TRG/student \
   --guided-alignment ${DATA_DIR}/alignment/corpus.aln.gz
 
 

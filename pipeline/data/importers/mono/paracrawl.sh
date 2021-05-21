@@ -15,7 +15,8 @@ dataset=$3
 
 if [[ $lang == "en" ]]
 then
-  test -s $source_path.gz || wget -nc -O $source_path.gz https://neural.mt/data/${name}-mono/en-000.gz
+  source_path=$dir/$dataset.original.$lang
+  test -s $source_path.gz || wget -nc -O $source_path.gz https://neural.mt/data/$dataset-mono/en-000.gz
 else
   echo "Only English language is supported at this time for paracrawl"
   exit 1

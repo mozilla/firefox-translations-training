@@ -69,12 +69,12 @@ test -s $output.$SRC$TRG.langid.gz
 ######################################################################
 echo "Removing leading and repetitive white spaces"
 pigz -dc $output.$SRC$TRG.langid.gz | cut -f1 | sed -e 's/^[[:space:]]*//' | tr -s " " \
-    | pigz > $output.$SRC.clean.gz
+    | pigz > $output.$SRC.gz
 pigz -dc $output.$SRC$TRG.langid.gz | cut -f2 | sed -e 's/^[[:space:]]*//' | tr -s " " \
-    | pigz > $output.$TRG.clean.gz
+    | pigz > $output.$TRG.gz
 
-test -s $output.$SRC.clean.gz || exit 1
-test -s $output.$TRG.clean.gz || exit 1
+test -s $output.$SRC.gz || exit 1
+test -s $output.$TRG.gz || exit 1
 
 echo "Remove $data from intermediate steps"
 rm -f $output.*.nrm.gz $output.*.nrm.uniq.gz $output.*.langid.gz $output.*.rule-based.gz

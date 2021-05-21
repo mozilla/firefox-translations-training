@@ -13,6 +13,7 @@ lang=$1
 dir=$2
 dataset=$3
 
+source_path=$dir/$dataset.original.$lang
 
 test -s $source_path.gz || \
 wget -O $source_path.gz http://data.statmt.org/news-crawl/${lang}/${name}.${lang}.shuffled.deduped.gz
