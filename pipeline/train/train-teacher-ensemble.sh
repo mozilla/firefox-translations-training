@@ -20,7 +20,7 @@ do
     ${WORKDIR}/pipeline/train/configs/training/teacher.transformer-ens.train.yml \
     $SRC \
     $TRG \
-    ${DATA_DIR}/clean/corpus \
+    ${DATA_DIR}/augmented/corpus \
     ${DATA_DIR}/original/devset \
     ${MODELS_DIR}/$SRC-$TRG/teacher-ens$i
 done

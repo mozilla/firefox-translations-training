@@ -196,9 +196,10 @@ class JobMonitor():
 
 
 @click.command()
+@click.option('--dir')
 @click.option('--prefix',
-              default='model')
-def run(prefix):
+              default='')
+def run(dir, prefix):
     monitors = {}
 
     while True:

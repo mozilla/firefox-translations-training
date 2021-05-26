@@ -19,6 +19,9 @@ set -euo pipefail
 #│   │   ├ corpus.en.gz
 #│   │   ├ mono.ru.gz
 #│   │   ├ mono.en.gz
+#│   ├ translated
+#│   │   ├ mono.ru.gz
+#│   │   ├ mono.en.gz
 #│   ├ augmented
 #│   │   ├ corpus.ru.gz
 #│   │   ├ corpus.en.gz
@@ -30,6 +33,7 @@ set -euo pipefail
 #│   │   ├ student
 #│   ├ en-ru
 #│   │   ├ s2s
+
 
 
 
@@ -47,26 +51,33 @@ original=${DATA_DIR}/original
 . ./pipeline/data/download-corpus.sh ${original}/corpus $TRAIN_DATASETS
 . ./pipeline/data/download-corpus.sh ${original}/devset $DEVTEST_DATASETS
 if [[ ${MONO_DATASETS_SRC} ]]; then
-  . ./pipeline/data/download-mono.sh ${SRC} $MONO_MAX_SENTENCES_SRC ${original}/mono $MONO_DATASETS_SRC
+ . ./pipeline/data/download-mono.sh ${SRC} $MONO_MAX_SENTENCES_SRC ${original}/mono $MONO_DATASETS_SRC
 fi
 if [[ ${MONO_DATASETS_TRG} ]]; then
-  . ./pipeline/data/download-mono.sh ${TRG} $MONO_MAX_SENTENCES_TRG ${original}/mono $MONO_DATASETS_TRG
+ . ./pipeline/data/download-mono.sh ${TRG} $MONO_MAX_SENTENCES_TRG ${original}/mono $MONO_DATASETS_TRG
 fi
 
 clean=${DATA_DIR}/clean
 . ./pipeline/clean/clean-corpus.sh ${original}/corpus ${clean}/corpus
 if [[ -e ${DATA_DIR}/original/mono.${SRC}.gz ]]; then
-  . ./pipeline/clean/clean-mono.sh ${SRC} ${original}/mono ${clean}/mono
+ . ./pipeline/clean/clean-mono.sh ${SRC} ${original}/mono ${clean}/mono
 fi
-if [[ -e ${DATA_DIR}/original/mono.${TRG}.gz ]]; then
-  . ./pipeline/clean/clean-mono.sh ${TRG} ${original}/mono ${clean}/mono
+if [[ -e ${original}/mono.${TRG}.gz ]]; then
+ . ./pipeline/clean/clean-mono.sh ${TRG} ${original}/mono ${clean}/mono
 fi
 
 . ./pipeline/train/train-s2s.sh $TRG $SRC
-. ./pipeline/train/eval.sh ${MODELS_DIR}/teacher-ens $TRG $SRC
-
-# TODO: backtranslate and augment corpus
+. ./pipeline/train/eval.sh ${MODELS_DIR}/$TRG-$SRC/s2s $TRG $SRC
 
 
-. ./pipeline/train/train-teacher-ens.sh
-. ./pipeline/train/eval.sh ${MODELS_DIR}/teacher-ens
+. ./pipeline/translate/translate-mono.sh ${clean}/mono.$TRG.gz ${MODELS_DIR}/$TRG-$SRC/s2s ${DATA_DIR}/translated/mono.$SRC.gz
+
+augmented=${DATA_DIR}/augmented
+mkdir -p $augmented
+test -s $augmented/corpus.$SRC.gz || cat ${DATA_DIR}/translated/mono.$SRC.gz ${DATA_DIR}/clean/corpus.$SRC.gz > $augmented/corpus.$SRC.gz
+test -s $augmented/corpus.$TRG.gz || cat ${clean}/mono.$TRG.gz ${DATA_DIR}/clean/corpus.$TRG.gz > $augmented/corpus.$TRG.gz
+pigz -dc $augmented/corpus.$SRC.gz | wc -l
+pigz -dc $augmented/corpus.$TRG.gz | wc -l
+
+. ./pipeline/train/train-teacher.sh
+. ./pipeline/train/eval.sh ${MODELS_DIR}/$SRC-$TRG/teacher

@@ -2,7 +2,7 @@
 # Downloads monolingual data from OPUS
 #
 # Usage:
-#   bash opus.sh lang dir dataset
+#   bash opus.sh lang output_prefix dataset
 #
 
 
@@ -10,10 +10,9 @@ set -x
 set -euo pipefail
 
 lang=$1
-dir=$2
+output_prefix=$2
 dataset=$3
 
-source_path=$dir/$dataset.original.$lang
 
-test -s $source_path.gz || \
-wget -O $source_path.gz http://data.statmt.org/news-crawl/${lang}/${name}.${lang}.shuffled.deduped.gz
+test -s $output_prefix.gz || \
+wget -O $output_prefix.gz http://data.statmt.org/news-crawl/${lang}/${dataset}.${lang}.shuffled.deduped.gz

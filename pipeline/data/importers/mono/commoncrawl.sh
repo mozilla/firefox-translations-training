@@ -2,18 +2,16 @@
 # Downloads monolingual data from commoncrawl
 #
 # Usage:
-#   bash commoncrawl.sh lang dir dataset
+#   bash commoncrawl.sh lang output_prefix dataset
 #
 
 set -x
 set -euo pipefail
 
 lang=$1
-dir=$2
+output_prefix=$2
 dataset=$3
 
-source_path=$dir/$dataset.original.$lang
-
-test -s $source_path.xz || \
-wget -O $source_path.xz http://web-language-models.s3-website-us-east-1.amazonaws.com/${name}/deduped/${lang}.xz
-xzcat $source_path.xz | pigz > $source_path.gz
+test -s ${output_prefix}.gz || \
+rm ${output_prefix}.gz && wget -O ${output_prefix}.xz http://web-language-models.s3-website-us-east-1.amazonaws.com/${dataset}/deduped/${lang}.xz
+xzcat $output_prefix.xz | pigz > $output_prefix.gz

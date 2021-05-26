@@ -26,8 +26,9 @@ if [ ! -e ${trg_corpus} ]; then
 
   for dataset in $datasets; do
     echo "Downloading dataset ${dataset}"
-    name=${dataset#_*}
-    bash ./importers/corpus/${dataset%_*}.sh $SRC $TRG $dir $name
+    name=${dataset#*_}
+    type=${dataset%_*}
+    bash ${WORKDIR}/pipeline/data/importers/corpus/${type}.sh $SRC $TRG $dir $name
   done
 
   cat ${dir}/train-parts/*."${SRC}" | pigz > "$src_corpus"

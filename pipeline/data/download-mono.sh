@@ -24,19 +24,20 @@ if [ ! -e ${file_name} ]; then
 
   for dataset in $datasets; do
     echo "Downloading dataset ${dataset}"
-    name=${dataset#*_}
-    source_path=$dir/$dataset.original.$lang
+    source_prefix=$dir/$dataset.original.$lang
     gz_path=$dir/$dataset.$lang.gz
+    name=${dataset#*_}
+    type=${dataset%_*}
 
-    name=${dataset#_*}
-    bash ./importers/mono/${dataset%_*}.sh $lang $dir $name
+    test -s $source_prefix.gz || \
+    bash ${WORKDIR}/pipeline/data/importers/mono/${type}.sh $lang $source_prefix $name
 
     test -s $gz_path || \
-    zcat $source_path.gz | shuf -n $(bc -l <<< "${max_sent}+${max_sent}*${coef}") | \
+    zcat $source_prefix.gz | shuf -n $(bc -l <<< "${max_sent}+${max_sent}*${coef}") | \
         perl -ne 'print if(split(/\s/, $_) < 100)' | \
         head -n "$max_sent" | pigz > $gz_path
 
-    rm $source_path.*
+    rm $source_prefix*
   done
 
   zcat ${dir}/*.$lang.gz | pigz > $file_name

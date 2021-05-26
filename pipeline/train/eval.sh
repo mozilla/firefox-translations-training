@@ -11,12 +11,15 @@ set -euo pipefail
 
 test -v GPUS
 test -v MARIAN
-tests -v WORKSPACE
+test -v WORKSPACE
 
 model_dir=$1
 src="${2:-$SRC}"
 trg="${3:-$TRG}"
-test_datasets=${{@:4}:-$TEST_DATASETS}
+datasets=${@:4}
+test_datasets=${datasets:-$TEST_DATASETS}
+
+mo
 
 
 
