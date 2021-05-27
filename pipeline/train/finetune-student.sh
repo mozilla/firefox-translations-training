@@ -3,7 +3,7 @@
 # Finetune a student model.
 #
 # Usage:
-#   bash train-student.sh
+#   bash finetune-student.sh
 #
 
 set -x
@@ -14,7 +14,7 @@ bash ./train.sh \
   ${WORKDIR}/pipeline/train/configs/training/student.finetune.yml \
   $SRC \
   $TRG \
-  ${DATA_DIR}/augmented/corpus \
+  ${DATA_DIR}/final/corpus \
   ${DATA_DIR}/original/devset \
   ${MODELS_DIR}/$SRC-$TRG/student \
   --guided-alignment ${DATA_DIR}/alignment/corpus.aln.gz

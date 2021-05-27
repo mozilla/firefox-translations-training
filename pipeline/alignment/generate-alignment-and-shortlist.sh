@@ -1,29 +1,36 @@
-#!/bin/bash
+#!/bin/bash -v
+##
+# Generates alignment and lexical shortlist for a corpus.
+#
+# Usage:
+#   bash generate-alignment-and-shortlist.sh corpus_prefix vocab_path output_dir
+#
 
-set -eo pipefail
+set -x
+set -euo pipefail
 
-# Adjust variables if needed.
-MARIAN=../../marian-dev/build
-VOCAB=../../esen/enes.teacher.bigx2/vocab.esen.spm
-SRC=en
-TRG=es
-CORPUS_SRC=corpus.$SRC.gz
-CORPUS_TRG=corpus.$TRG.gz
 
-BIN=bin
+test -v MARIAN
+test -v BIN
+tests -v SRC
+test -v TRG
+
+corpus_prefix=$1
+vocab_path=$2
+DIR=$3
+
 test -e $BIN/atools      || exit 1
 test -e $BIN/extract_lex || exit 1
 test -e $BIN/fast_align  || exit 1
 
-DIR=align
 mkdir -p $DIR
 
-echo $CORPUS_SRC >> $DIR/README
-echo $CORPUS_TRG >> $DIR/README
+CORPUS_SRC=$corpus_prefix.SRC.gz
+CORPUS_TRG=$corpus_prefix.TRG.gz
 
 # Subword segmentation with SentencePiece.
-test -s $DIR/corpus.spm.$SRC || cat $CORPUS_SRC | pigz -dc | parallel --no-notice --pipe -k -j16 --block 50M "$MARIAN/spm_encode --model $VOCAB" > $DIR/corpus.spm.$SRC
-test -s $DIR/corpus.spm.$TRG || cat $CORPUS_TRG | pigz -dc | parallel --no-notice --pipe -k -j16 --block 50M "$MARIAN/spm_encode --model $VOCAB" > $DIR/corpus.spm.$TRG
+test -s $DIR/corpus.spm.$SRC || cat $CORPUS_SRC | pigz -dc | parallel --no-notice --pipe -k -j$(nproc) --block 50M "$MARIAN/spm_encode --model $vocab_path" > $DIR/corpus.spm.$SRC
+test -s $DIR/corpus.spm.$TRG || cat $CORPUS_TRG | pigz -dc | parallel --no-notice --pipe -k -j$(nproc) --block 50M "$MARIAN/spm_encode --model $vocab_path" > $DIR/corpus.spm.$TRG
 
 test -s $DIR/corpus     || paste $DIR/corpus.spm.$SRC $DIR/corpus.spm.$TRG | sed 's/\t/ ||| /' > $DIR/corpus
 

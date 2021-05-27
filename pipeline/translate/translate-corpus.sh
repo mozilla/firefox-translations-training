@@ -1,44 +1,60 @@
 #!/bin/bash
 
-# Usage: ./translate-corpus.sh -d 4 5 6 7
+# Usage: ./translate-corpus.sh corpus_src corpus_trg model_dir output_path
 
-set -e
+set -x
+set -euo pipefail
 
-# Adjust variables if needed.
-MARIAN=../../marian-dev/build
-CORPUSSRC=corpus.en.gz
-CORPUSTRG=corpus.es.gz
-CONFIG=teacher.yml
-DIR=corpus
-OUTPUT=$DIR.translated.gz
 
-mkdir -p $DIR
+test -v GPUS
+test -v MARIAN
+test -v WORKSPACE
+test -v WORKDIR
+
+
+corpus_src=$1
+corpus_trg=$2
+model_dir=$3
+output_path=$4
+
+config=${model_dir}/model.npz.best-ce-mean-words.npz.decoder.yml
+decoder_config=${WORKDIR}/pipeline/translate/decoder.yml
+tmp_dir=$(dirname $output_path)/tmp
+mkdir -p $tmp_dir
 
 
 # Split parallel corpus into smaller chunks.
-test -s $DIR/file.00     || pigz -dc $CORPUSSRC | split -d -l 2000000 - $DIR/file.
-test -s $DIR/file.00.ref || pigz -dc $CORPUSTRG | split -d -l 2000000 - $DIR/file. --additional-suffix .ref
+test -s $tmp_dir/file.00     || pigz -dc $corpus_src | split -d -l 500000 - $tmp_dir/file.
+test -s $tmp_dir/file.00.ref || pigz -dc $corpus_trg | split -d -l 500000 - $tmp_dir/file. --additional-suffix .ref
 
 # Translate source sentences with Marian.
 # This can be parallelized across several GPU machines.
-for prefix in `ls $DIR/file.?? | shuf`; do
+for prefix in `ls $tmp_dir/file.?? | shuf`; do
     echo "# $prefix"
-    test -e $prefix.nbest || $MARIAN/marian-decoder -c $CONFIG -i $prefix -o $prefix.nbest --log $prefix.log -b 8 --n-best $@
+    test -e $prefix.nbest || $MARIAN/marian-decoder -c $config $decoder_config -i $prefix -o $prefix.nbest --log $prefix.log --n-best \
+    -d $GPUS -w $WORKSPACE
 done
 
 # Extract best translations from n-best lists w.r.t to the reference.
 # It is CPU-only, can be run after translation on a CPU machine.
-for prefix in `ls $DIR/file.??`; do
-    echo "# $prefix"
-    test -e $prefix.nbest.out || python3 bestbleu.py -i $prefix.nbest -r $prefix.ref -m bleu > $prefix.nbest.out
-done
+test -s $tmp_dir/file.00.nbest.out ||
+ls $tmp_dir/file.?? | 
+parallel --no-notice -k -j$(nproc) \
+    "python ${WORKDIR}/pipeline/translate/bestbleu.py -i {}.nbest -r {}.ref -m bleu > {}.nbest.out" \
+    2> $tmp_dir/debug.txt
+
 
 # Collect translations.
-cat $DIR/file.??.nbest.out | pigz > $OUTPUT
+test -s $output_path || cat $tmp_dir/file.??.nbest.out | pigz > $output_path
 
 # Source and artificial target files must have the same number of sentences,
 # otherwise collect the data manually.
-echo "# sentences $CORPUSSRC vs $OUTPUT"
-pigz -dc $CORPUSSRC | wc -l
-pigz -dc $OUTPUT | wc -l
+echo "# sentences $corpus_src vs $output_path"
+src_len=$(pigz -dc $corpus_src | wc -l)
+trg_len=$(pigz -dc $output_path | wc -l)
+if [[ src_len != trg_len ]]; then
+    echo "Error: length of ${corpus_src} ${src_len} is different from ${output_path} ${trg_len}"
+    exit 1
+fi
 
+rm -rf $tmp_dir
