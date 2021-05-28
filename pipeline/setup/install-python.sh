@@ -5,7 +5,6 @@
 set -x
 set -euo pipefail
 
-
 echo "--- Installing Python libraries ---"
 if [ ! -e /root/miniconda3/bin/conda ]; then
   wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh

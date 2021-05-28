@@ -1,9 +1,25 @@
 #!/bin/bash
+##
+# Runs quantization of the student model.
+#
+# Usage:
+#   bash quantize.sh corpus_prefix vocab_path output_dir
+#
 
-MARIAN=../../../marian-dev/build
+set -x
+set -euo pipefail
 
-SRC=es
-TRG=en
+
+test -v MARIAN
+test -v BIN
+tests -v SRC
+test -v TRG
+
+corpus_prefix=$1
+vocab_path=$2
+dir=$3
+
+# TODO
 
 mkdir -p speed
 

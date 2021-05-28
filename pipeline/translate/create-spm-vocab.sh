@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# TODO: do we need this script?
+
+
 MARIAN=../../marian-dev/build
 SRC=en
 TRG=de

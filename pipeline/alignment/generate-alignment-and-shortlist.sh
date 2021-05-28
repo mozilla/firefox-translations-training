@@ -17,43 +17,43 @@ test -v TRG
 
 corpus_prefix=$1
 vocab_path=$2
-DIR=$3
+dir=$3
 
 test -e $BIN/atools      || exit 1
 test -e $BIN/extract_lex || exit 1
 test -e $BIN/fast_align  || exit 1
 
-mkdir -p $DIR
+mkdir -p $dir
 
 CORPUS_SRC=$corpus_prefix.SRC.gz
 CORPUS_TRG=$corpus_prefix.TRG.gz
 
 # Subword segmentation with SentencePiece.
-test -s $DIR/corpus.spm.$SRC || cat $CORPUS_SRC | pigz -dc | parallel --no-notice --pipe -k -j$(nproc) --block 50M "$MARIAN/spm_encode --model $vocab_path" > $DIR/corpus.spm.$SRC
-test -s $DIR/corpus.spm.$TRG || cat $CORPUS_TRG | pigz -dc | parallel --no-notice --pipe -k -j$(nproc) --block 50M "$MARIAN/spm_encode --model $vocab_path" > $DIR/corpus.spm.$TRG
+test -s $dir/corpus.spm.$SRC || cat $CORPUS_SRC | pigz -dc | parallel --no-notice --pipe -k -j$(nproc) --block 50M "$MARIAN/spm_encode --model $vocab_path" > $dir/corpus.spm.$SRC
+test -s $dir/corpus.spm.$TRG || cat $CORPUS_TRG | pigz -dc | parallel --no-notice --pipe -k -j$(nproc) --block 50M "$MARIAN/spm_encode --model $vocab_path" > $dir/corpus.spm.$TRG
 
-test -s $DIR/corpus     || paste $DIR/corpus.spm.$SRC $DIR/corpus.spm.$TRG | sed 's/\t/ ||| /' > $DIR/corpus
+test -s $dir/corpus     || paste $dir/corpus.spm.$SRC $dir/corpus.spm.$TRG | sed 's/\t/ ||| /' > $dir/corpus
 
 # Alignment.
-test -s $DIR/align.s2t  || $BIN/fast_align -vod  -i $DIR/corpus > $DIR/align.s2t
-test -s $DIR/align.t2s  || $BIN/fast_align -vodr -i $DIR/corpus > $DIR/align.t2s
+test -s $dir/align.s2t  || $BIN/fast_align -vod  -i $dir/corpus > $dir/align.s2t
+test -s $dir/align.t2s  || $BIN/fast_align -vodr -i $dir/corpus > $dir/align.t2s
 
-test -s $DIR/corpus.aln || $BIN/atools -i $DIR/align.s2t -j $DIR/align.t2s -c grow-diag-final-and > $DIR/corpus.aln
+test -s $dir/corpus.aln || $BIN/atools -i $dir/align.s2t -j $dir/align.t2s -c grow-diag-final-and > $dir/corpus.aln
 
 # Shortlist.
-test -s $DIR/lex.s2t    || $BIN/extract_lex $DIR/corpus.spm.$TRG $DIR/corpus.spm.$SRC $DIR/corpus.aln $DIR/lex.s2t $DIR/lex.t2s
+test -s $dir/lex.s2t    || $BIN/extract_lex $dir/corpus.spm.$TRG $dir/corpus.spm.$SRC $dir/corpus.aln $dir/lex.s2t $dir/lex.t2s
 
 # Clean.
-rm $DIR/corpus $DIR/corpus.spm.?? $DIR/align.???
+rm $dir/corpus $dir/corpus.spm.?? $dir/align.???
 
-pigz $DIR/corpus.aln
-pigz $DIR/lex.s2t
+pigz $dir/corpus.aln
+pigz $dir/lex.s2t
 
 # Shortlist pruning (optional).
-test -e $DIR/vocab.txt         || $MARIAN/spm_export_vocab --model=$VOCAB --output=$DIR/vocab.txt
-test -e $DIR/lex.s2t.pruned.gz || pigz -dc $DIR/lex.s2t.gz | grep -v NULL | python3 prune_shortlist.py 100 $DIR/vocab.txt | pigz > $DIR/lex.s2t.pruned.gz
+test -e $dir/vocab.txt         || $MARIAN/spm_export_vocab --model=$VOCAB --output=$dir/vocab.txt
+test -e $dir/lex.s2t.pruned.gz || pigz -dc $dir/lex.s2t.gz | grep -v NULL | python3 prune_shortlist.py 100 $dir/vocab.txt | pigz > $dir/lex.s2t.pruned.gz
 
 
 echo "Outputs:"
-ll $DIR/*.gz
+ll $dir/*.gz
 
