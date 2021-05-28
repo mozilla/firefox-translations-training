@@ -1,0 +1,12 @@
+#!/bin/bash
+# Runs the whole pipeline on a Snakepit worker
+# See https://github.com/mozilla/snakepit-client
+
+set -x
+set -euo pipefail
+
+
+export DATA="${USER_DIR}/bergamot-training/data"
+export MODELS="${USER_DIR}/bergamot-training/models"
+
+bash ./run.sh
