@@ -27,21 +27,22 @@ test -s $tmp_dir/file.00 || pigz -dc $mono_path | split -d -l 500000 - $tmp_dir/
 
 # Translate source sentences with Marian.
 # This can be parallelized across several GPU machines.
-for prefix in `ls ${tmp_dir}/file.?? | shuf`; do
-    echo "# $prefix"
-    test -e $prefix.out || \
-    $MARIAN/marian-decoder -c $config $decoder_config -i $prefix -o $prefix.out --log $prefix.log \
+for name in $(ls "${tmp_dir}" | grep -E "^file\.[0-9]+$" | shuf); do
+    prefix=${tmp_dir}/${name}
+    echo "# ${prefix}"
+    test -e ${prefix}.out || \
+    $MARIAN/marian-decoder -c $config $decoder_config -i  ${prefix} -o  ${prefix}.out --log  ${prefix}.log \
     -d $GPUS -w $WORKSPACE
 done
 
 # Collect translations.
-cat $tmp_dir/file.??.out | pigz > $output_path
+cat $tmp_dir/file.*.out | pigz > $output_path
 
 # Source and artificial target files must have the same number of sentences,
 # otherwise collect the data manually.
 src_len=$(pigz -dc $mono_path | wc -l)
 trg_len=$(pigz -dc $output_path | wc -l)
-if [[ src_len != trg_len ]]; then
+if [ "$src_len" != "$trg_len" ]; then
     echo "Error: length of ${mono_path} ${src_len} is different from ${output_path} ${trg_len}"
     exit 1
 fi

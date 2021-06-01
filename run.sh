@@ -27,7 +27,10 @@ set -euo pipefail
 #│   │   ├ corpus.en.gz
 #│   ├ alignment
 #│   │   ├ corpus.aln.gz
-#│   ├ final
+#│   ├ merged
+#│   │   ├ corpus.ru.gz
+#│   │   ├ corpus.en.gz
+#│   ├ filtered
 #│   │   ├ corpus.ru.gz
 #│   │   ├ corpus.en.gz
 #├ models
@@ -43,7 +46,7 @@ set -a
 . ./config.sh
 set +a
 
-# setup
+## setup
 . ./pipeline/setup/install-all.sh
 PATH="/root/miniconda3/bin:${PATH}"
 source /root/miniconda3/etc/profile.d/conda.sh
@@ -53,7 +56,8 @@ conda activate bergamot-training-env
 original=${DATA_DIR}/original
 clean=${DATA_DIR}/clean
 augmented=${DATA_DIR}/augmented
-final=${DATA_DIR}/final
+merged=${DATA_DIR}/merged
+filtered=${DATA_DIR}/filtered
 align_dir=${DATA_DIR}/alignment
 student_dir=${MODELS_DIR}/$SRC-$TRG/student
 teacher_dir=${MODELS_DIR}/$SRC-$TRG/teacher
@@ -103,17 +107,16 @@ test -e ${original}/mono.${TRG}.gz ||
 
 . ./pipeline/utils/merge-corpus.sh ${clean}/corpus.$SRC.gz \
   ${clean}/mono.$SRC.gz \
+  ${DATA_DIR}/translated/corpus.$TRG.gz
   ${DATA_DIR}/translated/mono.$TRG.gz \
-  ${DATA_DIR}/translated/corpus.$TRG.gz \
-  $final/corpus.$SRC.gz \
-  $final/corpus.$TRG.gz
+  $merged/corpus.$SRC.gz \
+  $merged/corpus.$TRG.gz
 
 # ce-filter
-
-# TODO
+. ./pipeline/clean/ce-filter.sh $s2s ${merged}/corpus ${filtered}/corpus
 
 # train word alignment and lexical shortlists
-. ./pipeline/alignment/generate-alignment-and-shortlist.sh ${final}/corpus ${teacher_dir}/vocab.spm $align_dir
+. ./pipeline/alignment/generate-alignment-and-shortlist.sh ${filtered}/corpus ${teacher_dir}/vocab.spm $align_dir
 
 # train student
 . ./pipeline/train/train-student.sh

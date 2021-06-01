@@ -29,7 +29,7 @@ test -s $tmp_dir/file.00.ref || pigz -dc $corpus_trg | split -d -l 500000 - $tmp
 
 # Translate source sentences with Marian.
 # This can be parallelized across several GPU machines.
-for prefix in `ls $tmp_dir/file.?? | shuf`; do
+for prefix in $(ls "${tmp_dir}" | grep -E "^file\.[0-9]+$" | shuf); do
     echo "# $prefix"
     test -e $prefix.nbest || $MARIAN/marian-decoder -c $config $decoder_config -i $prefix -o $prefix.nbest --log $prefix.log --n-best \
     -d $GPUS -w $WORKSPACE
@@ -38,7 +38,7 @@ done
 # Extract best translations from n-best lists w.r.t to the reference.
 # It is CPU-only, can be run after translation on a CPU machine.
 test -s $tmp_dir/file.00.nbest.out ||
-ls $tmp_dir/file.?? | 
+ls "${tmp_dir}" | grep -E "^file\.[0-9]+$" | shuf |
 parallel --no-notice -k -j$(nproc) \
     "python ${WORKDIR}/pipeline/translate/bestbleu.py -i {}.nbest -r {}.ref -m bleu > {}.nbest.out" \
     2> $tmp_dir/debug.txt
@@ -52,7 +52,7 @@ test -s $output_path || cat $tmp_dir/file.??.nbest.out | pigz > $output_path
 echo "# sentences $corpus_src vs $output_path"
 src_len=$(pigz -dc $corpus_src | wc -l)
 trg_len=$(pigz -dc $output_path | wc -l)
-if [[ src_len != trg_len ]]; then
+if [ "$src_len" != "$trg_len" ]; then
     echo "Error: length of ${corpus_src} ${src_len} is different from ${output_path} ${trg_len}"
     exit 1
 fi

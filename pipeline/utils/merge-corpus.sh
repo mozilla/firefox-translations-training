@@ -23,7 +23,7 @@ test -s "${res_trg}" || cat "$trg1" "$trg2" >"$res_trg"
 
 src_len=$(pigz -dc "${res_src}" | wc -l)
 trg_len=$(pigz -dc "${res_trg}" | wc -l)
-if [[ "$src_len" != "$trg_len" ]]; then
+if [ "$src_len" != "$trg_len" ]; then
   echo "Error: length of ${res_src} ${src_len} is different from ${res_trg} ${trg_len}"
   exit 1
 fi

@@ -6,7 +6,8 @@ set -x
 set -euo pipefail
 
 
-export DATA="${USER_DIR}/bergamot-training/data"
-export MODELS="${USER_DIR}/bergamot-training/models"
+export DATA_DIR="${USER_DIR}/bergamot-training/data"
+export MODELS_DIR="${USER_DIR}/bergamot-training/models"
+export MARIAN="${USER_DIR}/bergamot-training/3rd_party/marian-dev/build"
 
 bash ./run.sh

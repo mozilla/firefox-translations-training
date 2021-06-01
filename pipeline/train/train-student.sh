@@ -14,7 +14,7 @@ bash ${WORKDIR}/pipeline/train/train.sh \
   ${WORKDIR}/pipeline/train/configs/training/student.train.yml \
   $SRC \
   $TRG \
-  ${DATA_DIR}/final/corpus \
+  ${DATA_DIR}/filtered/corpus \
   ${DATA_DIR}/original/devset \
   ${MODELS_DIR}/$SRC-$TRG/student \
   --guided-alignment ${DATA_DIR}/alignment/corpus.aln.gz

@@ -2,7 +2,7 @@ WORKDIR=$(pwd)
 CUDA_DIR=/usr/local/cuda-11.2
 DATA_DIR=${DATA_DIR:-${WORKDIR}/data}
 MODELS_DIR=${MODELS_DIR:-${WORKDIR}/models}
-MARIAN=${WORKDIR}/3rd_party/marian-dev/build
+MARIAN=${MARIAN:-${WORKDIR}/3rd_party/marian-dev/build}
 CLEAN_TOOLS=${WORKDIR}/pipeline/clean/tools
 BIN=${WORKDIR}/bin
 
