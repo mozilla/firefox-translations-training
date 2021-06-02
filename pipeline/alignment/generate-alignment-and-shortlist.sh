@@ -12,7 +12,7 @@ set -euo pipefail
 
 test -v MARIAN
 test -v BIN
-tests -v SRC
+test -v SRC
 test -v TRG
 
 corpus_prefix=$1
@@ -25,8 +25,8 @@ test -e $BIN/fast_align  || exit 1
 
 mkdir -p $dir
 
-CORPUS_SRC=$corpus_prefix.SRC.gz
-CORPUS_TRG=$corpus_prefix.TRG.gz
+CORPUS_SRC=$corpus_prefix.$SRC.gz
+CORPUS_TRG=$corpus_prefix.$TRG.gz
 
 # Subword segmentation with SentencePiece.
 test -s $dir/corpus.spm.$SRC || cat $CORPUS_SRC | pigz -dc | parallel --no-notice --pipe -k -j$(nproc) --block 50M "$MARIAN/spm_encode --model $vocab_path" > $dir/corpus.spm.$SRC
