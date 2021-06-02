@@ -33,18 +33,18 @@ if [ ! -e ${file_name} ]; then
     bash ${WORKDIR}/pipeline/data/importers/mono/${type}.sh $lang $source_prefix $name
 
     test -s $gz_path || \
-    zcat $source_prefix.gz | shuf -n $(bc -l <<< "${max_sent}+${max_sent}*${coef}") | \
+    pigz -dc $source_prefix.gz | shuf -n $(bc -l <<< "${max_sent}+${max_sent}*${coef}") | \
         perl -ne 'print if(split(/\s/, $_) < 100)' | \
         head -n "$max_sent" | pigz > $gz_path
 
     rm $source_prefix*
   done
 
-  zcat ${dir}/*.$lang.gz | pigz > $file_name
+  pigz -dc ${dir}/*.$lang.gz | pigz > $file_name
 
 fi
 
 test -s $file_name
 
-lines=$(zcat $file_name | wc -l)
+lines=$(pigz -dc $file_name | wc -l)
 echo "Done. Number of sentences: ${lines}"
