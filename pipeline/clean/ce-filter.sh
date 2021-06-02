@@ -25,25 +25,33 @@ output_prefix=$3
 REMOVE=0.05
 model=${model_dir}/model.npz.best-ce-mean-words.npz
 vocab=${model_dir}/vocab.spm
-dir=$(dirname $output_prefix)/scored
+dir=${TMP}/scored
 mkdir -p ${dir}
 
+test -s ${dir}/$corpus_prefix.${TRG}.gz || cp $corpus_prefix.${TRG}.gz ${dir}
+test -s ${dir}/$corpus_prefix.${SRC}.gz || cp $corpus_prefix.${SRC}.gz ${dir}
+
+test -s $dir/scores.txt || \
 ${MARIAN}/marian-scorer -m $model -v $vocab $vocab -t $corpus_prefix.${TRG}.gz $corpus_prefix.${SRC}.gz \
   --mini-batch 32 --mini-batch-words 1500 --maxi-batch 1000 --max-length 250 --max-length-crop \
   -d ${GPUS} -w ${WORKSPACE} --log $dir/scores.txt.log > $dir/scores.txt
 
+rm ${dir}/$corpus_prefix.${TRG}.gz
+rm ${dir}/$corpus_prefix.${SRC}.gz
+
 test -s $dir/scores.nrm.txt || \
-paste $dir/scores.txt $corpus_prefix.${TRG}.gz \
+paste $dir/scores.txt $(pigz -dc $corpus_prefix.${TRG}.gz) \
   | parallel --no-notice --pipe -k -j $(nproc) --block 50M "python ${clean_tools}/normalize-scores.py" \
   | cut -f1 > $dir/scores.nrm.txt
 
 test -s $dir/sorted.gz || \
-paste $dir/scores.nrm.txt $corpus_prefix.${SRC}.gz $corpus_prefix.${TRG}.gz \
+paste $dir/scores.nrm.txt $(pigz -dc $corpus_prefix.${SRC}.gz) $(pigz -dc $corpus_prefix.${TRG}.gz) \
   | LC_ALL=C sort -n -k1,1 -S 10G \
   | pigz > $dir/sorted.gz
 
 test -s $dir/best.gz || \
-startline=$(pigz -dc $dir/sorted.gz | wc -l | sed "s|$$|*${REMOVE}|" | bc | cut -f1 -d.); \
+lines=$(pigz -dc $dir/sorted.gz | wc -l) && \
+startline=$(echo ${lines}*${REMOVE} | bc | cut -f1 -d.) && \
 pigz -dc $dir/sorted.gz | tail -n +${startline} | cut -f2,3 | pigz > $dir/best.gz
 
 pigz -dc $dir/best.gz | cut -f1 | pigz > $output_prefix.$SRC.gz
