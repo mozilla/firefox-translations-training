@@ -28,25 +28,24 @@ vocab=${model_dir}/vocab.spm
 dir=${TMP}/scored
 mkdir -p ${dir}
 
-test -s ${dir}/$corpus_prefix.${TRG}.gz || cp $corpus_prefix.${TRG}.gz ${dir}
-test -s ${dir}/$corpus_prefix.${SRC}.gz || cp $corpus_prefix.${SRC}.gz ${dir}
+test -s ${dir}/corpus.${TRG} || pigz -dc $corpus_prefix.${TRG}.gz > ${dir}/corpus.${TRG}
+test -s ${dir}/corpus.${SRC} || pigz -dc $corpus_prefix.${SRC}.gz > ${dir}/corpus.${SRC}
 
 test -s $dir/scores.txt || \
-${MARIAN}/marian-scorer -m $model -v $vocab $vocab -t $corpus_prefix.${TRG}.gz $corpus_prefix.${SRC}.gz \
+${MARIAN}/marian-scorer -m $model -v $vocab $vocab -t ${dir}/corpus.${TRG} ${dir}/corpus.${SRC}.gz \
   --mini-batch 32 --mini-batch-words 1500 --maxi-batch 1000 --max-length 250 --max-length-crop \
   -d ${GPUS} -w ${WORKSPACE} --log $dir/scores.txt.log > $dir/scores.txt
 
-rm ${dir}/$corpus_prefix.${TRG}.gz
-rm ${dir}/$corpus_prefix.${SRC}.gz
 
 test -s $dir/scores.nrm.txt || \
-paste $dir/scores.txt $(pigz -dc $corpus_prefix.${TRG}.gz) \
+paste $dir/scores.txt ${dir}/corpus.${TRG} \
   | parallel --no-notice --pipe -k -j $(nproc) --block 50M "python ${clean_tools}/normalize-scores.py" \
   | cut -f1 > $dir/scores.nrm.txt
 
 test -s $dir/sorted.gz || \
-paste $dir/scores.nrm.txt $(pigz -dc $corpus_prefix.${SRC}.gz) $(pigz -dc $corpus_prefix.${TRG}.gz) \
-  | LC_ALL=C sort -n -k1,1 -S 10G \
+buffer_size=$(echo $(grep MemTotal /proc/meminfo | awk '{print $2}')*0.9 | bc | cut -f1 -d.) && \
+paste $dir/scores.nrm.txt ${dir}/corpus.${SRC} ${dir}/corpus.${TRG} \
+  | LC_ALL=C sort -n -k1,1 -S ${buffer_size}K \
   | pigz > $dir/sorted.gz
 
 test -s $dir/best.gz || \
@@ -57,4 +56,4 @@ pigz -dc $dir/sorted.gz | tail -n +${startline} | cut -f2,3 | pigz > $dir/best.g
 pigz -dc $dir/best.gz | cut -f1 | pigz > $output_prefix.$SRC.gz
 pigz -dc $dir/best.gz | cut -f2 | pigz > $output_prefix.$TRG.gz
 
-#rm -rf $dir
+rm -rf $dir
