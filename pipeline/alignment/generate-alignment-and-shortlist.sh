@@ -50,8 +50,8 @@ pigz $dir/corpus.aln
 pigz $dir/lex.s2t
 
 # Shortlist pruning (optional).
-test -e $dir/vocab.txt         || $MARIAN/spm_export_vocab --model=$VOCAB --output=$dir/vocab.txt
-test -e $dir/lex.s2t.pruned.gz || pigz -dc $dir/lex.s2t.gz | grep -v NULL | python3 prune_shortlist.py 100 $dir/vocab.txt | pigz > $dir/lex.s2t.pruned.gz
+test -e $dir/vocab.txt         || $MARIAN/spm_export_vocab --model=$vocab_path --output=$dir/vocab.txt
+test -e $dir/lex.s2t.pruned.gz || pigz -dc $dir/lex.s2t.gz | grep -v NULL | python3 ${WORKSPACE}/alignment/prune_shortlist.py 100 $dir/vocab.txt | pigz > $dir/lex.s2t.pruned.gz
 
 
 echo "Outputs:"
