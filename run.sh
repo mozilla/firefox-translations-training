@@ -112,7 +112,7 @@ test -e ${original}/mono.${TRG}.gz ||
   $merged/corpus.$SRC.gz \
   $merged/corpus.$TRG.gz
 
-# ce-filter
+# cross entropy filtering
 . ./pipeline/clean/ce-filter.sh $s2s ${merged}/corpus ${filtered}/corpus
 
 # train word alignment and lexical shortlists
