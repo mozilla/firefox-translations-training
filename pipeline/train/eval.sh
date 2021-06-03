@@ -19,9 +19,6 @@ trg="${3:-$TRG}"
 datasets=${@:4}
 test_datasets=${datasets:-$TEST_DATASETS}
 
-mo
-
-
 
 eval_dir=${model_dir}/eval
 

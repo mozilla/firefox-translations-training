@@ -27,6 +27,7 @@ set -euo pipefail
 #│   │   ├ corpus.en.gz
 #│   ├ alignment
 #│   │   ├ corpus.aln.gz
+#│   │   ├ lex.s2t.pruned.gz
 #│   ├ merged
 #│   │   ├ corpus.ru.gz
 #│   │   ├ corpus.en.gz

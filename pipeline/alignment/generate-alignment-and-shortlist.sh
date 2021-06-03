@@ -1,4 +1,4 @@
-#!/bin/bash -v
+#!/bin/bash
 ##
 # Generates alignment and lexical shortlist for a corpus.
 #
@@ -9,7 +9,6 @@
 set -x
 set -euo pipefail
 
-
 test -v MARIAN
 test -v BIN
 test -v SRC
@@ -19,50 +18,67 @@ corpus_prefix=$1
 vocab_path=$2
 output_dir=$3
 
-test -e $BIN/atools      || exit 1
+test -e $BIN/atools || exit 1
 test -e $BIN/extract_lex || exit 1
-test -e $BIN/fast_align  || exit 1
+test -e $BIN/fast_align || exit 1
 
 mkdir -p $output_dir
 dir=${TMP}/alignment
 mkdir -p ${dir}
 
-CORPUS_SRC=$corpus_prefix.$SRC.gz
-CORPUS_TRG=$corpus_prefix.$TRG.gz
+corpus_src=$corpus_prefix.$SRC.gz
+corpus_trg=$corpus_prefix.$TRG.gz
 
-# Subword segmentation with SentencePiece.
-test -s $dir/corpus.spm.$SRC || \
-cat $CORPUS_SRC | pigz -dc | parallel --no-notice --pipe -k -j$(nproc) --block 50M "$MARIAN/spm_encode --model $vocab_path" > $dir/corpus.spm.$SRC
-test -s $dir/corpus.spm.$TRG || \
-cat $CORPUS_TRG | pigz -dc | parallel --no-notice --pipe -k -j$(nproc) --block 50M "$MARIAN/spm_encode --model $vocab_path" > $dir/corpus.spm.$TRG
+echo "### Subword segmentation with SentencePiece"
+test -s $dir/corpus.spm.$SRC.gz ||
+  pigz -dc $corpus_src |
+  parallel --no-notice --pipe -k -j$(nproc) --block 50M "$MARIAN/spm_encode --model $vocab_path" |
+  pigz >$dir/corpus.spm.$SRC.gz
+test -s $dir/corpus.spm.$TRG.gz ||
+  pigz -dc $corpus_trg |
+  parallel --no-notice --pipe -k -j$(nproc) --block 50M "$MARIAN/spm_encode --model $vocab_path" |
+  pigz >$dir/corpus.spm.$TRG.gz
 
-test -s $dir/corpus     || paste $dir/corpus.spm.$SRC $dir/corpus.spm.$TRG | sed 's/\t/ ||| /' > $dir/corpus
+echo "### Creating merged corpus"
+test -s $dir/corpus.aln.gz || test -s $dir/corpus ||
+  paste <(pigz -dc $dir/corpus.spm.$SRC.gz) <(pigz -dc $dir/corpus.spm.$TRG.gz) |
+  sed 's/\t/ ||| /' >$dir/corpus
 
-# Alignment.
-test -s $dir/align.s2t  || $BIN/fast_align -vod  -i $dir/corpus > $dir/align.s2t
-test -s $dir/align.t2s  || $BIN/fast_align -vodr -i $dir/corpus > $dir/align.t2s
-rm $dir/corpus
+echo "### Training alignments"
+test -s $dir/corpus.aln.gz || test -s $dir/align.s2t.gz ||
+  $BIN/fast_align -vod -i $dir/corpus |
+  pigz >$dir/align.s2t.gz
+test -s $dir/corpus.aln.gz || test -s $dir/align.t2s.gz ||
+  $BIN/fast_align -vodr -i $dir/corpus |
+  pigz >$dir/align.t2s.gz
+test -s $dir/corpus && rm $dir/corpus
 
-# Symmetrize
-test -s $dir/corpus.aln || $BIN/atools -i $dir/align.s2t -j $dir/align.t2s -c grow-diag-final-and > $dir/corpus.aln
+echo "### Symmetrizing alignments"
+test -s $dir/corpus.aln.gz ||
+  pigz -d $dir/align.s2t.gz $dir/align.t2s.gz &&
+  $BIN/atools -i $dir/align.s2t -j $dir/align.t2s -c grow-diag-final-and |
+  pigz >$dir/corpus.aln.gz
+test -s $dir/align.s2t && rm $dir/align.???
 
-# Shortlist.
-test -s $dir/lex.s2t    || $BIN/extract_lex $dir/corpus.spm.$TRG $dir/corpus.spm.$SRC $dir/corpus.aln $dir/lex.s2t $dir/lex.t2s
-rm $dir/corpus.spm.?? $dir/align.???
+echo "### Creating shortlist"
+test -s $dir/lex.s2t.gz ||
+  $BIN/extract_lex $dir/corpus.spm.$TRG.gz $dir/corpus.spm.$SRC.gz $dir/corpus.aln.gz $dir/lex.s2t $dir/lex.t2s
 
-pigz $dir/corpus.aln
+echo "### Cleaning"
+rm $dir/corpus.spm.??.gz
+rm $dir/lex.t2s
+rsync $dir/corpus.aln.gz $output_dir/corpus.aln.gz
+rm $dir/corpus.aln.gz
 pigz $dir/lex.s2t
 
-test -s $output_dir/corpus.aln || cp $dir/corpus.aln $output_dir/corpus.aln
-rm $dir/corpus.aln
+# optional
+echo "### Shortlist pruning"
+test -e $dir/vocab.txt || $MARIAN/spm_export_vocab --model=$vocab_path --output=$dir/vocab.txt
+test -e $dir/lex.s2t.pruned.gz ||
+  pigz -dc $dir/lex.s2t.gz |
+  grep -v NULL |
+  python3 ${WORKSPACE}/alignment/prune_shortlist.py 100 $dir/vocab.txt |
+  pigz >$output_dir/lex.s2t.pruned.gz
 
-# Shortlist pruning (optional).
-test -e $dir/vocab.txt         || $MARIAN/spm_export_vocab --model=$vocab_path --output=$dir/vocab.txt
-test -e $dir/lex.s2t.pruned.gz || pigz -dc $dir/lex.s2t.gz \
-| grep -v NULL \
-| python3 ${WORKSPACE}/alignment/prune_shortlist.py 100 $dir/vocab.txt \
-| pigz > $dir/lex.s2t.pruned.gz
-
-test -s $output_dir/lex.s2t.gz || cp $dir/lex.s2t.pruned.gz $output_dir/lex.s2t.gz
+echo "### Deleting tmp dir"
 rm -rf $dir
-
