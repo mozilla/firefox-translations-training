@@ -65,11 +65,17 @@ pit run --log "bergamot-training-ru-en" "[8:g2080]"
 - It is expected that the specified output folder might not exist and should be created by the script.
 
 - A script creates a folder for intermediate files and cleans it in the end.
+
+- Network disks are too slow for some operations, so a script can copy and work with intermediate data on a local disk.
+  This ability is limited by a local disk size (this is the case for Snakepit cluster).
+  An exception is when parallelization across multiple machines is required.
     
 - Global variables are upper case, local variable are lower case.
 
 - ALl variables that are global for the whole pipeline are set in `config.sh`.
 
+- Scripts should automatically inspect resources available for computation and utilize them to make things faster
+  (number of cores, memory).
 
 ## Used projects and tools
 
