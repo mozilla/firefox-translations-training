@@ -55,7 +55,8 @@ test -s $dir/corpus && rm $dir/corpus
 
 echo "### Symmetrizing alignments"
 test -s $dir/corpus.aln.gz ||
-  pigz -d $dir/align.s2t.gz $dir/align.t2s.gz &&
+  pigz -d $dir/align.s2t.gz $dir/align.t2s.gz
+test -s $dir/corpus.aln.gz ||
   $BIN/atools -i $dir/align.s2t -j $dir/align.t2s -c grow-diag-final-and |
   pigz >$dir/corpus.aln.gz
 test -s $dir/align.s2t && rm $dir/align.???
@@ -63,21 +64,20 @@ test -s $dir/align.s2t && rm $dir/align.???
 echo "### Creating shortlist"
 test -s $dir/lex.s2t.gz ||
   $BIN/extract_lex $dir/corpus.spm.$TRG.gz $dir/corpus.spm.$SRC.gz $dir/corpus.aln.gz $dir/lex.s2t $dir/lex.t2s
+test -s $dir/lex.s2t && pigz $dir/lex.s2t
 
 echo "### Cleaning"
-rm $dir/corpus.spm.??.gz
-rm $dir/lex.t2s
-rsync $dir/corpus.aln.gz $output_dir/corpus.aln.gz
-rm $dir/corpus.aln.gz
-pigz $dir/lex.s2t
+test -s $output_dir/corpus.aln.gz || rsync $dir/corpus.aln.gz $output_dir/corpus.aln.gz
+test -e $dir/lex.t2s && rm $dir/lex.t2s
+
 
 # optional
 echo "### Shortlist pruning"
-test -e $dir/vocab.txt || $MARIAN/spm_export_vocab --model=$vocab_path --output=$dir/vocab.txt
-test -e $dir/lex.s2t.pruned.gz ||
+test -s $dir/vocab.txt || $MARIAN/spm_export_vocab --model=$vocab_path --output=$dir/vocab.txt
+test -s $output_dir/lex.s2t.pruned.gz ||
   pigz -dc $dir/lex.s2t.gz |
   grep -v NULL |
-  python3 ${WORKSPACE}/alignment/prune_shortlist.py 100 $dir/vocab.txt |
+  python3 ${WORKDIR}/pipeline/alignment/prune_shortlist.py 100 $dir/vocab.txt |
   pigz >$output_dir/lex.s2t.pruned.gz
 
 echo "### Deleting tmp dir"
