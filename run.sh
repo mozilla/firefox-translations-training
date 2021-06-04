@@ -120,6 +120,9 @@ test -e ${original}/mono.${TRG}.gz ||
 . ./pipeline/alignment/generate-alignment-and-shortlist.sh ${filtered}/corpus ${teacher_dir}/vocab.spm $align_dir
 
 # train student
+mkdir -p $student_dir
+# use teacher's vocab, otherwise alignments won't work
+cp $teacher_dir/vocab.spm $student_dir/
 . ./pipeline/train/train-student.sh
 . ./pipeline/train/eval.sh $student_dir
 
