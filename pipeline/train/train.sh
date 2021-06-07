@@ -37,7 +37,7 @@ echo "### Training a model: ${model_dir}"
 
 "${MARIAN}/marian" \
   --model "${model_dir}/model.npz" \
-  -c "${model_config} ${training_config}" \
+  -c "${model_config}" "${training_config}" \
   --train-sets "${train_set_prefix}".{"${src}","${trg}"}.gz \
   -T "${TMP}/train" \
   --shuffle-in-ram \

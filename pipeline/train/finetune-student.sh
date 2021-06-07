@@ -3,23 +3,34 @@
 # Finetune a student model.
 #
 # Usage:
-#   bash finetune-student.sh
+#   bash finetune-student.sh dir corpus devset student alignment
 #
 
 set -x
 set -euo pipefail
 
-mkdir -p ${MODELS_DIR}/$SRC-$TRG/student-finetuned
-cp ${MODELS_DIR}/$SRC-$TRG/student/model.npz.best-bleu-detok.npz ${MODELS_DIR}/$SRC-$TRG/student-finetuned/model.npz
+dir=$1
+corpus=$2
+devset=$3
+student=$4
+alignment=$5
 
-bash ./train.sh \
+test -v SRC
+test -v TRG
+test -v WORKDIR
+
+mkdir -p "${dir}"
+cp ${student}/model.npz.best-bleu-detok.npz ${dir}/model.npz
+cp ${student}/vocab.spm ${dir}/
+
+bash ${WORKDIR}/pipeline/train/train.sh \
   ${WORKDIR}/pipeline/train/configs/model/student.tiny11.yml \
   ${WORKDIR}/pipeline/train/configs/training/student.finetune.yml \
   $SRC \
   $TRG \
-  ${DATA_DIR}/filtered/corpus \
-  ${DATA_DIR}/original/devset \
-  ${MODELS_DIR}/$SRC-$TRG/student-finetuned \
-  --guided-alignment ${DATA_DIR}/alignment/corpus.aln.gz
+  ${corpus} \
+  ${devset} \
+  ${dir} \
+  --guided-alignment ${alignment}/corpus.aln.gz
 
 
