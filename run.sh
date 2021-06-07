@@ -142,4 +142,8 @@ test -e ${original}/mono.${TRG}.gz ||
 . ./pipeline/train/eval.sh $student_finetuned_dir
 
 # quantize
-. ./pipeline/quantize/quantize.sh "${student_finetuned_dir}" "${speed}"
+. ./pipeline/quantize/quantize.sh \
+  "${student_finetuned_dir}" \
+  "${align_dir}/lex.s2t.pruned.gz" \
+  "${original}/devset.${SRC}.gz" \
+  "${speed}"
