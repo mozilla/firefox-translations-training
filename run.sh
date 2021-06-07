@@ -147,3 +147,4 @@ test -e ${original}/mono.${TRG}.gz ||
   "${align_dir}/lex.s2t.pruned.gz" \
   "${original}/devset.${SRC}.gz" \
   "${speed}"
+. ./pipeline/quantize/eval.sh "${speed}" "${align_dir}/lex.s2t.pruned.gz"

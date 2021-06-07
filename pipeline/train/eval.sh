@@ -3,7 +3,7 @@
 # Evaluate a model.
 #
 # Usage:
-#   bash eval.sh model_dir [src] [trg] [config] [marian_args...]
+#   bash eval.sh model_dir [src] [trg]
 #
 
 set -x
@@ -17,7 +17,8 @@ test -v TEST_DATASETS
 model_dir=$1
 src="${2:-$SRC}"
 trg="${3:-$TRG}"
-config="${4:-${model_dir}/model.npz.best-bleu-detok.npz.decoder.yml}"
+
+config="${model_dir}/model.npz.best-bleu-detok.npz.decoder.yml"
 eval_dir=${model_dir}/eval
 
 echo "### Checking model files"
@@ -35,8 +36,7 @@ for prefix in ${TEST_DATASETS}; do
       --quiet \
       --quiet-translation \
       --log "${eval_dir}/${prefix}.log" \
-      -d "${GPUS}" \
-      "${@:5}" |
+      -d "${GPUS}"
     tee "${eval_dir}/${prefix}.${trg}" |
     sacrebleu -d -t "${prefix}" -l "${src}-${trg}" |
     tee "${eval_dir}/${prefix}.${trg}.bleu"

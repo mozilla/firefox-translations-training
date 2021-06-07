@@ -25,6 +25,8 @@ mkdir -p "${output_dir}"
 model="${model_dir}/model-finetune.npz.best-bleu-detok.npz"
 vocab="${model_dir}/vocab.spm"
 
+cp "${vocab}" "${output_dir}"
+
 echo "### Decoding a sample test set in order to get typical quantization values"
 test -s "${output_dir}/quantmults" ||
   "${MARIAN}"/marian-decoder \
@@ -33,12 +35,10 @@ test -s "${output_dir}/quantmults" ||
     -c "${WORKDIR}/pipeline/quantize/decoder.yml" \
     -i "${devtest_src}" \
     -o "${output_dir}/output.${TRG}" \
-    -w "${WORKSPACE}" \
-    -d "${GPUS}" \
-    --shortlist "${shortlist}" 50 50 \
+    --shortlist "${shortlist}" false \
     --quiet \
     --quiet-translation \
-    --log "${output_dir}/cpu.newstest2013.log" \
+    --log "${output_dir}/cpu.output.log" \
     --dump-quantmult \
     2>"${output_dir}/quantmults"
 
@@ -50,19 +50,12 @@ test -s "${output_dir}/model.alphas.npz" ||
     "${output_dir}/model.alphas.npz"
 
 echo "### Converting"
-test -s "${output_dir}/model.intgemm.alphas.bin" ||
+res_model="${output_dir}/model.intgemm.alphas.bin"
+test -s  "${res_model}" ||
   "$MARIAN"/marian-conv \
     -f "${output_dir}/model.alphas.npz" \
-    -t "${output_dir}/model.intgemm.alphas.bin" \
+    -t "${res_model}" \
     --gemm-type intgemm8
 
-echo "### Evaluation on CPU"
-bash "${WORKDIR}"/pipeline/train/eval.sh \
-  "${output_dir}" \
-  "${SRC}" \
-  "${TRG}" \
-  "${WORKDIR}/pipeline/quantize/decoder.yml" \
-  -v "${vocab}" "${vocab}" \
-  -m "${output_dir}/model.intgemm.alphas.bin" \
-  --shortlist "${shortlist}" 50 50 \
-  --int8shiftAlphaAll
+echo "### The result models is saved to ${res_model}"
+
