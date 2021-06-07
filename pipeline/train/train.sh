@@ -25,33 +25,33 @@ test -v MARIAN
 test -v WORKSPACE
 test -v TMP
 
-test -e ${train_set_prefix}.${src}.gz || exit 1
-test -e ${train_set_prefix}.${trg}.gz || exit 1
-test -e ${valid_set_prefix}.${src}.gz || exit 1
-test -e ${valid_set_prefix}.${trg}.gz || exit 1
+test -e "${train_set_prefix}.${src}.gz" || exit 1
+test -e "${train_set_prefix}.${trg}.gz" || exit 1
+test -e "${valid_set_prefix}.${src}.gz" || exit 1
+test -e "${valid_set_prefix}.${trg}.gz" || exit 1
 
 mkdir -p tmp
-mkdir -p $model_dir
+mkdir -p "${model_dir}"
 
 echo "### Training a model: ${model_dir}"
 
-$MARIAN/marian \
-  --model ${model_dir}/model.npz \
-  -c ${model_config} ${training_config} \
-  --train-sets ${train_set_prefix}.{$src,$trg}.gz \
-  -T ${TMP}/train \
+"${MARIAN}/marian" \
+  --model "${model_dir}/model.npz" \
+  -c "${model_config} ${training_config}" \
+  --train-sets "${train_set_prefix}".{"${src}","${trg}"}.gz \
+  -T "${TMP}/train" \
   --shuffle-in-ram \
-  --vocabs ${model_dir}/vocab.spm ${model_dir}/vocab.spm \
-  -w $WORKSPACE \
-  --devices $GPUS \
+  --vocabs "${model_dir}/vocab.spm" "${model_dir}/vocab.spm" \
+  -w "${WORKSPACE}" \
+  --devices "${GPUS}" \
   --sync-sgd \
   --valid-metrics bleu-detok ce-mean-words perplexity translation \
-  --valid-sets ${valid_set_prefix}.{$src,$trg}.gz \
-  --valid-translation-output ${model_dir}/devset.out \
+  --valid-sets "${valid_set_prefix}".{"${src}","${trg}"}.gz \
+  --valid-translation-output "${model_dir}/devset.out" \
   --quiet-translation \
   --overwrite \
   --keep-best \
-  --log ${model_dir}/train.log \
-  --valid-log ${model_dir}/valid.log "${@:8}"
+  --log "${model_dir}/train.log" \
+  --valid-log "${model_dir}/valid.log" "${@:8}"
 
 echo "### Model training is completed: ${model_dir}"
