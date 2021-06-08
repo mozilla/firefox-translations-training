@@ -36,7 +36,7 @@ for prefix in ${TEST_DATASETS}; do
       --quiet \
       --quiet-translation \
       --log "${eval_dir}/${prefix}.log" \
-      -d "${GPUS}"
+      -d "${GPUS}" |
     tee "${eval_dir}/${prefix}.${trg}" |
     sacrebleu -d -t "${prefix}" -l "${src}-${trg}" |
     tee "${eval_dir}/${prefix}.${trg}.bleu"

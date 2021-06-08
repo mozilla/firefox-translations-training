@@ -35,7 +35,7 @@ for prefix in ${TEST_DATASETS}; do
       --quiet-translation \
       --log "${eval_dir}/${prefix}.log" \
       --shortlist "${shortlist}" false \
-      --int8shiftAlphaAll
+      --int8shiftAlphaAll |
     tee "${eval_dir}/${prefix}.${TRG}" |
     sacrebleu -d -t "${prefix}" -l "${SRC}-${TRG}" |
     tee "${eval_dir}/${prefix}.${TRG}.bleu"
