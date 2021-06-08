@@ -22,7 +22,7 @@ output_dir=${4}
 
 mkdir -p "${output_dir}"
 
-model="${model_dir}/model-finetune.npz.best-bleu-detok.npz"
+model="${model_dir}/model.npz.best-bleu-detok.npz"
 vocab="${model_dir}/vocab.spm"
 
 cp "${vocab}" "${output_dir}"
@@ -51,11 +51,10 @@ test -s "${output_dir}/model.alphas.npz" ||
 
 echo "### Converting"
 res_model="${output_dir}/model.intgemm.alphas.bin"
-test -s  "${res_model}" ||
+test -s "${res_model}" ||
   "$MARIAN"/marian-conv \
     -f "${output_dir}/model.alphas.npz" \
     -t "${res_model}" \
     --gemm-type intgemm8
 
 echo "### The result models is saved to ${res_model}"
-

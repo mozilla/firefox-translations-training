@@ -40,6 +40,7 @@ set -euo pipefail
 #│   │   ├ student
 #│   │   ├ student-finetuned
 #│   │   ├ speed
+#│   │   ├ exported
 #│   ├ en-ru
 #│   │   ├ s2s
 
@@ -68,6 +69,7 @@ student_finetuned_dir=${MODELS_DIR}/$SRC-$TRG/student-finetuned
 teacher_dir=${MODELS_DIR}/$SRC-$TRG/teacher
 s2s=${MODELS_DIR}/$TRG-$SRC/s2s
 speed=${MODELS_DIR}/$SRC-$TRG/speed
+exported=${MODELS_DIR}/$SRC-$TRG/exported
 
 # download data
 . ./pipeline/data/download-corpus.sh ${original}/corpus $TRAIN_DATASETS
@@ -90,7 +92,8 @@ test -e ${original}/mono.${TRG}.gz ||
 
 # augment corpus with back translations
 . ./pipeline/translate/translate-mono.sh ${clean}/mono.$TRG.gz ${s2s} ${DATA_DIR}/translated/mono.$SRC.gz
-. ./pipeline/utils/merge-corpus.sh ${DATA_DIR}/translated/mono.$SRC.gz \
+. ./pipeline/utils/merge-corpus.sh \
+  ${DATA_DIR}/translated/mono.$SRC.gz \
   ${DATA_DIR}/clean/corpus.$SRC.gz \
   ${clean}/mono.$TRG.gz \
   ${DATA_DIR}/clean/corpus.$TRG.gz \
@@ -148,3 +151,6 @@ test -e ${original}/mono.${TRG}.gz ||
   "${original}/devset.${SRC}.gz" \
   "${speed}"
 . ./pipeline/quantize/eval.sh "${speed}" "${align_dir}/lex.s2t.pruned.gz"
+
+#export
+. ./pipeline/quantize/export.sh "${speed}" "${align_dir}/lex.s2t.pruned.gz" "${exported}"
