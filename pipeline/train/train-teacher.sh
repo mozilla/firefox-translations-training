@@ -1,4 +1,4 @@
-#!/bin/bash -v
+#!/bin/bash
 ##
 # Train a teacher model.
 #
@@ -9,11 +9,11 @@
 set -x
 set -euo pipefail
 
+echo "###### Training a teacher model"
 
-dir=${1}
-corpus=${2}
-devset=${3}
-
+dir=$1
+corpus=$2
+devset=$3
 
 test -v SRC
 test -v TRG
@@ -28,3 +28,4 @@ bash "${WORKDIR}/pipeline/train/train.sh" \
   "${devset}" \
   "${dir}"
 
+echo "###### Training a teacher model"

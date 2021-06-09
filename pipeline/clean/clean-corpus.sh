@@ -9,13 +9,15 @@
 set -x
 set -euo pipefail
 
+echo "###### Cleaning corpus"
+
 export PYTHONPATH="${CLEAN_TOOLS}"
 test -v SRC
 test -v TRG
 test -v CLEAN_TOOLS
 
-data=${1}
-output=${2}
+data=$1
+output=$2
 
 mkdir -p "$(dirname "${output}")"
 
@@ -87,6 +89,8 @@ test -s "${output}.${SRC}.gz" || exit 1
 test -s "${output}.${TRG}.gz" || exit 1
 
 echo "### Remove ${data} from intermediate steps"
-rm -f "${output}.*.nrm.gz" "${output}.*.nrm.uniq.gz" "${output}.*.langid.gz" "${output}.*.rule-based.gz"
+rm -f "${output}".*.nrm.gz "${output}".*.nrm.uniq.gz "${output}".*.langid.gz "${output}".*.rule-based.gz
 
 echo "### Clean data is written to  ${output}"
+
+echo "###### Done: Cleaning corpus"

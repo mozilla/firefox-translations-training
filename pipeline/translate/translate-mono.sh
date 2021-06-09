@@ -5,13 +5,15 @@
 set -x
 set -euo pipefail
 
+echo "###### Translating monolingual data"
+
 test -v GPUS
 test -v MARIAN
 test -v WORKSPACE
 
-mono_path=${1}
-model_dir=${2}
-output_path=${3}
+mono_path=$1
+model_dir=$2
+output_path=$3
 
 config="${model_dir}/model.npz.best-ce-mean-words.npz.decoder.yml"
 decoder_config="${WORKDIR}/pipeline/translate/decoder.yml"
@@ -19,10 +21,10 @@ tmp_dir=$(dirname "${output_path}")/tmp
 
 mkdir -p "${tmp_dir}"
 
-# Split the corpus into smaller chunks.
+echo "### Splitting the corpus into smaller chunks"
 test -s "${tmp_dir}/file.00" || pigz -dc "${mono_path}" | split -d -l 500000 - "${tmp_dir}/file."
 
-# Translate source sentences with Marian.
+echo "### Translate source sentences with Marian"
 # This can be parallelized across several GPU machines.
 for name in $(ls "${tmp_dir}" | grep -E "^file\.[0-9]+$" | shuf); do
   prefix="${tmp_dir}/${name}"
@@ -37,11 +39,10 @@ for name in $(ls "${tmp_dir}" | grep -E "^file\.[0-9]+$" | shuf); do
       -w "${WORKSPACE}"
 done
 
-# Collect translations.
+echo "### Collecting translations"
 cat "${tmp_dir}"/file.*.out | pigz >"${output_path}"
 
-# Source and artificial target files must have the same number of sentences,
-# otherwise collect the data manually.
+echo "### Comparing number of sentences in source and artificial target files"
 src_len=$(pigz -dc "${mono_path}" | wc -l)
 trg_len=$(pigz -dc "${output_path}" | wc -l)
 if [ "${src_len}" != "${trg_len}" ]; then
@@ -50,3 +51,5 @@ if [ "${src_len}" != "${trg_len}" ]; then
 fi
 
 rm -rf "${tmp_dir}"
+
+echo "###### Done: Translating monolingual data"

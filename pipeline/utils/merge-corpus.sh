@@ -9,12 +9,14 @@
 set -x
 set -euo pipefail
 
-src1=${1}
-src2=${2}
-trg1=${3}
-trg2=${4}
-res_src=${5}
-res_trg=${6}
+echo "###### Merging datasets into a corpus"
+
+src1=$1
+src2=$2
+trg1=$3
+trg2=$4
+res_src=$5
+res_trg=$6
 
 mkdir -p "$(dirname "${res_src}")"
 mkdir -p "$(dirname "${res_trg}")"
@@ -27,3 +29,5 @@ if [ "${src_len}" != "${trg_len}" ]; then
   echo "Error: length of ${res_src} ${src_len} is different from ${res_trg} ${trg_len}"
   exit 1
 fi
+
+echo "###### Done: Merging datasets into a corpus"

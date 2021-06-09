@@ -1,17 +1,19 @@
-#!/bin/bash -v
+#!/bin/bash
 ##
 # Train a shallow s2s model.
 #
 # Usage:
-#   bash train-teacher.sh  dir corpus devset [src] [trg]
+#   bash train-s2s.sh  dir corpus devset [src] [trg]
 #
 
 set -x
 set -euo pipefail
 
-dir=${1}
-corpus=${2}
-devset=${3}
+echo "###### Training s2s model"
+
+dir=$1
+corpus=$2
+devset=$3
 src=${4:-${SRC}}
 trg=${5:-${TRG}}
 
@@ -25,3 +27,5 @@ bash "${WORKDIR}/pipeline/train/train.sh" \
   "${corpus}" \
   "${devset}" \
   "${dir}"
+
+echo "###### Done: Training s2s model"

@@ -9,13 +9,14 @@
 set -x
 set -euo pipefail
 
+echo "###### Training an ensemble of teacher models"
+
 dir=${1}
 corpus=${2}
 devset=${3}
 n=${4}
 
-#TODO: parallelize across multiple machines
-
+# This can be parallelized across multiple machines
 for i in $(seq 1 ${n}); do
   bash "${WORKDIR}/pipeline/train/train.sh" \
     "${WORKDIR}/pipeline/train/configs/model/teacher.transformer.yml" \
@@ -26,3 +27,5 @@ for i in $(seq 1 ${n}); do
     "${devset}" \
     "${dir}${i}"
 done
+
+echo "###### Done: Training an ensemble of teacher models"

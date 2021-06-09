@@ -9,12 +9,14 @@
 set -x
 set -euo pipefail
 
+echo "###### Evaluation of a model"
+
 test -v GPUS
 test -v MARIAN
 test -v WORKSPACE
 test -v TEST_DATASETS
 
-model_dir=${1}
+model_dir=$1
 src="${2:-${SRC}}"
 trg="${3:-${TRG}}"
 
@@ -43,3 +45,6 @@ for prefix in ${TEST_DATASETS}; do
 
   test -e "${eval_dir}/${prefix}.${trg}.bleu" || exit 1
 done
+
+
+echo "###### Done: Evaluation of a model"

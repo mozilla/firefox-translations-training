@@ -1,4 +1,4 @@
-#!/bin/bash -v
+#!/bin/bash
 ##
 # Train a student model.
 #
@@ -9,11 +9,13 @@
 set -x
 set -euo pipefail
 
-dir=${1}
-corpus=${2}
-devset=${3}
-teacher=${4}
-alignment=${5}
+echo "###### Training a student model"
+
+dir=$1
+corpus=$2
+devset=$3
+teacher=$4
+alignment=$5
 
 test -v SRC
 test -v TRG
@@ -32,5 +34,7 @@ bash "${WORKDIR}/pipeline/train/train.sh" \
   "${devset}" \
   "${dir}" \
   --guided-alignment "${alignment}/corpus.aln.gz"
+
+echo "###### Done: Training a student model"
 
 

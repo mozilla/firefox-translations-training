@@ -9,16 +9,18 @@
 set -x
 set -euo pipefail
 
+echo "###### Quantizing a model"
+
 test -v MARIAN
 test -v BIN
 test -v SRC
 test -v TRG
 test -v WORKDIR
 
-model_dir=${1}
-shortlist=${2}
-devtest_src=${3}
-output_dir=${4}
+model_dir=$1
+shortlist=$2
+devtest_src=$3
+output_dir=$4
 
 mkdir -p "${output_dir}"
 
@@ -58,3 +60,5 @@ test -s "${res_model}" ||
     --gemm-type intgemm8
 
 echo "### The result models is saved to ${res_model}"
+
+echo "###### Done: Quantizing a model"

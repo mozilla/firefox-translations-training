@@ -9,13 +9,15 @@
 set -x
 set -euo pipefail
 
+echo "###### Evaluation of a quantized model"
+
 test -v MARIAN
 test -v TEST_DATASETS
 test -v SRC
 test -v TRG
 
-model_dir=${1}
-shortlist=${2}
+model_dir=$1
+shortlist=$2
 
 eval_dir="${model_dir}/eval"
 vocab="${model_dir}/vocab.spm"
@@ -42,3 +44,5 @@ for prefix in ${TEST_DATASETS}; do
 
   test -e "${eval_dir}/${prefix}.${TRG}.bleu" || exit 1
 done
+
+echo "###### Done: Evaluation of a quantized model"
