@@ -14,12 +14,12 @@ test -v MARIAN
 test -v WORKSPACE
 test -v TEST_DATASETS
 
-model_dir=$1
-src="${2:-$SRC}"
-trg="${3:-$TRG}"
+model_dir=${1}
+src="${2:-${SRC}}"
+trg="${3:-${TRG}}"
 
 config="${model_dir}/model.npz.best-bleu-detok.npz.decoder.yml"
-eval_dir=${model_dir}/eval
+eval_dir="${model_dir}/eval"
 
 echo "### Checking model files"
 test -e "${config}" || exit 1
@@ -30,7 +30,7 @@ for prefix in ${TEST_DATASETS}; do
   echo "### Evaluating ${prefix} ${src}-${trg}"
   sacrebleu -t "${prefix}" -l "${src}-${trg}" --echo src |
     tee "${eval_dir}/${prefix}.${src}" |
-    "$MARIAN"/marian-decoder \
+    "${MARIAN}"/marian-decoder \
       -c "${config}" \
       -w "${WORKSPACE}" \
       --quiet \

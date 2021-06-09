@@ -15,42 +15,42 @@ test -v GPUS
 test -v SRC
 test -v TRG
 
-model_dir=$1
-corpus_prefix=$2
-output_prefix=$3
+model_dir=${1}
+corpus_prefix=${2}
+output_prefix=${3}
 
 # Part of the data to be removed (0.05 is 5%)
 remove=0.05
-model=${model_dir}/model.npz.best-ce-mean-words.npz
-vocab=${model_dir}/vocab.spm
-dir=${TMP}/scored
+model="${model_dir}/model.npz.best-ce-mean-words.npz"
+vocab="${model_dir}/vocab.spm"
+dir="${TMP}/scored"
 mkdir -p "${dir}"
 
-test -s "${dir}/corpus.${TRG}" || pigz -dc "$corpus_prefix.${TRG}.gz" >"${dir}/corpus.${TRG}"
-test -s ${dir}/corpus.${SRC} || pigz -dc $corpus_prefix.${SRC}.gz >${dir}/corpus.${SRC}
+test -s "${dir}/corpus.${TRG}" || pigz -dc "${corpus_prefix}.${TRG}.gz" >"${dir}/corpus.${TRG}"
+test -s "${dir}/corpus.${SRC}" || pigz -dc "${corpus_prefix}.${SRC}.gz" >"${dir}/corpus.${SRC}"
 
-test -s $dir/scores.txt ||
-  ${MARIAN}/marian-scorer -m $model -v $vocab $vocab -t ${dir}/corpus.${TRG} ${dir}/corpus.${SRC}.gz \
+test -s "${dir}/scores.txt" ||
+  "${MARIAN}/marian-scorer" -m "${model}" -v "${vocab}" "${vocab}" -t "${dir}/corpus.${TRG}" "${dir}/corpus.${SRC}.gz" \
     --mini-batch 32 --mini-batch-words 1500 --maxi-batch 1000 --max-length 250 --max-length-crop \
-    -d ${GPUS} -w ${WORKSPACE} --log $dir/scores.txt.log >$dir/scores.txt
+    -d "${GPUS}" -w "${WORKSPACE}" --log "${dir}/scores.txt.log" >"${dir}/scores.txt"
 
-test -s $dir/scores.nrm.txt ||
-  paste $dir/scores.txt ${dir}/corpus.${TRG} |
+test -s "${dir}/scores.nrm.txt" ||
+  paste "${dir}/scores.txt" "${dir}/corpus.${TRG}" |
   parallel --no-notice --pipe -k -j "$(nproc)" --block 50M "python ${clean_tools}/normalize-scores.py" |
-  cut -f1 >$dir/scores.nrm.txt
+  cut -f1 >"${dir}/scores.nrm.txt"
 
-test -s $dir/sorted.gz ||
+test -s "${dir}/sorted.gz" ||
   buffer_size="$(echo "$(grep MemTotal /proc/meminfo | awk '{print $2}')"*0.9 | bc | cut -f1 -d.)" &&
-  paste $dir/scores.nrm.txt ${dir}/corpus.${SRC} ${dir}/corpus.${TRG} |
-  LC_ALL=C sort -n -k1,1 -S ${buffer_size}K |
-  pigz >$dir/sorted.gz
+  paste "${dir}/scores.nrm.txt" "${dir}/corpus.${SRC}" "${dir}/corpus.${TRG}" |
+  LC_ALL=C sort -n -k1,1 -S "${buffer_size}K" |
+  pigz >"${dir}/sorted.gz"
 
-test -s $dir/best.gz ||
-  lines=$(pigz -dc $dir/sorted.gz | wc -l) &&
+test -s "${dir}/best.gz" ||
+  lines=$(pigz -dc "${dir}/sorted.gz" | wc -l) &&
   startline=$(echo ${lines}*${remove} | bc | cut -f1 -d.) &&
-  pigz -dc $dir/sorted.gz | tail -n +${startline} | cut -f2,3 | pigz >$dir/best.gz
+  pigz -dc "${dir}/sorted.gz" | tail -n +"${startline}" | cut -f2,3 | pigz >"${dir}/best.gz"
 
-pigz -dc $dir/best.gz | cut -f1 | pigz >$output_prefix.$SRC.gz
-pigz -dc $dir/best.gz | cut -f2 | pigz >$output_prefix.$TRG.gz
+pigz -dc "${dir}/best.gz" | cut -f1 | pigz >"${output_prefix}.${SRC}.gz"
+pigz -dc "${dir}/best.gz" | cut -f2 | pigz >"${output_prefix}.${TRG}.gz"
 
-rm -rf $dir
+rm -rf "${dir}"

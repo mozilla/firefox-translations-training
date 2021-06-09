@@ -17,8 +17,8 @@ test -v TRG
 model_dir=${1}
 shortlist=${2}
 
-eval_dir=${model_dir}/eval
-vocab=${model_dir}/vocab.spm
+eval_dir="${model_dir}/eval"
+vocab="${model_dir}/vocab.spm"
 
 mkdir -p "${eval_dir}"
 
@@ -27,7 +27,7 @@ for prefix in ${TEST_DATASETS}; do
   echo "### Evaluating ${prefix} ${SRC}-${TRG}"
   sacrebleu -t "${prefix}" -l "${SRC}-${TRG}" --echo src |
     tee "${eval_dir}/${prefix}.${SRC}" |
-    "$MARIAN"/marian-decoder \
+    "${MARIAN}"/marian-decoder \
       -m "${model_dir}/model.intgemm.alphas.bin" \
       -v "${vocab}" "${vocab}" \
       -c "${WORKDIR}/pipeline/quantize/decoder.yml" \

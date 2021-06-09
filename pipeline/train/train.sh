@@ -12,13 +12,13 @@ set -euo pipefail
 
 #TODO too many positional args here
 
-model_config=$1
-training_config=$2
-src=$3
-trg=$4
-train_set_prefix=$5
-valid_set_prefix=$6
-model_dir=$7
+model_config=${1}
+training_config=${2}
+src=${3}
+trg=${4}
+train_set_prefix=${5}
+valid_set_prefix=${6}
+model_dir=${7}
 
 test -v GPUS
 test -v MARIAN

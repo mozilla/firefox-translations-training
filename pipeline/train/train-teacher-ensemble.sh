@@ -9,20 +9,20 @@
 set -x
 set -euo pipefail
 
-dir=$1
-corpus=$2
-devset=$3
-n=$4
+dir=${1}
+corpus=${2}
+devset=${3}
+n=${4}
 
 #TODO: parallelize across multiple machines
 
 for i in $(seq 1 ${n}); do
-  bash ${WORKDIR}/pipeline/train/train.sh \
-    ${WORKDIR}/pipeline/train/configs/model/teacher.transformer.yml \
-    ${WORKDIR}/pipeline/train/configs/training/teacher.transformer-ens.train.yml \
-    ${SRC} \
-    ${TRG} \
-    ${corpus} \
-    ${devset} \
+  bash "${WORKDIR}/pipeline/train/train.sh" \
+    "${WORKDIR}/pipeline/train/configs/model/teacher.transformer.yml" \
+    "${WORKDIR}/pipeline/train/configs/training/teacher.transformer-ens.train.yml" \
+    "${SRC}" \
+    "${TRG}" \
+    "${corpus}" \
+    "${devset}" \
     "${dir}${i}"
 done

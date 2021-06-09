@@ -9,28 +9,28 @@
 set -x
 set -euo pipefail
 
-dir=$1
-corpus=$2
-devset=$3
-teacher=$4
-alignment=$5
+dir=${1}
+corpus=${2}
+devset=${3}
+teacher=${4}
+alignment=${5}
 
 test -v SRC
 test -v TRG
 test -v WORKDIR
 
-mkdir -p ${dir}
+mkdir -p "${dir}"
 # use teacher's vocab, otherwise alignments won't work
-cp   ${teacher}/vocab.spm ${dir}/
+cp   "${teacher}/vocab.spm" "${dir}/"
 
-bash ${WORKDIR}/pipeline/train/train.sh \
-  ${WORKDIR}/pipeline/train/configs/model/student.tiny11.yml \
-  ${WORKDIR}/pipeline/train/configs/training/student.train.yml \
-  $SRC \
-  $TRG \
-  ${corpus} \
-  ${devset} \
-  ${dir} \
-  --guided-alignment ${alignment}/corpus.aln.gz
+bash "${WORKDIR}/pipeline/train/train.sh" \
+  "${WORKDIR}/pipeline/train/configs/model/student.tiny11.yml" \
+  "${WORKDIR}/pipeline/train/configs/training/student.train.yml" \
+  "${SRC}" \
+  "${TRG}" \
+  "${corpus}" \
+  "${devset}" \
+  "${dir}" \
+  --guided-alignment "${alignment}/corpus.aln.gz"
 
 

@@ -52,7 +52,7 @@ test -s "${output_dir}/model.alphas.npz" ||
 echo "### Converting"
 res_model="${output_dir}/model.intgemm.alphas.bin"
 test -s "${res_model}" ||
-  "$MARIAN"/marian-conv \
+  "${MARIAN}"/marian-conv \
     -f "${output_dir}/model.alphas.npz" \
     -t "${res_model}" \
     --gemm-type intgemm8
