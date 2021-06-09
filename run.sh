@@ -3,50 +3,53 @@
 # Runs the whole pipeline end to end
 #
 # Usage:
+#   Run from the current directory
 #   bash run.sh
 #
 
 set -x
 set -euo pipefail
 
-#ru-en
+# Directories structure
+#
 #├ data
-#│   ├ original
-#│   │   ├ corpus.ru.gz
-#│   │   ├ corpus.en.gz
-#│   │   ├ mono.ru.gz
-#│   │   ├ mono.en.gz
-#│   │   ├ devset.ru.gz
-#│   │   └ devset.en.gz
-#│   ├ clean
-#│   │   ├ corpus.ru.gz
-#│   │   ├ corpus.en.gz
-#│   │   ├ mono.ru.gz
-#│   │   ├ mono.en.gz
-#│   ├ translated
-#│   │   ├ mono.ru.gz
-#│   │   ├ mono.en.gz
-#│   ├ augmented
-#│   │   ├ corpus.ru.gz
-#│   │   ├ corpus.en.gz
-#│   ├ alignment
-#│   │   ├ corpus.aln.gz
-#│   │   ├ lex.s2t.pruned.gz
-#│   ├ merged
-#│   │   ├ corpus.ru.gz
-#│   │   ├ corpus.en.gz
-#│   ├ filtered
-#│   │   ├ corpus.ru.gz
-#│   │   ├ corpus.en.gz
-#├ models
+#│   └ ru-en
+#│      ├ original
+#│      │   ├ corpus.ru.gz
+#│      │   ├ corpus.en.gz
+#│      │   ├ mono.ru.gz
+#│      │   ├ mono.en.gz
+#│      │   ├ devset.ru.gz
+#│      │   └ devset.en.gz
+#│      ├ clean
+#│      │   ├ corpus.ru.gz
+#│      │   ├ corpus.en.gz
+#│      │   ├ mono.ru.gz
+#│      │   └ mono.en.gz
+#│      ├ translated
+#│      │   ├ mono.ru.gz
+#│      │   └ mono.en.gz
+#│      ├ augmented
+#│      │   ├ corpus.ru.gz
+#│      │   └ corpus.en.gz
+#│      ├ alignment
+#│      │   ├ corpus.aln.gz
+#│      │   └ lex.s2t.pruned.gz
+#│      ├ merged
+#│      │   ├ corpus.ru.gz
+#│      │   └ corpus.en.gz
+#│      └ filtered
+#│          ├ corpus.ru.gz
+#│          └ corpus.en.gz
+#├ model
 #│   ├ ru-en
 #│   │   ├ teacher
 #│   │   ├ student
 #│   │   ├ student-finetuned
 #│   │   ├ speed
-#│   │   ├ exported
+#│   │   └ exported
 #│   ├ en-ru
-#│   │   ├ s2s
+#│   │   └ s2s
 
 echo "###### read config "
 set -a
@@ -60,14 +63,15 @@ source /root/miniconda3/etc/profile.d/conda.sh
 conda activate bergamot-training-env
 
 echo "######  set common variables"
-echo "######  data"
-original="${DATA_DIR}/original"
-clean="${DATA_DIR}/clean"
-augmented="${DATA_DIR}/augmented"
-merged="${DATA_DIR}/merged"
-filtered="${DATA_DIR}/filtered"
-align_dir="${DATA_DIR}/alignment"
-echo "######  models"
+# data
+original="${DATA_DIR}/${SRC}-${TRG}/original"
+clean="${DATA_DIR}/${SRC}-${TRG}/clean"
+augmented="${DATA_DIR}/${SRC}-${TRG}/augmented"
+translated="${DATA_DIR}/${SRC}-${TRG}/translated"
+merged="${DATA_DIR}/${SRC}-${TRG}/merged"
+filtered="${DATA_DIR}/${SRC}-${TRG}/filtered"
+align_dir="${DATA_DIR}/${SRC}-${TRG}/alignment"
+# models
 student_dir="${MODELS_DIR}/${SRC}-${TRG}/student"
 student_finetuned_dir="${MODELS_DIR}/${SRC}-${TRG}/student-finetuned"
 teacher_dir="${MODELS_DIR}/${SRC}-${TRG}/teacher"
@@ -85,7 +89,7 @@ test -n "${MONO_DATASETS_TRG}" ||
 
 echo "######  clean data"
 . ./pipeline/clean/clean-corpus.sh "${original}/corpus" "${clean}/corpus"
-test -e "${DATA_DIR}/original/mono.${SRC}.gz" ||
+test -e "${original}/mono.${SRC}.gz" ||
   . ./pipeline/clean/clean-mono.sh "${SRC}" "${original}/mono" "${clean}/mono"
 test -e "${original}/mono.${TRG}.gz" ||
   . ./pipeline/clean/clean-mono.sh "${TRG}" "${original}/mono" "${clean}/mono"
@@ -95,12 +99,12 @@ echo "######  train backward model"
 . ./pipeline/train/eval.sh "${s2s}" "${TRG}" "${SRC}"
 
 echo "######  augment corpus with back translations"
-. ./pipeline/translate/translate-mono.sh "${clean}/mono.${TRG}.gz" "${s2s}" "${DATA_DIR}/translated/mono.${SRC}.gz"
+. ./pipeline/translate/translate-mono.sh "${clean}/mono.${TRG}.gz" "${s2s}" "${translated}/mono.${SRC}.gz"
 . ./pipeline/utils/merge-corpus.sh \
-  "${DATA_DIR}/translated/mono.${SRC}.gz" \
-  "${DATA_DIR}/clean/corpus.${SRC}.gz" \
+  "${translated}/mono.${SRC}.gz" \
+  "${clean}/corpus.${SRC}.gz" \
   "${clean}/mono.${TRG}.gz" \
-  "${DATA_DIR}/clean/corpus.${TRG}.gz" \
+  "${clean}/corpus.${TRG}.gz" \
   "${augmented}/corpus.${SRC}.gz" \
   "${augmented}/corpus.${TRG}.gz"
 
@@ -111,16 +115,16 @@ echo "######  train teacher"
 echo "######  translate with teacher"
 . ./pipeline/translate/translate-corpus.sh "${clean}/corpus.${SRC}.gz" \
   "${clean}/corpus.${TRG}.gz" \
-  "${teacher_dir}" "${DATA_DIR}/translated/corpus.${TRG}.gz"
+  "${teacher_dir}" "${translated}/corpus.${TRG}.gz"
 
 . ./pipeline/translate/translate-mono.sh "${clean}/mono.${SRC}.gz" \
   "${teacher_dir}" \
-  "${DATA_DIR}/translated/mono.${TRG}.gz"
+  "${translated}/mono.${TRG}.gz"
 
 . ./pipeline/utils/merge-corpus.sh "${clean}/corpus.${SRC}.gz" \
   "${clean}/mono.${SRC}.gz" \
-  "${DATA_DIR}/translated/corpus.${TRG}.gz" \
-  "${DATA_DIR}/translated/mono.${TRG}.gz" \
+  "${translated}/corpus.${TRG}.gz" \
+  "${translated}/mono.${TRG}.gz" \
   "${merged}/corpus.${SRC}.gz" \
   "${merged}/corpus.${TRG}.gz"
 
@@ -128,7 +132,8 @@ echo "######  cross entropy filtering"
 . ./pipeline/clean/ce-filter.sh "${s2s}" "${merged}/corpus" "${filtered}/corpus"
 
 echo "######  train word alignment and lexical shortlists"
-. ./pipeline/alignment/generate-alignment-and-shortlist.sh "${filtered}/corpus" "${teacher_dir}/vocab.spm" "${align_dir}"
+. ./pipeline/alignment/generate-alignment-and-shortlist.sh "${filtered}/corpus" \
+  "${teacher_dir}/vocab.spm" "${align_dir}"
 
 echo "######  train student"
 . ./pipeline/train/train-student.sh \
