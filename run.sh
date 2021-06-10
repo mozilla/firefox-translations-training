@@ -52,12 +52,10 @@ set -euo pipefail
 #│   │   └ s2s
 
 echo "###### read config "
-set -a
-. ./config.sh
-set +a
+source ./config.sh
 
 echo "######  setup"
-. ./pipeline/setup/install-all.sh
+bash ./pipeline/setup/install-all.sh
 PATH="/root/miniconda3/bin:${PATH}"
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate bergamot-training-env
@@ -80,27 +78,27 @@ speed="${MODELS_DIR}/${SRC}-${TRG}/speed"
 exported="${MODELS_DIR}/${SRC}-${TRG}/exported"
 
 echo "######  download data"
-. ./pipeline/data/download-corpus.sh "${original}/corpus" "${TRAIN_DATASETS}"
-. ./pipeline/data/download-corpus.sh "${original}/devset" "${DEVTEST_DATASETS}"
+bash ./pipeline/data/download-corpus.sh "${original}/corpus" "${TRAIN_DATASETS}"
+bash ./pipeline/data/download-corpus.sh "${original}/devset" "${DEVTEST_DATASETS}"
 test -n "${MONO_DATASETS_SRC}" ||
-  . ./pipeline/data/download-mono.sh "${SRC}" "${MONO_MAX_SENTENCES_SRC}" "${original}/mono" "${MONO_DATASETS_SRC}"
+  bash ./pipeline/data/download-mono.sh "${SRC}" "${MONO_MAX_SENTENCES_SRC}" "${original}/mono" "${MONO_DATASETS_SRC}"
 test -n "${MONO_DATASETS_TRG}" ||
-  . ./pipeline/data/download-mono.sh "${TRG}" "${MONO_MAX_SENTENCES_TRG}" "${original}/mono" "${MONO_DATASETS_TRG}"
+  bash ./pipeline/data/download-mono.sh "${TRG}" "${MONO_MAX_SENTENCES_TRG}" "${original}/mono" "${MONO_DATASETS_TRG}"
 
 echo "######  clean data"
-. ./pipeline/clean/clean-corpus.sh "${original}/corpus" "${clean}/corpus"
+bash ./pipeline/clean/clean-corpus.sh "${original}/corpus" "${clean}/corpus"
 test -e "${original}/mono.${SRC}.gz" ||
-  . ./pipeline/clean/clean-mono.sh "${SRC}" "${original}/mono" "${clean}/mono"
+  bash ./pipeline/clean/clean-mono.sh "${SRC}" "${original}/mono" "${clean}/mono"
 test -e "${original}/mono.${TRG}.gz" ||
-  . ./pipeline/clean/clean-mono.sh "${TRG}" "${original}/mono" "${clean}/mono"
+  bash ./pipeline/clean/clean-mono.sh "${TRG}" "${original}/mono" "${clean}/mono"
 
 echo "######  train backward model"
-. ./pipeline/train/train-s2s.sh "${s2s}" "${clean}/corpus" "${original}/devset" "${TRG}" "${SRC}"
-. ./pipeline/train/eval.sh "${s2s}" "${TRG}" "${SRC}"
+bash ./pipeline/train/train-s2s.sh "${s2s}" "${clean}/corpus" "${original}/devset" "${TRG}" "${SRC}"
+bash ./pipeline/train/eval.sh "${s2s}" "${TRG}" "${SRC}"
 
 echo "######  augment corpus with back translations"
-. ./pipeline/translate/translate-mono.sh "${clean}/mono.${TRG}.gz" "${s2s}" "${translated}/mono.${SRC}.gz"
-. ./pipeline/utils/merge-corpus.sh \
+bash ./pipeline/translate/translate-mono.sh "${clean}/mono.${TRG}.gz" "${s2s}" "${translated}/mono.${SRC}.gz"
+bash ./pipeline/utils/merge-corpus.sh \
   "${translated}/mono.${SRC}.gz" \
   "${clean}/corpus.${SRC}.gz" \
   "${clean}/mono.${TRG}.gz" \
@@ -109,19 +107,19 @@ echo "######  augment corpus with back translations"
   "${augmented}/corpus.${TRG}.gz"
 
 echo "######  train teacher"
-. ./pipeline/train/train-teacher.sh "${teacher_dir}" "${clean}/corpus" "${original}/devset"
-. ./pipeline/train/eval.sh "${teacher_dir}"
+bash ./pipeline/train/train-teacher.sh "${teacher_dir}" "${clean}/corpus" "${original}/devset"
+bash ./pipeline/train/eval.sh "${teacher_dir}"
 
 echo "######  translate with teacher"
-. ./pipeline/translate/translate-corpus.sh "${clean}/corpus.${SRC}.gz" \
+bash ./pipeline/translate/translate-corpus.sh "${clean}/corpus.${SRC}.gz" \
   "${clean}/corpus.${TRG}.gz" \
   "${teacher_dir}" "${translated}/corpus.${TRG}.gz"
 
-. ./pipeline/translate/translate-mono.sh "${clean}/mono.${SRC}.gz" \
+bash ./pipeline/translate/translate-mono.sh "${clean}/mono.${SRC}.gz" \
   "${teacher_dir}" \
   "${translated}/mono.${TRG}.gz"
 
-. ./pipeline/utils/merge-corpus.sh "${clean}/corpus.${SRC}.gz" \
+bash ./pipeline/utils/merge-corpus.sh "${clean}/corpus.${SRC}.gz" \
   "${clean}/mono.${SRC}.gz" \
   "${translated}/corpus.${TRG}.gz" \
   "${translated}/mono.${TRG}.gz" \
@@ -129,37 +127,37 @@ echo "######  translate with teacher"
   "${merged}/corpus.${TRG}.gz"
 
 echo "######  cross entropy filtering"
-. ./pipeline/clean/ce-filter.sh "${s2s}" "${merged}/corpus" "${filtered}/corpus"
+bash ./pipeline/clean/ce-filter.sh "${s2s}" "${merged}/corpus" "${filtered}/corpus"
 
 echo "######  train word alignment and lexical shortlists"
-. ./pipeline/alignment/generate-alignment-and-shortlist.sh "${filtered}/corpus" \
+bash ./pipeline/alignment/generate-alignment-and-shortlist.sh "${filtered}/corpus" \
   "${teacher_dir}/vocab.spm" "${align_dir}"
 
 echo "######  train student"
-. ./pipeline/train/train-student.sh \
+bash ./pipeline/train/train-student.sh \
   "${student_dir}" \
   "${filtered}/corpus" \
   "${original}/devset" \
   "${teacher_dir}" \
   "${align_dir}"
-. ./pipeline/train/eval.sh "${student_dir}"
+bash ./pipeline/train/eval.sh "${student_dir}"
 
 echo "######  finetune student"
-. ./pipeline/train/finetune-student.sh \
+bash ./pipeline/train/finetune-student.sh \
   "${student_finetuned_dir}" \
   "${filtered}/corpus" \
   "${original}/devset" \
   "${student_dir}" \
   "${align_dir}"
-. ./pipeline/train/eval.sh "${student_finetuned_dir}"
+bash ./pipeline/train/eval.sh "${student_finetuned_dir}"
 
 echo "######   quantize"
-. ./pipeline/quantize/quantize.sh \
+bash ./pipeline/quantize/quantize.sh \
   "${student_finetuned_dir}" \
   "${align_dir}/lex.s2t.pruned.gz" \
   "${original}/devset.${SRC}.gz" \
   "${speed}"
-. ./pipeline/quantize/eval.sh "${speed}" "${align_dir}/lex.s2t.pruned.gz"
+bash ./pipeline/quantize/eval.sh "${speed}" "${align_dir}/lex.s2t.pruned.gz"
 
 echo "######  export"
-. ./pipeline/quantize/export.sh "${speed}" "${align_dir}/lex.s2t.pruned.gz" "${exported}"
+bash ./pipeline/quantize/export.sh "${speed}" "${align_dir}/lex.s2t.pruned.gz" "${exported}"

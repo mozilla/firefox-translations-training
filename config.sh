@@ -1,3 +1,14 @@
+#!/bin/bash
+##
+# Pipeline config
+#
+# Usage:
+#   source ./config.sh
+#
+
+# Export all vairables
+set -a
+
 WORKDIR=$(pwd)
 CUDA_DIR=/usr/local/cuda-11.2
 DATA_DIR=${DATA_DIR:-${WORKDIR}/data}
@@ -28,3 +39,5 @@ MONO_MAX_SENTENCES_TRG=20000000
 GPUS=$(seq -s " " 0 $(( $(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)-1 )))
 # for 12 GB GPU
 WORKSPACE=9000
+
+set +a
