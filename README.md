@@ -6,9 +6,27 @@ The pipeline is capable of training a model for a language pair end to end.
 Quality will depend on chosen datasets and data cleaning procedures. Some settings might require extra cleaning.
 It was tested on relatively high resource language pair `ru-en`. Low resource pairs might require pipeline fixes.
 
+## System requirements
+
+- Ubuntu 18.04 (it can work on other Linux distributions, but might require `setup` scripts fixes).
+- One or several Nvidia GPUs with CUDA drivers installed and at least 8 GB of memory.
+- At least 16 CPU cores ( some steps of the pipelines utilize multiple cores pretty well, so the more the better).
+- 64GB RAM
+- 200+ GB of disk space ( mostly for datasets and transformations ). 
+  It depends on chosen datasets and can be significantly higher.
+  
+It was tested on: 
+- Ubuntu 18.04
+- 56 core Xeon server
+- 128 GB of RAM
+- x8 NVIDIA RTX 2080 GPUs with 12 GB of memory
+- CUDA 11.2
+- 100 GB of local disk space
+- Many terabytes of sshfs mounted storage
+
 ## Running
 
-### From the target machine
+### Using a target Linux machine
 ```
 git clone <this repo>
 cd bergamot-training
@@ -16,10 +34,17 @@ cd bergamot-training
 bash run.sh
 ```
 
+To run a specific script, do:
+
+`source ./config.sh`
+`bash ./pipeline/.../<script>.sh <args>`
+
+
 ### Using Snakepit
 
 See Snakepit installation (https://github.com/mozilla/snakepit-client)
 
+#### To run end to end
 ```
 git clone <this repo>
 cd bergamot-training
@@ -27,16 +52,38 @@ cd bergamot-training
 pit run --log "bergamot-training-ru-en" "[8:g2080]"
 ```
 
-## System requirements
+#### Interactive usage:
 
-- Ubuntu 18.04 (it can work on other Linux distributions, but might require `setup` scripts fixes).
-- One or several Nvidia GPUs with CUDA drivers installed and at least 8 GB of memory. 
-  It was tested with 8 NVIDIA RTX 2080 GPUs with 12 GB of memory and CUDA 11.
-- At least 8 CPU cores ( some steps of the pipelines utilize multiple cores pretty well).
-  It was tested on 56 core Xeon server.
-- 100 GB of disk space ( mostly for datasets and transformations ).
+1. Creat an empty directory 
+2. Create file `.compute` like this:
+```
+# install any development dependencies
+apt-get update
+apt-get install -y tmux htop nano
+curl -fsSL https://code-server.dev/install.sh | sh
 
-## Conventions
+while true; do : ; sleep 1000; done
+```
+3. Run `pit run "<user-name>-interactive" "[8:g2080]"`
+4. Run `pit status` to check the job id
+4. Run `pit exec <job-id> -- bash`
+5. After attaching run `tmux` etc.
+6. To port forward, run in a separate terminal `pit forward <job-id> 8080 6006`
+ 
+#### To download exported models:
+
+```
+pit pull home bergamot-training/models/ru-en/exported/model.ruen.intgemm.alphas.bin.gz .
+pit pull home bergamot-training/models/ru-en/exported/lex.50.50.ruen.s2t.bin.gz .
+pit pull home bergamot-training/models/ru-en/exported/vocab.ruen.spm.gz .
+```
+
+## Pipeline steps
+
+TODO
+
+
+## Development
 
 - All scripts work with respect to repo root directory which should be written to `WORKDIR` environment variable. 
   It allows to not think about relative paths and execution folders.

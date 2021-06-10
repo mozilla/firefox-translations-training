@@ -12,7 +12,7 @@ set -euo pipefail
 echo "###### Compiling alignment tools"
 
 echo "### Installing fast_align dependencies "
-sudo apt-get install -y libgoogle-perftools-dev libsparsehash-dev libboost-all-dev
+apt-get install -y libgoogle-perftools-dev libsparsehash-dev libboost-all-dev
 mkdir -p "${BIN}"
 
 if [ ! -e "${WORKDIR}/bin/fast_align" ]; then

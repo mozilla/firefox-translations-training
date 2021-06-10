@@ -27,7 +27,7 @@ if [ ! -e "${trg_corpus}" ]; then
   mkdir -p "${dir}/train-parts"
 
   for dataset in "${@:2}"; do
-    echo "Downloading dataset ${dataset}"
+    echo "### Downloading dataset ${dataset}"
     name=${dataset#*_}
     type=${dataset%_*}
     bash "${WORKDIR}/pipeline/data/importers/corpus/${type}.sh" "${SRC}" "${TRG}" "${dir}" "${name}"
@@ -37,7 +37,7 @@ if [ ! -e "${trg_corpus}" ]; then
   cat "${dir}"/train-parts/*."${TRG}" | pigz >"${trg_corpus}"
 
 else
-  echo "Datasets already exist"
+  echo "### Datasets already exist"
 fi
 
 test -s "${src_corpus}" || exit 1
