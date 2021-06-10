@@ -1,8 +1,10 @@
 # Bergamot training
 Training pipelines for Bergamot machine translation models.
+The trained models are hosted in [bergamot-models](https://github.com/mozilla-applied-ml/bergamot-models/),
+compatible with [bergamot-translator](https://github.com/mozilla/bergamot-translator) and can be used by
+[bergamot-browser-extension](https://github.com/mozilla-extensions/bergamot-browser-extension).
 
 The pipeline is capable of training a model for a language pair end to end.
-
 Quality will depend on chosen datasets and data cleaning procedures. Some settings might require extra cleaning.
 It was tested on relatively high resource language pair `ru-en`. Low resource pairs might require pipeline fixes.
 
@@ -56,7 +58,7 @@ pit run --log "bergamot-training-ru-en" "[8:g2080]"
 
 #### Interactive usage:
 
-1. Creat an empty directory 
+1. Create an empty directory 
 2. Create file `.compute` like this:
 ```
 # install any development dependencies
@@ -69,8 +71,17 @@ while true; do : ; sleep 1000; done
 3. Run `pit run "<user-name>-interactive" "[8:g2080]"`
 4. Run `pit status` to check the job id
 4. Run `pit exec <job-id> -- bash`
-5. After attaching run `tmux` etc.
-6. To port forward, run in a separate terminal `pit forward <job-id> 8080 6006`
+5. After attaching run `tmux`
+6. (Optional) `code-server --bind-addr 0.0.0.0:8080` and 
+   then `cat ~/.config/code-server/config.yaml` to conveniently edit files in a browser
+7. To port forward, run in a separate terminal `pit forward <job-id> 8080 6006`
+8. Change settings in config.sh or modify code if needed
+9. `bash run.sh` to run end to end or
+to run a specific script:
+```
+source ./config.sh
+bash ./pipeline/.../<script>.sh <args>
+```
  
 #### To download exported models:
 
@@ -82,7 +93,21 @@ pit pull home bergamot-training/models/ru-en/exported/vocab.ruen.spm.gz .
 
 ## Pipeline steps
 
-TODO
+Step | Description | Bottleneck | Comments
+--- | --- | --- | ---
+Installation | Installing dependencies and compiling | CPU | Takes ~1 hour
+Data downloading | Downloads datasets, samples sentences | Network, Disk | Time depends on dataset size, sampling of huge mono datasets (100M+ sentences) is the most intensive operation.
+Data cleaning | Basic preprocessing, language specific, rule based, deduplication and other attempts to clean noisy data | CPU | Good parallelizaiton across CPU cores. To make cleaning of a new language more efficient add it to [clean_parallel.py](/pipeline/clean/clean_parallel.py).
+Training s2s | Trains a backward shallow s2s model, which is useful for back-translations and ce-filtering | GPU | 
+Augmentation with back-translations | Translates mono corpus combined from `MONO_DATASETS_TRG` using shallow s2s model. | GPU | It is more useful for low-resource languages and can be skipped for others.
+Training teacher | Trains one or multiple big transformer models | GPU | You might want to adjust [early stopping](pipeline/train/configs/training/teacher.transformer.train.yml) parameters depending on datasets size.
+Translation with a teacher | Translates a corpus and monolingual data combined from `MONO_DATASETS_SRC` using the teacher model (ensemble is not supported yet) | GPU | The slowest part of the pipeline. Can take days. It is possible to speed it up launching the same scripts ([corpus](pipeline/translate/translate-corpus.sh), [mono](pipeline/translate/translate-mono.sh)) in parallel from another machine with access to the same network directory.
+Cross-entropy filtering | Scores translated corpus with backward s2s model and removes a part of the corpus with the lowest scores to reduce noise | GPU, CPU, Disk | At this point we work with huge datasets, so it utilizes copying to a local disk to make things faster.
+Training alignments and shortlist | Trains alignments using [fast_align](https://github.com/clab/fast_align) and extracts lexical shortlist using [extract_lex](https://github.com/marian-nmt/extract-lex) tool | CPU, Disk | Some tools requires uncompressed datasets on disk and they are huge at this point. Data is copied to a local disk to make things faster. Might take 100+GB of local disk depending on a dataset size. Good CPU parallelization.
+Training student | Trains a small transformer student model on filtered data and using alignments | GPU | Run [Tensorboard](pipeline/train/tensorboard/tensorboard.sh) manually to see training visualization.
+Fine-tuning student | Finetunes the student model by emulating 8bit GEMM during training | GPU | Converges very quickly and then degrades. It's quick but you might want to reduce early stopping threshold.
+Quantizaiton |  Applies 8 bit quantization to the fined-tuned student model and evaluates on CPU | CPU | CPU threads must be set to 1 for this step.
+Export | Exports trained model and shortlist to (bergamot-translator)(https://github.com/mozilla/bergamot-translator) format | |
 
 ## Datasets importers
 
@@ -96,10 +121,10 @@ TRAIN_DATASETS="opus_OPUS-ParaCrawl/v7.1 mtdata_newstest2019_ruen"
 Data source | Prefix | Name example | Type | Comments
 --- | --- | --- | ---| ---
 [MTData](https://github.com/thammegowda/mtdata) | mtdata | newstest2017_ruen | corpus | Supports many datasets. Run `mtdata list -l ru-en` to see datasets for a specific language pair.
-[OPUS](opus.nlpl.eu/) | opus | OPUS-ParaCrawl/v7.1 | corpus | Many open source datasets. Check the website to see what datasets are available.
-[Paracrawl](https://paracrawl.eu/) | paracrawl | paracrawl8 | mono | Datasets from a crawled web. Only mono datasets are used in this importer. Corpus is available using opus importer
-[News crawl](https://www.statmt.org/wmt21/translation-task.html) | news-crawl | news.2019 | mono | Some news monolingual datasets from WMT
-[Common crawl](https://commoncrawl.org/) | commoncrawl | wmt16 | mono | Huge web crawl datasets
+[OPUS](opus.nlpl.eu/) | opus | OPUS-ParaCrawl/v7.1 | corpus | Many open source datasets. Go to the website, choose a language pair, check links under Moses column to see what names and version is used in a link.
+[Paracrawl](https://paracrawl.eu/) | paracrawl-mono | paracrawl8 | mono | Datasets from a crawled web. Only [mono datasets](https://paracrawl.eu/index.php/moredata) are used in this importer. Corpus is available using opus importer.
+[News crawl](http://data.statmt.org/news-crawl) | news-crawl | news.2019 | mono | Some news monolingual datasets from [WMT21](https://www.statmt.org/wmt21/translation-task.html)
+[Common crawl](https://commoncrawl.org/) | commoncrawl | wmt16 | mono | Huge web crawl datasets. The links are posted on [WMT21](https://www.statmt.org/wmt21/translation-task.html)
 
 ## Evaluation datsets
 
@@ -158,8 +183,8 @@ sacrebleu --list -l ru-en
   
 ## TODO
 
-1. Add bicleaner
-2. Add translation with ensemble of teacher models
+1. Add [bicleaner](https://github.com/bitextor/bicleaner/)
+2. Add translation with an ensemble of teacher models
 
 ## Used projects and tools
 
@@ -175,15 +200,11 @@ https://github.com/marian-nmt/extract-lex
 ### Evaluation
 https://github.com/mjpost/sacrebleu
 
-### Cleaning
-https://github.com/bitextor/bicleaner/
-
 ### Pipeline recipes
 https://github.com/marian-nmt/marian-examples/tree/master/wmt2017-transformer
 
 https://github.com/browsermt/students/tree/master/train-student
 
-https://github.com/ZJaume/clean
 
 ### Workflow
 https://github.com/mozilla/snakepit-client
