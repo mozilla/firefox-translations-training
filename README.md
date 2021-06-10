@@ -1,4 +1,4 @@
-# bergamot-training
+# Bergamot training
 Training pipelines for Bergamot machine translation models.
 
 The pipeline is capable of training a model for a language pair end to end.
@@ -36,8 +36,10 @@ bash run.sh
 
 To run a specific script, do:
 
-`source ./config.sh`
-`bash ./pipeline/.../<script>.sh <args>`
+```
+source ./config.sh
+bash ./pipeline/.../<script>.sh <args>
+```
 
 
 ### Using Snakepit
@@ -82,6 +84,36 @@ pit pull home bergamot-training/models/ru-en/exported/vocab.ruen.spm.gz .
 
 TODO
 
+## Datasets importers
+
+Dataset importers can be used in `TRAIN_DATASETS, DEVTEST_DATASETS, MONO_DATASETS_SRC, MONO_DATASETS_TRG` config settings.
+
+Example:
+```
+TRAIN_DATASETS="opus_OPUS-ParaCrawl/v7.1 mtdata_newstest2019_ruen"
+```
+
+Data source | Prefix | Name example | Type | Comments
+--- | --- | --- | ---| ---
+[MTData](https://github.com/thammegowda/mtdata) | mtdata | newstest2017_ruen | corpus | Supports many datasets. Run `mtdata list -l ru-en` to see datasets for a specific language pair.
+[OPUS](opus.nlpl.eu/) | opus | OPUS-ParaCrawl/v7.1 | corpus | Many open source datasets. Check the website to see what datasets are available.
+[Paracrawl](https://paracrawl.eu/) | paracrawl | paracrawl8 | mono | Datasets from a crawled web. Only mono datasets are used in this importer. Corpus is available using opus importer
+[News crawl](https://www.statmt.org/wmt21/translation-task.html) | news-crawl | news.2019 | mono | Some news monolingual datasets from WMT
+[Common crawl](https://commoncrawl.org/) | commoncrawl | wmt16 | mono | Huge web crawl datasets
+
+## Evaluation datsets
+
+Only [SacreBLEU](https://github.com/mjpost/sacrebleu) datasets are supported at the moment.
+
+Example:
+```
+TEST_DATASETS="wmt20 wmt18"
+```
+
+To see what datasets are available for a language pair (for example, `ru-en`) run:
+```
+sacrebleu --list -l ru-en
+```
 
 ## Development
 
@@ -123,6 +155,11 @@ TODO
 
 - Scripts should automatically inspect resources available for computation and utilize them to make things faster
   (number of cores, memory).
+  
+## TODO
+
+1. Add bicleaner
+2. Add translation with ensemble of teacher models
 
 ## Used projects and tools
 
