@@ -29,7 +29,7 @@ if [ ! -e "${trg_corpus}" ]; then
   for dataset in "${@:2}"; do
     echo "### Downloading dataset ${dataset}"
     name=${dataset#*_}
-    type=${dataset%_*}
+    type=${dataset%%_*}
     bash "${WORKDIR}/pipeline/data/importers/corpus/${type}.sh" "${SRC}" "${TRG}" "${dir}" "${name}"
   done
 

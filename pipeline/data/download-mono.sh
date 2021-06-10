@@ -28,7 +28,7 @@ if [ ! -e "${file_name}" ]; then
     source_prefix="${dir}/${dataset}.original.${lang}"
     gz_path="${dir}/${dataset}.${lang}.gz"
     name=${dataset#*_}
-    type=${dataset%_*}
+    type=${dataset%%_*}
 
     test -s "${source_prefix}.gz" ||
       bash "${WORKDIR}/pipeline/data/importers/mono/${type}.sh" "${lang}" "${source_prefix}" "${name}"
