@@ -35,7 +35,7 @@ for name in $(ls "${tmp_dir}" | grep -E "^file\.[0-9]+$" | shuf); do
       -i "${prefix}" \
       -o "${prefix}.out" \
       --log "${prefix}.log" \
-      -d "${GPUS}" \
+      -d ${GPUS} \
       -w "${WORKSPACE}"
 done
 

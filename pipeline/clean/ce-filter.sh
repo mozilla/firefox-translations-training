@@ -43,7 +43,7 @@ test -s "${dir}/scores.txt" ||
     --maxi-batch 1000 \
     --max-length 250 \
     --max-length-crop \
-    -d "${GPUS}" \
+    -d ${GPUS} \
     -w "${WORKSPACE}" \
     --log "${dir}/scores.txt.log" \
     >"${dir}/scores.txt"

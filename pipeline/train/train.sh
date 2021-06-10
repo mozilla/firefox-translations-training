@@ -45,7 +45,7 @@ echo "### Training ${model_dir}"
   --shuffle-in-ram \
   --vocabs "${model_dir}/vocab.spm" "${model_dir}/vocab.spm" \
   -w "${WORKSPACE}" \
-  --devices "${GPUS}" \
+  --devices ${GPUS} \
   --sync-sgd \
   --valid-metrics bleu-detok ce-mean-words perplexity \
   --valid-sets "${valid_set_prefix}".{"${src}","${trg}"}.gz \

@@ -45,7 +45,7 @@ for prefix in $(ls "${tmp_dir}" | grep -E "^file\.[0-9]+$" | shuf); do
       -o "${prefix}.nbest" \
       --log "${prefix}.log" \
       --n-best \
-      -d "${GPUS}" \
+      -d ${GPUS} \
       -w "${WORKSPACE}"
 done
 
