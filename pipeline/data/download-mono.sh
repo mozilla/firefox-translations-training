@@ -38,7 +38,8 @@ if [ ! -e "${file_name}" ]; then
       pigz -dc "${source_prefix}.gz" |
       shuf -n "$(bc -l <<<"${max_sent}+${max_sent}*${coef}")" |
       perl -ne 'print if(split(/\s/, $_) < 100)' |
-      head -n "${max_sent}" | pigz >"${gz_path}"
+      head -n "${max_sent}" |
+      pigz >"${gz_path}"
 
     rm "${source_prefix}"*
   done
