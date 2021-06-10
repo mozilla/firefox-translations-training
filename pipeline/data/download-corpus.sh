@@ -18,13 +18,12 @@ prefix=$1
 
 src_corpus="${prefix}.${SRC}.gz"
 trg_corpus="${prefix}.${TRG}.gz"
-dir=$(dirname "${prefix}")
+dir=$(dirname "${prefix}")/tmp
 
 mkdir -p "${dir}"
 
 if [ ! -e "${trg_corpus}" ]; then
   echo "### Downloading datasets"
-  mkdir -p "${dir}/train-parts"
 
   for dataset in "${@:2}"; do
     echo "### Downloading dataset ${dataset}"
@@ -33,8 +32,8 @@ if [ ! -e "${trg_corpus}" ]; then
     bash "${WORKDIR}/pipeline/data/importers/corpus/${type}.sh" "${SRC}" "${TRG}" "${dir}" "${name}"
   done
 
-  cat "${dir}"/train-parts/*."${SRC}" | pigz >"${src_corpus}"
-  cat "${dir}"/train-parts/*."${TRG}" | pigz >"${trg_corpus}"
+  cat "${dir}"/*."${SRC}" | pigz >"${src_corpus}"
+  cat "${dir}"/*."${TRG}" | pigz >"${trg_corpus}"
 
 else
   echo "### Datasets already exist"
@@ -43,6 +42,6 @@ fi
 test -s "${src_corpus}" || exit 1
 test -s "${trg_corpus}" || exit 1
 
-rm -rf "${dir}"/train-parts
+rm -rf "${dir}"
 
 echo "###### Done: Downloading corpus"
