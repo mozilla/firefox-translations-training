@@ -107,7 +107,7 @@ bash ./pipeline/utils/merge-corpus.sh \
   "${augmented}/corpus.${TRG}.gz"
 
 echo "######  train teacher"
-bash ./pipeline/train/train-teacher.sh "${teacher_dir}" "${clean}/corpus" "${original}/devset"
+bash ./pipeline/train/train-teacher.sh "${teacher_dir}" "${augmented}/corpus" "${original}/devset"
 bash ./pipeline/train/eval.sh "${teacher_dir}"
 
 echo "######  translate with teacher"
