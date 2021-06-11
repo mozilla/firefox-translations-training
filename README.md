@@ -2,7 +2,7 @@
 Training pipelines for Bergamot machine translation models.
 The trained models are hosted in [bergamot-models](https://github.com/mozilla-applied-ml/bergamot-models/),
 compatible with [bergamot-translator](https://github.com/mozilla/bergamot-translator) and can be used by
-[bergamot-browser-extension](https://github.com/mozilla-extensions/bergamot-browser-extension).
+[firefox-translations](https://github.com/mozilla-extensions/firefox-translations) web extension.
 
 The pipeline is capable of training a translation model for a language pair end to end. It uses fast tranlsation engine [Marian](https://marian-nmt.github.io).
 Translation quality will depend mostly on chosen datasets and data cleaning procedures. Some settings might require extra data cleaning.
@@ -151,12 +151,29 @@ sacrebleu --list -l ru-en
 
 ## Development
 
+### Architecture
+
+The pipeline is designed with workflow manager integration in mind (like [Airflow](https://airflow.apache.org/), 
+[Kubeflow pipelines](https://www.kubeflow.org/docs/components/pipelines/overview/pipelines-overview/), 
+[Snakemake](https://snakemake.readthedocs.io/en/stable/) and others).
+
+All steps are independent and contain scripts that accept input arguments, read input files from disk and output the results on disk.
+It allows to write the steps in any language (currently it's historically mostly bash and Python) and 
+represent the pipeline as a DAG to be compatible with workflow managers.
+
+The main script `run.sh` can be easily replaced with a DAG definition in workflow manager terms. 
+A workflow manager will provide easy resource management, parallelization, monitoring and scheduling which will allow horizontal scalability required to train massive number of langauges.
+
+At the same time it is possible to run it all locally end to end or to do interactive experimentation running specific scripts manually.
+
+### Conventions
+
 - All scripts work with respect to repo root directory which should be written to `WORKDIR` environment variable. 
   It allows to not think about relative paths and execution folders.
   
-- Scripts inside `pipeline` directory are independent and operate only using input arguments 
+- Scripts inside the `pipeline` directory are independent and operate only using input arguments, input files 
   and global envs from `config.sh`.
-  They don't use any extra knowledge of data naming or locations.
+  They don't use any extra knowledge of data naming or locations. There are some exceptions at the moment though.
   
 - All scripts have a description and definition of input arguments.
 
