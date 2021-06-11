@@ -36,7 +36,8 @@ test -s "${tmp_dir}/file.00.ref" ||
 
 echo "### Translating source sentences with Marian"
 # This can be parallelized across several GPU machines.
-for prefix in $(ls "${tmp_dir}" | grep -E "^file\.[0-9]+$" | shuf); do
+for name in $(ls "${tmp_dir}" | grep -E "^file\.[0-9]+$" | shuf); do
+  prefix="${tmp_dir}/${name}"
   echo "### ${prefix}"
   test -e "${prefix}.nbest" ||
     "${MARIAN}/marian-decoder" \
@@ -54,7 +55,7 @@ echo "### Extracting the best translations from n-best lists w.r.t to the refere
 test -s "${tmp_dir}/file.00.nbest.out" ||
   ls "${tmp_dir}" | grep -E "^file\.[0-9]+$" | shuf |
   parallel --no-notice -k -j "$(nproc)" \
-    "python ${WORKDIR}/pipeline/translate/bestbleu.py -i {}.nbest -r {}.ref -m bleu > {}.nbest.out" \
+    "python ${WORKDIR}/pipeline/translate/bestbleu.py -i ${tmp_dir}/{}.nbest -r ${tmp_dir}/{}.ref -m bleu > ${tmp_dir}/{}.nbest.out" \
     2>"${tmp_dir}/debug.txt"
 
 echo "### Collecting translations"
