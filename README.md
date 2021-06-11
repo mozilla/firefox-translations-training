@@ -4,15 +4,15 @@ The trained models are hosted in [bergamot-models](https://github.com/mozilla-ap
 compatible with [bergamot-translator](https://github.com/mozilla/bergamot-translator) and can be used by
 [bergamot-browser-extension](https://github.com/mozilla-extensions/bergamot-browser-extension).
 
-The pipeline is capable of training a model for a language pair end to end.
-Quality will depend on chosen datasets and data cleaning procedures. Some settings might require extra cleaning.
+The pipeline is capable of training a translation model for a language pair end to end. It uses fast tranlsation engine [Marian](https://marian-nmt.github.io).
+Translation quality will depend mostly on chosen datasets and data cleaning procedures. Some settings might require extra data cleaning.
 It was tested on relatively high resource language pair `ru-en`. Low resource pairs might require pipeline fixes.
 
 ## System requirements
 
-- Ubuntu 18.04 (it can work on other Linux distributions, but might require `setup` scripts fixes).
+- Ubuntu 18.04 (it can work on other Linux distributions, but might require `setup` scripts fixes; see more details in [marian installation instructions](https://marian-nmt.github.io/quickstart/)).
 - One or several Nvidia GPUs with CUDA drivers installed and at least 8 GB of memory.
-- At least 16 CPU cores ( some steps of the pipelines utilize multiple cores pretty well, so the more the better).
+- At least 16 CPU cores ( some steps of the pipeline utilize multiple cores pretty well, so the more the better).
 - 64GB RAM
 - 200+ GB of disk space ( mostly for datasets and transformations ). 
   It depends on chosen datasets and can be significantly higher.
@@ -30,13 +30,13 @@ It was tested on:
 
 ### Using a target Linux machine
 ```
-git clone <this repo>
+git clone https://github.com/mozilla/bergamot-training.git
 cd bergamot-training
 # change settings in config.sh or modify code if needed
 bash run.sh
 ```
 
-To run a specific script, do:
+To run a specific script:
 
 ```
 source ./config.sh
@@ -46,7 +46,8 @@ bash ./pipeline/.../<script>.sh <args>
 
 ### Using Snakepit
 
-See Snakepit installation (https://github.com/mozilla/snakepit-client)
+Snakepit is Mozilla machine learning job scheduler.
+See [Snakepit installation](https://github.com/mozilla/snakepit-client).
 
 #### To run end to end
 ```
@@ -59,7 +60,7 @@ pit run --log "bergamot-training-ru-en" "[8:g2080]"
 #### Interactive usage:
 
 1. Create an empty directory 
-2. Create file `.compute` like this:
+2. Create a file `.compute` in the directory:
 ```
 # install any development dependencies
 apt-get update
@@ -73,8 +74,8 @@ while true; do : ; sleep 1000; done
 4. Run `pit exec <job-id> -- bash`
 5. After attaching run `tmux`
 6. (Optional) `code-server --bind-addr 0.0.0.0:8080` and 
-   then `cat ~/.config/code-server/config.yaml` to conveniently edit files in a browser
-7. To port forward, run in a separate terminal `pit forward <job-id> 8080 6006`
+   then `cat ~/.config/code-server/config.yaml` to conveniently edit files in a browser using [Visual Studio Code server](https://github.com/cdr/code-server)
+7. To port forward, run in a separate terminal `pit forward <job-id> 8080 6006` (`8080`is Visual Studio, `6006` is Tensorbard)
 8. Change settings in config.sh or modify code if needed
 9. `bash run.sh` to run end to end or
 to run a specific script:
@@ -93,15 +94,17 @@ pit pull home bergamot-training/models/ru-en/exported/vocab.ruen.spm.gz .
 
 ## Pipeline steps
 
+The steps are based on [train-student](https://github.com/browsermt/students/tree/master/train-student) recipe.
+
 Step | Description | Bottleneck | Comments
 --- | --- | --- | ---
 Installation | Installing dependencies and compiling | CPU | Takes ~1 hour
 Data downloading | Downloads datasets, samples sentences | Network, Disk | Time depends on dataset size, sampling of huge mono datasets (100M+ sentences) is the most intensive operation.
-Data cleaning | Basic preprocessing, language specific, rule based, deduplication and other attempts to clean noisy data | CPU | Good parallelizaiton across CPU cores. To make cleaning of a new language more efficient add it to [clean_parallel.py](/pipeline/clean/clean_parallel.py).
-Training s2s | Trains a backward shallow s2s model, which is useful for back-translations and ce-filtering | GPU | 
+Data cleaning | Basic preprocessing, language specific, rule based, deduplication and other attempts to clean noisy data | CPU | Good parallelization across CPU cores. To make cleaning of a new language more efficient add it to [clean_parallel.py](/pipeline/clean/clean_parallel.py).
+Training s2s | Trains a backward shallow s2s model, which is useful for back-translations and ce-filtering | GPU | Inspired by a [marian example](https://github.com/marian-nmt/marian-examples/tree/master/training-basics-sentencepiece).
 Augmentation with back-translations | Translates mono corpus combined from `MONO_DATASETS_TRG` using shallow s2s model. | GPU | It is more useful for low-resource languages and can be skipped for others.
-Training teacher | Trains one or multiple big transformer models | GPU | You might want to adjust [early stopping](pipeline/train/configs/training/teacher.transformer.train.yml) parameters depending on datasets size.
-Translation with a teacher | Translates a corpus and monolingual data combined from `MONO_DATASETS_SRC` using the teacher model (ensemble is not supported yet) | GPU | The slowest part of the pipeline. Can take days. It is possible to speed it up launching the same scripts ([corpus](pipeline/translate/translate-corpus.sh), [mono](pipeline/translate/translate-mono.sh)) in parallel from another machine with access to the same network directory.
+Training teacher | Trains one or multiple big transformer models | GPU | You might want to adjust [early stopping](pipeline/train/configs/training/teacher.transformer.train.yml) parameters depending on datasets size. Inspired by [transformer](https://github.com/marian-nmt/marian-examples/tree/master/transformer) and [wmt2017-uedin](https://github.com/marian-nmt/marian-examples/tree/master/wmt2017-uedin) marian examples and extended with [SentencePiece](https://github.com/google/sentencepiece).
+Translation by teacher | Translates a corpus and monolingual data combined from `MONO_DATASETS_SRC` using the teacher model (ensemble is not supported yet) | GPU | The slowest part of the pipeline. Can take days. It is possible to speed it up launching the same scripts ([corpus](pipeline/translate/translate-corpus.sh), [mono](pipeline/translate/translate-mono.sh)) in parallel from another machine with access to the same network directory.
 Cross-entropy filtering | Scores translated corpus with backward s2s model and removes a part of the corpus with the lowest scores to reduce noise | GPU, CPU, Disk | At this point we work with huge datasets, so it utilizes copying to a local disk to make things faster.
 Training alignments and shortlist | Trains alignments using [fast_align](https://github.com/clab/fast_align) and extracts lexical shortlist using [extract_lex](https://github.com/marian-nmt/extract-lex) tool | CPU, Disk | Some tools requires uncompressed datasets on disk and they are huge at this point. Data is copied to a local disk to make things faster. Might take 100+GB of local disk depending on a dataset size. Good CPU parallelization.
 Training student | Trains a small transformer student model on filtered data and using alignments | GPU | Run [Tensorboard](pipeline/train/tensorboard/tensorboard.sh) manually to see training visualization.
@@ -122,11 +125,17 @@ Data source | Prefix | Name example | Type | Comments
 --- | --- | --- | ---| ---
 [MTData](https://github.com/thammegowda/mtdata) | mtdata | newstest2017_ruen | corpus | Supports many datasets. Run `mtdata list -l ru-en` to see datasets for a specific language pair.
 [OPUS](opus.nlpl.eu/) | opus | OPUS-ParaCrawl/v7.1 | corpus | Many open source datasets. Go to the website, choose a language pair, check links under Moses column to see what names and version is used in a link.
-[Paracrawl](https://paracrawl.eu/) | paracrawl-mono | paracrawl8 | mono | Datasets from a crawled web. Only [mono datasets](https://paracrawl.eu/index.php/moredata) are used in this importer. Corpus is available using opus importer.
+[Paracrawl](https://paracrawl.eu/) | paracrawl-mono | paracrawl8 | mono | Datasets that are crawled from the web. Only [mono datasets](https://paracrawl.eu/index.php/moredata) are used in this importer. Parallel corpus is available using opus importer.
 [News crawl](http://data.statmt.org/news-crawl) | news-crawl | news.2019 | mono | Some news monolingual datasets from [WMT21](https://www.statmt.org/wmt21/translation-task.html)
 [Common crawl](https://commoncrawl.org/) | commoncrawl | wmt16 | mono | Huge web crawl datasets. The links are posted on [WMT21](https://www.statmt.org/wmt21/translation-task.html)
 
-## Evaluation datsets
+### Adding a new importer
+
+Just add a shell script to [corpus](pipeline/data/importers/corpus) or [mono]() which is named as `<prefix>.sh` 
+and accepts the same parameters as the other scripts from the same folder.
+
+
+## Evaluation datasets
 
 Only [SacreBLEU](https://github.com/mjpost/sacrebleu) datasets are supported at the moment.
 
@@ -176,7 +185,7 @@ sacrebleu --list -l ru-en
     
 - Global variables are upper case, local variable are lower case.
 
-- ALl variables that are global for the whole pipeline are set in `config.sh`.
+- All variables that are global for the whole pipeline are set in `config.sh`.
 
 - Scripts should automatically inspect resources available for computation and utilize them to make things faster
   (number of cores, memory).
@@ -185,41 +194,4 @@ sacrebleu --list -l ru-en
 
 1. Add [bicleaner](https://github.com/bitextor/bicleaner/)
 2. Add translation with an ensemble of teacher models
-
-## Used projects and tools
-
-### Training
-https://marian-nmt.github.io
-
-https://github.com/google/sentencepiece
-
-https://github.com/clab/fast_align
-
-https://github.com/marian-nmt/extract-lex
-
-### Evaluation
-https://github.com/mjpost/sacrebleu
-
-### Pipeline recipes
-https://github.com/marian-nmt/marian-examples/tree/master/wmt2017-transformer
-
-https://github.com/browsermt/students/tree/master/train-student
-
-
-### Workflow
-https://github.com/mozilla/snakepit-client
-
-https://github.com/ufal/marian-tensorboard
-
-### Data
-https://opus.nlpl.eu/ 
-
-https://paracrawl.eu/
-
-https://commoncrawl.org/
-
-https://www.statmt.org/wmt21/translation-task.html
-
-https://www.statmt.org/wmt20/translation-task.html
-
-https://github.com/thammegowda/mtdata
+3. Add more importers
