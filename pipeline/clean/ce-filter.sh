@@ -26,6 +26,8 @@ remove=0.05
 model="${model_dir}/model.npz.best-ce-mean-words.npz"
 vocab="${model_dir}/vocab.spm"
 dir="${TMP}/scored"
+output_dir=$(dirname "${output_prefix}")
+mkdir -p "${output_dir}"
 mkdir -p "${dir}"
 
 echo "### Decompressing corpus"
@@ -37,7 +39,7 @@ test -s "${dir}/scores.txt" ||
   "${MARIAN}/marian-scorer" \
     -m "${model}" \
     -v "${vocab}" "${vocab}" \
-    -t "${dir}/corpus.${TRG}" "${dir}/corpus.${SRC}.gz" \
+    -t "${dir}/corpus.${TRG}" "${dir}/corpus.${SRC}" \
     --mini-batch 32 \
     --mini-batch-words 1500 \
     --maxi-batch 1000 \
@@ -55,17 +57,19 @@ test -s "${dir}/scores.nrm.txt" ||
   cut -f1 >"${dir}/scores.nrm.txt"
 
 echo "### Sorting scores"
-test -s "${dir}/sorted.gz" ||
-  buffer_size="$(echo "$(grep MemTotal /proc/meminfo | awk '{print $2}')"*0.9 | bc | cut -f1 -d.)" &&
+if [ ! -s "${dir}/sorted.gz" ]; then
+  buffer_size="$(echo "$(grep MemTotal /proc/meminfo | awk '{print $2}')"*0.9 | bc | cut -f1 -d.)"
   paste "${dir}/scores.nrm.txt" "${dir}/corpus.${SRC}" "${dir}/corpus.${TRG}" |
   LC_ALL=C sort -n -k1,1 -S "${buffer_size}K" |
   pigz >"${dir}/sorted.gz"
+fi
 
 echo "### Cutting the best scored corpus"
-test -s "${dir}/best.gz" ||
-  lines=$(pigz -dc "${dir}/sorted.gz" | wc -l) &&
-  startline=$(echo ${lines}*${remove} | bc | cut -f1 -d.) &&
+if [ ! -s "${dir}/best.gz" ]; then
+  lines=$(pigz -dc "${dir}/sorted.gz" | wc -l)
+  startline=$(echo ${lines}*${remove} | bc | cut -f1 -d.)
   pigz -dc "${dir}/sorted.gz" | tail -n +${startline} | cut -f2,3 | pigz >"${dir}/best.gz"
+fi
 
 echo "### Writing output corpus"
 pigz -dc "${dir}/best.gz" | cut -f1 | pigz >"${output_prefix}.${SRC}.gz"
