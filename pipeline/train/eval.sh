@@ -30,6 +30,7 @@ mkdir -p "${eval_dir}"
 echo "### Evaluating a model ${model_dir}"
 for prefix in ${TEST_DATASETS}; do
   echo "### Evaluating ${prefix} ${src}-${trg}"
+  test -s "${eval_dir}/${prefix}.${trg}.bleu" ||
   sacrebleu -t "${prefix}" -l "${src}-${trg}" --echo src |
     tee "${eval_dir}/${prefix}.${src}" |
     "${MARIAN}"/marian-decoder \
