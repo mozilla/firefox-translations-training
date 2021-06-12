@@ -34,12 +34,15 @@ if [ ! -e "${file_name}" ]; then
       bash "${WORKDIR}/pipeline/data/importers/mono/${type}.sh" "${lang}" "${source_prefix}" "${name}"
 
     echo "### Sampling dataset ${dataset}"
+    # temporary disable pipefail because perl operation causes SIGPIPE (141)
+    set +o pipefail
     test -s "${gz_path}" ||
       pigz -dc "${source_prefix}.gz" |
       shuf -n "$(bc -l <<<"${max_sent}+${max_sent}*${coef}")" |
       perl -ne 'print if(split(/\s/, $_) < 100)' |
       head -n "${max_sent}" |
       pigz >"${gz_path}"
+    set -o pipefail
 
     rm "${source_prefix}"*
   done
