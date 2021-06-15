@@ -78,12 +78,12 @@ speed="${MODELS_DIR}/${SRC}-${TRG}/speed"
 exported="${MODELS_DIR}/${SRC}-${TRG}/exported"
 
 echo "######  download data"
-bash ./pipeline/data/download-corpus.sh "${original}/corpus" "${TRAIN_DATASETS}"
-bash ./pipeline/data/download-corpus.sh "${original}/devset" "${DEVTEST_DATASETS}"
+bash ./pipeline/data/download-corpus.sh "${original}/corpus" ${TRAIN_DATASETS}
+bash ./pipeline/data/download-corpus.sh "${original}/devset" ${DEVTEST_DATASETS}
 test -n "${MONO_DATASETS_SRC}" &&
-  bash ./pipeline/data/download-mono.sh "${SRC}" "${MONO_MAX_SENTENCES_SRC}" "${original}/mono" "${MONO_DATASETS_SRC}"
+  bash ./pipeline/data/download-mono.sh "${SRC}" "${MONO_MAX_SENTENCES_SRC}" "${original}/mono" ${MONO_DATASETS_SRC}
 test -n "${MONO_DATASETS_TRG}" &&
-  bash ./pipeline/data/download-mono.sh "${TRG}" "${MONO_MAX_SENTENCES_TRG}" "${original}/mono" "${MONO_DATASETS_TRG}"
+  bash ./pipeline/data/download-mono.sh "${TRG}" "${MONO_MAX_SENTENCES_TRG}" "${original}/mono" ${MONO_DATASETS_TRG}
 
 echo "######  clean data"
 bash ./pipeline/clean/clean-corpus.sh "${original}/corpus" "${clean}/corpus"
