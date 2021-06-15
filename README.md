@@ -92,6 +92,16 @@ pit pull home bergamot-training/models/ru-en/exported/lex.50.50.ruen.s2t.bin.gz 
 pit pull home bergamot-training/models/ru-en/exported/vocab.ruen.spm.gz .
 ```
 
+### Tensorboard
+
+Using interactive mode, run:
+```
+cd ./pipeline/train/tensorboard
+MODELS=<absolute_path_to_models_directory> bash tensorboard.sh
+```
+
+Tensorboard will be available on port 6006
+
 ## Pipeline steps
 
 The steps are based on [train-student](https://github.com/browsermt/students/tree/master/train-student) recipe.
