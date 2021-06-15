@@ -106,13 +106,14 @@ if [ -e "${clean}/mono.${TRG}.gz" ]; then
     "${clean}/corpus.${TRG}.gz" \
     "${augmented}/corpus.${SRC}.gz" \
     "${augmented}/corpus.${TRG}.gz"
-
-  echo "######  train teacher"
-  bash ./pipeline/train/train-teacher.sh "${teacher_dir}" "${augmented}/corpus" "${original}/devset"
+  teacher_corpus="${augmented}/corpus"
 else
-  echo "######  train teacher"
-  bash ./pipeline/train/train-teacher.sh "${teacher_dir}" "${clean}/corpus" "${original}/devset"
+  echo "###### skipping augmentation"
+  teacher_corpus="${clean}/corpus"
 fi
+
+echo "######  train teacher"
+bash ./pipeline/train/train-teacher.sh "${teacher_dir}" "${teacher_corpus}" "${original}/devset"
 
 echo "######  evaluate teacher"
 bash ./pipeline/train/eval.sh "${teacher_dir}"
