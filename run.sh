@@ -96,7 +96,7 @@ echo "######  train backward model"
 bash ./pipeline/train/train-s2s.sh "${s2s}" "${clean}/corpus" "${original}/devset" "${TRG}" "${SRC}"
 bash ./pipeline/train/eval.sh "${s2s}" "${TRG}" "${SRC}"
 
-if [ -e "${original}/mono.${TRG}.gz" ]; then
+if [ -e "${clean}/mono.${TRG}.gz" ]; then
   echo "######  augment corpus with back translations"
   bash ./pipeline/translate/translate-mono.sh "${clean}/mono.${TRG}.gz" "${s2s}" "${translated}/mono.${SRC}.gz"
   bash ./pipeline/utils/merge-corpus.sh \
