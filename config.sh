@@ -18,8 +18,10 @@ CLEAN_TOOLS=${WORKDIR}/pipeline/clean/tools
 BIN=${WORKDIR}/bin
 TMP=/tmp
 
+EXPERIMENT=test
 SRC=ru
 TRG=en
+
 # parallel corpus
 TRAIN_DATASETS="opus_OPUS-ParaCrawl/v7.1"
 DEVTEST_DATASETS="mtdata_newstest2019_ruen mtdata_newstest2017_ruen mtdata_newstest2015_ruen mtdata_newstest2014_ruen"

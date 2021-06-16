@@ -14,42 +14,45 @@ set -euo pipefail
 #
 #├ data
 #│   └ ru-en
-#│      ├ original
-#│      │   ├ corpus.ru.gz
-#│      │   ├ corpus.en.gz
-#│      │   ├ mono.ru.gz
-#│      │   ├ mono.en.gz
-#│      │   ├ devset.ru.gz
-#│      │   └ devset.en.gz
-#│      ├ clean
-#│      │   ├ corpus.ru.gz
-#│      │   ├ corpus.en.gz
-#│      │   ├ mono.ru.gz
-#│      │   └ mono.en.gz
-#│      ├ translated
-#│      │   ├ mono.ru.gz
-#│      │   └ mono.en.gz
-#│      ├ augmented
-#│      │   ├ corpus.ru.gz
-#│      │   └ corpus.en.gz
-#│      ├ alignment
-#│      │   ├ corpus.aln.gz
-#│      │   └ lex.s2t.pruned.gz
-#│      ├ merged
-#│      │   ├ corpus.ru.gz
-#│      │   └ corpus.en.gz
-#│      └ filtered
-#│          ├ corpus.ru.gz
-#│          └ corpus.en.gz
+#│      └ test
+#│        ├ original
+#│        │   ├ corpus.ru.gz
+#│        │   ├ corpus.en.gz
+#│        │   ├ mono.ru.gz
+#│        │   ├ mono.en.gz
+#│        │   ├ devset.ru.gz
+#│        │   └ devset.en.gz
+#│        ├ clean
+#│        │   ├ corpus.ru.gz
+#│        │   ├ corpus.en.gz
+#│        │   ├ mono.ru.gz
+#│        │   └ mono.en.gz
+#│        ├ translated
+#│        │   ├ mono.ru.gz
+#│        │   └ mono.en.gz
+#│        ├ augmented
+#│        │   ├ corpus.ru.gz
+#│        │   └ corpus.en.gz
+#│        ├ alignment
+#│        │   ├ corpus.aln.gz
+#│        │   └ lex.s2t.pruned.gz
+#│        ├ merged
+#│        │   ├ corpus.ru.gz
+#│        │   └ corpus.en.gz
+#│        └ filtered
+#│            ├ corpus.ru.gz
+#│            └ corpus.en.gz
 #├ model
 #│   ├ ru-en
-#│   │   ├ teacher
-#│   │   ├ student
-#│   │   ├ student-finetuned
-#│   │   ├ speed
-#│   │   └ exported
+#│   │   └ test
+#│   │      ├ teacher
+#│   │      ├ student
+#│   │      ├ student-finetuned
+#│   │      ├ speed
+#│   │      └ exported
 #│   ├ en-ru
-#│   │   └ s2s
+#│   │   └ test
+#│   │      └ s2s
 
 echo "###### read config "
 source ./config.sh
@@ -62,20 +65,22 @@ conda activate bergamot-training-env
 
 echo "######  set common variables"
 # data
-original="${DATA_DIR}/${SRC}-${TRG}/original"
-clean="${DATA_DIR}/${SRC}-${TRG}/clean"
-augmented="${DATA_DIR}/${SRC}-${TRG}/augmented"
-translated="${DATA_DIR}/${SRC}-${TRG}/translated"
-merged="${DATA_DIR}/${SRC}-${TRG}/merged"
-filtered="${DATA_DIR}/${SRC}-${TRG}/filtered"
-align_dir="${DATA_DIR}/${SRC}-${TRG}/alignment"
+data_dir="${DATA_DIR}/${SRC}-${TRG}/${EXPERIMENT}"
+original="${data_dir}/original"
+clean="${data_dir}/clean"
+augmented="${data_dir}/augmented"
+translated="${data_dir}/translated"
+merged="${data_dir}/merged"
+filtered="${data_dir}/filtered"
+align_dir="${data_dir}/alignment"
 # models
-student_dir="${MODELS_DIR}/${SRC}-${TRG}/student"
-student_finetuned_dir="${MODELS_DIR}/${SRC}-${TRG}/student-finetuned"
-teacher_dir="${MODELS_DIR}/${SRC}-${TRG}/teacher"
-s2s="${MODELS_DIR}/${TRG}-${SRC}/s2s"
-speed="${MODELS_DIR}/${SRC}-${TRG}/speed"
-exported="${MODELS_DIR}/${SRC}-${TRG}/exported"
+models_dir="${MODELS_DIR}/${SRC}-${TRG}/${EXPERIMENT}"
+student_dir="${models_dir}/student"
+student_finetuned_dir="${models_dir}/student-finetuned"
+teacher_dir="${models_dir}/teacher"
+s2s="${MODELS_DIR}/${TRG}-${SRC}/${EXPERIMENT}/s2s"
+speed="${models_dir}/speed"
+exported="${models_dir}/exported"
 
 echo "######  download data"
 bash ./pipeline/data/download-corpus.sh "${original}/corpus" ${TRAIN_DATASETS}
