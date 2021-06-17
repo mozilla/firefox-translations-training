@@ -1,0 +1,26 @@
+# https://github.com/browsermt/students/tree/master/train-student/models/student.tiny11
+dec-cell-base-depth: 2
+dec-cell-high-depth: 1
+dec-cell: ssru
+dec-depth: 2
+dim-emb: 256
+dim-vocabs: [32000, 32000]
+enc-cell-depth: 1
+enc-cell: gru
+enc-depth: 6
+enc-type: bidirectional
+tied-embeddings-all: true
+transformer-decoder-autoreg: rnn
+transformer-dim-ffn: 1536
+transformer-ffn-activation: relu
+transformer-ffn-depth: 2
+transformer-guided-alignment-layer: last
+transformer-heads: 8
+transformer-no-projection: false
+transformer-postprocess-emb: d
+transformer-postprocess: dan
+transformer-preprocess: ""
+transformer-tied-layers: []
+transformer-train-position-embeddings: false
+type: transformer
+

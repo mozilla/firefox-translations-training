@@ -1,0 +1,9 @@
+[submodule "fast_align"]
+	path = 3rd_party/fast_align
+	url = https://github.com/clab/fast_align
+[submodule "extract-lex"]
+	path = 3rd_party/extract-lex
+	url = https://github.com/marian-nmt/extract-lex
+[submodule "marian-dev"]
+	path = 3rd_party/marian-dev
+	url = https://github.com/browsermt/marian-dev
