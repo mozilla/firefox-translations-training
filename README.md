@@ -87,9 +87,9 @@ bash ./pipeline/.../<script>.sh <args>
 #### To download exported models:
 
 ```
-pit pull home bergamot-training/models/ru-en/exported/model.ruen.intgemm.alphas.bin.gz .
-pit pull home bergamot-training/models/ru-en/exported/lex.50.50.ruen.s2t.bin.gz .
-pit pull home bergamot-training/models/ru-en/exported/vocab.ruen.spm.gz .
+pit pull home bergamot-training/models/ru-en/test/exported/model.ruen.intgemm.alphas.bin.gz .
+pit pull home bergamot-training/models/ru-en/test/exported/lex.50.50.ruen.s2t.bin.gz .
+pit pull home bergamot-training/models/ru-en/test/exported/vocab.ruen.spm.gz .
 ```
 
 ### Tensorboard
