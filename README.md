@@ -2,7 +2,7 @@
 Training pipelines for Firefox Translations machine translation models.
 The trained models are hosted in [bergamot-models](https://github.com/mozilla-applied-ml/bergamot-models/),
 compatible with [bergamot-translator](https://github.com/mozilla/bergamot-translator) and can be used by
-[firefox-translations](https://github.com/mozilla-extensions/firefox-translations) web extension.
+[firefox-translations](https://github.com/mozilla-extensions/firefox-translations) web extension. This work is a part of [Bergamot](https://browser.mt/) project  that focuses on improving client-side machine translation in a web browser.
 
 The pipeline is capable of training a translation model for a language pair end to end. It uses fast tranlsation engine [Marian](https://marian-nmt.github.io).
 Translation quality will depend mostly on chosen datasets and data cleaning procedures. Some settings might require extra data cleaning.
