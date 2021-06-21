@@ -1,4 +1,4 @@
-# Bergamot training
+# Firefox Translations training
 Training pipelines for Bergamot machine translation models.
 The trained models are hosted in [bergamot-models](https://github.com/mozilla-applied-ml/bergamot-models/),
 compatible with [bergamot-translator](https://github.com/mozilla/bergamot-translator) and can be used by
