@@ -1,8 +1,8 @@
-# Bergamot training
-Training pipelines for Bergamot machine translation models.
+# Firefox Translations training
+Training pipelines for Firefox Translations machine translation models.
 The trained models are hosted in [bergamot-models](https://github.com/mozilla-applied-ml/bergamot-models/),
 compatible with [bergamot-translator](https://github.com/mozilla/bergamot-translator) and can be used by
-[firefox-translations](https://github.com/mozilla-extensions/firefox-translations) web extension.
+[firefox-translations](https://github.com/mozilla-extensions/firefox-translations) web extension. This work is a part of [Bergamot](https://browser.mt/) project  that focuses on improving client-side machine translation in a web browser.
 
 The pipeline is capable of training a translation model for a language pair end to end. It uses fast tranlsation engine [Marian](https://marian-nmt.github.io).
 Translation quality will depend mostly on chosen datasets and data cleaning procedures. Some settings might require extra data cleaning.
@@ -30,8 +30,8 @@ It was tested on:
 
 ### Using a target Linux machine
 ```
-git clone https://github.com/mozilla/bergamot-training.git
-cd bergamot-training
+git clone https://github.com/mozilla/firefox-translations-training.git
+cd firefox-translations-training
 # change settings in config.sh or modify code if needed
 bash run.sh
 ```
@@ -51,10 +51,10 @@ See [Snakepit installation](https://github.com/mozilla/snakepit-client).
 
 #### To run end to end
 ```
-git clone <this repo>
-cd bergamot-training
+git clone https://github.com/mozilla/firefox-translations-training.git
+cd firefox-translations-training
 # change settings in config.sh or modify code if needed
-pit run --log "bergamot-training-ru-en" "[8:g2080]"
+pit run --log "firefox-translations-training-ru-en" "[8:g2080]"
 ```
 
 #### Interactive usage:
@@ -87,9 +87,9 @@ bash ./pipeline/.../<script>.sh <args>
 #### To download exported models:
 
 ```
-pit pull home bergamot-training/models/ru-en/test/exported/model.ruen.intgemm.alphas.bin.gz .
-pit pull home bergamot-training/models/ru-en/test/exported/lex.50.50.ruen.s2t.bin.gz .
-pit pull home bergamot-training/models/ru-en/test/exported/vocab.ruen.spm.gz .
+pit pull home firefox-translations-training/models/ru-en/test/exported/model.ruen.intgemm.alphas.bin.gz .
+pit pull home firefox-translations-training/models/ru-en/test/exported/lex.50.50.ruen.s2t.bin.gz .
+pit pull home firefox-translations-training/models/ru-en/test/exported/vocab.ruen.spm.gz .
 ```
 
 ### Tensorboard
