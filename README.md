@@ -222,3 +222,15 @@ At the same time it is possible to run it all locally end to end or to do intera
 1. Add [bicleaner](https://github.com/bitextor/bicleaner/)
 2. Add translation with an ensemble of teacher models
 3. Add more importers
+
+## References
+
+[1] V. M. Sánchez-Cartagena, M. Bañón, S. Ortiz-Rojas and G. Ramírez-Sánchez, 
+"[Prompsit's submission to WMT 2018 Parallel Corpus Filtering shared task](http://www.statmt.org/wmt18/pdf/WMT116.pdf)",
+in *Proceedings of the Third Conference on Machine Translation, Volume 2: Shared Task Papers*.
+Brussels, Belgium: Association for Computational Linguistics, October 2018
+
+[2] Gema Ramírez-Sánchez, Jaume Zaragoza-Bernabeu, Marta Bañón and Sergio Ortiz Rojas 
+"[Bifixer and Bicleaner: two open-source tools to clean your parallel data.](https://eamt2020.inesc-id.pt/proceedings-eamt2020.pdf#page=311)",
+in *Proceedings of the 22nd Annual Conference of the European Association for Machine Translation*.
+Lisboa, Portugal: European Association for Machine Translation, November 2020

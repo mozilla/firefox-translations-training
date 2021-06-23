@@ -7,3 +7,6 @@
 [submodule "marian-dev"]
 	path = 3rd_party/marian-dev
 	url = https://github.com/browsermt/marian-dev
+[submodule "3rd_party/kenlm"]
+	path = 3rd_party/kenlm
+	url = https://github.com/kpu/kenlm
