@@ -47,7 +47,7 @@ if [ ! -e "${file_name}" ]; then
     rm "${source_prefix}"*
   done
 
-  pigz -dc "${dir}"/*."${lang}".gz | pigz >"${file_name}"
+  pigz -dc "${dir}"/*."${lang}".gz | shuf -n "${max_sent}" | pigz >"${file_name}"
 
 fi
 
