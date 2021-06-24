@@ -25,15 +25,13 @@ model_dir=$7
 test -v GPUS
 test -v MARIAN
 test -v WORKSPACE
-test -v TMP
 
 test -e "${train_set_prefix}.${src}.gz" || exit 1
 test -e "${train_set_prefix}.${trg}.gz" || exit 1
 test -e "${valid_set_prefix}.${src}.gz" || exit 1
 test -e "${valid_set_prefix}.${trg}.gz" || exit 1
 
-mkdir -p tmp
-mkdir -p "${model_dir}"
+mkdir -p "${model_dir}/tmp"
 
 echo "### Training ${model_dir}"
 
@@ -41,7 +39,7 @@ echo "### Training ${model_dir}"
   --model "${model_dir}/model.npz" \
   -c "${model_config}" "${training_config}" \
   --train-sets "${train_set_prefix}".{"${src}","${trg}"}.gz \
-  -T "${TMP}/train" \
+  -T "${model_dir}/tmp" \
   --shuffle-in-ram \
   --vocabs "${model_dir}/vocab.spm" "${model_dir}/vocab.spm" \
   -w "${WORKSPACE}" \

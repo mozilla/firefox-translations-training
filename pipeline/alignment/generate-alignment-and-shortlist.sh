@@ -24,7 +24,7 @@ test -e "${BIN}/extract_lex" || exit 1
 test -e "${BIN}/fast_align" || exit 1
 
 mkdir -p "${output_dir}"
-dir="${TMP}/alignment"
+dir="${output_dir}/alignment"
 mkdir -p "${dir}"
 
 corpus_src="${corpus_prefix}.${SRC}.gz"
@@ -68,13 +68,12 @@ test -s "${dir}/lex.s2t.gz" ||
   "${BIN}/extract_lex" \
     "${dir}/corpus.spm.${TRG}.gz" \
     "${dir}/corpus.spm.${SRC}.gz" \
-    "${dir}/corpus.aln.gz" \
+    "${output_dir}/corpus.aln.gz" \
     "${dir}/lex.s2t" \
     "${dir}/lex.t2s"
 test -s "${dir}/lex.s2t" && pigz "${dir}/lex.s2t"
 
 echo "### Cleaning"
-test -s "${output_dir}/corpus.aln.gz" || rsync "${dir}/corpus.aln.gz" "${output_dir}/corpus.aln.gz"
 test -e "${dir}/lex.t2s" && rm "${dir}/lex.t2s"
 
 echo "### Shortlist pruning"

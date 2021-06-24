@@ -25,8 +25,8 @@ output_prefix=$3
 remove=0.05
 model="${model_dir}/model.npz.best-ce-mean-words.npz"
 vocab="${model_dir}/vocab.spm"
-dir="${TMP}/scored"
 output_dir=$(dirname "${output_prefix}")
+dir="${output_dir}/scored"
 mkdir -p "${output_dir}"
 mkdir -p "${dir}"
 
