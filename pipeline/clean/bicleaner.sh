@@ -18,6 +18,10 @@ test -v CLEAN_TOOLS
 corpus_prefix=$1
 output_prefix=$2
 
+PATH="/root/miniconda3/bin:${PATH}"
+source /root/miniconda3/etc/profile.d/conda.sh
+conda activate bergamot-training-env
+
 threshold=0.7
 output_dir=$(dirname "${output_prefix}")
 tmp_dir="${output_dir}/tmp"
@@ -41,7 +45,7 @@ echo "### Classifying and filtering"
 test -s "${output_prefix}.${SRC}.gz" || test -s "${tmp_dir}/best.gz" ||
   paste <(pigz -dc "${corpus_prefix}.${SRC}.gz") <(pigz -dc "${corpus_prefix}.${TRG}.gz") |
   ${cmd} --scol 1 --tcol 1 - - "${tmp_dir}"/*.yaml |
-  awk "{if ($3>${threshold}) {print $0}}" | pigz >"${tmp_dir}/best.gz"
+  awk -v threshold=${threshold} '{if ($3>threshold) {print $0}}' | pigz >"${tmp_dir}/best.gz"
 
 echo "### Writing output corpus"
 test -s "${output_prefix}.${SRC}.gz" || pigz -dc "${tmp_dir}/best.gz" | cut -f1 | pigz >"${output_prefix}.${SRC}.gz"

@@ -7,6 +7,7 @@
 #
 
 set -x
+# don't use pipefail here because of wget check
 set -eu
 
 test -v SRC
@@ -25,7 +26,7 @@ if [ "${type}" == 'bicleaner-ai' ]; then
     prefix="full-"
     extension="tgz"
 elif [ "${type}" == 'bicleaner' ]; then
-    url="https://github.com/bitextor/bicleaner-ai-data/releases/latest/download"
+    url="https://github.com/bitextor/bicleaner-data/releases/latest/download"
     prefix=""
     extension="tar.gz"
 else
@@ -49,10 +50,11 @@ else
   lang2=$TRG
 fi
 
-test -e "${download_path}"/*.yaml || \
+if ! test -s "${download_path}"/*.yaml; then
   wget -P "${download_path}" "${url}/${prefix}${lang1}-${lang2}.${extension}"
   tar xvf "${download_path}/${prefix}${lang1}-${lang2}.${extension}" -C "${download_path}" --no-same-owner
   mv "${download_path}/${lang1}-${lang2}"/* "${download_path}/"
   rm "${download_path}/${prefix}${lang1}-${lang2}.${extension}"
+fi
 
 echo "### ${type} language pack ${url} is downloaded"
