@@ -13,10 +13,9 @@ set -euo pipefail
 echo "###### Running tensorboard"
 
 test -v MODELS
+test -v WORKDIR
 
-PATH="/root/miniconda3/bin:${PATH}"
-source /root/miniconda3/etc/profile.d/conda.sh
-conda activate bergamot-training-env
+source "${WORKDIR}/pipeline/setup/activate-python.sh"
 
 ls -d "${MODELS}"/*/*/* > tb-monitored-jobs
 tensorboard --logdir="${MODELS}" --host=0.0.0.0 &

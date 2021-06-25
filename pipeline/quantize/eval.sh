@@ -24,6 +24,8 @@ vocab="${model_dir}/vocab.spm"
 
 mkdir -p "${eval_dir}"
 
+source "${WORKDIR}/pipeline/setup/activate-python.sh"
+
 echo "### Evaluating a model ${model_dir} on CPU"
 for prefix in ${TEST_DATASETS}; do
   echo "### Evaluating ${prefix} ${SRC}-${TRG}"

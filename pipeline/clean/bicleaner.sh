@@ -23,6 +23,7 @@ output_dir=$(dirname "${output_prefix}")
 tmp_dir="${output_dir}/tmp"
 mkdir -p "${tmp_dir}"
 
+source "${WORKDIR}/pipeline/setup/activate-python.sh"
 
 if [ ! -e "${output_prefix}.${SRC}.gz" ]; then
   if bash "${CLEAN_TOOLS}/download-bicleaner-pack.sh" "${tmp_dir}" "bicleaner-ai"; then

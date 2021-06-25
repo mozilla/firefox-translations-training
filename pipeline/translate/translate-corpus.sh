@@ -26,6 +26,8 @@ decoder_config="${WORKDIR}/pipeline/translate/decoder.yml"
 tmp_dir=$(dirname "${output_path}")/tmp
 mkdir -p "${tmp_dir}"
 
+source "${WORKDIR}/pipeline/setup/activate-python.sh"
+
 echo "### Splitting a parallel corpus into smaller chunks"
 test -s "${tmp_dir}/file.00" ||
   pigz -dc "${corpus_src}" |

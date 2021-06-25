@@ -25,6 +25,8 @@ mkdir -p "$(dirname "${output}")"
 test -s "${data}.${SRC}.gz" || exit 1
 test -s "${data}.${TRG}.gz" || exit 1
 
+source "${WORKDIR}/pipeline/setup/activate-python.sh"
+
 echo "### CLeaning ${data}"
 
 ######################################################################

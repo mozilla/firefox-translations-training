@@ -15,6 +15,7 @@ test -v BIN
 
 if [ ! -e "${BIN}/kenlm" ]; then
   cd "${WORKDIR}/3rd_party/kenlm"
+  source "${WORKDIR}/pipeline/setup/activate-python.sh"
   python -m pip install . --install-option="--max_order 7"
 
   mkdir -p build

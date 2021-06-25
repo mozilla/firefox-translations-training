@@ -15,6 +15,7 @@ test -v GPUS
 test -v MARIAN
 test -v WORKSPACE
 test -v TEST_DATASETS
+test -v WORKDIR
 
 model_dir=$1
 src="${2:-${SRC}}"
@@ -26,6 +27,8 @@ eval_dir="${model_dir}/eval"
 echo "### Checking model files"
 test -e "${config}" || exit 1
 mkdir -p "${eval_dir}"
+
+source "${WORKDIR}/pipeline/setup/activate-python.sh"
 
 echo "### Evaluating a model ${model_dir}"
 for prefix in ${TEST_DATASETS}; do

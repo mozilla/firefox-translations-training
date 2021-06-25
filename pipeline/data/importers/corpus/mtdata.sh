@@ -16,6 +16,8 @@ trg=$2
 dir=$3
 dataset=$4
 
+source "${WORKDIR}/pipeline/setup/activate-python.sh"
+
 src_iso=$(python -c "from mtdata.iso import iso3_code; print(iso3_code('${src}', fail_error=True))")
 trg_iso=$(python -c "from mtdata.iso import iso3_code; print(iso3_code('${trg}', fail_error=True))")
 

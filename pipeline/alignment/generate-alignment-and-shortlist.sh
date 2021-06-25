@@ -30,6 +30,8 @@ mkdir -p "${dir}"
 corpus_src="${corpus_prefix}.${SRC}.gz"
 corpus_trg="${corpus_prefix}.${TRG}.gz"
 
+source "${WORKDIR}/pipeline/setup/activate-python.sh"
+
 echo "### Subword segmentation with SentencePiece"
 test -s "${dir}/corpus.spm.${SRC}.gz" ||
   pigz -dc "${corpus_src}" |
