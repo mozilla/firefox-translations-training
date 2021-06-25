@@ -21,7 +21,7 @@ sudo apt-get install -y pigz htop wget unzip parallel
 
 bash "${WORKDIR}/pipeline/setup/compile-marian.sh"
 bash "${WORKDIR}/pipeline/setup/compile-alignment.sh"
-bash "${WORKDIR}/pipeline/setup/install-kenlm.sh"
 bash "${WORKDIR}/pipeline/setup/install-python.sh"
+bash "${WORKDIR}/pipeline/setup/install-kenlm.sh"
 
 echo "######### Done: Installing all dependencies"
