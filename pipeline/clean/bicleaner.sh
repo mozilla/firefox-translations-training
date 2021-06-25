@@ -18,10 +18,6 @@ test -v CLEAN_TOOLS
 corpus_prefix=$1
 output_prefix=$2
 
-PATH="/root/miniconda3/bin:${PATH}"
-source /root/miniconda3/etc/profile.d/conda.sh
-conda activate bergamot-training-env
-
 threshold=0.7
 output_dir=$(dirname "${output_prefix}")
 tmp_dir="${output_dir}/tmp"

@@ -62,6 +62,9 @@ source ./config.sh
 
 echo "######  setup"
 bash ./pipeline/setup/install-all.sh
+PATH="/root/miniconda3/bin:${PATH}"
+source /root/miniconda3/etc/profile.d/conda.sh
+conda activate bergamot-training-env
 
 echo "######  set common variables"
 # data

@@ -15,10 +15,6 @@ test -v BIN
 
 if [ ! -e "${BIN}/kenlm" ]; then
   cd "${WORKDIR}/3rd_party/kenlm"
-
-  PATH="/root/miniconda3/bin:${PATH}"
-  source /root/miniconda3/etc/profile.d/conda.sh
-  conda activate bergamot-training-env
   python -m pip install . --install-option="--max_order 7"
 
   mkdir -p build
