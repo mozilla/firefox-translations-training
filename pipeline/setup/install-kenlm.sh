@@ -23,7 +23,8 @@ if [ ! -e "${BIN}/kenlm" ]; then
 
   mkdir -p build
   cd build
-  cmake .. -DKENLM_MAX_ORDER=7 -DCMAKE_INSTALL_PREFIX:PATH="${BIN}"
+  mkdir "${BIN}/kenlm"
+  cmake .. -DKENLM_MAX_ORDER=7 -DCMAKE_INSTALL_PREFIX:PATH="${BIN}/kenlm"
   make -j all install
   cd "${WORKDIR}"
 fi

@@ -27,6 +27,9 @@ set -euo pipefail
 #│        │   ├ corpus.en.gz
 #│        │   ├ mono.ru.gz
 #│        │   └ mono.en.gz
+#│        ├ biclean
+#│        │   ├ corpus.ru.gz
+#│        │   ├ corpus.en.gz
 #│        ├ translated
 #│        │   ├ mono.ru.gz
 #│        │   └ mono.en.gz
@@ -65,6 +68,7 @@ echo "######  set common variables"
 data_dir="${DATA_DIR}/${SRC}-${TRG}/${EXPERIMENT}"
 original="${data_dir}/original"
 clean="${data_dir}/clean"
+biclean="${data_dir}/biclean"
 augmented="${data_dir}/augmented"
 translated="${data_dir}/translated"
 merged="${data_dir}/merged"
@@ -89,13 +93,14 @@ test -n "${MONO_DATASETS_TRG}" &&
 
 echo "######  clean data"
 bash ./pipeline/clean/clean-corpus.sh "${original}/corpus" "${clean}/corpus"
+bash ./pipeline/clean/bicleaner.sh "${clean}/corpus" "${biclean}/corpus"
 test -e "${original}/mono.${SRC}.gz" &&
   bash ./pipeline/clean/clean-mono.sh "${SRC}" "${original}/mono" "${clean}/mono"
 test -e "${original}/mono.${TRG}.gz" &&
   bash ./pipeline/clean/clean-mono.sh "${TRG}" "${original}/mono" "${clean}/mono"
 
 echo "######  train backward model"
-bash ./pipeline/train/train-s2s.sh "${s2s}" "${clean}/corpus" "${original}/devset" "${TRG}" "${SRC}"
+bash ./pipeline/train/train-s2s.sh "${s2s}" "${biclean}/corpus" "${original}/devset" "${TRG}" "${SRC}"
 bash ./pipeline/train/eval.sh "${s2s}" "${TRG}" "${SRC}"
 
 if [ -e "${clean}/mono.${TRG}.gz" ]; then
@@ -103,15 +108,15 @@ if [ -e "${clean}/mono.${TRG}.gz" ]; then
   bash ./pipeline/translate/translate-mono.sh "${clean}/mono.${TRG}.gz" "${s2s}" "${translated}/mono.${SRC}.gz"
   bash ./pipeline/utils/merge-corpus.sh \
     "${translated}/mono.${SRC}.gz" \
-    "${clean}/corpus.${SRC}.gz" \
+    "${biclean}/corpus.${SRC}.gz" \
     "${clean}/mono.${TRG}.gz" \
-    "${clean}/corpus.${TRG}.gz" \
+    "${biclean}/corpus.${TRG}.gz" \
     "${augmented}/corpus.${SRC}.gz" \
     "${augmented}/corpus.${TRG}.gz"
   teacher_corpus="${augmented}/corpus"
 else
   echo "###### skipping augmentation"
-  teacher_corpus="${clean}/corpus"
+  teacher_corpus="${biclean}/corpus"
 fi
 
 echo "######  train teacher"

@@ -45,7 +45,8 @@ echo "### Classifying and filtering"
 test -s "${output_prefix}.${SRC}.gz" || test -s "${tmp_dir}/best.gz" ||
   paste <(pigz -dc "${corpus_prefix}.${SRC}.gz") <(pigz -dc "${corpus_prefix}.${TRG}.gz") |
   ${cmd} --scol 1 --tcol 1 - - "${tmp_dir}"/*.yaml |
-  awk -v threshold=${threshold} '{if ($3>threshold) {print $0}}' | pigz >"${tmp_dir}/best.gz"
+  awk -v threshold=${threshold} '{if ($3>threshold) {print $0}}' |
+  pigz >"${tmp_dir}/best.gz"
 
 echo "### Writing output corpus"
 test -s "${output_prefix}.${SRC}.gz" || pigz -dc "${tmp_dir}/best.gz" | cut -f1 | pigz >"${output_prefix}.${SRC}.gz"

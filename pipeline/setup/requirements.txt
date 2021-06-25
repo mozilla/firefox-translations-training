@@ -5,4 +5,5 @@ tensorboard==2.5.0
 tensorboardX==2.2
 click==8.0.1
 bicleaner==0.14
-bicleaner-ai==1.0.1
+# TODO: conflicts with regular bicleaner
+#bicleaner-ai==1.0.1
