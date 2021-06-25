@@ -38,6 +38,7 @@ MONO_DATASETS_TRG="news-crawl_news.2020"
 # limits per downloaded dataset
 MONO_MAX_SENTENCES_SRC=100000000
 MONO_MAX_SENTENCES_TRG=20000000
+BICLEANER_THRESHOLD=0.5
 
 
 # marian --devices parameter for GPUs to use, for example 0 1 2 3

@@ -14,11 +14,11 @@ echo "###### Bicleaner filtering"
 test -v SRC
 test -v TRG
 test -v CLEAN_TOOLS
+test -v BICLEANER_THRESHOLD
 
 corpus_prefix=$1
 output_prefix=$2
 
-threshold=0.7
 output_dir=$(dirname "${output_prefix}")
 tmp_dir="${output_dir}/tmp"
 mkdir -p "${tmp_dir}"
@@ -42,7 +42,7 @@ echo "### Classifying and filtering"
 test -s "${output_prefix}.${SRC}.gz" || test -s "${tmp_dir}/best.gz" ||
   paste <(pigz -dc "${corpus_prefix}.${SRC}.gz") <(pigz -dc "${corpus_prefix}.${TRG}.gz") |
   ${cmd} --scol 1 --tcol 1 - - "${tmp_dir}"/*.yaml |
-  awk -v threshold=${threshold} '{if ($3>threshold) {print $0}}' |
+  awk -v threshold=${BICLEANER_THRESHOLD} '{if ($3>threshold) {print $0}}' |
   pigz >"${tmp_dir}/best.gz"
 
 echo "### Writing output corpus"
