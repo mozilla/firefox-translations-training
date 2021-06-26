@@ -22,7 +22,7 @@ dataset_path=${dir}/tmp/${dataset%\/*}.txt.zip
 test -s "${dataset_path}" ||
   wget -O "${dataset_path}" "https://object.pouta.csc.fi/${dataset}/moses/${src}-${trg}.txt.zip" ||
   wget -O "${dataset_path}" "https://object.pouta.csc.fi/${dataset}/moses/${trg}-${src}.txt.zip"
-unzip "${dataset_path}" -d "${dir}"
+unzip -o "${dataset_path}" -d "${dir}"
 
 rm -rf "${dir}/tmp"
 
