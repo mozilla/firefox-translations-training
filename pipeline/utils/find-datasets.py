@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+"""
+Finds all opus datasets for a language pair
+and prints them to set in TRAIN_DATASETS config setting
+"""
+
 import requests
 
 source='ru'
