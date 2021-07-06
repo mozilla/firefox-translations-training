@@ -23,5 +23,6 @@ bash "${WORKDIR}/pipeline/setup/compile-marian.sh"
 bash "${WORKDIR}/pipeline/setup/compile-alignment.sh"
 bash "${WORKDIR}/pipeline/setup/install-python.sh"
 bash "${WORKDIR}/pipeline/setup/install-kenlm.sh"
+bash "${WORKDIR}/pipeline/setup/install-python-packages.sh"
 
 echo "######### Done: Installing all dependencies"
