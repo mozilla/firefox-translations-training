@@ -23,7 +23,13 @@ SRC=ru
 TRG=en
 
 # parallel corpus
-TRAIN_DATASETS="opus_OPUS-ParaCrawl/v7.1"
+TRAIN_DATASETS="opus_OPUS-ada83/v1 opus_OPUS-PHP/v1 opus_OPUS-Wikipedia/v1.0 "\
+"opus_OPUS-ParaCrawl/v8 opus_OPUS-News-Commentary/v16 opus_OPUS-TED2013/v1.1 opus_OPUS-EUbookshop/v2 "\
+"opus_OPUS-TED2020/v1 opus_OPUS-Books/v1 opus_OPUS-TildeMODEL/v2018 opus_OPUS-UNPC/v1.0 "\
+"opus_OPUS-Tanzil/v1 opus_OPUS-ELRC_2922/v1 opus_OPUS-infopankki/v1 opus_OPUS-XLEnt/v1.1 "\
+"opus_OPUS-WikiMatrix/v1 opus_OPUS-GlobalVoices/v2018q4 opus_OPUS-QED/v2.0a "\
+"opus_OPUS-tico-19/v2020-10-28 opus_OPUS-UN/v20090831 opus_OPUS-wikimedia/v20210402 "\
+"opus_OPUS-WMT-News/v2019 opus_OPUS-Tatoeba/v2021-03-10"
 DEVTEST_DATASETS="mtdata_newstest2019_ruen mtdata_newstest2017_ruen mtdata_newstest2015_ruen mtdata_newstest2014_ruen"
 # sacrebleu
 TEST_DATASETS="wmt20 wmt18 wmt16 wmt13"
