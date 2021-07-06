@@ -60,7 +60,8 @@ test -s "${output}.${SRC}.gz" || test -s "${output}.${SRC}${TRG}.rule-based.gz" 
 echo "### Language identification"
 test -s "${output}.${SRC}.gz" || test -s "${output}.${SRC}${TRG}.langid.gz" ||
   pigz -dc "${output}.${SRC}${TRG}.rule-based.gz" |
-  parallel --no-notice --pipe -k -j "$(nproc)" --block 50M \
+  # memory intensive
+  parallel --no-notice --pipe -k -j "$(echo "$(nproc)"/4 | bc)" --block 50M \
     "python3 -Wi ${CLEAN_TOOLS}/langid_fasttext.py -f 1 | python3 -Wi ${CLEAN_TOOLS}/langid_fasttext.py -f 1" |
   grep -P "^${SRC}\t${TRG}\t" |
   cut -f3,4 |
