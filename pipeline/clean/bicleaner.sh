@@ -25,12 +25,15 @@ mkdir -p "${tmp_dir}"
 
 source "${WORKDIR}/pipeline/setup/activate-python.sh"
 
+# bicleaner and bicleaner-ai have conflicting dependencies. installing on demand
 if [ ! -e "${output_prefix}.${SRC}.gz" ]; then
   if bash "${CLEAN_TOOLS}/download-bicleaner-pack.sh" "${tmp_dir}" "bicleaner-ai"; then
     echo "### Using bicleaner-ai"
+    pip install bicleaner-ai==1.0.1
     cmd=bicleaner-ai-classify
   elif bash "${CLEAN_TOOLS}/download-bicleaner-pack.sh" "${tmp_dir}" "bicleaner"; then
     echo "### Using bicleaner"
+    pip install bicleaner==0.14
     cmd=bicleaner-classify
   else
     echo "### Bicleaner language pack is not supported, skipping"
