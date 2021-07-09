@@ -25,6 +25,7 @@ mkdir -p "${dir}"
 # use teacher's vocab, otherwise alignments won't work
 cp   "${teacher}/vocab.spm" "${dir}/"
 
+test -s "${dir}/model.npz.best-bleu-detok.npz" ||
 bash "${WORKDIR}/pipeline/train/train.sh" \
   "${WORKDIR}/pipeline/train/configs/model/student.tiny11.yml" \
   "${WORKDIR}/pipeline/train/configs/training/student.train.yml" \
