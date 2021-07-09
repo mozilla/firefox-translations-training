@@ -22,7 +22,7 @@ invalid_url() {
 }
 
 if [ "${type}" == 'bicleaner-ai' ]; then
-    url="https://github.com/bitextor/bicleaner-data/releases/latest/download"
+    url="https://github.com/bitextor/bicleaner-ai-data/releases/latest/download"
     prefix="full-"
     extension="tgz"
 elif [ "${type}" == 'bicleaner' ]; then
