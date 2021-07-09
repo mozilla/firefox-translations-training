@@ -13,6 +13,9 @@ set -euo pipefail
 # Directories structure
 #
 #├ data
+#│   ├ cache TODO
+#│   │  └ opus_wmt20.ru.gz
+#│   │  └ sacrebleu_wmt20.en.gz
 #│   └ ru-en
 #│      └ test
 #│        ├ original
@@ -94,8 +97,7 @@ bash ./pipeline/data/download-corpus.sh "${original}/corpus" ${TRAIN_DATASETS}
 bash ./pipeline/data/download-corpus.sh "${original}/devset" ${DEVTEST_DATASETS}
 for dataset in ${TEST_DATASETS}; do
   bash ./pipeline/data/download-corpus.sh "${evaluation}/${dataset}" ${dataset}
-  pigz -d "${evaluation}/${dataset}.${SRC}.gz"
-  pigz -d "${evaluation}/${dataset}.${TRG}.gz"
+  pigz -d "${evaluation}/${dataset}.${SRC}.gz" "${evaluation}/${dataset}.${TRG}.gz"
 done
 test -n "${MONO_DATASETS_SRC}" &&
   bash ./pipeline/data/download-mono.sh "${SRC}" "${MONO_MAX_SENTENCES_SRC}" "${original}/mono" ${MONO_DATASETS_SRC}
