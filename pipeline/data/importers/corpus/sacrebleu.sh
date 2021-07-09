@@ -16,6 +16,8 @@ trg=$2
 dir=$3
 dataset=$4
 
+source "${WORKDIR}/pipeline/setup/activate-python.sh"
+
 test -s "${dir}/${dataset}.${src}" ||
 sacrebleu -t "${dataset}" -l "${src}-${trg}" --echo src | pigz > "${dir}/${dataset}.${src}"
 
