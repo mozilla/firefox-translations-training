@@ -18,8 +18,10 @@ test -v TEST_DATASETS
 test -v WORKDIR
 
 model_dir=$1
-src="${2:-${SRC}}"
-trg="${3:-${TRG}}"
+datasets_dir=$2
+src="${3:-${SRC}}"
+trg="${4:-${TRG}}"
+
 
 config="${model_dir}/model.npz.best-bleu-detok.npz.decoder.yml"
 eval_dir="${model_dir}/eval"
@@ -34,7 +36,7 @@ echo "### Evaluating a model ${model_dir}"
 for prefix in ${TEST_DATASETS}; do
   echo "### Evaluating ${prefix} ${src}-${trg}"
   test -s "${eval_dir}/${prefix}.${trg}.bleu" ||
-  sacrebleu -t "${prefix}" -l "${src}-${trg}" --echo src |
+  cat "${datasets_dir}/${prefix}.${src}" |
     tee "${eval_dir}/${prefix}.${src}" |
     "${MARIAN}"/marian-decoder \
       -c "${config}" \
@@ -44,7 +46,7 @@ for prefix in ${TEST_DATASETS}; do
       --log "${eval_dir}/${prefix}.log" \
       -d ${GPUS} |
     tee "${eval_dir}/${prefix}.${trg}" |
-    sacrebleu -d -t "${prefix}" -l "${src}-${trg}" |
+    sacrebleu -d -l "${src}-${trg}" "${datasets_dir}/${prefix}.${trg}"  |
     tee "${eval_dir}/${prefix}.${trg}.bleu"
 
   test -e "${eval_dir}/${prefix}.${trg}.bleu" || exit 1

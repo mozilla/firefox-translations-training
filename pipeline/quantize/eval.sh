@@ -18,6 +18,7 @@ test -v TRG
 
 model_dir=$1
 shortlist=$2
+datasets_dir=$3
 
 eval_dir="${model_dir}/eval"
 vocab="${model_dir}/vocab.spm"
@@ -29,7 +30,7 @@ source "${WORKDIR}/pipeline/setup/activate-python.sh"
 echo "### Evaluating a model ${model_dir} on CPU"
 for prefix in ${TEST_DATASETS}; do
   echo "### Evaluating ${prefix} ${SRC}-${TRG}"
-  sacrebleu -t "${prefix}" -l "${SRC}-${TRG}" --echo src |
+  cat "${datasets_dir}/${prefix}.${SRC}" |
     tee "${eval_dir}/${prefix}.${SRC}" |
     "${MARIAN}"/marian-decoder \
       -m "${model_dir}/model.intgemm.alphas.bin" \
@@ -41,7 +42,7 @@ for prefix in ${TEST_DATASETS}; do
       --shortlist "${shortlist}" false \
       --int8shiftAlphaAll |
     tee "${eval_dir}/${prefix}.${TRG}" |
-    sacrebleu -d -t "${prefix}" -l "${SRC}-${TRG}" |
+    sacrebleu -d -l "${SRC}-${TRG}" "${datasets_dir}/${prefix}.${TRG}" |
     tee "${eval_dir}/${prefix}.${TRG}.bleu"
 
   test -e "${eval_dir}/${prefix}.${TRG}.bleu" || exit 1

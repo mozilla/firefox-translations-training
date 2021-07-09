@@ -67,6 +67,7 @@ echo "######  set common variables"
 # data
 data_dir="${DATA_DIR}/${SRC}-${TRG}/${EXPERIMENT}"
 original="${data_dir}/original"
+evaluation="${data_dir}/evaluation"
 clean="${data_dir}/clean"
 biclean="${data_dir}/biclean"
 augmented="${data_dir}/augmented"
@@ -86,6 +87,11 @@ exported="${models_dir}/exported"
 echo "######  download data"
 bash ./pipeline/data/download-corpus.sh "${original}/corpus" ${TRAIN_DATASETS}
 bash ./pipeline/data/download-corpus.sh "${original}/devset" ${DEVTEST_DATASETS}
+for dataset in ${TEST_DATASETS}; do
+  bash ./pipeline/data/download-corpus.sh "${evaluation}/${dataset}" ${dataset}
+  pigz -d "${evaluation}/${dataset}.${SRC}.gz"
+  pigz -d "${evaluation}/${dataset}.${TRG}.gz"
+done
 test -n "${MONO_DATASETS_SRC}" &&
   bash ./pipeline/data/download-mono.sh "${SRC}" "${MONO_MAX_SENTENCES_SRC}" "${original}/mono" ${MONO_DATASETS_SRC}
 test -n "${MONO_DATASETS_TRG}" &&
@@ -101,7 +107,7 @@ test -e "${original}/mono.${TRG}.gz" &&
 
 echo "######  train backward model"
 bash ./pipeline/train/train-s2s.sh "${s2s}" "${biclean}/corpus" "${original}/devset" "${TRG}" "${SRC}"
-bash ./pipeline/train/eval.sh "${s2s}" "${TRG}" "${SRC}"
+bash ./pipeline/train/eval.sh "${s2s}" "${evaluation}" "${TRG}" "${SRC}"
 
 if [ -e "${clean}/mono.${TRG}.gz" ]; then
   echo "######  augment corpus with back translations"
@@ -123,7 +129,7 @@ echo "######  train teacher"
 bash ./pipeline/train/train-teacher.sh "${teacher_dir}" "${teacher_corpus}" "${original}/devset"
 
 echo "######  evaluate teacher"
-bash ./pipeline/train/eval.sh "${teacher_dir}"
+bash ./pipeline/train/eval.sh "${teacher_dir}" "${evaluation}"
 
 echo "######  translate with teacher"
 bash ./pipeline/translate/translate-corpus.sh "${clean}/corpus.${SRC}.gz" \
@@ -155,7 +161,7 @@ bash ./pipeline/train/train-student.sh \
   "${original}/devset" \
   "${teacher_dir}" \
   "${align_dir}"
-bash ./pipeline/train/eval.sh "${student_dir}"
+bash ./pipeline/train/eval.sh "${student_dir}" "${evaluation}"
 
 echo "######  finetune student"
 bash ./pipeline/train/finetune-student.sh \
@@ -164,7 +170,7 @@ bash ./pipeline/train/finetune-student.sh \
   "${original}/devset" \
   "${student_dir}" \
   "${align_dir}"
-bash ./pipeline/train/eval.sh "${student_finetuned_dir}"
+bash ./pipeline/train/eval.sh "${student_finetuned_dir}" "${evaluation}"
 
 echo "######   quantize"
 bash ./pipeline/quantize/quantize.sh \
@@ -172,7 +178,7 @@ bash ./pipeline/quantize/quantize.sh \
   "${align_dir}/lex.s2t.pruned.gz" \
   "${original}/devset.${SRC}.gz" \
   "${speed}"
-bash ./pipeline/quantize/eval.sh "${speed}" "${align_dir}/lex.s2t.pruned.gz"
+bash ./pipeline/quantize/eval.sh "${speed}" "${align_dir}/lex.s2t.pruned.gz" "${evaluation}"
 
 echo "######  export"
 bash ./pipeline/quantize/export.sh "${speed}" "${align_dir}/lex.s2t.pruned.gz" "${exported}"

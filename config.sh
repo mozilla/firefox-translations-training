@@ -32,7 +32,7 @@ TRAIN_DATASETS="opus_OPUS-ada83/v1 opus_OPUS-PHP/v1 opus_OPUS-Wikipedia/v1.0 "\
 "opus_OPUS-WMT-News/v2019 opus_OPUS-Tatoeba/v2021-03-10"
 DEVTEST_DATASETS="mtdata_newstest2019_ruen mtdata_newstest2017_ruen mtdata_newstest2015_ruen mtdata_newstest2014_ruen"
 # sacrebleu
-TEST_DATASETS="wmt20 wmt18 wmt16 wmt13"
+TEST_DATASETS="sacrebleu_wmt20 sacrebleu_wmt18 sacrebleu_wmt16 sacrebleu_wmt13"
 # monolingual datasets (ex. paracrawl-mono_paracrawl8, commoncrawl_wmt16, news-crawl_news.2020)
 # to be translated by the teacher model
 MONO_DATASETS_SRC="news-crawl_news.2020 news-crawl_news.2019 news-crawl_news.2018 news-crawl_news.2017 "\
