@@ -21,6 +21,7 @@ if [ ! -e "${BIN}/kenlm" ]; then
   mkdir "${BIN}/kenlm"
   cmake .. -DKENLM_MAX_ORDER=7 -DCMAKE_INSTALL_PREFIX:PATH="${BIN}/kenlm"
   make -j all install
+  cd ..
 fi
 
 source "${WORKDIR}/pipeline/setup/activate-python.sh"
