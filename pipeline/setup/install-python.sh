@@ -11,12 +11,12 @@ set -euo pipefail
 
 echo "###### Installing Python"
 
-if [ ! -e "${BIN}/miniconda3/bin/conda" ]; then
+if [ ! -e "${CONDA_DIR}/bin/conda" ]; then
   wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-  bash ./Miniconda3-latest-Linux-x86_64.sh -b -u -p "${BIN}/miniconda3"
+  bash ./Miniconda3-latest-Linux-x86_64.sh -b -u -p "${CONDA_DIR}"
   rm -f Miniconda3-latest-Linux-x86_64.sh
 fi
-export PATH="${BIN}/miniconda3/bin:${PATH}"
+export PATH="${CONDA_DIR}/bin:${PATH}"
 conda create -y --name bergamot-training-env python=3.8
 
 

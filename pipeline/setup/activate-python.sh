@@ -6,6 +6,8 @@
 #   source ./activate-python.sh
 #
 
-PATH="${BIN}/miniconda3/bin:${PATH}"
-source "${BIN}/miniconda3/etc/profile.d/conda.sh"
+set +eu
+PATH="${CONDA_DIR}/bin:${PATH}"
+source "${CONDA_DIR}/etc/profile.d/conda.sh"
 conda activate bergamot-training-env
+set -eu

@@ -16,6 +16,7 @@ MODELS_DIR=${MODELS_DIR:-${WORKDIR}/models}
 MARIAN=${MARIAN:-${WORKDIR}/3rd_party/marian-dev/build}
 CLEAN_TOOLS=${WORKDIR}/pipeline/clean/tools
 BIN=${WORKDIR}/bin
+CONDA_DIR=${HOME}/miniconda3
 TMP=/tmp
 
 EXPERIMENT=test
