@@ -22,6 +22,11 @@ set -euo pipefail
 #│        │   ├ mono.en.gz
 #│        │   ├ devset.ru.gz
 #│        │   └ devset.en.gz
+#│        ├ evaluation
+#│        │   ├ wmt12.ru
+#│        │   ├ wmt12.en
+#│        │   ├ wmt20.ru
+#│        │   ├ wmt20.en
 #│        ├ clean
 #│        │   ├ corpus.ru.gz
 #│        │   ├ corpus.en.gz

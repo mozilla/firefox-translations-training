@@ -29,7 +29,7 @@ TRAIN_DATASETS="opus_OPUS-ada83/v1 opus_OPUS-PHP/v1 opus_OPUS-Wikipedia/v1.0 "\
 "opus_OPUS-Tanzil/v1 opus_OPUS-ELRC_2922/v1 opus_OPUS-infopankki/v1 opus_OPUS-XLEnt/v1.1 "\
 "opus_OPUS-WikiMatrix/v1 opus_OPUS-GlobalVoices/v2018q4 opus_OPUS-QED/v2.0a "\
 "opus_OPUS-tico-19/v2020-10-28 opus_OPUS-UN/v20090831 opus_OPUS-wikimedia/v20210402 "\
-"opus_OPUS-WMT-News/v2019 opus_OPUS-Tatoeba/v2021-03-10"
+"opus_OPUS-WMT-News/v2019 opus_OPUS-Tatoeba/v2021-03-10 mtdata_JW300"
 DEVTEST_DATASETS="mtdata_newstest2019_ruen mtdata_newstest2017_ruen mtdata_newstest2015_ruen mtdata_newstest2014_ruen"
 # sacrebleu
 TEST_DATASETS="sacrebleu_wmt20 sacrebleu_wmt18 sacrebleu_wmt16 sacrebleu_wmt13"
@@ -40,7 +40,7 @@ MONO_DATASETS_SRC="news-crawl_news.2020 news-crawl_news.2019 news-crawl_news.201
 "news-crawl_news.2011"
 # to be translated by the shallow s2s model to augment teacher corpus with back-translations
 # leave empty to skip augmentation step (high resource languages)
-MONO_DATASETS_TRG="news-crawl_news.2020"
+MONO_DATASETS_TRG=""
 # limits per downloaded dataset
 MONO_MAX_SENTENCES_SRC=100000000
 MONO_MAX_SENTENCES_TRG=20000000
