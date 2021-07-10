@@ -22,6 +22,6 @@ test -s "${dir}/${dataset}.${src}" ||
 sacrebleu -t "${dataset}" -l "${src}-${trg}" --echo src > "${dir}/${dataset}.${src}"
 
 test -s "${dir}/${dataset}.${trg}" ||
-sacrebleu -t "${dataset}" -l "${src}-${trg}" --echo trg > "${dir}/${dataset}.${trg}"
+sacrebleu -t "${dataset}" -l "${src}-${trg}" --echo ref > "${dir}/${dataset}.${trg}"
 
 echo "###### Done: Downloading sacrebleu corpus"
