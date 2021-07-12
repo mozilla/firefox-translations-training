@@ -1,7 +1,16 @@
 #!/usr/bin/env python3
 """
 Finds all opus datasets for a language pair
-and prints them to set in TRAIN_DATASETS config setting
+and prints them to set in TRAIN_DATASETS, DEVTEST_DATASETS or TEST_DATASETS config settings.
+
+Usage:
+    python find-corpus.py <src> <trg> <importer>
+
+Params:
+    src - source language code
+    trg - target language code
+    importer - importer type (mtdata, opus, sacrebleu)
+
 """
 
 import requests
@@ -11,7 +20,7 @@ source=sys.argv[1]
 target=sys.argv[2]
 type=sys.argv[3]
 
-exclude = ['bible', 'CC', 'subtitles', 'Ubuntu', 'Gnome', 'KDE', 'Multi']
+exclude = ['bible', 'Ubuntu', 'Gnome', 'KDE', 'Multi']
 names = []
 
 if type == 'opus':

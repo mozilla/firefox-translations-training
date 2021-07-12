@@ -4,7 +4,7 @@
 #
 # Usage:
 #   Run from current directory
-#   MODELS=<absolute_path_to_models_directory> bash tensorboard.sh
+#   WORKDIR=<repo-root-dir> MODELS=<absolute_path_to_models_directory> bash tensorboard.sh
 #
 
 set -x

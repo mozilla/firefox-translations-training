@@ -118,7 +118,7 @@ Training teacher | Trains one or multiple big transformer models | GPU | You mig
 Translation by teacher | Translates a corpus and monolingual data combined from `MONO_DATASETS_SRC` using the teacher model (ensemble is not supported yet) | GPU | The slowest part of the pipeline. Can take days. It is possible to speed it up launching the same scripts ([corpus](pipeline/translate/translate-corpus.sh), [mono](pipeline/translate/translate-mono.sh)) in parallel from another machine with access to the same network directory.
 Cross-entropy filtering | Scores translated corpus with backward s2s model and removes a part of the corpus with the lowest scores to reduce noise | GPU, CPU, Disk | At this point we work with huge datasets, so it utilizes copying to a local disk to make things faster.
 Training alignments and shortlist | Trains alignments using [fast_align](https://github.com/clab/fast_align) and extracts lexical shortlist using [extract_lex](https://github.com/marian-nmt/extract-lex) tool | CPU, Disk | Some tools requires uncompressed datasets on disk and they are huge at this point. Data is copied to a local disk to make things faster. Might take 100+GB of local disk depending on a dataset size. Good CPU parallelization.
-Training student | Trains a small transformer student model on filtered data and using alignments | GPU | Run [Tensorboard](pipeline/train/tensorboard/tensorboard.sh) manually to see training visualization.
+Training student | Trains a small transformer student model on filtered data and using alignments | GPU | Run [Tensorboard](utils/tensorboard/tensorboard.sh) manually to see training visualization.
 Fine-tuning student | Finetunes the student model by emulating 8bit GEMM during training | GPU | Converges very quickly and then degrades. It's quick but you might want to reduce early stopping threshold.
 Quantizaiton |  Applies 8 bit quantization to the fined-tuned student model and evaluates on CPU | CPU | CPU threads must be set to 1 for this step.
 Export | Exports trained model and shortlist to (bergamot-translator)(https://github.com/mozilla/bergamot-translator) format | |
@@ -142,7 +142,7 @@ Data source | Prefix | Name example | Type | Comments
 [News crawl](http://data.statmt.org/news-crawl) | news-crawl | news.2019 | mono | Some news monolingual datasets from [WMT21](https://www.statmt.org/wmt21/translation-task.html)
 [Common crawl](https://commoncrawl.org/) | commoncrawl | wmt16 | mono | Huge web crawl datasets. The links are posted on [WMT21](https://www.statmt.org/wmt21/translation-task.html)
 
-You can use `find-corpus` tool to find all datasets for an importer to get them formatted to use in config.
+You can use [find-corpus](utils/find-corpus.py) tool to find all datasets for an importer and get them formatted to use in config.
 
 Example:
 
@@ -211,11 +211,6 @@ At the same time it is possible to run it all locally end to end or to do intera
 - Scripts should automatically inspect resources available for computation and utilize them to make things faster
   (number of cores, memory).
   
-## TODO
-
-1. Add [bicleaner](https://github.com/bitextor/bicleaner/)
-2. Add translation with an ensemble of teacher models
-3. Add more importers
 
 ## References
 
