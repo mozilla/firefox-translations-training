@@ -95,10 +95,7 @@ exported="${models_dir}/exported"
 echo "######  download data"
 bash ./pipeline/data/download-corpus.sh "${original}/corpus" ${TRAIN_DATASETS}
 bash ./pipeline/data/download-corpus.sh "${original}/devset" ${DEVTEST_DATASETS}
-for dataset in ${TEST_DATASETS}; do
-  bash ./pipeline/data/download-corpus.sh "${evaluation}/${dataset}" "${dataset}"
-  pigz -dkf "${evaluation}"/*.*.gz
-done
+bash ./pipeline/data/download-eval.sh "${evaluation}" ${TEST_DATASETS}
 test -n "${MONO_DATASETS_SRC}" &&
   bash ./pipeline/data/download-mono.sh "${SRC}" "${MONO_MAX_SENTENCES_SRC}" "${original}/mono" ${MONO_DATASETS_SRC}
 test -n "${MONO_DATASETS_TRG}" &&
