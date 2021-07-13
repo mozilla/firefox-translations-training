@@ -29,15 +29,15 @@ eval_dir="${model_dir}/eval"
 echo "### Checking model files"
 test -e "${config}" || exit 1
 mkdir -p "${eval_dir}"
-
 source "${WORKDIR}/pipeline/setup/activate-python.sh"
 
 echo "### Evaluating a model ${model_dir}"
-for prefix in ${TEST_DATASETS}; do
+for src_path in "${datasets_dir}"/*."${src}"; do
+  prefix=$(basename "${src_path}" ".${src}")
   echo "### Evaluating ${prefix} ${src}-${trg}"
+
   test -s "${eval_dir}/${prefix}.${trg}.bleu" ||
-  cat "${datasets_dir}/${prefix}.${src}" |
-    tee "${eval_dir}/${prefix}.${src}" |
+    tee "${eval_dir}/${prefix}.${src}" < "${src_path}" |
     "${MARIAN}"/marian-decoder \
       -c "${config}" \
       -w "${WORKSPACE}" \

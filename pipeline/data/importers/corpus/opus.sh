@@ -18,7 +18,9 @@ dataset=$4
 
 mkdir -p "${dir}/tmp"
 
-dataset_path=${dir}/tmp/${dataset%\/*}.txt.zip
+name="${dataset//[^A-Za-z0-9_- ]/_}"
+dataset_path="${dir}/tmp/${name}.txt.zip"
+
 test -s "${dataset_path}" ||
   wget -O "${dataset_path}" "https://object.pouta.csc.fi/${dataset}/moses/${src}-${trg}.txt.zip" ||
   wget -O "${dataset_path}" "https://object.pouta.csc.fi/${dataset}/moses/${trg}-${src}.txt.zip"

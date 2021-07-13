@@ -16,12 +16,15 @@ trg=$2
 dir=$3
 dataset=$4
 
+test -v WORKDIR
+
 source "${WORKDIR}/pipeline/setup/activate-python.sh"
+name="${dataset//[^A-Za-z0-9_- ]/_}"
 
-test -s "${dir}/${dataset}.${src}" ||
-sacrebleu -t "${dataset}" -l "${src}-${trg}" --echo src > "${dir}/${dataset}.${src}"
+test -s "${dir}/${name}.${src}" ||
+sacrebleu -t "${dataset}" -l "${src}-${trg}" --echo src > "${dir}/${name}.${src}"
 
-test -s "${dir}/${dataset}.${trg}" ||
-sacrebleu -t "${dataset}" -l "${src}-${trg}" --echo ref > "${dir}/${dataset}.${trg}"
+test -s "${dir}/${name}.${trg}" ||
+sacrebleu -t "${dataset}" -l "${src}-${trg}" --echo ref > "${dir}/${name}.${trg}"
 
 echo "###### Done: Downloading sacrebleu corpus"
