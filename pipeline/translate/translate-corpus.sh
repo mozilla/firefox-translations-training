@@ -21,6 +21,12 @@ corpus_trg=$2
 model_dir=$3
 output_path=$4
 
+if [ -e output_path ]; then
+  echo "### Corpus already exists, skipping"
+  echo "###### Done: Translating a corpus"
+  exit 0
+fi
+
 config="${model_dir}/model.npz.best-ce-mean-words.npz.decoder.yml"
 decoder_config="${WORKDIR}/pipeline/translate/decoder.yml"
 tmp_dir=$(dirname "${output_path}")/tmp

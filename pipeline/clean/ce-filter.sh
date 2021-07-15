@@ -21,6 +21,12 @@ model_dir=$1
 corpus_prefix=$2
 output_prefix=$3
 
+if [ -e "${output_prefix}.${TRG}.gz" ]; then
+  echo "### Dataset already exists, skipping"
+  echo "###### Done: Cross entropy filtering"
+  exit 0
+fi
+
 # Part of the data to be removed (0.05 is 5%)
 remove=0.05
 model="${model_dir}/model.npz.best-ce-mean-words.npz"
