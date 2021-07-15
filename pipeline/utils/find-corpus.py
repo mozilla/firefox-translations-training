@@ -20,7 +20,7 @@ source=sys.argv[1]
 target=sys.argv[2]
 type=sys.argv[3]
 
-exclude = ['bible', 'Ubuntu', 'Gnome', 'KDE', 'Multi']
+exclude = ['bible', 'Ubuntu', 'Gnome', 'KDE', 'Multi', 'OPUS100v']
 names = []
 
 if type == 'opus':
