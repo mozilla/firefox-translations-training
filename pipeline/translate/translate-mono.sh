@@ -15,7 +15,7 @@ mono_path=$1
 model_dir=$2
 output_path=$3
 
-if [ -e output_path ]; then
+if [ -e "${output_path}" ]; then
   echo "### Dataset already exists, skipping"
   echo "###### Done: Translating monolingual data"
   exit 0

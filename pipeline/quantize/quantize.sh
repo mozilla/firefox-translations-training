@@ -24,7 +24,7 @@ output_dir=$4
 
 res_model="${output_dir}/model.intgemm.alphas.bin"
 
-if [ -e res_model ]; then
+if [ -e "${res_model}" ]; then
   echo "### Converted model already exists, skipping"
   echo "###### Done: Quantizing a model"
   exit 0

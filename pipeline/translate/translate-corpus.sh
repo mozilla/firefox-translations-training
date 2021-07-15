@@ -21,7 +21,7 @@ corpus_trg=$2
 model_dir=$3
 output_path=$4
 
-if [ -e output_path ]; then
+if [ -e "${output_path}" ]; then
   echo "### Corpus already exists, skipping"
   echo "###### Done: Translating a corpus"
   exit 0
