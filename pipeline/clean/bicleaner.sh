@@ -36,7 +36,9 @@ if [ ! -e "${output_prefix}.${SRC}.gz" ]; then
     pip install bicleaner==0.14
     cmd=bicleaner-classify
   else
-    echo "### Bicleaner language pack is not supported, skipping"
+    echo "### Bicleaner language pack is not supported, skipping."
+    cp "${corpus_prefix}.${SRC}.gz" "${output_prefix}.${SRC}.gz"
+    cp "${corpus_prefix}.${TRG}.gz" "${output_prefix}.${TRG}.gz"
     exit 0
   fi
 fi
