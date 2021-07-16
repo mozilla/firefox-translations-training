@@ -67,7 +67,7 @@ test -s "${tmp_dir}/file.00.nbest.out" ||
     2>"${tmp_dir}/debug.txt"
 
 echo "### Collecting translations"
-test -s "${output_path}" || cat "${tmp_dir}"/file.??.nbest.out | pigz >"${output_path}"
+test -s "${output_path}" || cat "${tmp_dir}"/file.*.nbest.out | pigz >"${output_path}"
 
 echo "### Comparing number of sentences ${corpus_src} vs ${output_path}"
 src_len=$(pigz -dc "${corpus_src}" | wc -l)
