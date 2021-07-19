@@ -13,7 +13,7 @@ It was tested on relatively high resource language pair `ru-en`. Low resource pa
 - Ubuntu 18.04 (it can work on other Linux distributions, but might require `setup` scripts fixes; see more details in [marian installation instructions](https://marian-nmt.github.io/quickstart/)).
 - One or several Nvidia GPUs with CUDA drivers installed and at least 8 GB of memory.
 - At least 16 CPU cores ( some steps of the pipeline utilize multiple cores pretty well, so the more the better).
-- 64GB RAM
+- 64 GB RAM (128 GB might be required for bigger datasets)
 - 200+ GB of disk space ( mostly for datasets and transformations ). 
   It depends on chosen datasets and can be significantly higher.
   
