@@ -136,13 +136,13 @@ TEST_DATASETS="sacrebleu_wmt20 sacrebleu_wmt18"
 Data source | Prefix | Name example | Type | Comments
 --- | --- | --- | ---| ---
 [MTData](https://github.com/thammegowda/mtdata) | mtdata | newstest2017_ruen | corpus | Supports many datasets. Run `mtdata list -l ru-en` to see datasets for a specific language pair.
-[OPUS](opus.nlpl.eu/) | opus | OPUS-ParaCrawl/v7.1 | corpus | Many open source datasets. Go to the website, choose a language pair, check links under Moses column to see what names and version is used in a link OR run `python pipeline/utils/find-opus-corpus.py <src> <trg>`
+[OPUS](opus.nlpl.eu/) | opus | ParaCrawl/v7.1 | corpus | Many open source datasets. Go to the website, choose a language pair, check links under Moses column to see what names and version is used in a link.
 [SacreBLEU](https://github.com/mjpost/sacrebleu) | sacrebleu | wmt20 | corpus | Official evaluation datasets available in SacreBLEU tool. Recommended to use in `TEST_DATASETS`. Look up supported datasets and language pairs in `sacrebleu.dataset` python module.
 [Paracrawl](https://paracrawl.eu/) | paracrawl-mono | paracrawl8 | mono | Datasets that are crawled from the web. Only [mono datasets](https://paracrawl.eu/index.php/moredata) are used in this importer. Parallel corpus is available using opus importer.
 [News crawl](http://data.statmt.org/news-crawl) | news-crawl | news.2019 | mono | Some news monolingual datasets from [WMT21](https://www.statmt.org/wmt21/translation-task.html)
 [Common crawl](https://commoncrawl.org/) | commoncrawl | wmt16 | mono | Huge web crawl datasets. The links are posted on [WMT21](https://www.statmt.org/wmt21/translation-task.html)
 
-You can use [find-corpus](utils/find-corpus.py) tool to find all datasets for an importer and get them formatted to use in config.
+You can also use [find-corpus](pipeline/utils/find-corpus.py) tool to find all datasets for an importer and get them formatted to use in config.
 
 Example:
 

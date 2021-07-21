@@ -20,12 +20,14 @@ source=sys.argv[1]
 target=sys.argv[2]
 type=sys.argv[3]
 
-exclude = ['bible', 'Ubuntu', 'Gnome', 'KDE', 'Multi', 'OPUS100v']
+# exclude = ['bible', 'Ubuntu', 'Gnome', 'KDE', 'Multi', 'OPUS100v']
+exclude = []
 names = []
 
 if type == 'opus':
+    exclude += ['OPUS100v']
     datasets = requests.get(f'https://opus.nlpl.eu/opusapi/?source={source}&target={target}&preprocessing=moses&version=latest').json()
-    names = [f'opus_OPUS-{d["corpus"]}/{d["version"]}' for d in datasets['corpora']]
+    names = [f'opus_{d["corpus"]}/{d["version"]}' for d in datasets['corpora']]
 elif type == 'sacrebleu':
     import sacrebleu
     names = [f'sacrebleu_{name}' for name, meta in sacrebleu.DATASETS.items()
@@ -33,7 +35,7 @@ elif type == 'sacrebleu':
 elif type == 'mtdata':
     from mtdata.main import LangPair
     from mtdata.data import get_entries
-    exclude += 'OPUS'
+    exclude += ['opus', 'newstest']
     entries = get_entries(LangPair(f'{source}-{target}'), None, None)
     names = [f'mtdata_{entry.name}' for entry in entries]
 else:
