@@ -18,6 +18,7 @@ n=${4}
 
 # This can be parallelized across multiple machines
 for i in $(seq 1 ${n}); do
+  test -s "${dir}${i}/model.npz.best-bleu-detok.npz" ||
   bash "${WORKDIR}/pipeline/train/train.sh" \
     "${WORKDIR}/pipeline/train/configs/model/teacher.transformer.yml" \
     "${WORKDIR}/pipeline/train/configs/training/teacher.transformer-ens.train.yml" \

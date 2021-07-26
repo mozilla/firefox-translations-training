@@ -16,6 +16,7 @@ input=$2
 output=$3
 
 test -v CLEAN_TOOLS
+source "${WORKDIR}/pipeline/setup/activate-python.sh"
 
 echo "### CLeaning ${input}"
 
@@ -42,7 +43,8 @@ test -s "${output}.${lang}.gz" || test -s "${output}.${lang}.nrm.uniq.gz" ||
 echo "### Language identification"
 test -s "${output}.${lang}.gz" || test -s "${output}.${lang}.langid.gz" ||
   pigz -dc "${output}.${lang}.nrm.uniq.gz" |
-  parallel --no-notice --pipe -k -j "$(nproc)" --block 50M "python ${CLEAN_TOOLS}/langid_fasttext.py" |
+  # memory intensive
+  parallel --no-notice --pipe -k -j "$(echo "$(nproc)"/4 | bc)" --block 50M "python ${CLEAN_TOOLS}/langid_fasttext.py" |
   grep -P "^${lang}\t" | cut -f2 |
   pigz >"${output}.${lang}.langid.gz"
 

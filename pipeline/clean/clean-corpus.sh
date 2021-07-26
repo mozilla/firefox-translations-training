@@ -19,11 +19,15 @@ test -v CLEAN_TOOLS
 data=$1
 output=$2
 
-mkdir -p "$(dirname "${output}")"
+dir="$(dirname "${output}")"
+tmp="${dir}/tmp"
+mkdir -p "${tmp}"
 
 # Check if files exist
 test -s "${data}.${SRC}.gz" || exit 1
 test -s "${data}.${TRG}.gz" || exit 1
+
+source "${WORKDIR}/pipeline/setup/activate-python.sh"
 
 echo "### CLeaning ${data}"
 
@@ -41,7 +45,7 @@ done
 echo "### Deduplication"
 test -s "${output}.${SRC}.gz" || test -s "${output}.${SRC}${TRG}.nrm.uniq.gz" ||
   paste <(pigz -dc "${output}.${SRC}.nrm.gz") <(pigz -dc "${output}.${TRG}.nrm.gz") |
-  LC_ALL=C sort -S 10G |
+  LC_ALL=C sort -S 10G -T "${tmp}" |
   uniq |
   pigz >"${output}.${SRC}${TRG}.nrm.uniq.gz"
 
@@ -58,7 +62,8 @@ test -s "${output}.${SRC}.gz" || test -s "${output}.${SRC}${TRG}.rule-based.gz" 
 echo "### Language identification"
 test -s "${output}.${SRC}.gz" || test -s "${output}.${SRC}${TRG}.langid.gz" ||
   pigz -dc "${output}.${SRC}${TRG}.rule-based.gz" |
-  parallel --no-notice --pipe -k -j "$(nproc)" --block 50M \
+  # memory intensive
+  parallel --no-notice --pipe -k -j "$(echo "$(nproc)"/4 | bc)" --block 50M \
     "python3 -Wi ${CLEAN_TOOLS}/langid_fasttext.py -f 1 | python3 -Wi ${CLEAN_TOOLS}/langid_fasttext.py -f 1" |
   grep -P "^${SRC}\t${TRG}\t" |
   cut -f3,4 |
@@ -84,6 +89,7 @@ test -s "${output}.${TRG}.gz" || exit 1
 
 echo "### Remove ${data} from intermediate steps"
 rm -f "${output}".*.nrm.gz "${output}".*.nrm.uniq.gz "${output}".*.langid.gz "${output}".*.rule-based.gz
+rm -rf "${tmp}"
 
 echo "### Clean data is written to  ${output}"
 

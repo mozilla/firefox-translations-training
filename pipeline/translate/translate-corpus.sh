@@ -21,10 +21,18 @@ corpus_trg=$2
 model_dir=$3
 output_path=$4
 
+if [ -e "${output_path}" ]; then
+  echo "### Corpus already exists, skipping"
+  echo "###### Done: Translating a corpus"
+  exit 0
+fi
+
 config="${model_dir}/model.npz.best-ce-mean-words.npz.decoder.yml"
 decoder_config="${WORKDIR}/pipeline/translate/decoder.yml"
 tmp_dir=$(dirname "${output_path}")/tmp
 mkdir -p "${tmp_dir}"
+
+source "${WORKDIR}/pipeline/setup/activate-python.sh"
 
 echo "### Splitting a parallel corpus into smaller chunks"
 test -s "${tmp_dir}/file.00" ||
@@ -59,7 +67,7 @@ test -s "${tmp_dir}/file.00.nbest.out" ||
     2>"${tmp_dir}/debug.txt"
 
 echo "### Collecting translations"
-test -s "${output_path}" || cat "${tmp_dir}"/file.??.nbest.out | pigz >"${output_path}"
+test -s "${output_path}" || cat "${tmp_dir}"/file.*.nbest.out | pigz >"${output_path}"
 
 echo "### Comparing number of sentences ${corpus_src} vs ${output_path}"
 src_len=$(pigz -dc "${corpus_src}" | wc -l)

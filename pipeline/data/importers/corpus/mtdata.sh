@@ -16,18 +16,25 @@ trg=$2
 dir=$3
 dataset=$4
 
+test -v WORKDIR
+
+source "${WORKDIR}/pipeline/setup/activate-python.sh"
+
 src_iso=$(python -c "from mtdata.iso import iso3_code; print(iso3_code('${src}', fail_error=True))")
 trg_iso=$(python -c "from mtdata.iso import iso3_code; print(iso3_code('${trg}', fail_error=True))")
 
-mtdata get -l "${src}-${trg}" -tr "${dataset}" -o "${dir}"
+if [ ! -e "${dir}/${dataset}.${TRG}" ]; then
+  mtdata get -l "${src}-${trg}" -tr "${dataset}" -o "${dir}"
 
-for f in "${dir}"/train-parts/*."${src_iso}"; do
-  mv "${f}" "${dir}/${dataset}.${SRC}"
-done
-for f in "${dir}"/train-parts/*."${trg_iso}"; do
-  mv "${f}" "${dir}/${dataset}.${TRG}"
-done
+  for f in "${dir}"/train-parts/*."${src_iso}"; do
+    mv "${f}" "${dir}/${dataset}.${SRC}"
+  done
+  for f in "${dir}"/train-parts/*."${trg_iso}"; do
+    mv "${f}" "${dir}/${dataset}.${TRG}"
+  done
 
-rm -rf "${dir}/train-parts"
+  rm -rf "${dir}/train-parts"
+fi
+
 
 echo "###### Done: Downloading mtdata corpus"

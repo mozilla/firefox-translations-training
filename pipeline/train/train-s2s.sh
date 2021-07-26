@@ -19,6 +19,7 @@ trg=${5:-${TRG}}
 
 test -v WORKDIR
 
+test -s "${dir}/model.npz.best-bleu-detok.npz" ||
 bash "${WORKDIR}/pipeline/train/train.sh" \
   "${WORKDIR}/pipeline/train/configs/model/s2s.yml" \
   "${WORKDIR}/pipeline/train/configs/training/s2s.train.yml" \

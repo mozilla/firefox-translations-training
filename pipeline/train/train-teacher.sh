@@ -19,6 +19,7 @@ test -v SRC
 test -v TRG
 test -v WORKDIR
 
+test -s "${dir}/model.npz.best-bleu-detok.npz" ||
 bash "${WORKDIR}/pipeline/train/train.sh" \
   "${WORKDIR}/pipeline/train/configs/model/teacher.transformer.yml" \
   "${WORKDIR}/pipeline/train/configs/training/teacher.transformer.train.yml" \

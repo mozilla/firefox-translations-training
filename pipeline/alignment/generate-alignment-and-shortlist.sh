@@ -19,16 +19,25 @@ corpus_prefix=$1
 vocab_path=$2
 output_dir=$3
 
+if [ -e "${output_dir}/corpus.aln.gz" ] && [ -e "${output_dir}/lex.s2t.pruned.gz" ]; then
+  echo "### Alignments and shortlist already exist, skipping"
+  echo "###### Done: Generating alignments and shortlist"
+  exit 0
+fi
+
+
 test -e "${BIN}/atools" || exit 1
 test -e "${BIN}/extract_lex" || exit 1
 test -e "${BIN}/fast_align" || exit 1
 
 mkdir -p "${output_dir}"
-dir="${TMP}/alignment"
+dir="${output_dir}/tmp"
 mkdir -p "${dir}"
 
 corpus_src="${corpus_prefix}.${SRC}.gz"
 corpus_trg="${corpus_prefix}.${TRG}.gz"
+
+source "${WORKDIR}/pipeline/setup/activate-python.sh"
 
 echo "### Subword segmentation with SentencePiece"
 test -s "${dir}/corpus.spm.${SRC}.gz" ||
@@ -41,41 +50,34 @@ test -s "${dir}/corpus.spm.${TRG}.gz" ||
   pigz >"${dir}/corpus.spm.${TRG}.gz"
 
 echo "### Creating merged corpus"
-test -s "${dir}/corpus.aln.gz" || test -s "${dir}/corpus" ||
+test -s "${output_dir}/corpus.aln.gz" || test -s "${dir}/corpus" ||
   paste <(pigz -dc "${dir}/corpus.spm.${SRC}.gz") <(pigz -dc "${dir}/corpus.spm.${TRG}.gz") |
   sed 's/\t/ ||| /' >"${dir}/corpus"
 
 echo "### Training alignments"
-test -s "${dir}/corpus.aln.gz" ||
-  test -s "${dir}/align.s2t.gz" ||
+test -s "${output_dir}/corpus.aln.gz" || test -s "${dir}/align.s2t.gz" ||
   "${BIN}/fast_align" -vod -i "${dir}/corpus" |
   pigz >"${dir}/align.s2t.gz"
-test -s "${dir}/corpus.aln.gz" ||
-  test -s "${dir}/align.t2s.gz" ||
+test -s "${output_dir}/corpus.aln.gz" || test -s "${dir}/align.t2s.gz" ||
   "${BIN}/fast_align" -vodr -i "${dir}/corpus" |
   pigz >"${dir}/align.t2s.gz"
-test -s "${dir}/corpus" && rm "${dir}/corpus"
 
 echo "### Symmetrizing alignments"
-test -s "${dir}/corpus.aln.gz" || pigz -d "${dir}/align.s2t.gz" "${dir}/align.t2s.gz"
-test -s "${dir}/corpus.aln.gz" ||
+test -s "${output_dir}/corpus.aln.gz" || test -s "${dir}/align.t2s" ||
+  pigz -d "${dir}/align.s2t.gz" "${dir}/align.t2s.gz"
+test -s "${output_dir}/corpus.aln.gz" ||
   "${BIN}/atools" -i "${dir}/align.s2t" -j "${dir}/align.t2s" -c grow-diag-final-and |
-  pigz >"${dir}/corpus.aln.gz"
-test -s "${dir}/align.s2t" && rm "${dir}"/align.???
+  pigz >"${output_dir}/corpus.aln.gz"
 
 echo "### Creating shortlist"
 test -s "${dir}/lex.s2t.gz" ||
   "${BIN}/extract_lex" \
     "${dir}/corpus.spm.${TRG}.gz" \
     "${dir}/corpus.spm.${SRC}.gz" \
-    "${dir}/corpus.aln.gz" \
+    "${output_dir}/corpus.aln.gz" \
     "${dir}/lex.s2t" \
     "${dir}/lex.t2s"
 test -s "${dir}/lex.s2t" && pigz "${dir}/lex.s2t"
-
-echo "### Cleaning"
-test -s "${output_dir}/corpus.aln.gz" || rsync "${dir}/corpus.aln.gz" "${output_dir}/corpus.aln.gz"
-test -e "${dir}/lex.t2s" && rm "${dir}/lex.t2s"
 
 echo "### Shortlist pruning"
 test -s "${dir}/vocab.txt" ||

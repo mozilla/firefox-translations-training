@@ -22,6 +22,15 @@ shortlist=$2
 devtest_src=$3
 output_dir=$4
 
+res_model="${output_dir}/model.intgemm.alphas.bin"
+
+if [ -e "${res_model}" ]; then
+  echo "### Converted model already exists, skipping"
+  echo "###### Done: Quantizing a model"
+  exit 0
+fi
+
+source "${WORKDIR}/pipeline/setup/activate-python.sh"
 mkdir -p "${output_dir}"
 
 model="${model_dir}/model.npz.best-bleu-detok.npz"
@@ -52,7 +61,6 @@ test -s "${output_dir}/model.alphas.npz" ||
     "${output_dir}/model.alphas.npz"
 
 echo "### Converting"
-res_model="${output_dir}/model.intgemm.alphas.bin"
 test -s "${res_model}" ||
   "${MARIAN}"/marian-conv \
     -f "${output_dir}/model.alphas.npz" \

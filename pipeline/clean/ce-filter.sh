@@ -21,14 +21,22 @@ model_dir=$1
 corpus_prefix=$2
 output_prefix=$3
 
+if [ -e "${output_prefix}.${TRG}.gz" ]; then
+  echo "### Dataset already exists, skipping"
+  echo "###### Done: Cross entropy filtering"
+  exit 0
+fi
+
 # Part of the data to be removed (0.05 is 5%)
 remove=0.05
 model="${model_dir}/model.npz.best-ce-mean-words.npz"
 vocab="${model_dir}/vocab.spm"
-dir="${TMP}/scored"
 output_dir=$(dirname "${output_prefix}")
+dir="${output_dir}/scored"
 mkdir -p "${output_dir}"
 mkdir -p "${dir}"
+
+source "${WORKDIR}/pipeline/setup/activate-python.sh"
 
 echo "### Decompressing corpus"
 test -s "${dir}/corpus.${TRG}" || pigz -dc "${corpus_prefix}.${TRG}.gz" >"${dir}/corpus.${TRG}"

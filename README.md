@@ -13,7 +13,7 @@ It was tested on relatively high resource language pair `ru-en`. Low resource pa
 - Ubuntu 18.04 (it can work on other Linux distributions, but might require `setup` scripts fixes; see more details in [marian installation instructions](https://marian-nmt.github.io/quickstart/)).
 - One or several Nvidia GPUs with CUDA drivers installed and at least 8 GB of memory.
 - At least 16 CPU cores ( some steps of the pipeline utilize multiple cores pretty well, so the more the better).
-- 64GB RAM
+- 64 GB RAM (128 GB might be required for bigger datasets)
 - 200+ GB of disk space ( mostly for datasets and transformations ). 
   It depends on chosen datasets and can be significantly higher.
   
@@ -87,9 +87,9 @@ bash ./pipeline/.../<script>.sh <args>
 #### To download exported models:
 
 ```
-pit pull home firefox-translations-training/models/ru-en/exported/model.ruen.intgemm.alphas.bin.gz .
-pit pull home firefox-translations-training/models/ru-en/exported/lex.50.50.ruen.s2t.bin.gz .
-pit pull home firefox-translations-training/models/ru-en/exported/vocab.ruen.spm.gz .
+pit pull home firefox-translations-training/models/ru-en/test/exported/model.ruen.intgemm.alphas.bin.gz .
+pit pull home firefox-translations-training/models/ru-en/test/exported/lex.50.50.ruen.s2t.bin.gz .
+pit pull home firefox-translations-training/models/ru-en/test/exported/vocab.ruen.spm.gz .
 ```
 
 ### Tensorboard
@@ -110,14 +110,15 @@ Step | Description | Bottleneck | Comments
 --- | --- | --- | ---
 Installation | Installing dependencies and compiling | CPU | Takes ~1 hour
 Data downloading | Downloads datasets, samples sentences | Network, Disk | Time depends on dataset size, sampling of huge mono datasets (100M+ sentences) is the most intensive operation.
-Data cleaning | Basic preprocessing, language specific, rule based, deduplication and other attempts to clean noisy data | CPU | Good parallelization across CPU cores. To make cleaning of a new language more efficient add it to [clean_parallel.py](/pipeline/clean/clean_parallel.py).
+Data cleaning | Basic preprocessing, language specific, rule based, deduplication,  and other attempts to clean noisy data in parallel and mono datasets | CPU | Good parallelization across CPU cores. To make cleaning of a new language more efficient add it to [clean_parallel.py](/pipeline/clean/clean_parallel.py).
+Bicleaner | Filters noisy sentence pairs in a parallel corpus using [bicleaner](https://github.com/bitextor/bicleaner) or [bicleaner-ai](https://github.com/bitextor/bicleaner-ai) depending on available language packs. | CPU, GPU | If there are no pretrained language packs for bicleaner-ai, it uses bicleaner. If there are no ones for bicleaner either, this step is skipped. Cleaning threshold is controlled by `BICLEANER_THRESHOLD` config setting.
 Training s2s | Trains a backward shallow s2s model, which is useful for back-translations and ce-filtering | GPU | Inspired by a [marian example](https://github.com/marian-nmt/marian-examples/tree/master/training-basics-sentencepiece).
 Augmentation with back-translations | Translates mono corpus combined from `MONO_DATASETS_TRG` using shallow s2s model. | GPU | It is more useful for low-resource languages and can be skipped for others.
 Training teacher | Trains one or multiple big transformer models | GPU | You might want to adjust [early stopping](pipeline/train/configs/training/teacher.transformer.train.yml) parameters depending on datasets size. Inspired by [transformer](https://github.com/marian-nmt/marian-examples/tree/master/transformer) and [wmt2017-uedin](https://github.com/marian-nmt/marian-examples/tree/master/wmt2017-uedin) marian examples and extended with [SentencePiece](https://github.com/google/sentencepiece).
 Translation by teacher | Translates a corpus and monolingual data combined from `MONO_DATASETS_SRC` using the teacher model (ensemble is not supported yet) | GPU | The slowest part of the pipeline. Can take days. It is possible to speed it up launching the same scripts ([corpus](pipeline/translate/translate-corpus.sh), [mono](pipeline/translate/translate-mono.sh)) in parallel from another machine with access to the same network directory.
 Cross-entropy filtering | Scores translated corpus with backward s2s model and removes a part of the corpus with the lowest scores to reduce noise | GPU, CPU, Disk | At this point we work with huge datasets, so it utilizes copying to a local disk to make things faster.
 Training alignments and shortlist | Trains alignments using [fast_align](https://github.com/clab/fast_align) and extracts lexical shortlist using [extract_lex](https://github.com/marian-nmt/extract-lex) tool | CPU, Disk | Some tools requires uncompressed datasets on disk and they are huge at this point. Data is copied to a local disk to make things faster. Might take 100+GB of local disk depending on a dataset size. Good CPU parallelization.
-Training student | Trains a small transformer student model on filtered data and using alignments | GPU | Run [Tensorboard](pipeline/train/tensorboard/tensorboard.sh) manually to see training visualization.
+Training student | Trains a small transformer student model on filtered data and using alignments | GPU | Run [Tensorboard](utils/tensorboard/tensorboard.sh) manually to see training visualization.
 Fine-tuning student | Finetunes the student model by emulating 8bit GEMM during training | GPU | Converges very quickly and then degrades. It's quick but you might want to reduce early stopping threshold.
 Quantizaiton |  Applies 8 bit quantization to the fined-tuned student model and evaluates on CPU | CPU | CPU threads must be set to 1 for this step.
 Export | Exports trained model and shortlist to (bergamot-translator)(https://github.com/mozilla/bergamot-translator) format | |
@@ -129,35 +130,28 @@ Dataset importers can be used in `TRAIN_DATASETS, DEVTEST_DATASETS, MONO_DATASET
 Example:
 ```
 TRAIN_DATASETS="opus_OPUS-ParaCrawl/v7.1 mtdata_newstest2019_ruen"
+TEST_DATASETS="sacrebleu_wmt20 sacrebleu_wmt18"
 ```
 
 Data source | Prefix | Name example | Type | Comments
 --- | --- | --- | ---| ---
 [MTData](https://github.com/thammegowda/mtdata) | mtdata | newstest2017_ruen | corpus | Supports many datasets. Run `mtdata list -l ru-en` to see datasets for a specific language pair.
-[OPUS](opus.nlpl.eu/) | opus | OPUS-ParaCrawl/v7.1 | corpus | Many open source datasets. Go to the website, choose a language pair, check links under Moses column to see what names and version is used in a link.
+[OPUS](opus.nlpl.eu/) | opus | ParaCrawl/v7.1 | corpus | Many open source datasets. Go to the website, choose a language pair, check links under Moses column to see what names and version is used in a link.
+[SacreBLEU](https://github.com/mjpost/sacrebleu) | sacrebleu | wmt20 | corpus | Official evaluation datasets available in SacreBLEU tool. Recommended to use in `TEST_DATASETS`. Look up supported datasets and language pairs in `sacrebleu.dataset` python module.
 [Paracrawl](https://paracrawl.eu/) | paracrawl-mono | paracrawl8 | mono | Datasets that are crawled from the web. Only [mono datasets](https://paracrawl.eu/index.php/moredata) are used in this importer. Parallel corpus is available using opus importer.
 [News crawl](http://data.statmt.org/news-crawl) | news-crawl | news.2019 | mono | Some news monolingual datasets from [WMT21](https://www.statmt.org/wmt21/translation-task.html)
 [Common crawl](https://commoncrawl.org/) | commoncrawl | wmt16 | mono | Huge web crawl datasets. The links are posted on [WMT21](https://www.statmt.org/wmt21/translation-task.html)
+
+You can also use [find-corpus](pipeline/utils/find-corpus.py) tool to find all datasets for an importer and get them formatted to use in config.
+
+Example:
+
+`python ./pipeline/utils/find-corpus en ru opus`
 
 ### Adding a new importer
 
 Just add a shell script to [corpus](pipeline/data/importers/corpus) or [mono]() which is named as `<prefix>.sh` 
 and accepts the same parameters as the other scripts from the same folder.
-
-
-## Evaluation datasets
-
-Only [SacreBLEU](https://github.com/mjpost/sacrebleu) datasets are supported at the moment.
-
-Example:
-```
-TEST_DATASETS="wmt20 wmt18"
-```
-
-To see what datasets are available for a language pair (for example, `ru-en`) run:
-```
-sacrebleu --list -l ru-en
-```
 
 ## Development
 
@@ -217,8 +211,15 @@ At the same time it is possible to run it all locally end to end or to do intera
 - Scripts should automatically inspect resources available for computation and utilize them to make things faster
   (number of cores, memory).
   
-## TODO
 
-1. Add [bicleaner](https://github.com/bitextor/bicleaner/)
-2. Add translation with an ensemble of teacher models
-3. Add more importers
+## References
+
+1. V. M. Sánchez-Cartagena, M. Bañón, S. Ortiz-Rojas and G. Ramírez-Sánchez, 
+"[Prompsit's submission to WMT 2018 Parallel Corpus Filtering shared task](http://www.statmt.org/wmt18/pdf/WMT116.pdf)",
+in *Proceedings of the Third Conference on Machine Translation, Volume 2: Shared Task Papers*.
+Brussels, Belgium: Association for Computational Linguistics, October 2018
+
+2. Gema Ramírez-Sánchez, Jaume Zaragoza-Bernabeu, Marta Bañón and Sergio Ortiz Rojas 
+"[Bifixer and Bicleaner: two open-source tools to clean your parallel data.](https://eamt2020.inesc-id.pt/proceedings-eamt2020.pdf#page=311)",
+in *Proceedings of the 22nd Annual Conference of the European Association for Machine Translation*.
+Lisboa, Portugal: European Association for Machine Translation, November 2020
