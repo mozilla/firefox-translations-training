@@ -25,7 +25,7 @@ exclude = []
 names = []
 
 if type == 'opus':
-    exclude += ['OPUS100v']
+    exclude += ['OPUS100v', 'WMT-News']
     datasets = requests.get(f'https://opus.nlpl.eu/opusapi/?source={source}&target={target}&preprocessing=moses&version=latest').json()
     names = [f'opus_{d["corpus"]}/{d["version"]}' for d in datasets['corpora']]
 elif type == 'sacrebleu':
