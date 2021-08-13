@@ -97,7 +97,6 @@ models_dir="${DATA_ROOT_DIR}/models/${SRC}-${TRG}/${EXPERIMENT}"
 student_dir="${models_dir}/student"
 student_finetuned_dir="${models_dir}/student-finetuned"
 teacher_dir="${models_dir}/teacher"
-s2s="${DATA_ROOT_DIR}/models/${TRG}-${SRC}/${EXPERIMENT}/s2s"
 speed="${models_dir}/speed"
 exported="${models_dir}/exported"
 
@@ -132,13 +131,19 @@ test -e "${original}/mono.${SRC}.gz" &&
 test -e "${original}/mono.${TRG}.gz" &&
   bash ./pipeline/clean/clean-mono.sh "${TRG}" "${original}/mono" "${clean}/mono"
 
-echo "######  train backward model"
-bash ./pipeline/train/train-s2s.sh "${s2s}" "${biclean}/corpus" "${original}/devset" "${TRG}" "${SRC}"
-bash ./pipeline/train/eval.sh "${s2s}" "${evaluation}" "${TRG}" "${SRC}"
+if [ -n "${BACKWARD_MODEL}" ]; then
+  echo "######  use pretrained backward model"
+  backward="${BACKWARD_MODEL}"
+else
+  echo "######  train backward model"
+  backward="${DATA_ROOT_DIR}/models/${TRG}-${SRC}/${EXPERIMENT}/s2s"
+  bash ./pipeline/train/train-backward.sh "${backward}" "${biclean}/corpus" "${original}/devset" "${TRG}" "${SRC}"
+  bash ./pipeline/train/eval.sh "${backward}" "${evaluation}" "${TRG}" "${SRC}"
+fi
 
 if [ -e "${clean}/mono.${TRG}.gz" ]; then
   echo "######  augment corpus with back translations"
-  bash ./pipeline/translate/translate-mono.sh "${clean}/mono.${TRG}.gz" "${s2s}" "${translated}/mono.${SRC}.gz"
+  bash ./pipeline/translate/translate-mono.sh "${clean}/mono.${TRG}.gz" "${backward}" "${translated}/mono.${SRC}.gz"
   bash ./pipeline/utils/merge-corpus.sh \
     "${translated}/mono.${SRC}.gz" \
     "${biclean}/corpus.${SRC}.gz" \
@@ -175,7 +180,7 @@ bash ./pipeline/utils/merge-corpus.sh "${clean}/corpus.${SRC}.gz" \
   "${merged}/corpus.${TRG}.gz"
 
 echo "######  cross entropy filtering"
-bash ./pipeline/clean/ce-filter.sh "${s2s}" "${merged}/corpus" "${filtered}/corpus"
+bash ./pipeline/clean/ce-filter.sh "${backward}" "${merged}/corpus" "${filtered}/corpus"
 
 echo "######  train word alignment and lexical shortlists"
 bash ./pipeline/alignment/generate-alignment-and-shortlist.sh "${filtered}/corpus" \
