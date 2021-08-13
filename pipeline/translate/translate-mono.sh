@@ -32,7 +32,7 @@ test -s "${tmp_dir}/file.00" || pigz -dc "${mono_path}" | split -d -l 2000000 - 
 
 echo "### Translate source sentences with Marian"
 # This can be parallelized across several GPU machines.
-for name in $(ls "${tmp_dir}" | grep -E "^file\.[0-9]+$" | shuf); do
+for name in $(find "${tmp_dir}" -regex '.*file\.[0-9]+' -printf "%f\n" | shuf); do
   prefix="${tmp_dir}/${name}"
   echo "### ${prefix}"
   test -e "${prefix}.out" ||
