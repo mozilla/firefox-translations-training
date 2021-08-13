@@ -15,6 +15,7 @@ test -v SRC
 test -v TRG
 
 prefix=$1
+cache=$2
 
 src_corpus="${prefix}.${SRC}.gz"
 trg_corpus="${prefix}.${TRG}.gz"

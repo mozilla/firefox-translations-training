@@ -14,6 +14,7 @@ echo "###### Downloading monolingual data"
 lang=$1
 max_sent=$2
 prefix=$3
+cache=$4
 
 file_name="${prefix}.${lang}.gz"
 dir=$(dirname "${prefix}")/mono

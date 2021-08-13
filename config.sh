@@ -11,8 +11,10 @@ set -a
 
 WORKDIR=$(pwd)
 CUDA_DIR=/usr/local/cuda-11.2
-DATA_DIR=${DATA_DIR:-${WORKDIR}/data}
-MODELS_DIR=${MODELS_DIR:-${WORKDIR}/models}
+DATA_ROOT_DIR=${DATA_ROOT_DIR:-${WORKDIR}}
+DATA_DIR=${DATA_ROOT_DIR}/data
+MODELS_DIR=${DATA_ROOT_DIR}/models
+EXPERIMENTS_DIR=${DATA_ROOT_DIR}/experiments
 MARIAN=${MARIAN:-${WORKDIR}/3rd_party/marian-dev/build}
 CLEAN_TOOLS=${WORKDIR}/pipeline/clean/tools
 BIN=${WORKDIR}/bin

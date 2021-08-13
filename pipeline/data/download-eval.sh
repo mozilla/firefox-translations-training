@@ -15,7 +15,7 @@ test -v WORKDIR
 test -v TEST_DATASETS
 
 dir=$1
-
+cache=$2
 
 for dataset in "${@:2}"; do
   name="${dataset//[^A-Za-z0-9_- ]/_}"

@@ -13,9 +13,15 @@ set -euo pipefail
 # Directories structure
 #
 #├ data
-#│   ├ cache TODO
-#│   │  └ opus_wmt20.ru.gz
-#│   │  └ sacrebleu_wmt20.en.gz
+#│   ├ cache
+#│   │  ├ corpus
+#│   │  │  └ opus
+#│   │  │    ├ ada83_v1.en.gz
+#│   │  │    └ ada83_v1.ru.gz
+#│   │  └ mono
+#│   │     └ news-crawl
+#│   │       ├ news.2019.ru.gz
+#│   │       └ news.2019.en.gz
 #│   └ ru-en
 #│      └ test
 #│        ├ original
@@ -62,18 +68,21 @@ set -euo pipefail
 #│   │      ├ speed
 #│   │      └ exported
 #│   ├ en-ru
-#│   │   └ test
-#│   │      └ s2s
+#│      └ test
+#│         └ s2s
+#│
+#├ experiments
+#│   └ ru-en
+#│      └ test
+#│         └ config.sh
 
 echo "###### read config "
 source ./config.sh
 
-echo "######  setup"
-bash ./pipeline/setup/install-all.sh
-
 echo "######  set common variables"
 # data
-data_dir="${DATA_DIR}/${SRC}-${TRG}/${EXPERIMENT}"
+data_dir="${DATA_ROOT_DIR}/data/${SRC}-${TRG}/${EXPERIMENT}"
+cache_dir="${DATA_ROOT_DIR}/cache"
 original="${data_dir}/original"
 evaluation="${data_dir}/evaluation"
 clean="${data_dir}/clean"
@@ -84,22 +93,36 @@ merged="${data_dir}/merged"
 filtered="${data_dir}/filtered"
 align_dir="${data_dir}/alignment"
 # models
-models_dir="${MODELS_DIR}/${SRC}-${TRG}/${EXPERIMENT}"
+models_dir="${DATA_ROOT_DIR}/models/${SRC}-${TRG}/${EXPERIMENT}"
 student_dir="${models_dir}/student"
 student_finetuned_dir="${models_dir}/student-finetuned"
 teacher_dir="${models_dir}/teacher"
-s2s="${MODELS_DIR}/${TRG}-${SRC}/${EXPERIMENT}/s2s"
+s2s="${DATA_ROOT_DIR}/models/${TRG}-${SRC}/${EXPERIMENT}/s2s"
 speed="${models_dir}/speed"
 exported="${models_dir}/exported"
 
+echo "###### save experiment "
+experiment_dir="${EXPERIMENTS_DIR}/${SRC}-${TRG}/${EXPERIMENT}"
+mkdir -p "${experiment_dir}"
+cp ./config.sh "${experiment_dir}/config.sh"
+cp -r ./pipeline/translate/configs "${experiment_dir}/"
+
+echo "######  setup"
+bash ./pipeline/setup/install-all.sh
+
 echo "######  download data"
-bash ./pipeline/data/download-corpus.sh "${original}/corpus" ${TRAIN_DATASETS}
-bash ./pipeline/data/download-corpus.sh "${original}/devset" ${DEVTEST_DATASETS}
-bash ./pipeline/data/download-eval.sh "${evaluation}" ${TEST_DATASETS}
+# shellcheck disable=SC2086
+bash ./pipeline/data/download-corpus.sh "${original}/corpus" "${cache_dir}" ${TRAIN_DATASETS}
+# shellcheck disable=SC2086
+bash ./pipeline/data/download-corpus.sh "${original}/devset" "${cache_dir}" ${DEVTEST_DATASETS}
+# shellcheck disable=SC2086
+bash ./pipeline/data/download-eval.sh "${evaluation}" "${cache_dir}" ${TEST_DATASETS}
+# shellcheck disable=SC2086
 test -n "${MONO_DATASETS_SRC}" &&
-  bash ./pipeline/data/download-mono.sh "${SRC}" "${MONO_MAX_SENTENCES_SRC}" "${original}/mono" ${MONO_DATASETS_SRC}
+  bash ./pipeline/data/download-mono.sh "${SRC}" "${MONO_MAX_SENTENCES_SRC}" "${original}/mono" "${cache_dir}" ${MONO_DATASETS_SRC}
+# shellcheck disable=SC2086
 test -n "${MONO_DATASETS_TRG}" &&
-  bash ./pipeline/data/download-mono.sh "${TRG}" "${MONO_MAX_SENTENCES_TRG}" "${original}/mono" ${MONO_DATASETS_TRG}
+  bash ./pipeline/data/download-mono.sh "${TRG}" "${MONO_MAX_SENTENCES_TRG}" "${original}/mono" "${cache_dir}" ${MONO_DATASETS_TRG}
 
 echo "######  clean data"
 bash ./pipeline/clean/clean-corpus.sh "${original}/corpus" "${clean}/corpus"
