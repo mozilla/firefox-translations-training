@@ -1,0 +1,5 @@
+
+data-root-dir: /data/rw/home/bergamot-training
+src: ru
+trg: en
+experiment: test
