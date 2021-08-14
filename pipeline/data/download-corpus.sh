@@ -26,7 +26,7 @@ mkdir -p "${dir}"
 if [ ! -e "${trg_corpus}" ]; then
   echo "### Downloading datasets"
 
-  for dataset in "${@:2}"; do
+  for dataset in "${@:3}"; do
     echo "### Downloading dataset ${dataset}"
     name=${dataset#*_}
     type=${dataset%%_*}

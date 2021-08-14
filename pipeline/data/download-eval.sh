@@ -17,7 +17,7 @@ test -v TEST_DATASETS
 dir=$1
 cache=$2
 
-for dataset in "${@:2}"; do
+for dataset in "${@:3}"; do
   name="${dataset//[^A-Za-z0-9_- ]/_}"
   bash "${WORKDIR}/pipeline/data/download-corpus.sh" "${dir}/${name}" "${dataset}"
 

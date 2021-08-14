@@ -24,7 +24,7 @@ if [ ! -e "${file_name}" ]; then
   mkdir -p "${dir}"
   coef=0.1
 
-  for dataset in "${@:4}"; do
+  for dataset in "${@:5}"; do
     echo "### Downloading dataset ${dataset}"
     source_prefix="${dir}/${dataset}.original.${lang}"
     gz_path="${dir}/${dataset}.${lang}.gz"
