@@ -19,7 +19,7 @@ cache=$2
 
 for dataset in "${@:3}"; do
   name="${dataset//[^A-Za-z0-9_- ]/_}"
-  bash "${WORKDIR}/pipeline/data/download-corpus.sh" "${dir}/${name}" "${dataset}"
+  bash "${WORKDIR}/pipeline/data/download-corpus.sh" "${dir}/${name}" "${cache}" "${dataset}"
 
   test -e "${dir}/${name}.${SRC}" || pigz -dk "${dir}/${name}.${SRC}.gz"
   test -e "${dir}/${name}.${TRG}" || pigz -dk "${dir}/${name}.${TRG}.gz"
