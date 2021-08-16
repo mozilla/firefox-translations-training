@@ -28,7 +28,7 @@ cache_dir=f"{data_dir}/cache"
 original=f"{data_dir}/original"
 clean=f"{data_dir}/clean"
 # gpus=shell("$(seq -s " " 0 $(( $(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)-1 )))")
-train_datasets=['mtdata_newsdev2017_zhen', 'mtdata_wiki_titles_v1']
+train_datasets=['opus_ada83/v1', 'opus_UN/v20090831']
 bin="bin"
 marian="3rd_party/marian-dev/build"
 teacher_dir=f"{models_dir}/teacher"

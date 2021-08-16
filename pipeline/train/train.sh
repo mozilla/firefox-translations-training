@@ -35,6 +35,8 @@ mkdir -p "${model_dir}/tmp"
 
 echo "### Training ${model_dir}"
 
+# if doesn't fit in RAM, remove --shuffle-in-ram and add --shuffle batches
+
 "${MARIAN}/marian" \
   --model "${model_dir}/model.npz" \
   -c "${model_config}" "${training_config}" \

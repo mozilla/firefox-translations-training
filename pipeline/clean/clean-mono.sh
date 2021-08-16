@@ -16,7 +16,6 @@ input=$2
 output=$3
 
 test -v CLEAN_TOOLS
-source "${WORKDIR}/pipeline/setup/activate-python.sh"
 
 echo "### CLeaning ${input}"
 
