@@ -35,7 +35,7 @@ elif type == 'sacrebleu':
 elif type == 'mtdata':
     from mtdata.main import LangPair
     from mtdata.data import get_entries
-    exclude += ['opus', 'newstest']
+    exclude += ['opus', 'newstest', 'UNv1']
     entries = get_entries(LangPair(f'{source}-{target}'), None, None)
     names = [f'mtdata_{entry.name}' for entry in entries]
 else:
