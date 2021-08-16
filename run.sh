@@ -104,7 +104,7 @@ echo "###### save experiment "
 experiment_dir="${EXPERIMENTS_DIR}/${SRC}-${TRG}/${EXPERIMENT}"
 mkdir -p "${experiment_dir}"
 cp ./config.sh "${experiment_dir}/config.sh"
-cp -r ./pipeline/translate/configs "${experiment_dir}/"
+cp -r ./pipeline/train/configs "${experiment_dir}/"
 
 echo "######  setup"
 bash ./pipeline/setup/install-all.sh
