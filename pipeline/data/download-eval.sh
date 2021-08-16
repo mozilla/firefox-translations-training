@@ -12,7 +12,6 @@ set -euo pipefail
 echo "###### Downloading evaluation datasets"
 
 test -v WORKDIR
-test -v TEST_DATASETS
 
 dir=$1
 cache=$2

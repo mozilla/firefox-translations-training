@@ -14,7 +14,6 @@ echo "###### Evaluation of a model"
 test -v GPUS
 test -v MARIAN
 test -v WORKSPACE
-test -v TEST_DATASETS
 test -v WORKDIR
 
 model_dir=$1

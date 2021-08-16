@@ -24,7 +24,6 @@ if [ ! -e "${BIN}/kenlm" ]; then
   cd ..
 fi
 
-source "${WORKDIR}/pipeline/setup/activate-python.sh"
 python -m pip install . --install-option="--max_order 7"
 cd "${WORKDIR}"
 

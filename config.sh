@@ -48,7 +48,8 @@ BICLEANER_THRESHOLD=0.5
 
 
 # marian --devices parameter for GPUs to use, for example 0 1 2 3
-GPUS=$(seq -s " " 0 $(( $(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)-1 )))
+GPUS="0 1"
+#$(seq -s " " 0 $(( $(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)-1 )))
 # for 12 GB GPU
 WORKSPACE=9000
 

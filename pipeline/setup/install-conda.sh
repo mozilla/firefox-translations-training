@@ -3,13 +3,13 @@
 # Create python conda environment
 #
 # Usage:
-#   bash install-python.sh
+#   bash install-conda.sh
 #
 
 set -x
 set -euo pipefail
 
-echo "###### Installing Python"
+echo "###### Installing Conda"
 
 if [ ! -e "${CONDA_DIR}/bin/conda" ]; then
   wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
@@ -17,7 +17,6 @@ if [ ! -e "${CONDA_DIR}/bin/conda" ]; then
   rm -f Miniconda3-latest-Linux-x86_64.sh
 fi
 export PATH="${CONDA_DIR}/bin:${PATH}"
-conda create -y --name bergamot-training-env python=3.8
 
 
-echo "###### Done: Installing Python"
+echo "###### Done: Installing Conda"
