@@ -68,7 +68,7 @@ echo "### Sorting scores"
 if [ ! -s "${dir}/sorted.gz" ]; then
   buffer_size="$(echo "$(grep MemTotal /proc/meminfo | awk '{print $2}')"*0.9 | bc | cut -f1 -d.)"
   paste "${dir}/scores.nrm.txt" "${dir}/corpus.${SRC}" "${dir}/corpus.${TRG}" |
-  LC_ALL=C sort -n -k1,1 -S "${buffer_size}K" |
+  LC_ALL=C sort -n -k1,1 -S "${buffer_size}K" -T "${dir}" |
   pigz >"${dir}/sorted.gz"
 fi
 

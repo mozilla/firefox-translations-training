@@ -35,7 +35,7 @@ test -s "${output}.${lang}.gz" || test -s "${output}.${lang}.nrm.gz" ||
 echo "### Deduplication"
 test -s "${output}.${lang}.gz" || test -s "${output}.${lang}.nrm.uniq.gz" ||
   pigz -dc "${output}.${lang}.nrm.gz" |
-  LC_ALL=C sort -S 10G |
+  LC_ALL=C sort -S 10G -T "${output}" |
   uniq |
   pigz >"${output}.${lang}.nrm.uniq.gz"
 
