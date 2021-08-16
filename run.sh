@@ -137,7 +137,7 @@ if [ -n "${BACKWARD_MODEL}" ]; then
 else
   echo "######  train backward model"
   backward="${DATA_ROOT_DIR}/models/${TRG}-${SRC}/${EXPERIMENT}/s2s"
-  bash ./pipeline/train/train-backward.sh "${backward}" "${biclean}/corpus" "${original}/devset" "${TRG}" "${SRC}"
+  bash ./pipeline/train/train-s2s.sh "${backward}" "${biclean}/corpus" "${original}/devset" "${TRG}" "${SRC}"
   bash ./pipeline/train/eval.sh "${backward}" "${evaluation}" "${TRG}" "${SRC}"
 fi
 
