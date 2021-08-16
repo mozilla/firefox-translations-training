@@ -21,7 +21,7 @@ if [ -e "${output_path}" ]; then
   exit 0
 fi
 
-config="${model_dir}/model.npz.best-ce-mean-words.npz.decoder.yml"
+config="${model_dir}/model.npz.best-bleu-detok.npz.decoder.yml"
 decoder_config="${WORKDIR}/pipeline/translate/decoder.yml"
 tmp_dir=$(dirname "${output_path}")/tmp
 

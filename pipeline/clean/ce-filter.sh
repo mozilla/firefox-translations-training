@@ -29,7 +29,7 @@ fi
 
 # Part of the data to be removed (0.05 is 5%)
 remove=0.05
-model="${model_dir}/model.npz.best-ce-mean-words.npz"
+model="${model_dir}/model.npz.best-bleu-detok.npz"
 vocab="${model_dir}/vocab.spm"
 output_dir=$(dirname "${output_prefix}")
 dir="${output_dir}/scored"
