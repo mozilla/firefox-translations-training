@@ -74,7 +74,7 @@ rule clean_corpus:
     threads: workflow.cores
     input: f"{original}/corpus.{src}.gz", f"{original}/corpus.{trg}.gz", "flags/setup.done"
     output: f"{clean}/corpus.{src}.gz", f"{clean}/corpus.{trg}.gz"
-    params: prefix_input=f"{clean}/corpus", prefix_output=f"{clean}/corpus"
+    params: prefix_input=f"{original}/corpus", prefix_output=f"{clean}/corpus"
     shell: 'bash ./pipeline/clean/clean-corpus.sh "{params.prefix_input}" "{params.prefix_output}" 2> {log}'
 
 rule train_teacher:
