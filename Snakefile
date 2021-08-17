@@ -41,6 +41,7 @@ rule setup:
     message: "Installing dependencies"
     log: f"{log_dir}/install-deps.log"
     conda: "pipeline/setup/environment.yml"
+    threads: 1
     output: touch("flags/setup.done")
     shell: 'bash pipeline/setup/install-deps.sh 2> {log}'
 
@@ -48,6 +49,7 @@ rule marian:
     message: "Compiling marian"
     log: f"{log_dir}/compile-marian.log"
     conda: "pipeline/setup/environment.yml"
+    threads: workflow.cores
     input: "flags/setup.done"
     output: f"{marian}/marian"
     shell: 'bash pipeline/setup/compile-marian.sh 2> {log}'
@@ -56,6 +58,7 @@ rule download_corpus:
     message: "Downloading corpus"
     log: f"{log_dir}/donload_corpus.log"
     conda: "pipeline/setup/environment.yml"
+    threads: workflow.cores/2
     input: "flags/setup.done"
     output: f"{original}/corpus.{src}.gz", f"{original}/corpus.{trg}.gz"
     params: prefix=f"{original}/corpus"
@@ -68,6 +71,7 @@ rule clean_corpus:
     message: "Cleaning corpus"
     log: f"{log_dir}/clean_corpus.log"
     conda: "pipeline/setup/environment.yml"
+    threads: workflow.cores
     input: f"{original}/corpus.{src}.gz", f"{original}/corpus.{trg}.gz", "flags/setup.done"
     output: f"{clean}/corpus.{src}.gz", f"{clean}/corpus.{trg}.gz"
     params: prefix_input=f"{clean}/corpus", prefix_output=f"{clean}/corpus"
@@ -77,6 +81,7 @@ rule train_teacher:
     message: "Training teacher"
     log: f"{log_dir}/train_teacher.log"
     conda: "pipeline/setup/environment.yml"
+    threads: workflow.cores
     input: f"{clean}/corpus.{src}.gz", f"{clean}/corpus.{trg}.gz", f"{marian}/marian"
     output: OUTPUT
     params: prefix_corpus=f"{clean}/corpus"
