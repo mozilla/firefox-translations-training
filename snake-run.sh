@@ -1,4 +1,4 @@
 #!/bin/bash
 
 source config.sh
-snakemake -n --use-conda
+snakemake -n --use-conda --cores all
