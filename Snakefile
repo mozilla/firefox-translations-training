@@ -33,7 +33,7 @@ valid_datasets=['flores_dev']
 bin="bin"
 marian="3rd_party/marian-dev/build"
 teacher_dir=f"{models_dir}/teacher"
-OUTPUT=f'{models_dir}/teacher/model.bin'
+OUTPUT=f'{models_dir}/teacher/mmodel.npz.best-bleu-detok.npz'
 
 # specific to local machine
 setup_done=f"/tmp/flags/setup.done"
@@ -47,7 +47,7 @@ rule setup:
     conda: "pipeline/setup/environment.yml"
     threads: 1
     output: touch(setup_done)
-    shell: 'bash pipeline/setup/install-deps.sh 2> {log}'
+    shell: 'bash pipeline/setup/install-deps.sh 2>&1 | tee {log}'
 
 rule compile_marian:
     message: "Compiling marian"
@@ -56,7 +56,7 @@ rule compile_marian:
     threads: workflow.cores
     input: setup_done
     output: f"{marian}/marian"
-    shell: 'bash pipeline/setup/compile-marian.sh {threads} 2> {log}'
+    shell: 'bash pipeline/setup/compile-marian.sh {threads} 2>&1 | tee {log}'
 
 rule compile_fast_align:
     message: "Compiling fast align"
@@ -65,7 +65,7 @@ rule compile_fast_align:
     threads: workflow.cores
     input: setup_done
     output: f"{bin}/fast_align"
-    shell: 'bash pipeline/setup/compile-fast-align.sh {threads} 2> {log}'
+    shell: 'bash pipeline/setup/compile-fast-align.sh {threads} 2>&1 | tee {log}'
 
 rule compile_extract_lex:
     message: "Compiling fast align"
@@ -74,7 +74,7 @@ rule compile_extract_lex:
     threads: workflow.cores
     input: setup_done
     output: f"{bin}/extract_lex"
-    shell: 'bash pipeline/setup/compile-extract-lex.sh {threads} 2> {log}'
+    shell: 'bash pipeline/setup/compile-extract-lex.sh {threads} 2>&1 | tee {log}'
 
 rule download_train_corpus:
     message: "Downloading training corpus"
@@ -85,7 +85,7 @@ rule download_train_corpus:
     output: f"{original}/corpus.{src}.gz", f"{original}/corpus.{trg}.gz"
     params: prefix=f"{original}/corpus"
     shell: '''
-        bash pipeline/data/download-corpus.sh "{params.prefix}" "{cache_dir}" "train" {train_datasets} 2> {log}
+        bash pipeline/data/download-corpus.sh "{params.prefix}" "{cache_dir}" "train" {train_datasets} 2>&1 | tee {log}
     '''
 
 rule download_validation_corpus:
@@ -97,7 +97,7 @@ rule download_validation_corpus:
     output: f"{original}/devset.{src}.gz", f"{original}/devset.{trg}.gz"
     params: prefix=f"{original}/devset"
     shell: '''
-        bash pipeline/data/download-corpus.sh "{params.prefix}" "{cache_dir}" "valid" {valid_datasets} 2> {log}
+        bash pipeline/data/download-corpus.sh "{params.prefix}" "{cache_dir}" "valid" {valid_datasets} 2>&1 | tee {log}
     '''
 
 rule clean_corpus:
@@ -108,7 +108,7 @@ rule clean_corpus:
     input: f"{original}/corpus.{src}.gz", f"{original}/corpus.{trg}.gz", setup_done
     output: f"{clean}/corpus.{src}.gz", f"{clean}/corpus.{trg}.gz"
     params: prefix_input=f"{original}/corpus", prefix_output=f"{clean}/corpus"
-    shell: 'bash ./pipeline/clean/clean-corpus.sh "{params.prefix_input}" "{params.prefix_output}" 2> {log}'
+    shell: 'bash ./pipeline/clean/clean-corpus.sh "{params.prefix_input}" "{params.prefix_output}" 2>&1 | tee {log}'
 
 rule train_teacher:
     message: "Training teacher"
@@ -120,6 +120,6 @@ rule train_teacher:
     output: OUTPUT
     params: prefix_train=f"{clean}/corpus", prefix_test=f"{original}/devset"
     shell: '''
-        bash ./pipeline/train/train-teacher.sh "{teacher_dir}" "{params.prefix_train}" "{params.prefix_test}" 2> {log}
+        bash ./pipeline/train/train-teacher.sh "{teacher_dir}" "{params.prefix_train}" "{params.prefix_test}" 2>&1 | tee {log}
     '''
 
