@@ -33,10 +33,8 @@ valid_datasets=['flores_dev']
 bin="bin"
 marian="3rd_party/marian-dev/build"
 teacher_dir=f"{models_dir}/teacher"
-OUTPUT=f'{models_dir}/teacher/mmodel.npz.best-bleu-detok.npz'
+OUTPUT=f'{models_dir}/teacher/model.npz.best-bleu-detok.npz'
 
-# specific to local machine
-setup_done=f"/tmp/flags/setup.done"
 
 rule all:
     input: OUTPUT
@@ -46,55 +44,56 @@ rule setup:
     log: f"{log_dir}/install-deps.log"
     conda: "pipeline/setup/environment.yml"
     threads: 1
-    output: touch(setup_done)
+    # specific to local machine
+    output: touch("/tmp/flags/setup.done")
     shell: 'bash pipeline/setup/install-deps.sh 2>&1 | tee {log}'
 
-rule compile_marian:
+rule marian:
     message: "Compiling marian"
     log: f"{log_dir}/compile-marian.log"
     conda: "pipeline/setup/environment.yml"
     threads: workflow.cores
-    input: setup_done
-    output: f"{marian}/marian"
+    input: rules.setup.output
+    output: trainer=f"{marian}/marian", decoder=f"{marian}/marian-decoder", scorer=f"{marian}/marian-scorer"
     shell: 'bash pipeline/setup/compile-marian.sh {threads} 2>&1 | tee {log}'
 
-rule compile_fast_align:
+rule fast_align:
     message: "Compiling fast align"
     log: f"{log_dir}/compile-fast-align.log"
     conda: "pipeline/setup/environment.yml"
     threads: workflow.cores
-    input: setup_done
+    input: rules.setup.output
     output: f"{bin}/fast_align"
     shell: 'bash pipeline/setup/compile-fast-align.sh {threads} 2>&1 | tee {log}'
 
-rule compile_extract_lex:
+rule extract_lex:
     message: "Compiling fast align"
     log: f"{log_dir}/compile-extract-lex.log"
     conda: "pipeline/setup/environment.yml"
     threads: workflow.cores
-    input: setup_done
+    input: rules.setup.output
     output: f"{bin}/extract_lex"
     shell: 'bash pipeline/setup/compile-extract-lex.sh {threads} 2>&1 | tee {log}'
 
-rule download_train_corpus:
+rule data_train:
     message: "Downloading training corpus"
     log: f"{log_dir}/donload_train_corpus.log"
     conda: "pipeline/setup/environment.yml"
     threads: workflow.cores/2
-    input: setup_done
-    output: f"{original}/corpus.{src}.gz", f"{original}/corpus.{trg}.gz"
+    input: rules.setup.output
+    output: src=f"{original}/corpus.{src}.gz", trg=f"{original}/corpus.{trg}.gz"
     params: prefix=f"{original}/corpus"
     shell: '''
         bash pipeline/data/download-corpus.sh "{params.prefix}" "{cache_dir}" "train" {train_datasets} 2>&1 | tee {log}
     '''
 
-rule download_validation_corpus:
+rule data_val:
     message: "Downloading validation corpus"
     log: f"{log_dir}/donload_val_corpus.log"
     conda: "pipeline/setup/environment.yml"
     threads: workflow.cores/2
-    input: setup_done
-    output: f"{original}/devset.{src}.gz", f"{original}/devset.{trg}.gz"
+    input: rules.setup.output
+    output: src=f"{original}/devset.{src}.gz", trg=f"{original}/devset.{trg}.gz"
     params: prefix=f"{original}/devset"
     shell: '''
         bash pipeline/data/download-corpus.sh "{params.prefix}" "{cache_dir}" "valid" {valid_datasets} 2>&1 | tee {log}
@@ -105,18 +104,18 @@ rule clean_corpus:
     log: f"{log_dir}/clean_corpus.log"
     conda: "pipeline/setup/environment.yml"
     threads: workflow.cores
-    input: f"{original}/corpus.{src}.gz", f"{original}/corpus.{trg}.gz", setup_done
-    output: f"{clean}/corpus.{src}.gz", f"{clean}/corpus.{trg}.gz"
+    input: rules.data_train.output.src, rules.data_train.output.trg, rules.setup.output
+    output: src=f"{clean}/corpus.{src}.gz", trg=f"{clean}/corpus.{trg}.gz"
     params: prefix_input=f"{original}/corpus", prefix_output=f"{clean}/corpus"
     shell: 'bash ./pipeline/clean/clean-corpus.sh "{params.prefix_input}" "{params.prefix_output}" 2>&1 | tee {log}'
 
-rule train_teacher:
+rule teacher:
     message: "Training teacher"
     log: f"{log_dir}/train_teacher.log"
     conda: "pipeline/setup/environment.yml"
     threads: workflow.cores
-    input: f"{clean}/corpus.{src}.gz", f"{clean}/corpus.{trg}.gz", f"{marian}/marian",
-            f"{original}/devset.{src}.gz", f"{original}/devset.{trg}.gz"
+    input: rules.clean_corpus.output.src, rules.clean_corpus.output.trg, rules.marian.output.trainer,
+            rules.data_val.output.src, rules.data_val.output.trg
     output: OUTPUT
     params: prefix_train=f"{clean}/corpus", prefix_test=f"{original}/devset"
     shell: '''
