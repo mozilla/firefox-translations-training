@@ -27,7 +27,7 @@ if [ -e "${output_path}" ]; then
   exit 0
 fi
 
-config="${model_dir}/model.npz.best-ce-mean-words.npz.decoder.yml"
+config="${model_dir}/model.npz.best-bleu-detok.npz.decoder.yml"
 decoder_config="${WORKDIR}/pipeline/translate/decoder.yml"
 tmp_dir=$(dirname "${output_path}")/tmp
 mkdir -p "${tmp_dir}"
@@ -44,7 +44,7 @@ test -s "${tmp_dir}/file.00.ref" ||
 
 echo "### Translating source sentences with Marian"
 # This can be parallelized across several GPU machines.
-for name in $(ls "${tmp_dir}" | grep -E "^file\.[0-9]+$" | shuf); do
+for name in $(find "${tmp_dir}" -regex '.*file\.[0-9]+' -printf "%f\n" | shuf); do
   prefix="${tmp_dir}/${name}"
   echo "### ${prefix}"
   test -e "${prefix}.nbest" ||
@@ -60,11 +60,10 @@ done
 
 echo "### Extracting the best translations from n-best lists w.r.t to the reference"
 # It is CPU-only, can be run after translation on a CPU machine.
-test -s "${tmp_dir}/file.00.nbest.out" ||
-  ls "${tmp_dir}" | grep -E "^file\.[0-9]+$" | shuf |
-  parallel --no-notice -k -j "$(nproc)" \
-    "python ${WORKDIR}/pipeline/translate/bestbleu.py -i ${tmp_dir}/{}.nbest -r ${tmp_dir}/{}.ref -m bleu > ${tmp_dir}/{}.nbest.out" \
-    2>"${tmp_dir}/debug.txt"
+find "${tmp_dir}" -regex '.*file\.[0-9]+' -printf "%f\n" | shuf |
+parallel --no-notice -k -j "$(nproc)" \
+  "test -e ${tmp_dir}/{}.nbest.out || python ${WORKDIR}/pipeline/translate/bestbleu.py -i ${tmp_dir}/{}.nbest -r ${tmp_dir}/{}.ref -m bleu > ${tmp_dir}/{}.nbest.out" \
+  2>"${tmp_dir}/debug.txt"
 
 echo "### Collecting translations"
 test -s "${output_path}" || cat "${tmp_dir}"/file.*.nbest.out | pigz >"${output_path}"

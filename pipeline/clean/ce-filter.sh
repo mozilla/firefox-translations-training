@@ -29,7 +29,7 @@ fi
 
 # Part of the data to be removed (0.05 is 5%)
 remove=0.05
-model="${model_dir}/model.npz.best-ce-mean-words.npz"
+model="${model_dir}/model.npz.best-bleu-detok.npz"
 vocab="${model_dir}/vocab.spm"
 output_dir=$(dirname "${output_prefix}")
 dir="${output_dir}/scored"
@@ -68,7 +68,7 @@ echo "### Sorting scores"
 if [ ! -s "${dir}/sorted.gz" ]; then
   buffer_size="$(echo "$(grep MemTotal /proc/meminfo | awk '{print $2}')"*0.9 | bc | cut -f1 -d.)"
   paste "${dir}/scores.nrm.txt" "${dir}/corpus.${SRC}" "${dir}/corpus.${TRG}" |
-  LC_ALL=C sort -n -k1,1 -S "${buffer_size}K" |
+  LC_ALL=C sort -n -k1,1 -S "${buffer_size}K" -T "${dir}" |
   pigz >"${dir}/sorted.gz"
 fi
 

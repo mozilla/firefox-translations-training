@@ -11,8 +11,10 @@ set -a
 
 WORKDIR=$(pwd)
 CUDA_DIR=/usr/local/cuda-11.2
-DATA_DIR=${DATA_DIR:-${WORKDIR}/data}
-MODELS_DIR=${MODELS_DIR:-${WORKDIR}/models}
+DATA_ROOT_DIR=${DATA_ROOT_DIR:-${WORKDIR}}
+DATA_DIR=${DATA_ROOT_DIR}/data
+MODELS_DIR=${DATA_ROOT_DIR}/models
+EXPERIMENTS_DIR=${DATA_ROOT_DIR}/experiments
 MARIAN=${MARIAN:-${WORKDIR}/3rd_party/marian-dev/build}
 CLEAN_TOOLS=${WORKDIR}/pipeline/clean/tools
 BIN=${WORKDIR}/bin
@@ -23,11 +25,14 @@ EXPERIMENT=test
 SRC=ru
 TRG=en
 
+# path to a pretrained backward model (optional)
+BACKWARD_MODEL=""
+
 # parallel corpus
 TRAIN_DATASETS="opus_ada83/v1 opus_UN/v20090831 opus_GNOME/v1 opus_wikimedia/v20210402 opus_CCMatrix/v1 opus_Wikipedia/v1.0 opus_tico-19/v2020-10-28 opus_KDE4/v2 opus_OpenSubtitles/v2018 opus_MultiUN/v1 opus_GlobalVoices/v2018q4 opus_ELRC_2922/v1 opus_PHP/v1 opus_Tatoeba/v2021-03-10 opus_Tanzil/v1 opus_XLEnt/v1.1 opus_TildeMODEL/v2018 opus_Ubuntu/v14.10 opus_TED2013/v1.1 opus_infopankki/v1 opus_EUbookshop/v2 opus_ParaCrawl/v8 opus_Books/v1 opus_WMT-News/v2019 opus_bible-uedin/v1 opus_WikiMatrix/v1 opus_QED/v2.0a opus_CCAligned/v1 opus_TED2020/v1 opus_News-Commentary/v16 opus_UNPC/v1.0"\
 " mtdata_cc_aligned mtdata_airbaltic mtdata_GlobalVoices_2018Q4 mtdata_UNv1_test mtdata_neulab_tedtalksv1_train mtdata_neulab_tedtalksv1_dev mtdata_wmt13_commoncrawl mtdata_czechtourism mtdata_paracrawl_bonus mtdata_worldbank mtdata_wiki_titles_v1 mtdata_WikiMatrix_v1 mtdata_wmt18_news_commentary_v13 mtdata_wiki_titles_v2 mtdata_news_commentary_v14 mtdata_UNv1_dev mtdata_neulab_tedtalksv1_test mtdata_JW300"
-DEVTEST_DATASETS="mtdata_newstest2019_ruen mtdata_newstest2017_ruen mtdata_newstest2015_ruen mtdata_newstest2014_ruen"
-TEST_DATASETS="sacrebleu_wmt20 sacrebleu_wmt18 sacrebleu_wmt16 sacrebleu_wmt13"
+DEVTEST_DATASETS="flores_dev mtdata_newstest2019_ruen mtdata_newstest2017_ruen mtdata_newstest2015_ruen mtdata_newstest2014_ruen"
+TEST_DATASETS="flores_devtest sacrebleu_wmt20 sacrebleu_wmt18 sacrebleu_wmt16 sacrebleu_wmt13"
 # monolingual datasets (ex. paracrawl-mono_paracrawl8, commoncrawl_wmt16, news-crawl_news.2020)
 # to be translated by the teacher model
 MONO_DATASETS_SRC="news-crawl_news.2020 news-crawl_news.2019 news-crawl_news.2018 news-crawl_news.2017 "\
