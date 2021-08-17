@@ -85,7 +85,7 @@ rule download_train_corpus:
     output: f"{original}/corpus.{src}.gz", f"{original}/corpus.{trg}.gz"
     params: prefix=f"{original}/corpus"
     shell: '''
-        bash pipeline/data/download-corpus.sh "{params.prefix}" "{cache_dir}" {train_datasets} 2> {log}
+        bash pipeline/data/download-corpus.sh "{params.prefix}" "{cache_dir}" "train" {train_datasets} 2> {log}
     '''
 
 rule download_validation_corpus:
@@ -97,7 +97,7 @@ rule download_validation_corpus:
     output: f"{original}/devset.{src}.gz", f"{original}/devset.{trg}.gz"
     params: prefix=f"{original}/devset"
     shell: '''
-        bash pipeline/data/download-corpus.sh "{params.prefix}" "{cache_dir}" {valid_datasets} 2> {log}
+        bash pipeline/data/download-corpus.sh "{params.prefix}" "{cache_dir}" "valid" {valid_datasets} 2> {log}
     '''
 
 rule clean_corpus:

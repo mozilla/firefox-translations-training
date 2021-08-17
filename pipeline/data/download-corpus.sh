@@ -16,17 +16,18 @@ test -v TRG
 
 prefix=$1
 cache=$2
+id=$3
 
 src_corpus="${prefix}.${SRC}.gz"
 trg_corpus="${prefix}.${TRG}.gz"
-dir=$(dirname "${prefix}")/tmp
+dir=$(dirname "${prefix}")/${id}
 
 mkdir -p "${dir}"
 
 if [ ! -e "${trg_corpus}" ]; then
   echo "### Downloading datasets"
 
-  for dataset in "${@:3}"; do
+  for dataset in "${@:4}"; do
     echo "### Downloading dataset ${dataset}"
     name=${dataset#*_}
     type=${dataset%%_*}
