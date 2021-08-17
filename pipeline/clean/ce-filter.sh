@@ -36,7 +36,6 @@ dir="${output_dir}/scored"
 mkdir -p "${output_dir}"
 mkdir -p "${dir}"
 
-source "${WORKDIR}/pipeline/setup/activate-python.sh"
 
 echo "### Decompressing corpus"
 test -s "${dir}/corpus.${TRG}" || pigz -dc "${corpus_prefix}.${TRG}.gz" >"${dir}/corpus.${TRG}"

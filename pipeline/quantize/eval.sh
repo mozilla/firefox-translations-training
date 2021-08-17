@@ -25,7 +25,6 @@ eval_dir="${model_dir}/eval"
 vocab="${model_dir}/vocab.spm"
 
 mkdir -p "${eval_dir}"
-source "${WORKDIR}/pipeline/setup/activate-python.sh"
 
 echo "### Evaluating a model ${model_dir} on CPU"
 for src_path in "${datasets_dir}"/*."${SRC}"; do

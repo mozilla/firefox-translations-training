@@ -28,7 +28,6 @@ eval_dir="${model_dir}/eval"
 echo "### Checking model files"
 test -e "${config}" || exit 1
 mkdir -p "${eval_dir}"
-source "${WORKDIR}/pipeline/setup/activate-python.sh"
 
 echo "### Evaluating a model ${model_dir}"
 for src_path in "${datasets_dir}"/*."${src}"; do

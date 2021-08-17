@@ -15,7 +15,7 @@ echo "###### Running tensorboard"
 test -v MODELS
 test -v WORKDIR
 
-source "${WORKDIR}/pipeline/setup/activate-python.sh"
+conda activate bergamot-training
 
 ls -d "${MODELS}"/*/*/* > tb-monitored-jobs
 tensorboard --logdir="${MODELS}" --host=0.0.0.0 &

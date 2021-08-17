@@ -16,9 +16,6 @@ trg=$2
 dir=$3
 dataset=$4
 
-test -v WORKDIR
-
-source "${WORKDIR}/pipeline/setup/activate-python.sh"
 name="${dataset//[^A-Za-z0-9_- ]/_}"
 
 test -s "${dir}/${name}.${src}" ||

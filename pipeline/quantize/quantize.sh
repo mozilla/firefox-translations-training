@@ -30,7 +30,6 @@ if [ -e "${res_model}" ]; then
   exit 0
 fi
 
-source "${WORKDIR}/pipeline/setup/activate-python.sh"
 mkdir -p "${output_dir}"
 
 model="${model_dir}/model.npz.best-bleu-detok.npz"

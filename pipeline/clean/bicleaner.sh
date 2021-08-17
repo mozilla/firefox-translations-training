@@ -23,7 +23,6 @@ output_dir=$(dirname "${output_prefix}")
 tmp_dir="${output_dir}/tmp"
 mkdir -p "${tmp_dir}"
 
-source "${WORKDIR}/pipeline/setup/activate-python.sh"
 
 # bicleaner and bicleaner-ai have conflicting dependencies. installing on demand
 if [ ! -e "${output_prefix}.${SRC}.gz" ]; then

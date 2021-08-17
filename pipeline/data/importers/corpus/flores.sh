@@ -25,8 +25,6 @@ test -s "${tmp}/flores101_dataset.tar.gz" ||
 
 tar -xzf "${tmp}/flores101_dataset.tar.gz" -C "${tmp}" --no-same-owner
 
-source "${WORKDIR}/pipeline/setup/activate-python.sh"
-
 flores_code() {
   code=$1
 
