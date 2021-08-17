@@ -9,6 +9,8 @@
 set -x
 set -euo pipefail
 
+threads=$1
+
 echo "###### Installing kenlm"
 test -v WORKDIR
 test -v BIN
@@ -20,11 +22,10 @@ if [ ! -e "${BIN}/kenlm" ]; then
   cd build
   mkdir "${BIN}/kenlm"
   cmake .. -DKENLM_MAX_ORDER=7 -DCMAKE_INSTALL_PREFIX:PATH="${BIN}/kenlm"
-  make -j all install
+  make -j "${threads}" install
   cd ..
 fi
 
 python -m pip install . --install-option="--max_order 7"
-cd "${WORKDIR}"
 
 echo "###### Done: Installing kenlm"

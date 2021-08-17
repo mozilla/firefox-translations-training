@@ -3,7 +3,7 @@
 # Installs and compiles marian
 #
 # Usage:
-#   bash compile-marian.sh
+#   bash compile-marian.sh $(nproc)
 #
 
 set -x
@@ -11,7 +11,7 @@ set -euo pipefail
 
 echo "###### Compiling marian"
 
-
+threads=$1
 
 #echo "### Installing Intel MKL"
 #wget -qO- 'https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB' | apt-key add -
@@ -30,15 +30,13 @@ echo "###### Compiling marian"
 #  rm ./cmake-3.20.2-Linux-x86_64.sh
 #fi
 
-if [ ! -e "${MARIAN}/marian" ]; then
-  echo "### Compiling marian-dev"
-  mkdir -p "${MARIAN}"
-  cd "${MARIAN}"
-  cmake .. -DUSE_SENTENCEPIECE=on -DUSE_FBGEMM=on -DCOMPILE_CPU=on -DCMAKE_BUILD_TYPE=Release \
-    -DCUDA_TOOLKIT_ROOT_DIR="${CUDA_DIR}"
-  make -j "$(nproc)"
-  cd "${WORKDIR}"
-  test -s "${MARIAN}/marian" || exit 1
-fi
+
+echo "### Compiling marian-dev"
+
+mkdir -p "${MARIAN}"
+cd "${MARIAN}"
+cmake .. -DUSE_SENTENCEPIECE=on -DUSE_FBGEMM=on -DCOMPILE_CPU=on -DCMAKE_BUILD_TYPE=Release \
+  -DCUDA_TOOLKIT_ROOT_DIR="${CUDA_DIR}"
+make -j "${threads}"
 
 echo "###### Done: Compiling marian"
