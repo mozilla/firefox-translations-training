@@ -119,5 +119,7 @@ rule train_teacher:
             f"{original}/devset.{src}.gz", f"{original}/devset.{trg}.gz"
     output: OUTPUT
     params: prefix_train=f"{clean}/corpus", prefix_test=f"{original}/devset"
-    shell: 'bash ./pipeline/train/train-teacher.sh "{teacher_dir}" "{params.prefix_train}" "{params.prefix_test}" 2> {log}"'
+    shell: '''
+        bash ./pipeline/train/train-teacher.sh "{teacher_dir}" "{params.prefix_train}" "{params.prefix_test}" 2> {log}
+    '''
 
