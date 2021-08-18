@@ -12,8 +12,9 @@ test -v MARIAN
 test -v WORKSPACE
 
 mono_path=$1
-model_dir=$2
-output_path=$3
+models=$2
+vocab=$3
+output_path=$4
 
 if [ -e "${output_path}" ]; then
   echo "### Dataset already exists, skipping"
@@ -21,7 +22,6 @@ if [ -e "${output_path}" ]; then
   exit 0
 fi
 
-config="${model_dir}/model.npz.best-bleu-detok.npz.decoder.yml"
 decoder_config="${WORKDIR}/pipeline/translate/decoder.yml"
 tmp_dir=$(dirname "${output_path}")/tmp
 
@@ -37,7 +37,9 @@ for name in $(find "${tmp_dir}" -regex '.*file\.[0-9]+' -printf "%f\n" | shuf); 
   echo "### ${prefix}"
   test -e "${prefix}.out" ||
     "${MARIAN}/marian-decoder" \
-      -c "${config}" "${decoder_config}" \
+      -c "${decoder_config}" \
+      -m ${models} \
+      -v "${vocab}" "${vocab}" \
       -i "${prefix}" \
       -o "${prefix}.out" \
       --log "${prefix}.log" \

@@ -15,8 +15,6 @@ test -v MARIAN
 test -v THREADS
 test -v CUDA_DIR
 
-echo "### Compiling marian-dev"
-
 mkdir -p "${MARIAN}"
 cd "${MARIAN}"
 cmake .. -DUSE_SENTENCEPIECE=on -DUSE_FBGEMM=on -DCOMPILE_CPU=on -DCMAKE_BUILD_TYPE=Release \

@@ -14,6 +14,7 @@ echo "###### Training a teacher model"
 dir=$1
 corpus=$2
 devset=$3
+vocab=$4
 
 test -v SRC
 test -v TRG
@@ -26,6 +27,7 @@ bash "pipeline/train/train.sh" \
   "${TRG}" \
   "${corpus}" \
   "${devset}" \
-  "${dir}"
+  "${dir}" \
+  "${vocab}"
 
 echo "###### Training a teacher model"

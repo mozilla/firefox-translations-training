@@ -14,19 +14,21 @@ echo "###### Training s2s model"
 dir=$1
 corpus=$2
 devset=$3
-src=${4:-${SRC}}
-trg=${5:-${TRG}}
+vocab=$4
+src=$5
+trg=$6
 
-test -v WORKDIR
 
 test -s "${dir}/model.npz.best-bleu-detok.npz" ||
-bash "${WORKDIR}/pipeline/train/train.sh" \
-  "${WORKDIR}/pipeline/train/configs/model/s2s.yml" \
-  "${WORKDIR}/pipeline/train/configs/training/s2s.train.yml" \
+bash "pipeline/train/train.sh" \
+  "pipeline/train/configs/model/s2s.yml" \
+  "pipeline/train/configs/training/s2s.train.yml" \
   "${src}" \
   "${trg}" \
   "${corpus}" \
   "${devset}" \
-  "${dir}"
+  "${dir}" \
+  "${vocab}"
+
 
 echo "###### Done: Training s2s model"

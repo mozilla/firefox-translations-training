@@ -3,23 +3,23 @@
 # Installs and compiles alignment tools
 #
 # Usage:
-#   bash compile-extract-lex.sh $(nproc)
+#   bash compile-extract-lex.sh
 #
 
 set -x
 set -euo pipefail
 
-threads=$1
-
 echo "###### Compiling extract-lex"
 
-mkdir -p "${BIN}"
+test -v THREADS
+test -v BIN
+test -v BUILD_DIR
 
-echo "### Compiling extract-lex"
-mkdir -p "${WORKDIR}/3rd_party/extract-lex/build"
-cd "${WORKDIR}/3rd_party/extract-lex/build"
+mkdir -p "${BIN}"
+mkdir -p "${BUILD_DIR}"
+cd "${BUILD_DIR}"
 cmake ..
-make -j "${threads}"
+make -j "${THREADS}"
 cp extract_lex "${BIN}"
 
 

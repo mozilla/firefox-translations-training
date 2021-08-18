@@ -14,12 +14,12 @@ echo "###### Translating a corpus"
 test -v GPUS
 test -v MARIAN
 test -v WORKSPACE
-test -v WORKDIR
 
 corpus_src=$1
 corpus_trg=$2
-model_dir=$3
-output_path=$4
+models=$3
+vocab=$4
+output_path=$5
 
 if [ -e "${output_path}" ]; then
   echo "### Corpus already exists, skipping"
@@ -27,8 +27,7 @@ if [ -e "${output_path}" ]; then
   exit 0
 fi
 
-config="${model_dir}/model.npz.best-bleu-detok.npz.decoder.yml"
-decoder_config="${WORKDIR}/pipeline/translate/decoder.yml"
+decoder_config="pipeline/translate/decoder.yml"
 tmp_dir=$(dirname "${output_path}")/tmp
 mkdir -p "${tmp_dir}"
 
@@ -48,7 +47,9 @@ for name in $(find "${tmp_dir}" -regex '.*file\.[0-9]+' -printf "%f\n" | shuf); 
   echo "### ${prefix}"
   test -e "${prefix}.nbest" ||
     "${MARIAN}/marian-decoder" \
-      -c "${config}" "${decoder_config}" \
+      -c "${decoder_config}" \
+      -m ${models} \
+      -v "${vocab}" "${vocab}" \
       -i "${prefix}" \
       -o "${prefix}.nbest" \
       --log "${prefix}.log" \
@@ -61,7 +62,7 @@ echo "### Extracting the best translations from n-best lists w.r.t to the refere
 # It is CPU-only, can be run after translation on a CPU machine.
 find "${tmp_dir}" -regex '.*file\.[0-9]+' -printf "%f\n" | shuf |
 parallel --no-notice -k -j "$(nproc)" \
-  "test -e ${tmp_dir}/{}.nbest.out || python ${WORKDIR}/pipeline/translate/bestbleu.py -i ${tmp_dir}/{}.nbest -r ${tmp_dir}/{}.ref -m bleu > ${tmp_dir}/{}.nbest.out" \
+  "test -e ${tmp_dir}/{}.nbest.out || python pipeline/translate/bestbleu.py -i ${tmp_dir}/{}.nbest -r ${tmp_dir}/{}.ref -m bleu > ${tmp_dir}/{}.nbest.out" \
   2>"${tmp_dir}/debug.txt"
 
 echo "### Collecting translations"

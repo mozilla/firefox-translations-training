@@ -21,6 +21,7 @@ trg=$4
 train_set_prefix=$5
 valid_set_prefix=$6
 model_dir=$7
+vocab=$8
 
 test -v GPUS
 test -v MARIAN
@@ -43,7 +44,7 @@ echo "### Training ${model_dir}"
   --train-sets "${train_set_prefix}".{"${src}","${trg}"}.gz \
   -T "${model_dir}/tmp" \
   --shuffle-in-ram \
-  --vocabs "${model_dir}/vocab.spm" "${model_dir}/vocab.spm" \
+  --vocabs "${vocab}" "${vocab}" \
   -w "${WORKSPACE}" \
   --devices ${GPUS} \
   --sync-sgd \

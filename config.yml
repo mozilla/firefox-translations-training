@@ -1,11 +1,18 @@
 
-data-root-dir: /data/rw/home/bergamot-training
-cuda-dir: /usr/local/cuda-11.2
+dirs:
+  data-root: /data/rw/home/bergamot-training
+  cuda: /usr/local/cuda-11.2
+  bin: bin
+  marian: 3rd_party/marian-dev/build
+  kenlm: 3rd_party/kenlm
+
 
 src: ru
 trg: en
 experiment: snakemake
 
+
+teacher-ensemble: 2
 # path to a pretrained backward model (optional)
 backward-model: ""
 

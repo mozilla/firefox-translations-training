@@ -4,82 +4,48 @@ min_version("6.6.1")
 
 configfile: 'config.yml'
 
+
 src=config['src']
 trg=config['trg']
+experiment = config['experiment']
+
+data_root_dir = config['dirs']['data-root']
+marian_dir=config['dirs']['marian']
+bin=config['dirs']['bin']
+cuda_dir=config['dirs']['cuda']
+
 train_datasets=config['datasets']['train']
 valid_datasets=config['datasets']['devtest']
+teacher_ensemble=config['teacher-ensemble']
 
-
-data_dir=f"{config['data-root-dir']}/data/{config['src']}-{config['trg']}/{config['experiment']}"
-models_dir=f"{config['data-root-dir']}/models/{config['src']}-{config['trg']}/{config['experiment']}"
-log_dir=f"{config['data-root-dir']}/logs/{config['src']}-{config['trg']}/{config['experiment']}"
+data_dir=f"{data_root_dir}/data/{src}-{trg}/{experiment}"
+models_dir=f"{data_root_dir}/models/{src}-{trg}/{experiment}"
+log_dir=f"{data_root_dir}/logs/{src}-{trg}/{experiment}"
 cache_dir=f"{data_dir}/cache"
 original=f"{data_dir}/original"
 clean=f"{data_dir}/clean"
-bin="bin"
-marian="3rd_party/marian-dev/build"
-kenlm='/3rd_party/kenlm'
+translated=f"{data_dir}/translated"
+
+best_bleu_model="model.npz.best-bleu-detok.npz"
+teacher_dir=f"{models_dir}/teacher"
+vocab=f"{models_dir}/vocab/vocab.spm"
 
 gpus=config['gpus'] \
     if config['gpus'] != 'all' \
     else shell("$(seq -s " " 0 $(( $(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)-1 )))")
 workspace=config['workspace']
 
-
-
-teacher_dir=f"{models_dir}/teacher"
-OUTPUT=f'{models_dir}/teacher/model.npz.best-bleu-detok.npz'
+ensemble=list(range(teacher_ensemble))
 
 
 rule all:
-    input: OUTPUT
+    input: f"{translated}/corpus.{trg}.gz"
 
-rule setup:
-    message: "Installing dependencies"
-    log: f"{log_dir}/install-deps.log"
-    conda: "envs/environment.yml"
-    threads: 1
-    group: 'setup'
-    # specific to local machine
-    output: touch("/tmp/flags/setup.done")
-    shell: 'bash pipeline/setup/install-deps.sh 2>&1 | tee {log}'
+### setup
 
-rule marian:
-    message: "Compiling marian"
-    log: f"{log_dir}/compile-marian.log"
-    conda: "envs/environment.yml"
-    threads: workflow.cores
-    group: 'setup'
-    input: rules.setup.output
-    output: trainer=f"{marian}/marian", decoder=f"{marian}/marian-decoder", scorer=f"{marian}/marian-scorer"
-    params: cuda_dir=config['cuda-dir']
-    shell: '''
-        MARIAN={marian} THREADS={threads} CUDA_DIR={params.cuda_dir} \
-        bash pipeline/setup/compile-marian.sh 2>&1 | tee {log}'''
+include: "workflow/setup.smk"
 
-rule fast_align:
-    message: "Compiling fast align"
-    log: f"{log_dir}/compile-fast-align.log"
-    conda: "envs/environment.yml"
-    threads: workflow.cores
-    group: 'setup'
-    input: rules.setup.output
-    output: f"{bin}/fast_align"
-    shell: '''
-        BUILD_DIR=3rd_party/fast_align/build BIN={bin} THREADS={threads} \
-        bash pipeline/setup/compile-fast-align.sh 2>&1 | tee {log}'''
-
-rule extract_lex:
-    message: "Compiling fast align"
-    log: f"{log_dir}/compile-extract-lex.log"
-    conda: "envs/environment.yml"
-    threads: workflow.cores
-    group: 'setup'
-    input: rules.setup.output
-    output: f"{bin}/extract_lex"
-    shell: '''
-        BUILD_DIR=3rd_party/extract-lex/build BIN={bin} THREADS={threads} \
-        bash pipeline/setup/compile-extract-lex.sh 2>&1 | tee {log}'''
+### data
 
 rule data_train:
     message: "Downloading training corpus"
@@ -87,13 +53,17 @@ rule data_train:
     conda: "envs/environment.yml"
     threads: workflow.cores/2
     group: 'data'
-    input: rules.setup.output
-    output: src=f"{original}/corpus.{src}.gz", trg=f"{original}/corpus.{trg}.gz"
-    params: prefix=f"{original}/corpus"
+    input:
+        rules.setup.output
+    output:
+        src=f"{original}/corpus.{src}.gz",
+        trg=f"{original}/corpus.{trg}.gz"
+    params:
+        prefix=f"{original}/corpus"
     shell: '''
         SRC={src} TRG={trg} \
-        bash pipeline/data/download-corpus.sh "{params.prefix}" "{cache_dir}" "train" {train_datasets} 2>&1 | tee {log}
-    '''
+        bash pipeline/data/download-corpus.sh \
+            "{params.prefix}" "{cache_dir}" "train" {train_datasets} 2>&1 | tee {log}'''
 
 rule data_val:
     message: "Downloading validation corpus"
@@ -101,25 +71,37 @@ rule data_val:
     conda: "envs/environment.yml"
     threads: workflow.cores/2
     group: 'data'
-    input: rules.setup.output
-    output: src=f"{original}/devset.{src}.gz", trg=f"{original}/devset.{trg}.gz"
-    params: prefix=f"{original}/devset"
+    input:
+        rules.setup.output
+    output:
+        src=f"{original}/devset.{src}.gz",
+        trg=f"{original}/devset.{trg}.gz"
+    params:
+        prefix=f"{original}/devset"
     shell: '''
         SRC={src} TRG={trg} \
-        bash pipeline/data/download-corpus.sh "{params.prefix}" "{cache_dir}" "valid" {valid_datasets} 2>&1 | tee {log}
-    '''
+        bash pipeline/data/download-corpus.sh \
+            "{params.prefix}" "{cache_dir}" "valid" {valid_datasets} 2>&1 | tee {log}'''
 
 rule clean_corpus:
     message: "Cleaning corpus"
     log: f"{log_dir}/clean_corpus.log"
     conda: "envs/environment.yml"
     threads: workflow.cores
-    input: rules.data_train.output.src, rules.data_train.output.trg, rules.setup.output
-    output: src=f"{clean}/corpus.{src}.gz", trg=f"{clean}/corpus.{trg}.gz"
-    params: prefix_input=f"{original}/corpus", prefix_output=f"{clean}/corpus"
+    input:
+        rules.data_train.output.src,
+        rules.data_train.output.trg,
+        rules.setup.output
+    output:
+        src=f"{clean}/corpus.{src}.gz",
+        trg=f"{clean}/corpus.{trg}.gz"
+    params:
+        prefix_input=f"{original}/corpus",
+        prefix_output=f"{clean}/corpus"
     shell: '''
         SRC={src} TRG={trg} CLEAN_TOOLS=pipeline/clean/tools \
-        bash ./pipeline/clean/clean-corpus.sh "{params.prefix_input}" "{params.prefix_output}" 2>&1 | tee {log}'''
+        bash pipeline/clean/clean-corpus.sh \
+            "{params.prefix_input}" "{params.prefix_output}" 2>&1 | tee {log}'''
 
 # rule backward:
 #     message: "Training backward model"
@@ -134,21 +116,78 @@ rule clean_corpus:
 #         bash ./pipeline/train/train-s2s.sh "{output}" "{params.prefix_train}" "{params.prefix_test}" 2>&1 | tee {log}
 #     '''
 
-rule teacher:
-    message: "Training teacher"
-    log: f"{log_dir}/train_teacher.log"
+### training
+
+rule train_vocab:
+    message: "Training spm vocab"
+    log: f"{log_dir}/train_vocab.log"
     conda: "envs/environment.yml"
     threads: workflow.cores/4
-    resources:
-        gpu=8
-    input: rules.clean_corpus.output.src, rules.clean_corpus.output.trg, rules.marian.output.trainer,
-            rules.data_val.output.src, rules.data_val.output.trg
-    output: OUTPUT
-    params: prefix_train=f"{clean}/corpus", prefix_test=f"{original}/devset"
+    resources: gpu=4
+    input:
+        rules.marian.output.vocab,
+        corpus_src=rules.clean_corpus.output.src,
+        corpus_trg=rules.clean_corpus.output.trg
+    output:
+        vocab
+    params:
+        prefix_train=f"{clean}/corpus",
+        prefix_test=f"{original}/devset"
     shell: '''
-        SRC={src} TRG={trg} MARIAN={marian} GPUS={gpus} WORKSPACE={workspace} \
-        bash ./pipeline/train/train-teacher.sh "{teacher_dir}" "{params.prefix_train}" "{params.prefix_test}" 2>&1 | tee {log}
-    '''
+        MARIAN={marian_dir} \
+        bash pipeline/train/spm-vocab.sh \
+            "{input.corpus_src}" "{input.corpus_trg}" "{output}" 2>&1 | tee {log}'''
 
+
+rule teacher:
+    message: "Training teacher"
+    log: f"{log_dir}/train_teacher{{ens}}.log"
+    conda: "envs/environment.yml"
+    threads: workflow.cores/4
+    resources: gpu=4
+    input:
+        rules.clean_corpus.output.src,
+        rules.clean_corpus.output.trg,
+        rules.marian.output.trainer,
+        rules.data_val.output.src,
+        rules.data_val.output.trg,
+        vocab=rules.train_vocab.output
+    output:
+        dir=directory(f'{teacher_dir}{{ens}}'),
+        model=f'{teacher_dir}{{ens}}/{best_bleu_model}'
+    params:
+        prefix_train=f"{clean}/corpus",
+        prefix_test=f"{original}/devset"
+    shell: '''
+        SRC={src} TRG={trg} MARIAN={marian_dir} GPUS="{gpus}" WORKSPACE={workspace} \
+        bash pipeline/train/train-teacher.sh \
+            "{output.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
+             2>&1 | tee {log}'''
+
+
+
+rule translate_corpus:
+    message: "Translating corpus with teacher"
+    log: f"{log_dir}/translate_corpus.log"
+    conda: "envs/environment.yml"
+    threads: workflow.cores/4
+    resources: gpu=4
+    input:
+        rules.marian.output.trainer,
+        corpus_src=rules.clean_corpus.output.src,
+        corpus_trg=rules.clean_corpus.output.trg,
+        teacher_dirs=expand(f"{teacher_dir}{{ens}}", ens=ensemble),
+        teacher_models=expand(f"{teacher_dir}{{ens}}/{best_bleu_model}", ens=ensemble),
+        vocab=rules.train_vocab.output,
+    output:
+        f"{translated}/corpus.{trg}.gz"
+    params:
+        prefix_train=f"{clean}/corpus",
+        prefix_test=f"{original}/devset"
+    shell: '''
+        SRC={src} TRG={trg} MARIAN={marian_dir} GPUS="{gpus}" WORKSPACE={workspace} \
+        bash pipeline/translate/translate-corpus.sh \
+            {input.corpus_src} {input.corpus_trg} "{input.teacher_models}" "{input.vocab}" "{output}" \
+            2>&1 | tee {log}'''
 
 
