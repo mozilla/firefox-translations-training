@@ -1,9 +1,48 @@
 
+all: dry-run
+
+install-conda:
+	wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
+	bash Mambaforge-$(uname)-$(uname -m).sh
+
+install: install-conda
+	conda activate base
+	mamba create -c conda-forge -c bioconda -n snakemake snakemake
+	activate
+
+activate:
+	conda activate snakemake
+
+dry-run: activate
+	snakemake \
+	  --use-conda \
+	  --cores all \
+	  -n
+
+run-local: activate
+	snakemake \
+	  --use-conda \
+	  --cores all
+
+run-cluster: activate
+	snakemake \
+	  --use-conda \
+	  --cores all \
+	  --profile=profiles/snakepit
 
 dag:
+	activate
 	snakemake --dag | dot -Tpdf > dag.pdf
 
-run-with-monitor:
+install-monitor:
+	conda create --name panoptes
+	conda install -c panoptes-organization panoptes-ui
+
+run-monitor:
+	conda activate panoptes
+	panoptes
+
+run-with-monitor: activate
 	snakemake \
 	  --use-conda \
 	  --cores all \
