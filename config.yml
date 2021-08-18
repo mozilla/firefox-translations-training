@@ -1,5 +1,53 @@
 
 data-root-dir: /data/rw/home/bergamot-training
+cuda-dir: /usr/local/cuda-11.2
+
 src: ru
 trg: en
 experiment: snakemake
+
+# path to a pretrained backward model (optional)
+backward-model: ""
+
+# limits per downloaded dataset
+mono-max-sentences-src: 100000000
+mono-max-sentences-trg: 20000000
+
+bicleaner-threshold: 0.5
+
+# marian --devices parameter for GPUs to use, for example '0 1 2 3' or 'all' to find all GPUs on a machine
+gpus: "0 1 2 3"
+workspace: 9000
+
+datasets:
+  # parallel corpus
+  train:
+    - opus_ada83/v1
+    - opus_UN/v20090831
+    - opus_GNOME/v1
+    - mtdata_JW300
+  devtest:
+    - flores_dev
+    - mtdata_newstest2019_ruen
+  test:
+    - flores_devtest
+    - sacrebleu_wmt20
+    - sacrebleu_wmt18
+  # monolingual datasets (ex. paracrawl-mono_paracrawl8, commoncrawl_wmt16, news-crawl_news.2020)
+  # to be translated by the teacher model
+  mono-src:
+    - news-crawl_news.2020
+    - news-crawl_news.2019
+    - news-crawl_news.2018
+    - news-crawl_news.2017
+    - news-crawl_news.2016
+    - news-crawl_news.2015
+    - news-crawl_news.2014
+    - news-crawl_news.2013
+    - news-crawl_news.2012
+    - news-crawl_news.2011
+  # to be translated by the shallow s2s model to augment teacher corpus with back-translations
+  # leave empty to skip augmentation step (high resource languages)
+  mono-trg: ""
+
+

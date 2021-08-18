@@ -1,0 +1,6 @@
+cluster: "submit.py"
+cluster-status: "status.py"
+jobscript: "jobscript.sh"
+jobs: 10
+immediate-submit: false
+verbose: true

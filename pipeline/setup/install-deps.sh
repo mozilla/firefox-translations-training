@@ -11,7 +11,6 @@ set -euo pipefail
 
 echo "######### Installing dependencies"
 
-
 echo "### Updating git submodules"
 git submodule update --init --recursive
 
