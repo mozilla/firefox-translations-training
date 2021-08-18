@@ -1,3 +1,6 @@
+.ONESHELL:
+SHELL=/bin/bash
+CONDA_ACTIVATE=source $$(conda info --base)/etc/profile.d/conda.sh ; conda activate ; conda activate
 
 all: dry-run
 
@@ -6,12 +9,12 @@ install-conda:
 	bash Mambaforge-$(uname)-$(uname -m).sh
 
 install: install-conda
-	conda activate base
+	$(CONDA_ACTIVATE) base
 	mamba create -c conda-forge -c bioconda -n snakemake snakemake
 	activate
 
 activate:
-	conda activate snakemake
+	$(CONDA_ACTIVATE) snakemake
 
 dry-run: activate
 	snakemake \
@@ -30,8 +33,7 @@ run-cluster: activate
 	  --cores all \
 	  --profile=profiles/snakepit
 
-dag:
-	activate
+dag: activate
 	snakemake --dag | dot -Tpdf > dag.pdf
 
 install-monitor:
@@ -39,7 +41,7 @@ install-monitor:
 	conda install -c panoptes-organization panoptes-ui
 
 run-monitor:
-	conda activate panoptes
+	$(CONDA_ACTIVATE) panoptes
 	panoptes
 
 run-with-monitor: activate

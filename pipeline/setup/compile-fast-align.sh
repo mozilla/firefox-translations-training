@@ -15,9 +15,6 @@ test -v THREADS
 
 echo "###### Compiling fast align"
 
-echo "### Installing fast_align dependencies "
-apt-get install -y libgoogle-perftools-dev libsparsehash-dev libboost-all-dev
-
 echo "### Compiling fast_align"
 mkdir -p "${BIN}"
 mkdir -p "${BUILD_DIR}"

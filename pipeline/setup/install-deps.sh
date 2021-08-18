@@ -21,5 +21,7 @@ echo "### Installing marian dependencies"
 apt-get install -y build-essential libboost-system-dev libprotobuf10 \
   protobuf-compiler libprotobuf-dev openssl libssl-dev libgoogle-perftools-dev
 
+echo "### Installing fast_align dependencies "
+apt-get install -y libgoogle-perftools-dev libsparsehash-dev libboost-all-dev
 
 echo "######### Done: Installing dependencies"
