@@ -30,6 +30,7 @@ best_bleu_model="model.npz.best-bleu-detok.npz"
 teacher_dir=f"{models_dir}/teacher"
 vocab=f"{models_dir}/vocab/vocab.spm"
 
+# todo: must be calculated inside the task
 gpus=config['gpus'] \
     if config['gpus'] != 'all' \
     else shell("$(seq -s " " 0 $(( $(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)-1 )))")

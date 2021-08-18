@@ -24,10 +24,10 @@ rule marian:
     group: 'setup'
     input: rules.setup.output
     output:
-        trainer=f"{marian_dir}/marian",
-        decoder=f"{marian_dir}/marian-decoder",
-        scorer=f"{marian_dir}/marian-scorer",
-        vocab=f'{marian_dir}/spm_train'
+        trainer=protected(f"{marian_dir}/marian"),
+        decoder=protected(f"{marian_dir}/marian-decoder"),
+        scorer=protected(f"{marian_dir}/marian-scorer"),
+        vocab=protected(f'{marian_dir}/spm_train')
     shell: '''
         MARIAN={marian_dir} THREADS={threads} CUDA_DIR={cuda_dir} \
         bash pipeline/setup/compile-marian.sh 2>&1 | tee {log}'''
@@ -39,7 +39,7 @@ rule fast_align:
     threads: workflow.cores
     group: 'setup'
     input: rules.setup.output
-    output: f"{bin}/fast_align"
+    output: protected(f"{bin}/fast_align")
     shell: '''
         BUILD_DIR=3rd_party/fast_align/build BIN={bin} THREADS={threads} \
         bash pipeline/setup/compile-fast-align.sh 2>&1 | tee {log}'''
@@ -51,7 +51,7 @@ rule extract_lex:
     threads: workflow.cores
     group: 'setup'
     input: rules.setup.output
-    output: f"{bin}/extract_lex"
+    output: protected(f"{bin}/extract_lex")
     shell: '''
         BUILD_DIR=3rd_party/extract-lex/build BIN={bin} THREADS={threads} \
         bash pipeline/setup/compile-extract-lex.sh 2>&1 | tee {log}'''

@@ -23,8 +23,8 @@ mono-max-sentences-trg: 20000000
 bicleaner-threshold: 0.5
 
 # marian --devices parameter for GPUs to use, for example '0 1 2 3' or 'all' to find all GPUs on a machine
-gpus: "0 1 2 3"
-workspace: 9000
+gpus: "0 1 2 3 4 5 6 7"
+workspace: 5000
 
 datasets:
   # parallel corpus

@@ -56,7 +56,7 @@ echo "### Training ${model_dir}"
   --keep-best \
   --log "${model_dir}/train.log" \
   --valid-log "${model_dir}/valid.log" \
-  "${@:8}"
+  "${@:9}"
 
 echo "### Model training is completed: ${model_dir}"
 echo "###### Done: Training a model"
