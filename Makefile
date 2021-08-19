@@ -1,3 +1,5 @@
+#!make
+
 .ONESHELL:
 SHELL=/bin/bash
 CONDA_ACTIVATE=source $$(conda info --base)/etc/profile.d/conda.sh ; conda activate ; conda activate
@@ -7,8 +9,8 @@ SHARED_ROOT=/data/rw/group-maml
 all: dry-run
 
 install-conda:
-	wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
-	bash Mambaforge-$(uname)-$(uname -m).sh -p $(SHARED_ROOT)/mambaforge
+	wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$$(uname)-$$(uname -m).sh
+	bash Mambaforge-$$(uname)-$$(uname -m).sh -p $(SHARED_ROOT)/mambaforge
 
 install: install-conda
 	$(CONDA_ACTIVATE) base
