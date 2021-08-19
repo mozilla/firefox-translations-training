@@ -41,6 +41,9 @@ run-cluster:
 dag:
 	snakemake --dag | dot -Tpdf > dag.pdf
 
+lint:
+	snakemake --lint
+
 install-monitor:
 	conda create --name panoptes
 	conda install -c panoptes-organization panoptes-ui

@@ -29,5 +29,6 @@ except subprocess.CalledProcessError as e:
     raise e
 
 res = res.stdout.decode()
-job_id=res[res.find('=> job number:'):].strip()
+number_line='=> job number:'
+job_id=res[res.find(number_line)+len(number_line):].strip()
 print(job_id)
