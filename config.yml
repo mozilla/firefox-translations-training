@@ -1,6 +1,6 @@
 
 dirs:
-  data-root: /data/rw/home/bergamot-training
+  data-root: /data/rw/group-maml/bergamot
   cuda: /usr/local/cuda-11.2
   bin: bin
   marian: 3rd_party/marian-dev/build
@@ -22,17 +22,15 @@ mono-max-sentences-trg: 20000000
 
 bicleaner-threshold: 0.5
 
-# marian --devices parameter for GPUs to use, for example '0 1 2 3' or 'all' to find all GPUs on a machine
-gpus: "0 1 2 3 4 5 6 7"
+
+gpus: 4
 workspace: 5000
 
 datasets:
   # parallel corpus
   train:
     - opus_ada83/v1
-    - opus_UN/v20090831
     - opus_GNOME/v1
-    - mtdata_JW300
   devtest:
     - flores_dev
     - mtdata_newstest2019_ruen

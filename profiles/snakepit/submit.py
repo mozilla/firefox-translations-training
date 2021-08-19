@@ -21,7 +21,7 @@ if "resources" in job_properties:
         request = f'[{num}:txp]'
 
 name=job_properties.get("rule")
-cmd = f'pit run snakemake-{name} {request} -e "{jobscript}"'
+cmd = f'mkdir -p empty && cd empty && pit run snakemake-{name} {request} -e "bash {jobscript}"'
 
 try:
     res = subprocess.run(cmd, check=True, shell=True, stdout=subprocess.PIPE)
