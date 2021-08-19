@@ -2,17 +2,17 @@
 
 .ONESHELL:
 SHELL=/bin/bash
-CONDA_ACTIVATE=source $$(conda info --base)/etc/profile.d/conda.sh ; conda activate ; conda activate
 SHARED_ROOT=/data/rw/group-maml
+CONDA_ACTIVATE=source $(SHARED_ROOT)/mambaforge/etc/profile.d/conda.sh ; conda activate ; conda activate
 
 
-all: dry-run
+all: install-conda, install-snakemake, dry-run
 
 install-conda:
 	wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$$(uname)-$$(uname -m).sh
 	bash Mambaforge-$$(uname)-$$(uname -m).sh -p $(SHARED_ROOT)/mambaforge
 
-install: install-conda
+install-snakemake:
 	$(CONDA_ACTIVATE) base
 	mamba create -c conda-forge -c bioconda -n snakemake snakemake
 	activate
