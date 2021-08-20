@@ -4,7 +4,7 @@ rule setup:
     log: f"{log_dir}/install-deps.log"
     conda: "../envs/environment.yml"
     threads: 1
-    group: 'setup{test}'
+    group: 'setup'
     # specific to local machine
     output: touch("/tmp/flags/setup.done")
     shell: 'bash pipeline/setup/install-deps.sh 2>&1 | tee {log}'
