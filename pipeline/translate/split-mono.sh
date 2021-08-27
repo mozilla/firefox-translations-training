@@ -12,4 +12,5 @@ output_dir=$3
 chunks=$3
 
 mkdir -p "${output_dir}"
-pigz -dc "${mono_path}" | split -d -n ${chunks} - "${output_dir}/file."
+part_len=$(($(pigz -dc "${mono_path}" | wc -l) / ${chunks} + 1))
+pigz -dc "${mono_path}" | split -d -l ${part_len} - "${output_dir}/file."

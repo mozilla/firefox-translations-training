@@ -2,6 +2,72 @@ from snakemake.utils import min_version
 
 min_version("6.6.1")
 
+# Directories structure
+#
+#├ data
+#│   ├ cache
+#│   │  ├ corpus
+#│   │  │  └ opus
+#│   │  │    ├ ada83_v1.en.gz
+#│   │  │    └ ada83_v1.ru.gz
+#│   │  └ mono
+#│   │     └ news-crawl
+#│   │       ├ news.2019.ru.gz
+#│   │       └ news.2019.en.gz
+#│   └ ru-en
+#│      └ test
+#│        ├ original
+#│        │   ├ corpus.ru.gz
+#│        │   ├ corpus.en.gz
+#│        │   ├ mono.ru.gz
+#│        │   ├ mono.en.gz
+#│        │   ├ devset.ru.gz
+#│        │   └ devset.en.gz
+#│        ├ evaluation
+#│        │   ├ wmt12.ru
+#│        │   ├ wmt12.en
+#│        │   ├ wmt20.ru
+#│        │   ├ wmt20.en
+#│        ├ clean
+#│        │   ├ corpus.ru.gz
+#│        │   ├ corpus.en.gz
+#│        │   ├ mono.ru.gz
+#│        │   └ mono.en.gz
+#│        ├ biclean
+#│        │   ├ corpus.ru.gz
+#│        │   ├ corpus.en.gz
+#│        ├ translated
+#│        │   ├ mono.ru.gz
+#│        │   └ mono.en.gz
+#│        ├ augmented
+#│        │   ├ corpus.ru.gz
+#│        │   └ corpus.en.gz
+#│        ├ alignment
+#│        │   ├ corpus.aln.gz
+#│        │   └ lex.s2t.pruned.gz
+#│        ├ merged
+#│        │   ├ corpus.ru.gz
+#│        │   └ corpus.en.gz
+#│        └ filtered
+#│            ├ corpus.ru.gz
+#│            └ corpus.en.gz
+#├ model
+#│   ├ ru-en
+#│   │   └ test
+#│   │      ├ teacher
+#│   │      ├ student
+#│   │      ├ student-finetuned
+#│   │      ├ speed
+#│   │      └ exported
+#│   ├ en-ru
+#│      └ test
+#│         └ s2s
+#│
+#├ experiments
+#│   └ ru-en
+#│      └ test
+#│         └ config.sh
+
 configfile: 'config.yml'
 # `include` directive is not supported by Pycharm plugin, moved all rules to one file to enable live checks
 # https://github.com/JetBrains-Research/snakecharm/issues/195

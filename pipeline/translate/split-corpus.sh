@@ -12,5 +12,6 @@ output_dir=$3
 chunks=$4
 
 mkdir -p "${output_dir}"
-pigz -dc "${corpus_src}" |  split -d -n ${chunks} - "${output_dir}/file."
-pigz -dc "${corpus_trg}" |  split -d -n ${chunks} - "${output_dir}/file." --additional-suffix .ref
+part_len=$(($(pigz -dc "${corpus_src}" | wc -l) / ${chunks} + 1))
+pigz -dc "${corpus_src}" |  split -d -l $part_len - "${output_dir}/file."
+pigz -dc "${corpus_trg}" |  split -d -l $part_len - "${output_dir}/file." --additional-suffix .ref
