@@ -106,7 +106,7 @@ gpus_num=config['gpus']
 gpus = list(range(int(gpus_num)))
 workspace = config['workspace']
 partitions = config['partitions']
-parts=list(range(partitions))
+parts=[f'{n:02d}' for n in list(range(partitions))]
 
 ensemble = list(range(config['teacher-ensemble']))
 
