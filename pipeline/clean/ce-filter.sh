@@ -37,16 +37,13 @@ mkdir -p "${output_dir}"
 mkdir -p "${dir}"
 
 
-echo "### Decompressing corpus"
-test -s "${dir}/corpus.${TRG}" || pigz -dc "${corpus_prefix}.${TRG}.gz" >"${dir}/corpus.${TRG}"
-test -s "${dir}/corpus.${SRC}" || pigz -dc "${corpus_prefix}.${SRC}.gz" >"${dir}/corpus.${SRC}"
 
 echo "### Scoring"
 test -s "${dir}/scores.txt" ||
   "${MARIAN}/marian-scorer" \
     -m "${model}" \
     -v "${vocab}" "${vocab}" \
-    -t "${dir}/corpus.${TRG}" "${dir}/corpus.${SRC}" \
+    -t "${corpus_prefix}.${TRG}.gz" "${corpus_prefix}.${SRC}.gz" \
     --mini-batch 32 \
     --mini-batch-words 1500 \
     --maxi-batch 1000 \
@@ -56,6 +53,11 @@ test -s "${dir}/scores.txt" ||
     -w "${WORKSPACE}" \
     --log "${dir}/scores.txt.log" \
     >"${dir}/scores.txt"
+
+echo "### Decompressing corpus"
+test -s "${dir}/corpus.${TRG}" || pigz -dc "${corpus_prefix}.${TRG}.gz" >"${dir}/corpus.${TRG}"
+test -s "${dir}/corpus.${SRC}" || pigz -dc "${corpus_prefix}.${SRC}.gz" >"${dir}/corpus.${SRC}"
+
 
 echo "### Normalizing scores"
 test -s "${dir}/scores.nrm.txt" ||

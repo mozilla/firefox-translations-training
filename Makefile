@@ -13,6 +13,7 @@ install-conda:
 	bash Mambaforge-$$(uname)-$$(uname -m).sh -p $(SHARED_ROOT)/mambaforge
 
 install-snakemake:
+	git submodule update --init --recursive
 	$(CONDA_ACTIVATE) base
 	mamba create -c conda-forge -c bioconda -n snakemake snakemake
 	activate
@@ -39,7 +40,7 @@ run-cluster:
 	  --profile=profiles/snakepit
 
 dag:
-	snakemake --dag | dot -Tpdf > dag.pdf
+	snakemake --dag | dot -Tpdf > DAG.pdf
 
 lint:
 	snakemake --lint
@@ -72,7 +73,6 @@ install-snakepit-scheduler:
 	npm install
 	sudo npm link
 
-	unset http_proxy
 	echo "http://10.2.224.243" > /root/.pitconnect.txt
 
 	pit status

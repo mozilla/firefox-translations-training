@@ -25,6 +25,7 @@ bicleaner-threshold: 0.5
 
 gpus: 4
 workspace: 5000
+partitions: 16
 
 datasets:
   # parallel corpus

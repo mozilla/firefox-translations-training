@@ -7,7 +7,12 @@ import subprocess
 job_id = sys.argv[1]
 
 try:
-    res = subprocess.run('pit show job:{}'.format(job_id),
+    cmd = f'''
+            unset http_proxy 
+	        unset HTTP_PROXY
+	        pit show job:{job_id}'''
+
+    res = subprocess.run(cmd,
                          check=True,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT,

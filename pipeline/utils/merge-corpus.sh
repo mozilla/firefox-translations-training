@@ -20,8 +20,8 @@ res_trg=$6
 
 mkdir -p "$(dirname "${res_src}")"
 mkdir -p "$(dirname "${res_trg}")"
-test -s "${res_src}" || cat <(pigz -dc "${src1}") <(pigz -dc "${src2}") | shuf | pigz >"${res_src}"
-test -s "${res_trg}" || cat <(pigz -dc "${trg1}") <(pigz -dc "${trg2}") | shuf | pigz >"${res_trg}"
+test -s "${res_src}" || cat <(pigz -dc "${src1}") <(pigz -dc "${src2}") | pigz >"${res_src}"
+test -s "${res_trg}" || cat <(pigz -dc "${trg1}") <(pigz -dc "${trg2}") | pigz >"${res_trg}"
 
 src_len=$(pigz -dc "${res_src}" | wc -l)
 trg_len=$(pigz -dc "${res_trg}" | wc -l)
