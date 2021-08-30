@@ -124,7 +124,7 @@ rule setup:
     group: 'setup'
     # specific to local machine
     output: touch("/tmp/flags/setup.done")
-    shell: 'bash pipeline/setup/install-deps.sh 2>&1'
+    shell: 'bash pipeline/setup/install-deps.sh 2>{log}'
 
 rule marian:
     message: "Compiling marian"
@@ -136,7 +136,7 @@ rule marian:
     output: trainer=protected(f"{marian_dir}/marian"), decoder=protected(f"{marian_dir}/marian-decoder"),
             scorer=protected(f"{marian_dir}/marian-scorer"), vocab=protected(f'{marian_dir}/spm_train')
     shell: '''MARIAN={marian_dir} THREADS={threads} CUDA_DIR={cuda_dir} \
-                bash pipeline/setup/compile-marian.sh 2>&1'''
+                bash pipeline/setup/compile-marian.sh 2>{log}'''
 
 rule fast_align:
     message: "Compiling fast align"
@@ -147,7 +147,7 @@ rule fast_align:
     input: rules.setup.output
     output: protected(f"{bin}/fast_align")
     shell: '''BUILD_DIR=3rd_party/fast_align/build BIN={bin} THREADS={threads} \
-                bash pipeline/setup/compile-fast-align.sh 2>&1'''
+                bash pipeline/setup/compile-fast-align.sh 2>{log}'''
 
 rule extract_lex:
     message: "Compiling fast align"
@@ -158,7 +158,7 @@ rule extract_lex:
     input: rules.setup.output
     output: protected(f"{bin}/extract_lex")
     shell: '''BUILD_DIR=3rd_party/extract-lex/build BIN={bin} THREADS={threads} \
-                bash pipeline/setup/compile-extract-lex.sh 2>&1'''
+                bash pipeline/setup/compile-extract-lex.sh 2>{log}'''
 
 # data
 
@@ -173,7 +173,7 @@ rule data_train:
     params: prefix=f"{original}/corpus"
     shell: '''SRC={src} TRG={trg} \
                 bash pipeline/data/download-corpus.sh \
-                "{params.prefix}" "{cache_dir}" "train" {train_datasets} 2>&1'''
+                "{params.prefix}" "{cache_dir}" "train" {train_datasets} 2>{log}'''
 
 rule data_val:
     message: "Downloading validation corpus"
@@ -186,7 +186,7 @@ rule data_val:
     params: prefix=f"{original}/devset"
     shell: '''SRC={src} TRG={trg} \
                 bash pipeline/data/download-corpus.sh \
-                "{params.prefix}" "{cache_dir}" "valid" {valid_datasets} 2>&1'''
+                "{params.prefix}" "{cache_dir}" "valid" {valid_datasets} 2>{log}'''
 
 rule data_test:
     message: "Downloading test corpus"
@@ -198,7 +198,7 @@ rule data_test:
     output: expand(f"{evaluation}/{{dataset}}.{{lng}}",dataset=eval_datasets,lng=[src, trg])
     shell: '''SRC={src} TRG={trg} \
                 bash pipeline/data/download-eval.sh \
-                "{evaluation}" "{cache_dir}" {eval_datasets} 2>&1'''
+                "{evaluation}" "{cache_dir}" {eval_datasets} 2>{log}'''
 
 rule data_mono_src:
     message: "Downloading monolingual dataset for source language"
@@ -209,7 +209,7 @@ rule data_mono_src:
     input: rules.setup.output
     output: f'{original}/mono.{src}'
     shell: '''bash pipeline/data/download-mono.sh \
-                "{src}" "{mono_max_sent_src}" "{original}/mono" "{cache_dir}" {mono_src_datasets} 2>&1'''
+                "{src}" "{mono_max_sent_src}" "{original}/mono" "{cache_dir}" {mono_src_datasets} 2>{log}'''
 
 if mono_trg_datasets:
     rule data_mono_trg:
@@ -221,7 +221,7 @@ if mono_trg_datasets:
         input: rules.setup.output
         output: f'{original}/mono.{trg}'
         shell: '''bash pipeline/data/download-mono.sh \
-                  "{trg}" "{mono_max_sent_trg}" "{original}/mono" "{cache_dir}" {mono_trg_datasets} 2>&1'''
+                  "{trg}" "{mono_max_sent_trg}" "{original}/mono" "{cache_dir}" {mono_trg_datasets} 2>{log}'''
 
 # cleaning
 
@@ -234,7 +234,7 @@ rule clean_corpus:
     output: src=f"{clean}/corpus.{src}.gz", trg=f"{clean}/corpus.{trg}.gz"
     params: prefix_input=f"{original}/corpus", prefix_output=f"{clean}/corpus"
     shell: '''SRC={src} TRG={trg} CLEAN_TOOLS=pipeline/clean/tools \
-              bash pipeline/clean/clean-corpus.sh "{params.prefix_input}" "{params.prefix_output}" 2>&1'''
+              bash pipeline/clean/clean-corpus.sh "{params.prefix_input}" "{params.prefix_output}" 2>{log}'''
 
 rule clean_mono_src:
     message: "Cleaning mono src"
@@ -244,7 +244,7 @@ rule clean_mono_src:
     input: rules.data_mono_src.output, rules.setup.output
     output: f"{clean}/mono.{src}.gz"
     shell: '''CLEAN_TOOLS=pipeline/clean/tools \
-                bash pipeline/clean/clean-mono.sh "{src}" "{original}/mono" "{clean}/mono" 2>&1'''
+                bash pipeline/clean/clean-mono.sh "{src}" "{original}/mono" "{clean}/mono" 2>{log}'''
 
 
 # model training
@@ -259,7 +259,7 @@ rule train_vocab:
     output: f"{models_dir}/vocab/vocab.spm"
     params: prefix_train=f"{clean}/corpus", prefix_test=f"{original}/devset"
     shell: '''MARIAN={marian_dir} \
-              bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" 2>&1'''
+              bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" 2>{log}'''
 
 # rule backward:
 #     message: "Training backward model"
@@ -271,7 +271,7 @@ rule train_vocab:
 #     output: f'{models_dir}/s2s'
 #     params: prefix_train=f"{clean}/corpus", prefix_test=f"{original}/devset"
 #     shell: '''
-#         bash ./pipeline/train/train-s2s.sh "{output}" "{params.prefix_train}" "{params.prefix_test}" 2>&1
+#         bash ./pipeline/train/train-s2s.sh "{output}" "{params.prefix_train}" "{params.prefix_test}" 2>{log}
 #     '''
 
 rule teacher:
@@ -287,7 +287,7 @@ rule teacher:
     params: prefix_train=f"{clean}/corpus", prefix_test=f"{original}/devset"
     shell: '''SRC={src} TRG={trg} MARIAN={marian_dir} GPUS="{gpus}" WORKSPACE={workspace} \
                 bash pipeline/train/train-teacher.sh \
-                "{output.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" 2>&1'''
+                "{output.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" 2>{log}'''
 
 
 # translation with teacher
@@ -300,7 +300,7 @@ rule split_corpus:
     input: corpus_src=rules.clean_corpus.output.src, corpus_trg=rules.clean_corpus.output.trg
     output: expand(f"{translated}/corpus/file.{{number}}{{ext}}", number=parts, ext=['', '.ref'])
     shell: '''bash pipeline/translate/split-corpus.sh \
-                {input.corpus_src} {input.corpus_trg} {translated}/corpus {partitions} 2>&1'''
+                {input.corpus_src} {input.corpus_trg} {translated}/corpus {partitions} 2>{log}'''
 
 rule translate_corpus:
     message: "Translating corpus with teacher"
@@ -314,7 +314,7 @@ rule translate_corpus:
     output: f'{translated}/corpus/file.{{part}}.nbest'
     shell: '''SRC={src} TRG={trg} MARIAN={marian_dir} GPUS="{gpus}" WORKSPACE={workspace} \
                 bash pipeline/translate/translate-nbest.sh \
-                "{input.files}" "{input.teacher_models}" "{input.vocab}" "{translated}/corpus" 2>&1'''
+                "{input.files}" "{input.teacher_models}" "{input.vocab}" "{translated}/corpus" 2>{log}'''
 
 rule extract_best:
     message: "Extracting best translations for the corpus"
@@ -323,7 +323,7 @@ rule extract_best:
     threads: workflow.cores
     input: f'{translated}/corpus/file.{{part}}.nbest'
     output: f'{translated}/corpus/file.{{part}}.nbest.out'
-    shell: '''bash pipeline/translate/extract-best.sh {translated}/corpus {input} 2>&1'''
+    shell: '''bash pipeline/translate/extract-best.sh {translated}/corpus {input} 2>{log}'''
 
 rule collect_corpus:
     message: "Collecting translated corpus"
@@ -333,7 +333,7 @@ rule collect_corpus:
     input: expand(f"{translated}/corpus/file.{{part}}.nbest.out", part=parts)
     output: f'{translated}/corpus.{trg}.gz'
     params: src_corpus=rules.clean_corpus.output.src
-    shell: '''bash pipeline/translate/collect.sh {translated}/corpus {output} {params.src_corpus} 2>&1'''
+    shell: '''bash pipeline/translate/collect.sh {translated}/corpus {output} {params.src_corpus} 2>{log}'''
 
 
 # rule split_mono:
