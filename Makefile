@@ -4,7 +4,7 @@
 SHELL=/bin/bash
 SHARED_ROOT=/data/rw/group-maml
 CONDA_ACTIVATE=source $(SHARED_ROOT)/mambaforge/etc/profile.d/conda.sh ; conda activate ; conda activate
-
+LOCAL_GPUS=8
 
 all: install-conda, install-snakemake, dry-run
 
@@ -30,7 +30,8 @@ dry-run:
 run-local:
 	snakemake \
 	  --use-conda \
-	  --cores all
+	  --cores all \
+	  --resources gpus=$(LOCAL_GPUS)
 
 run-cluster:
 	chmod +x profiles/snakepit/*

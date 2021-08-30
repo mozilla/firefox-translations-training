@@ -236,15 +236,16 @@ rule clean_corpus:
     shell: '''SRC={src} TRG={trg} CLEAN_TOOLS=pipeline/clean/tools \
               bash pipeline/clean/clean-corpus.sh "{params.prefix_input}" "{params.prefix_output}" 2>{log}'''
 
-rule clean_mono_src:
-    message: "Cleaning mono src"
-    log: f"{log_dir}/clean_mono_src.log"
+rule clean_mono:
+    message: "Cleaning monolingual dataset"
+    log: f"{log_dir}/clean_mono_{{lang}}.log"
     conda: "envs/environment.yml"
     threads: workflow.cores
-    input: rules.data_mono_src.output, rules.setup.output
-    output: f"{clean}/mono.{src}.gz"
+    input: rules.setup.output, f'{original}/mono.{{lang}}'
+    output: f"{clean}/mono.{{lang}}.gz"
+    params: lang='{lang}'
     shell: '''CLEAN_TOOLS=pipeline/clean/tools \
-                bash pipeline/clean/clean-mono.sh "{src}" "{original}/mono" "{clean}/mono" 2>{log}'''
+                bash pipeline/clean/clean-mono.sh "{params.lang}" "{original}/mono" "{clean}/mono" 2>{log}'''
 
 
 # model training
@@ -261,18 +262,56 @@ rule train_vocab:
     shell: '''MARIAN={marian_dir} \
               bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" 2>{log}'''
 
-# rule backward:
-#     message: "Training backward model"
-#     log: f"{log_dir}/train_backward.log"
-#     conda: "envs/environment.yml"
-#     threads: workflow.cores/4
-#     input: rules.clean_corpus.output.src, rules.clean_corpus.output.trg, rules.marian.output.trainer,
-#             rules.data_val.output.src, rules.data_val.output.trg
-#     output: f'{models_dir}/s2s'
-#     params: prefix_train=f"{clean}/corpus", prefix_test=f"{original}/devset"
-#     shell: '''
-#         bash ./pipeline/train/train-s2s.sh "{output}" "{params.prefix_train}" "{params.prefix_test}" 2>{log}
-#     '''
+
+# augmentation
+
+rule backward:
+    message: "Training backward model"
+    log: f"{log_dir}/train_backward.log"
+    conda: "envs/environment.yml"
+    threads: workflow.cores/4
+    input: rules.clean_corpus.output.src, rules.clean_corpus.output.trg, rules.marian.output.trainer,
+            rules.data_val.output.src, rules.data_val.output.trg
+    output: f'{models_dir}/s2s'
+    params: prefix_train=f"{clean}/corpus", prefix_test=f"{original}/devset"
+    shell: '''
+        bash ./pipeline/train/train-s2s.sh "{output}" "{params.prefix_train}" "{params.prefix_test}" 2>{log}
+    '''
+
+
+rule split_mono_trg:
+    message: "Splitting monolingual trg dataset"
+    log: f"{log_dir}/split_mono_trg.log"
+    conda: "envs/environment.yml"
+    threads: workflow.cores
+    input: f"{clean}/mono.{trg}.gz",
+    output: expand(f"{translated}/mono_trg/file.{{number}}", number=parts)
+    shell: 'bash pipeline/translate/split-mono.sh {input} {translated}/mono_trg {partitions} 2>{log}'
+
+rule translate_mono_trg:
+    message: "Translating monolingual trg dataset with backward model"
+    log: f"{log_dir}/translate_mono_trg/{{part}}.log"
+    conda: "envs/environment.yml"
+    threads: workflow.cores/4
+    resources: gpu=gpus_num
+    input:
+        rules.marian.output.trainer, file=f'{translated}/mono_trg/file.{{part}}',
+        vocab=rules.train_vocab.output, model=f'{rules.backward.output}/{best_bleu_model}'
+    output: f'{translated}/mono_trg/file.{{part}}.out'
+    shell: '''MARIAN={marian_dir} GPUS="{gpus}" WORKSPACE={workspace} \
+                bash pipeline/translate/translate.sh \
+                "{input.file}" "{input.model}" "{input.vocab}" "{translated}/mono_trg" 2>{log}'''
+
+rule collect_mono_trg:
+    message: "Collecting translated mono trg dataset"
+    log: f"{log_dir}/collect_mono_trg.log"
+    conda: "envs/environment.yml"
+    threads: workflow.cores
+    input: expand(f"{translated}/mono_trg/file.{{part}}.out", part=parts)
+    output: f'{translated}/mono.{src}.gz'
+    params: src_mono=f"{clean}/mono.{trg}.gz"
+    shell: '''bash pipeline/translate/collect.sh "{translated}/mono_trg" "{output}" "{params.src_mono}" 2>{log}'''
+
 
 rule teacher:
     message: "Training teacher"
@@ -290,7 +329,9 @@ rule teacher:
                 "{output.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" 2>{log}'''
 
 
-# translation with teacher
+### translation with teacher
+
+# corpus
 
 rule split_corpus:
     message: "Splitting the corpus to translate"
@@ -335,10 +376,38 @@ rule collect_corpus:
     params: src_corpus=rules.clean_corpus.output.src
     shell: '''bash pipeline/translate/collect.sh {translated}/corpus {output} {params.src_corpus} 2>{log}'''
 
+# mono
 
-# rule split_mono:
-#     input: mono_path=rules.clean_mono_src.output,
-#     output: expand(f"{translated}/mono/file.{{number}}", number=list(range(chunks)))
-#     shell: '''bash pipeline/translate/split-mono.sh \
-#                  {input.mono_path} {translated}/mono {translated}/corpus {chunks}'''
+rule split_mono_src:
+    message: "Splitting monolingual src dataset"
+    log: f"{log_dir}/split_mono_src.log"
+    conda: "envs/environment.yml"
+    threads: workflow.cores
+    input: f"{clean}/mono.{src}.gz",
+    output: expand(f"{translated}/mono_src/file.{{number}}", number=parts)
+    shell: 'bash pipeline/translate/split-mono.sh {input} {translated}/mono_src {partitions} 2>{log}'
+
+rule translate_mono_src:
+    message: "Translating monolingual src dataset with teacher"
+    log: f"{log_dir}/translate_mono_src/{{part}}.log"
+    conda: "envs/environment.yml"
+    threads: workflow.cores/4
+    resources: gpu=gpus_num
+    input:
+        rules.marian.output.trainer, file=f'{translated}/mono_src/file.{{part}}', vocab=rules.train_vocab.output,
+        teacher_models=expand(f"{teacher_dir}{{ens}}/{best_bleu_model}", ens=ensemble)
+    output: f'{translated}/mono_src/file.{{part}}.out'
+    shell: '''MARIAN={marian_dir} GPUS="{gpus}" WORKSPACE={workspace} \
+                bash pipeline/translate/translate.sh \
+                "{input.file}" "{input.teacher_models}" "{input.vocab}" "{translated}/mono_src" 2>{log}'''
+
+rule collect_mono_src:
+    message: "Collecting translated mono src dataset"
+    log: f"{log_dir}/collect_mono_src.log"
+    conda: "envs/environment.yml"
+    threads: workflow.cores
+    input: expand(f"{translated}/mono_src/file.{{part}}.out", part=parts)
+    output: f'{translated}/mono.{trg}.gz'
+    params: src_mono=f"{clean}/mono.{src}.gz"
+    shell: '''bash pipeline/translate/collect.sh "{translated}/mono_src" "{output}" "{params.src_mono}" 2>{log}'''
 
