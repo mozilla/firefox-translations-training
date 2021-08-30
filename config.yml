@@ -23,7 +23,7 @@ mono-max-sentences-trg: 20000000
 bicleaner-threshold: 0.5
 
 
-gpus: 4
+gpus: 8
 workspace: 5000
 partitions: 16
 
