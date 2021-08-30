@@ -31,7 +31,7 @@ run-local:
 	snakemake \
 	  --use-conda \
 	  --cores all \
-	  --resources gpus=$(LOCAL_GPUS)
+	  --resources gpu=$(LOCAL_GPUS)
 
 run-cluster:
 	chmod +x profiles/snakepit/*
