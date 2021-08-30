@@ -284,7 +284,7 @@ rule split_mono_trg:
     log: f"{log_dir}/split_mono_trg.log"
     conda: "envs/environment.yml"
     threads: workflow.cores
-    input: f"{clean}/mono.{trg}.gz",
+    input: f"{clean}/mono.{trg}.gz"
     output: expand(f"{translated}/mono_trg/file.{{number}}", number=parts)
     shell: 'bash pipeline/translate/split-mono.sh {input} {translated}/mono_trg {partitions} 2>{log}'
 
@@ -359,19 +359,21 @@ rule translate_corpus:
 
 rule extract_best:
     message: "Extracting best translations for the corpus"
-    log: f"{log_dir}/extract_best/{{part}}.log"
+    log: f"{log_dir}/extract_best.log"
     conda: "envs/environment.yml"
     threads: workflow.cores
-    input: f'{translated}/corpus/file.{{part}}.nbest'
-    output: f'{translated}/corpus/file.{{part}}.nbest.out'
-    shell: '''bash pipeline/translate/extract-best.sh {translated}/corpus {input} 2>{log}'''
+    group: 'translate_corpus'
+    input: expand(f"{translated}/corpus/file.{{part}}.nbest", part=parts)
+    output: expand(f"{translated}/corpus/file.{{part}}.nbest.out", part=parts)
+    shell: '''bash pipeline/translate/extract-best.sh {translated}/corpus {threads} {input} 2>{log}'''
 
 rule collect_corpus:
     message: "Collecting translated corpus"
     log: f"{log_dir}/collect_corpus.log"
     conda: "envs/environment.yml"
     threads: workflow.cores
-    input: expand(f"{translated}/corpus/file.{{part}}.nbest.out", part=parts)
+    group: 'translate_corpus'
+    input: rules.extract_best.output
     output: f'{translated}/corpus.{trg}.gz'
     params: src_corpus=rules.clean_corpus.output.src
     shell: '''bash pipeline/translate/collect.sh {translated}/corpus {output} {params.src_corpus} 2>{log}'''
@@ -383,7 +385,7 @@ rule split_mono_src:
     log: f"{log_dir}/split_mono_src.log"
     conda: "envs/environment.yml"
     threads: workflow.cores
-    input: f"{clean}/mono.{src}.gz",
+    input: f"{clean}/mono.{src}.gz"
     output: expand(f"{translated}/mono_src/file.{{number}}", number=parts)
     shell: 'bash pipeline/translate/split-mono.sh {input} {translated}/mono_src {partitions} 2>{log}'
 
