@@ -300,7 +300,7 @@ rule translate_mono_trg:
     output: f'{translated}/mono_trg/file.{{part}}.out'
     shell: '''MARIAN={marian_dir} GPUS="{gpus}" WORKSPACE={workspace} \
                 bash pipeline/translate/translate.sh \
-                "{input.file}" "{input.model}" "{input.vocab}" "{translated}/mono_trg" 2>{log}'''
+                "{input.file}" "{input.model}" "{input.vocab}" 2>{log}'''
 
 rule collect_mono_trg:
     message: "Collecting translated mono trg dataset"
@@ -350,12 +350,12 @@ rule translate_corpus:
     threads: workflow.cores/4
     resources: gpu=gpus_num
     input:
-        rules.marian.output.trainer, files=f'{translated}/corpus/file.{{part}}', vocab=rules.train_vocab.output,
+        rules.marian.output.trainer, file=f'{translated}/corpus/file.{{part}}', vocab=rules.train_vocab.output,
         teacher_models=expand(f"{teacher_dir}{{ens}}/{best_bleu_model}", ens=ensemble)
     output: f'{translated}/corpus/file.{{part}}.nbest'
-    shell: '''SRC={src} TRG={trg} MARIAN={marian_dir} GPUS="{gpus}" WORKSPACE={workspace} \
+    shell: '''MARIAN={marian_dir} GPUS="{gpus}" WORKSPACE={workspace} \
                 bash pipeline/translate/translate-nbest.sh \
-                "{input.files}" "{input.teacher_models}" "{input.vocab}" "{translated}/corpus" 2>{log}'''
+                "{input.file}" "{input.teacher_models}" "{input.vocab}" 2>{log}'''
 
 rule extract_best:
     message: "Extracting best translations for the corpus"
@@ -399,7 +399,7 @@ rule translate_mono_src:
     output: f'{translated}/mono_src/file.{{part}}.out'
     shell: '''MARIAN={marian_dir} GPUS="{gpus}" WORKSPACE={workspace} \
                 bash pipeline/translate/translate.sh \
-                "{input.file}" "{input.teacher_models}" "{input.vocab}" "{translated}/mono_src" 2>{log}'''
+                "{input.file}" "{input.teacher_models}" "{input.vocab}" 2>{log}'''
 
 rule collect_mono_src:
     message: "Collecting translated mono src dataset"
