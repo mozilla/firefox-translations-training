@@ -32,6 +32,7 @@ datasets:
   train:
     - opus_ada83/v1
     - opus_GNOME/v1
+    - mtdata_JW300
   devtest:
     - flores_dev
     - mtdata_newstest2019_ruen
