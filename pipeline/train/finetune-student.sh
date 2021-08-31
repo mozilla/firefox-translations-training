@@ -19,16 +19,15 @@ alignment=$5
 
 test -v SRC
 test -v TRG
-test -v WORKDIR
 
 if [ ! -s "${dir}/model.npz.best-bleu-detok.npz" ]; then
   mkdir -p "${dir}"
   cp "${student}/model.npz.best-bleu-detok.npz" "${dir}/model.npz"
   cp "${student}/vocab.spm" "${dir}/"
 
-  bash "${WORKDIR}/pipeline/train/train.sh" \
-    "${WORKDIR}/pipeline/train/configs/model/student.tiny11.yml" \
-    "${WORKDIR}/pipeline/train/configs/training/student.finetune.yml" \
+  bash "pipeline/train/train.sh" \
+    "pipeline/train/configs/model/student.tiny11.yml" \
+    "pipeline/train/configs/training/student.finetune.yml" \
     "${SRC}" \
     "${TRG}" \
     "${corpus}" \

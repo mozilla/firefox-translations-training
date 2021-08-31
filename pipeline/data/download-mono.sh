@@ -32,7 +32,7 @@ if [ ! -e "${file_name}" ]; then
     type=${dataset%%_*}
 
     test -s "${source_prefix}.gz" ||
-      bash "${WORKDIR}/pipeline/data/importers/mono/${type}.sh" "${lang}" "${source_prefix}" "${name}"
+      bash "pipeline/data/importers/mono/${type}.sh" "${lang}" "${source_prefix}" "${name}"
 
     echo "### Sampling dataset ${dataset}"
     # temporary disable pipefail because perl operation causes SIGPIPE (141)

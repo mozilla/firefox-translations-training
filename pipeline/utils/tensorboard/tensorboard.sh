@@ -4,7 +4,7 @@
 #
 # Usage:
 #   Run from current directory
-#   WORKDIR=<repo-root-dir> MODELS=<absolute_path_to_models_directory> bash tensorboard.sh
+#   MODELS=<absolute_path_to_models_directory> bash tensorboard.sh
 #
 
 set -x
@@ -13,7 +13,6 @@ set -euo pipefail
 echo "###### Running tensorboard"
 
 test -v MODELS
-test -v WORKDIR
 
 conda activate bergamot-training
 

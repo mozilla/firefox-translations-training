@@ -15,7 +15,6 @@ test -v MARIAN
 test -v BIN
 test -v SRC
 test -v TRG
-test -v WORKDIR
 
 model_dir=$1
 shortlist=$2
@@ -42,7 +41,7 @@ test -s "${output_dir}/quantmults" ||
   "${MARIAN}"/marian-decoder \
     -m "${model}" \
     -v "${vocab}" "${vocab}" \
-    -c "${WORKDIR}/pipeline/quantize/decoder.yml" \
+    -c "pipeline/quantize/decoder.yml" \
     -i "${devtest_src}" \
     -o "${output_dir}/output.${TRG}" \
     --shortlist "${shortlist}" false \

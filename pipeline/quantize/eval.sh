@@ -15,7 +15,6 @@ test -v MARIAN
 test -v TEST_DATASETS
 test -v SRC
 test -v TRG
-test -v WORKDIR
 
 model_dir=$1
 shortlist=$2
@@ -36,7 +35,7 @@ for src_path in "${datasets_dir}"/*."${SRC}"; do
     "${MARIAN}"/marian-decoder \
       -m "${model_dir}/model.intgemm.alphas.bin" \
       -v "${vocab}" "${vocab}" \
-      -c "${WORKDIR}/pipeline/quantize/decoder.yml" \
+      -c "pipeline/quantize/decoder.yml" \
       --quiet \
       --quiet-translation \
       --log "${eval_dir}/${prefix}.log" \
