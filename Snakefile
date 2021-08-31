@@ -341,7 +341,7 @@ if mono_trg_datasets:
         output: f'{translated}/mono_trg/file.{{part}}.out'
         shell: '''MARIAN={marian_dir} GPUS="{gpus}" WORKSPACE={workspace} \
                     bash pipeline/translate/translate.sh \
-                    "{input.file}" "{input.model}" "{input.vocab}" 2>{log}'''
+                    "{input.file}" "{input.vocab}" {input.model} 2>{log}'''
 
     rule collect_mono_trg:
         message: "Collecting translated mono trg dataset"
@@ -434,7 +434,7 @@ rule translate_corpus:
     output: f'{translated}/corpus/file.{{part}}.nbest'
     shell: '''MARIAN={marian_dir} GPUS="{gpus}" WORKSPACE={workspace} \
                 bash pipeline/translate/translate-nbest.sh \
-                "{input.file}" "{input.teacher_models}" "{input.vocab}" 2>{log}'''
+                "{input.file}" "{input.vocab}" {input.teacher_models} 2>{log}'''
 
 rule extract_best:
     message: "Extracting best translations for the corpus"
@@ -444,7 +444,8 @@ rule extract_best:
     group: 'translate_corpus'
     input: expand(f"{translated}/corpus/file.{{part}}.nbest",part=parts)
     output: expand(f"{translated}/corpus/file.{{part}}.nbest.out",part=parts)
-    shell: '''bash pipeline/translate/extract-best.sh {translated}/corpus {threads} {input} 2>{log}'''
+    params: prefixes=expand(f"{translated}/corpus/file.{{part}}",part=parts)
+    shell: '''bash pipeline/translate/extract-best.sh {threads} {params.prefixes} 2>{log}'''
 
 rule collect_corpus:
     message: "Collecting translated corpus"
@@ -483,7 +484,7 @@ rule translate_mono_src:
     output: f'{translated}/mono_src/file.{{part}}.out'
     shell: '''MARIAN={marian_dir} GPUS="{gpus}" WORKSPACE={workspace} \
                 bash pipeline/translate/translate.sh \
-                "{input.file}" "{input.teacher_models}" "{input.vocab}" 2>{log}'''
+                "{input.file}" "{input.vocab}" {input.teacher_models} 2>{log}'''
 
 rule collect_mono_src:
     message: "Collecting translated mono src dataset"

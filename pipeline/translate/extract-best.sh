@@ -6,11 +6,8 @@
 set -x
 set -euo pipefail
 
-dir=$1
-threads=$2
-files=$3
+threads=$1
 
-echo $files |
-  parallel --no-notice -k -j "${threads}" \
-    "test -e ${dir}/{}.nbest.out || \
-    python pipeline/translate/bestbleu.py -i ${dir}/{}.nbest -r ${dir}/{}.ref -m bleu > ${dir}/{}.nbest.out"
+parallel --no-notice -k -j "${threads}" \
+  "test -e {}.nbest.out || \
+  python pipeline/translate/bestbleu.py -i {}.nbest -r {}.ref -m bleu > {}.nbest.out" ::: ${@:2}

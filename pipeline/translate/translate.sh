@@ -11,13 +11,12 @@ test -v MARIAN
 test -v WORKSPACE
 
 input=$1
-models=$2
-vocab=$3
+vocab=$2
 
 
 "${MARIAN}/marian-decoder" \
   -c pipeline/translate/decoder.yml \
-  -m ${models} \
+  -m ${@:3} \
   -v "${vocab}" "${vocab}" \
   -i "${input}" \
   -o "${input}.out" \
