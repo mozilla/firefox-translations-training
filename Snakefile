@@ -3,7 +3,7 @@ from snakemake.utils import min_version
 min_version("6.6.1")
 
 configfile: 'config.yml'
-# `include` directive is not supported by Pycharm plugin, moved all rules to one file to enable live checks
+# `include` directive is not supported by Pycharm plugin, moving all rules to one file to enable live checks
 # https://github.com/JetBrains-Research/snakecharm/issues/195
 
 # Directories structure
@@ -73,13 +73,14 @@ configfile: 'config.yml'
 #│         └ config.sh
 
 # experiment
-src = config['src']
-trg = config['trg']
-experiment = config['experiment']
+src = config['experiment']['src']
+trg = config['experiment']['trg']
+experiment = config['experiment']['name']
 
-mono_max_sent_src = config['mono-max-sentences-src']
-mono_max_sent_trg = config['mono-max-sentences-trg']
-bicleaner_threshold=config['bicleaner-threshold']
+mono_max_sent_src = config['experiment']['mono-max-sentences-src']
+mono_max_sent_trg = config['experiment']['mono-max-sentences-trg']
+bicleaner_threshold = config['experiment']['bicleaner-threshold']
+backward_model = config['experiment']['backward-model']
 
 # datasets
 train_datasets = config['datasets']['train']
@@ -89,12 +90,12 @@ mono_src_datasets = config['datasets']['mono-src']
 mono_trg_datasets = config['datasets']['mono-trg']
 
 # parallelization
-gpus_num = config['gpus']
-gpus = list(range(int(gpus_num)))
-workspace = config['workspace']
-partitions = config['partitions']
+gpus_num = config['resources']['gpus']
+gpus = ' '.join([str(n) for n in range(int(gpus_num))])
+workspace = config['resources']['workspace']
+partitions = config['resources']['partitions']
 parts = [f'{n:02d}' for n in list(range(partitions))]
-ensemble = list(range(config['teacher-ensemble']))
+ensemble = list(range(config['experiment']['teacher-ensemble']))
 
 ## directories
 data_root_dir = config['dirs']['data-root']
@@ -104,8 +105,9 @@ log_dir = f"{data_root_dir}/logs/{src}-{trg}/{experiment}"
 reports_dir = f"{data_root_dir}/reports/{src}-{trg}/{experiment}"
 
 # binaries
-marian_dir = config['dirs']['marian']
-bin = config['dirs']['bin']
+marian_dir = '3rd_party/marian-dev/build'
+kenlm = '3rd_party/kenlm'
+bin = 'bin'
 cuda_dir = config['dirs']['cuda']
 
 # data
@@ -118,18 +120,19 @@ evaluation = f"{data_dir}/evaluation"
 translated = f"{data_dir}/translated"
 augmented = f"{data_dir}/augmented"
 merged = f"{data_dir}/merged"
-filtered=f'{data_dir}/filtered'
-align_dir=f"{data_dir}/alignment"
+filtered = f'{data_dir}/filtered'
+align_dir = f"{data_dir}/alignment"
 
 # models
 models_dir = f"{data_root_dir}/models/{src}-{trg}/{experiment}"
-best_bleu_model = "model.npz.best-bleu-detok.npz"
 teacher_dir = f"{models_dir}/teacher"
-student_dir=f"{models_dir}/student"
-student_finetuned_dir=f"{models_dir}/student-finetuned"
-speed=f"{models_dir}/speed"
-exported=f"{models_dir}/exported"
+student_dir = f"{models_dir}/student"
+student_finetuned_dir = f"{models_dir}/student-finetuned"
+speed = f"{models_dir}/speed"
+exported = f"{models_dir}/exported"
+best_model = "model.npz.best-bleu-detok.npz"
 
+# set common environment variables
 envs = f'''
 SRC={src} TRG={trg} MARIAN={marian_dir} GPUS="{gpus}" WORKSPACE={workspace} CLEAN_TOOLS=pipeline/clean/tools \
 CUDA_DIR={cuda_dir} BIN={bin}
@@ -145,8 +148,8 @@ CUDA_DIR={cuda_dir} BIN={bin}
 #todo: cache original datasets across workflows using snakemake caching
 
 results = [f'{exported}/model.{src}{trg}.intgemm.alphas.bin.gz',
-            f'{exported}/lex.50.50.{src}{trg}.s2t.bin.gz',
-            f'{exported}/vocab.{src}{trg}.spm.gz']
+           f'{exported}/lex.50.50.{src}{trg}.s2t.bin.gz',
+           f'{exported}/vocab.{src}{trg}.spm.gz']
 
 rule all:
     input: results
@@ -162,8 +165,7 @@ rule setup:
     conda: "envs/environment.yml"
     threads: 1
     group: 'setup'
-    # specific to local machine
-    output: touch("/tmp/flags/setup.done")
+    output: touch("/tmp/flags/setup.done")  # specific to local machine
     shell: 'bash pipeline/setup/install-deps.sh 2>{log}'
 
 rule marian:
@@ -272,7 +274,7 @@ rule biclean_corpus:
     log: f"{log_dir}/beclean_corpus.log"
     conda: "envs/environment.yml"
     threads: workflow.cores
-    input: src=rules.clean_corpus.output.src, trg=rules.clean_corpus.output.trg
+    input: src=rules.clean_corpus.output.src,trg=rules.clean_corpus.output.trg
     output: src=f"{biclean}/corpus.{src}.gz",trg=f"{biclean}/corpus.{trg}.gz"
     params: prefix_input=f"{clean}/corpus",prefix_output=f"{biclean}/corpus"
     shell: '''{envs} bash pipeline/clean/bicleaner.sh \
@@ -304,9 +306,7 @@ rule train_vocab:
     shell: '{envs} bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" 2>{log}'
 
 
-if config['backward-model']:
-    backward_model = config['backward-model']
-else:
+if not backward_model:
     backward_model = f'{models_dir}/s2s'
 
     rule backward:
@@ -315,10 +315,10 @@ else:
         conda: "envs/environment.yml"
         threads: workflow.cores / 4
         input:
-            train_src=rules.clean_corpus.output.src, train_trg=rules.clean_corpus.output.trg,
-            val_src=rules.data_val.output.src, val_trg=rules.data_val.output.trg,
+            train_src=rules.clean_corpus.output.src,train_trg=rules.clean_corpus.output.trg,
+            val_src=rules.data_val.output.src,val_trg=rules.data_val.output.trg,
             bin=rules.marian.output.trainer
-        output: model=f'{backward_model}/{best_bleu_model}'
+        output: model=f'{backward_model}/{best_model}'
         params: prefix_train=f"{clean}/corpus",prefix_test=f"{original}/devset"
         shell: '''{envs} bash ./pipeline/train/train-s2s.sh \
                     "{output.model}" "{params.prefix_train}" "{params.prefix_test}" 2>{log}'''
@@ -328,9 +328,9 @@ else:
         log: f"{log_dir}/eval_backward.log"
         conda: "envs/environment.yml"
         resources: gpu=gpus_num
-        input: model=f'{backward_model}/{best_bleu_model}', datasets=rules.data_test.output
+        input: model=f'{backward_model}/{best_model}',datasets=rules.data_test.output
         output:
-            report(directory(f'{backward_model}/eval'), patterns=["{name}.bleu"], caption=f"{reports_dir}/report.rst")
+            report(directory(f'{backward_model}/eval'),patterns=["{name}.bleu"],caption=f"{reports_dir}/report.rst")
         shell: '{envs} bash ./pipeline/train/eval.sh "{backward_model}" "{evaluation}" {trg} {src} 2>{log}'
 
 if mono_trg_datasets:
@@ -353,7 +353,7 @@ if mono_trg_datasets:
         resources: gpu=gpus_num
         input:
             rules.marian.output.trainer,file=f'{translated}/mono_trg/file.{{part}}',
-            vocab=rules.train_vocab.output,model=f'{backward_model}/{best_bleu_model}'
+            vocab=rules.train_vocab.output,model=f'{backward_model}/{best_model}'
         output: f'{translated}/mono_trg/file.{{part}}.out'
         shell: '{envs} bash pipeline/translate/translate.sh "{input.file}" "{input.vocab}" {input.model} 2>{log}'
 
@@ -365,7 +365,7 @@ if mono_trg_datasets:
         input:
             files=expand(f"{translated}/mono_trg/file.{{part}}.out",part=parts)
         output: f'{translated}/mono.{src}.gz'
-        params: src_mono=f"{clean}/mono.{trg}.gz", dir=directory(f'{translated}/mono_trg')
+        params: src_mono=f"{clean}/mono.{trg}.gz",dir=directory(f'{translated}/mono_trg')
         shell: 'bash pipeline/translate/collect.sh "{params.dir}" "{output}" "{params.src_mono}" 2>{log}'
 
     rule merge_augmented:
@@ -391,10 +391,10 @@ rule teacher:
     threads: workflow.cores / 4
     resources: gpu=gpus_num
     input:
-        train_src=f'{teacher_corpus}.{src}.gz', train_trg=f'{teacher_corpus}.{trg}.gz',
-        val_src=rules.data_val.output.src, val_trg = rules.data_val.output.trg,
-        bin=rules.marian.output.trainer, vocab=rules.train_vocab.output
-    output: dir=directory(f'{teacher_dir}{{ens}}'),model=f'{teacher_dir}{{ens}}/{best_bleu_model}'
+        train_src=f'{teacher_corpus}.{src}.gz',train_trg=f'{teacher_corpus}.{trg}.gz',
+        val_src=rules.data_val.output.src,val_trg=rules.data_val.output.trg,
+        bin=rules.marian.output.trainer,vocab=rules.train_vocab.output
+    output: dir=directory(f'{teacher_dir}{{ens}}'),model=f'{teacher_dir}{{ens}}/{best_model}'
     params: prefix_train=teacher_corpus,prefix_test=f"{original}/devset"
     shell: '''{envs} bash pipeline/train/train-teacher.sh \
                 "{output.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" 2>{log}'''
@@ -404,15 +404,15 @@ rule eval_teacher:
     log: f"{log_dir}/eval_teacher{{ens}}.log"
     conda: "envs/environment.yml"
     resources: gpu=gpus_num
-    input: model=f'{teacher_dir}{{ens}}/{best_bleu_model}', datasets=rules.data_test.output
+    input: model=f'{teacher_dir}{{ens}}/{best_model}',datasets=rules.data_test.output
     output: directory(f'{teacher_dir}{{ens}}/eval')
     shell: '{envs} bash pipeline/train/eval.sh "{backward_model}" "{evaluation}" {src} {trg} 2>{log}'
 
 rule eval_teacher_report:
     message: "Adding teacher evaluation to the report"
-    input: expand(f'{teacher_dir}{{ens}}/eval', ens=ensemble)
+    input: expand(f'{teacher_dir}{{ens}}/eval',ens=ensemble)
     output:
-        report(expand(f'{teacher_dir}{{ens}}/eval', ens=ensemble),
+        report(expand(f'{teacher_dir}{{ens}}/eval',ens=ensemble),
             patterns=["{name}.bleu"],
             caption=f"{reports_dir}/report.rst")
 
@@ -438,7 +438,7 @@ rule translate_corpus:
     resources: gpu=gpus_num
     input:
         rules.marian.output.trainer,file=f'{translated}/corpus/file.{{part}}',vocab=rules.train_vocab.output,
-        teacher_models=expand(f"{teacher_dir}{{ens}}/{best_bleu_model}",ens=ensemble)
+        teacher_models=expand(f"{teacher_dir}{{ens}}/{best_model}",ens=ensemble)
     output: f'{translated}/corpus/file.{{part}}.nbest'
     shell: '''{envs} bash pipeline/translate/translate-nbest.sh \
                 "{input.file}" "{input.vocab}" {input.teacher_models} 2>{log}'''
@@ -487,7 +487,7 @@ rule translate_mono_src:
     input:
         bin=rules.marian.output.trainer,
         file=f'{translated}/mono_src/file.{{part}}',vocab=rules.train_vocab.output,
-        teacher_models=expand(f"{teacher_dir}{{ens}}/{best_bleu_model}",ens=ensemble)
+        teacher_models=expand(f"{teacher_dir}{{ens}}/{best_model}",ens=ensemble)
     output: f'{translated}/mono_src/file.{{part}}.out'
     shell: '{envs} bash pipeline/translate/translate.sh "{input.file}" "{input.vocab}" {input.teacher_models} 2>{log}'
 
@@ -499,7 +499,7 @@ rule collect_mono_src:
     input:
         files=expand(f"{translated}/mono_src/file.{{part}}.out",part=parts)
     output: f'{translated}/mono.{trg}.gz'
-    params: src_mono=f"{clean}/mono.{src}.gz", dir=f'{translated}/mono_src'
+    params: src_mono=f"{clean}/mono.{src}.gz",dir=f'{translated}/mono_src'
     shell: 'bash pipeline/translate/collect.sh "{params.dir}" "{output}" "{params.src_mono}" 2>{log}'
 
 rule merge_translated:
@@ -521,10 +521,10 @@ rule ce_filer:
     log: f"{log_dir}/ce_filter.log"
     conda: "envs/environment.yml"
     input:
-        model=rules.backward.output.model, vocab=rules.train_vocab.output,
-        src_corpus=rules.merge_translated.output.res_src, trg_corpus=rules.merge_translated.output.res_trg
-    output: src_corpus=f"{filtered}/corpus.{src}.gz", trg_corpus=f"{filtered}/corpus.{trg}.gz"
-    params: input_prefix=f'{merged}/corpus', output_prefix=f'{filtered}/corpus'
+        model=rules.backward.output.model,vocab=rules.train_vocab.output,
+        src_corpus=rules.merge_translated.output.res_src,trg_corpus=rules.merge_translated.output.res_trg
+    output: src_corpus=f"{filtered}/corpus.{src}.gz",trg_corpus=f"{filtered}/corpus.{trg}.gz"
+    params: input_prefix=f'{merged}/corpus',output_prefix=f'{filtered}/corpus'
     shell: '''{envs} bash pipeline/clean/ce-filter.sh \
                 "${input.model}" "{input.vocab}" "{params.input_prefix}" "{params.output_prefix}"  2>{log}'''
 
@@ -532,10 +532,10 @@ rule alignments:
     message: 'Training word alignment and lexical shortlists'
     log: f"{log_dir}/alignments.log"
     conda: "envs/environment.yml"
-    input: src_corpus=rules.ce_filer.output.src_corpus, trg_corpus=rules.ce_filer.output.trg_corpus,
-            vocab=rules.train_vocab.output,
-            fast_align=rules.fast_align.output, extract_lex=rules.extract_lex.output
-    output: alignment=f'{align_dir}/corpus.aln.gz', shortlist=f'{align_dir}/lex.s2t.pruned.gz'
+    input: src_corpus=rules.ce_filer.output.src_corpus,trg_corpus=rules.ce_filer.output.trg_corpus,
+        vocab=rules.train_vocab.output,
+        fast_align=rules.fast_align.output,extract_lex=rules.extract_lex.output
+    output: alignment=f'{align_dir}/corpus.aln.gz',shortlist=f'{align_dir}/lex.s2t.pruned.gz'
     params: input_prefix=f'{filtered}/corpus'
     shell: '''{envs} bash pipeline/alignment/generate-alignment-and-shortlist.sh \
                 "{params.input_prefix}" "{input.vocab}" "{align_dir}" 2>{log}'''
@@ -547,15 +547,12 @@ rule student:
     threads: workflow.cores / 4
     resources: gpu=gpus_num
     input:
-        train_src=rules.ce_filer.output.src_corpus,
-        train_trg=rules.ce_filer.output.trg_corpus,
-        val_src=rules.data_val.output.src,
-        val_trg = rules.data_val.output.trg,
+        train_src=rules.ce_filer.output.src_corpus, train_trg=rules.ce_filer.output.trg_corpus,
+        val_src=rules.data_val.output.src, val_trg=rules.data_val.output.trg,
         alignments=rules.alignments.output.alignment,
-        bin=rules.marian.output.trainer,
-        vocab=rules.train_vocab.output
-    output: dir=directory(f'{student_dir}'), model=f'{student_dir}/{best_bleu_model}'
-    params: prefix_train=rules.ce_filer.params.output_prefix, prefix_test=f"{original}/devset"
+        bin=rules.marian.output.trainer, vocab=rules.train_vocab.output
+    output: dir=directory(f'{student_dir}'),model=f'{student_dir}/{best_model}'
+    params: prefix_train=rules.ce_filer.params.output_prefix,prefix_test=f"{original}/devset"
     shell: '''{envs} bash pipeline/train/train-student.sh \
                 "{output.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
                 "{input.alignments}" 2>{log}'''
@@ -565,8 +562,8 @@ rule eval_student:
     log: f"{log_dir}/eval_student.log"
     conda: "envs/environment.yml"
     resources: gpu=gpus_num
-    input: model=rules.student.output.model, datasets=rules.data_test.output
-    output: report(f'{student_dir}/eval', patterns=["{name}.bleu"], caption=f"{reports_dir}/report.rst")
+    input: model=rules.student.output.model,datasets=rules.data_test.output
+    output: report(f'{student_dir}/eval',patterns=["{name}.bleu"],caption=f"{reports_dir}/report.rst")
     shell: '{envs} bash pipeline/train/eval.sh "{student_dir}" "{evaluation}" {src} {trg} 2>{log}'
 
 # quantize
@@ -578,16 +575,12 @@ rule finetune_student:
     threads: workflow.cores / 4
     resources: gpu=gpus_num
     input:
-        train_src=rules.ce_filer.output.src_corpus,
-        train_trg=rules.ce_filer.output.trg_corpus,
-        val_src=rules.data_val.output.src,
-        val_trg = rules.data_val.output.trg,
-        alignments=rules.alignments.output.alignment,
-        bin=rules.marian.output.trainer,
-        vocab=rules.train_vocab.output,
-        student_model=rules.student.output.model
-    output: dir=directory(f'{student_finetuned_dir}'), model=f'{student_finetuned_dir}/{best_bleu_model}'
-    params: prefix_train=rules.ce_filer.params.output_prefix, prefix_test=f"{original}/devset"
+        train_src=rules.ce_filer.output.src_corpus, train_trg=rules.ce_filer.output.trg_corpus,
+        val_src=rules.data_val.output.src,  val_trg=rules.data_val.output.trg,
+        alignments=rules.alignments.output.alignment, student_model=rules.student.output.model,
+        bin=rules.marian.output.trainer, vocab=rules.train_vocab.output,
+    output: dir=directory(f'{student_finetuned_dir}'),model=f'{student_finetuned_dir}/{best_model}'
+    params: prefix_train=rules.ce_filer.params.output_prefix,prefix_test=f"{original}/devset"
     shell: '''{envs} bash pipeline/train/train-student.sh \
                 "{output.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
                 "{input.alignments}" "{input.student_model}" 2>{log}'''
@@ -597,8 +590,8 @@ rule eval_finetuned_student:
     log: f"{log_dir}/eval_finetuned_student.log"
     conda: "envs/environment.yml"
     resources: gpu=gpus_num
-    input: model=rules.finetune_student.output.model, datasets=rules.data_test.output
-    output: report(f'{student_finetuned_dir}/eval', patterns=["{name}.bleu"], caption=f"{reports_dir}/report.rst")
+    input: model=rules.finetune_student.output.model,datasets=rules.data_test.output
+    output: report(f'{student_finetuned_dir}/eval',patterns=["{name}.bleu"],caption=f"{reports_dir}/report.rst")
     shell: '{envs} bash pipeline/train/eval.sh "{student_finetuned_dir}" "{evaluation}" {src} {trg} 2>{log}'
 
 rule quantize:
@@ -608,11 +601,8 @@ rule quantize:
     resources: gpu=gpus_num
     threads: workflow.cores / 4
     input:
-        shortlist=rules.alignments.output.shortlist,
-        bin=rules.marian.output.decoder,
-        vocab=rules.train_vocab.output,
-        student_model=rules.finetune_student.output.model,
-        devset=f"{original}/devset.{src}.gz"
+        shortlist=rules.alignments.output.shortlist, student_model=rules.finetune_student.output.model,
+        bin=rules.marian.output.decoder, vocab=rules.train_vocab.output, devset=f"{original}/devset.{src}.gz"
     output: model=f'{speed}/model.intgemm.alphas.bin'
     shell: '{envs} bash pipeline/quantize/quantize.sh \
                 "{student_finetuned_dir}" "{input.vocab}" "{input.shortlist}" "{input.devset}" "{speed}" 2>{log}'''
@@ -623,9 +613,10 @@ rule eval_quantized:
     conda: "envs/environment.yml"
     group: 'export'
     resources: gpu=gpus_num
-    input: model=rules.quantize.output.model, datasets=rules.data_test.output,
-            shortlist=rules.alignments.output.shortlist, vocab=rules.train_vocab.output
-    output: report(f'{speed}/eval', patterns=["{name}.bleu"], caption=f"{reports_dir}/report.rst")
+    input:
+        model=rules.quantize.output.model,datasets=rules.data_test.output,
+        shortlist=rules.alignments.output.shortlist,vocab=rules.train_vocab.output
+    output: report(f'{speed}/eval',patterns=["{name}.bleu"],caption=f"{reports_dir}/report.rst")
     shell: '{envs} bash pipeline/quantize/eval.sh "{speed}" "{input.shortlist}" "{evaluation}" "{input.vocab}" 2>{log}'
 
 rule export:
@@ -634,7 +625,8 @@ rule export:
     conda: "envs/environment.yml"
     group: 'export'
     threads: workflow.cores
-    input: model=rules.quantize.output.model, shortlist=rules.alignments.output.shortlist,
-           vocab=rules.train_vocab.output, marian=rules.marian.output.converter
+    input:
+        model=rules.quantize.output.model,shortlist=rules.alignments.output.shortlist,
+        vocab=rules.train_vocab.output,marian=rules.marian.output.converter
     output: results
     shell: '{envs} bash pipeline/quantize/export.sh "{speed}" "{input.shortlist}" "{input.vocab}" "{exported}" 2>{log}'

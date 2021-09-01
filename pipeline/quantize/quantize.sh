@@ -2,9 +2,6 @@
 ##
 # Runs quantization of the student model.
 #
-# Usage:
-#   bash quantize.sh model_dir shortlist devtest_src output_dir
-#
 
 set -x
 set -euo pipefail

@@ -2,9 +2,6 @@
 ##
 # Export the quantized model to bergamot translator format.
 #
-# Usage:
-#   bash export.sh model_dir shortlist output_dir
-#
 
 set -x
 set -euo pipefail

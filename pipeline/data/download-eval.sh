@@ -2,9 +2,6 @@
 ##
 # Downloads evaluation datasets
 #
-# Usage:
-#   bash download-eval.sh dir [datasets...]
-#
 
 set -x
 set -euo pipefail

@@ -2,30 +2,27 @@
 dirs:
   data-root: /data/rw/group-maml/bergamot
   cuda: /usr/local/cuda-11.2
-  bin: bin
-  marian: 3rd_party/marian-dev/build
-  kenlm: 3rd_party/kenlm
 
+experiment:
+  name: snakemake
+  src: ru
+  trg: en
 
-src: ru
-trg: en
-experiment: snakemake
+  teacher-ensemble: 2
+  # path to a pretrained backward model (optional)
+  backward-model: ""
 
+  # limits per downloaded dataset
+  mono-max-sentences-src: 100000000
+  mono-max-sentences-trg: 20000000
 
-teacher-ensemble: 2
-# path to a pretrained backward model (optional)
-backward-model: ""
+  bicleaner-threshold: 0.5
 
-# limits per downloaded dataset
-mono-max-sentences-src: 100000000
-mono-max-sentences-trg: 20000000
-
-bicleaner-threshold: 0.5
-
-
-gpus: 8
-workspace: 9000
-partitions: 16
+resources:
+  gpus: 8
+  workspace: 9000
+  # split corpus to parallelize translation
+  partitions: 16
 
 datasets:
   # parallel corpus
@@ -44,7 +41,7 @@ datasets:
   # to be translated by the teacher model
   mono-src:
     - news-crawl_news.2020
-  # to be translated by the shallow s2s model to augment teacher corpus with back-translations
+  # to be translated by the shallow backward model to augment teacher corpus with back-translations
   # leave empty to skip augmentation step (high resource languages)
   mono-trg:
     - news-crawl_news.2020
