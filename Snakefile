@@ -1,4 +1,5 @@
 from snakemake.utils import min_version
+import os
 
 min_version("6.6.1")
 
@@ -107,11 +108,12 @@ log_dir = f"{data_root_dir}/logs/{src}-{trg}/{experiment}"
 reports_dir = f"{data_root_dir}/reports/{src}-{trg}/{experiment}"
 
 # binaries
-marian_dir = '3rd_party/marian-dev/build'
-kenlm = '3rd_party/kenlm'
-fast_align_build = '3rd_party/fast_align/build'
-extract_lex_build = '3rd_party/extract-lex/build'
-bin = 'bin'
+cwd = os.getcwd()
+marian_dir = f'{cwd}/3rd_party/marian-dev/build'
+kenlm = f'{cwd}/3rd_party/kenlm'
+fast_align_build = f'{cwd}/3rd_party/fast_align/build'
+extract_lex_build = f'{cwd}/3rd_party/extract-lex/build'
+bin = f'{cwd}/bin'
 cuda_dir = config['dirs']['cuda']
 
 # data
@@ -168,7 +170,7 @@ rule setup:
     conda: "envs/environment.yml"
     threads: 1
     group: 'setup'
-    output: touch("/tmp/flags/setup.done"), test='xxx'  # specific to local machine
+    output: touch("/tmp/flags/setup.done") # specific to local machine
     shell: 'bash pipeline/setup/install-deps.sh >> {log} 2>&1'
 
 rule marian:
