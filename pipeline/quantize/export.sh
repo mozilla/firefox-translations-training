@@ -17,7 +17,8 @@ test -v MARIAN
 
 model_dir=$1
 shortlist=$2
-output_dir=$3
+vocab=$3
+output_dir=$4
 
 mkdir -p "${output_dir}"
 
@@ -29,16 +30,13 @@ shortlist_bin="${output_dir}/lex.50.50.${SRC}${TRG}.s2t.bin"
 "${MARIAN}"/marian-conv \
   --shortlist "${shortlist}" 50 50 0 \
   --dump "${shortlist_bin}" \
-  --vocabs "${model_dir}/vocab.spm" "${model_dir}/vocab.spm"
+  --vocabs "${vocab}" "${vocab}"
 pigz "${shortlist_bin}"
 
-vocab="${output_dir}/vocab.${SRC}${TRG}.spm"
-cp "${model_dir}/vocab.spm" "${vocab}"
-pigz "${vocab}"
+vocab_out="${output_dir}/vocab.${SRC}${TRG}.spm"
+cp "${vocab}" "${vocab_out}"
+pigz "${vocab_out}"
 
-test -s "${output_dir}/model.${SRC}${TRG}.intgemm.alphas.bin.gz" || exit 1
-test -s "${output_dir}/lex.50.50.${SRC}${TRG}.s2t.bin.gz" || exit 1
-test -s "${output_dir}/vocab.${SRC}${TRG}.spm.gz" || exit 1
 
 echo "### Export is completed. Results: ${output_dir}"
 

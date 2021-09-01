@@ -16,7 +16,6 @@ install-snakemake:
 	git submodule update --init --recursive
 	$(CONDA_ACTIVATE) base
 	mamba create -c conda-forge -c bioconda -n snakemake snakemake
-	activate
 
 activate:
 	$(CONDA_ACTIVATE) snakemake
@@ -27,13 +26,13 @@ dry-run:
 	  --cores all \
 	  -n
 
-run-local:
+run-local: activate
 	snakemake \
 	  --use-conda \
 	  --cores all \
 	  --resources gpu=$(LOCAL_GPUS)
 
-run-cluster:
+run-cluster: activate
 	chmod +x profiles/snakepit/*
 	snakemake \
 	  --use-conda \

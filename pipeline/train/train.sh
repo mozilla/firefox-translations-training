@@ -27,11 +27,6 @@ test -v GPUS
 test -v MARIAN
 test -v WORKSPACE
 
-test -e "${train_set_prefix}.${src}.gz" || exit 1
-test -e "${train_set_prefix}.${trg}.gz" || exit 1
-test -e "${valid_set_prefix}.${src}.gz" || exit 1
-test -e "${valid_set_prefix}.${trg}.gz" || exit 1
-
 mkdir -p "${model_dir}/tmp"
 
 echo "### Training ${model_dir}"

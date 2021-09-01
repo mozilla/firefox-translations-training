@@ -16,24 +16,14 @@ test -v BIN
 test -v SRC
 test -v TRG
 
-model_dir=$1
-shortlist=$2
-devtest_src=$3
-output_dir=$4
+model=$1
+vocab=$2
+shortlist=$3
+devtest_src=$4
+output_dir=$5
 
 res_model="${output_dir}/model.intgemm.alphas.bin"
-
-if [ -e "${res_model}" ]; then
-  echo "### Converted model already exists, skipping"
-  echo "###### Done: Quantizing a model"
-  exit 0
-fi
-
 mkdir -p "${output_dir}"
-
-model="${model_dir}/model.npz.best-bleu-detok.npz"
-vocab="${model_dir}/vocab.spm"
-
 cp "${vocab}" "${output_dir}"
 
 echo "### Decoding a sample test set in order to get typical quantization values"

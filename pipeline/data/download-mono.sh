@@ -15,6 +15,7 @@ lang=$1
 max_sent=$2
 prefix=$3
 cache=$4
+#datasets=${@:5}
 
 file_name="${prefix}.${lang}.gz"
 dir=$(dirname "${prefix}")/mono

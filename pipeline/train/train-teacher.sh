@@ -2,9 +2,6 @@
 ##
 # Train a teacher model.
 #
-# Usage:
-#   bash train-teacher.sh dir corpus devset
-#
 
 set -x
 set -euo pipefail
@@ -19,7 +16,6 @@ vocab=$4
 test -v SRC
 test -v TRG
 
-test -s "${dir}/model.npz.best-bleu-detok.npz" ||
 bash "pipeline/train/train.sh" \
   "pipeline/train/configs/model/teacher.transformer.yml" \
   "pipeline/train/configs/training/teacher.transformer.train.yml" \

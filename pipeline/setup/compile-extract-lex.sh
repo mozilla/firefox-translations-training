@@ -11,15 +11,16 @@ set -euo pipefail
 
 echo "###### Compiling extract-lex"
 
-test -v THREADS
 test -v BIN
-test -v BUILD_DIR
+
+build_dir=$1
+threads=$2
 
 mkdir -p "${BIN}"
-mkdir -p "${BUILD_DIR}"
-cd "${BUILD_DIR}"
+mkdir -p "${build_dir}"
+cd "${build_dir}"
 cmake ..
-make -j "${THREADS}"
+make -j "${threads}"
 cp extract_lex "${BIN}"
 
 

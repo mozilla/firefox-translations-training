@@ -17,9 +17,10 @@ test -v TRG
 test -v CLEAN_TOOLS
 test -v WORKSPACE
 
-model_dir=$1
-corpus_prefix=$2
-output_prefix=$3
+model=$1
+vocab=$2
+corpus_prefix=$3
+output_prefix=$4
 
 if [ -e "${output_prefix}.${TRG}.gz" ]; then
   echo "### Dataset already exists, skipping"
@@ -29,8 +30,6 @@ fi
 
 # Part of the data to be removed (0.05 is 5%)
 remove=0.05
-model="${model_dir}/model.npz.best-bleu-detok.npz"
-vocab="${model_dir}/vocab.spm"
 output_dir=$(dirname "${output_prefix}")
 dir="${output_dir}/scored"
 mkdir -p "${output_dir}"

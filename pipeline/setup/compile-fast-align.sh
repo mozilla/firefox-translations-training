@@ -12,14 +12,16 @@ set -euo pipefail
 echo "###### Compiling fast align"
 
 test -v BIN
-test -v BUILD_DIR
-test -v THREADS
+
+build_dir=$1
+threads=$2
+
 
 mkdir -p "${BIN}"
-mkdir -p "${BUILD_DIR}"
-cd "${BUILD_DIR}"
+mkdir -p "${build_dir}"
+cd "${build_dir}"
 cmake ..
-make -j "${THREADS}"
+make -j "${threads}"
 cp fast_align atools "${BIN}"
 
 echo "###### Done: Compiling fast align"

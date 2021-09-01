@@ -12,16 +12,15 @@ set -euo pipefail
 echo "###### Evaluation of a quantized model"
 
 test -v MARIAN
-test -v TEST_DATASETS
 test -v SRC
 test -v TRG
 
 model_dir=$1
 shortlist=$2
 datasets_dir=$3
+vocab=$4
 
 eval_dir="${model_dir}/eval"
-vocab="${model_dir}/vocab.spm"
 
 mkdir -p "${eval_dir}"
 
