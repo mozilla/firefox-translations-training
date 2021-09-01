@@ -2,9 +2,6 @@
 ##
 # Installs and compiles marian
 #
-# Usage:
-#   bash compile-marian.sh
-#
 
 set -x
 set -euo pipefail

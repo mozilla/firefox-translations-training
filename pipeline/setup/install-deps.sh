@@ -2,9 +2,6 @@
 ##
 # Installs system dependencies
 #
-# Usage:
-#   bash install-deps.sh
-#
 
 set -x
 set -euo pipefail

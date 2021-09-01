@@ -16,6 +16,7 @@ install-snakemake:
 	git submodule update --init --recursive
 	$(CONDA_ACTIVATE) base
 	mamba create -c conda-forge -c bioconda -n snakemake snakemake
+	conda install -c bioconda snakefmt
 
 activate:
 	$(CONDA_ACTIVATE) snakemake
@@ -44,6 +45,9 @@ dag:
 
 lint:
 	snakemake --lint
+
+format:
+	snakefmt --line-length 120 Snakefile
 
 install-monitor:
 	conda create --name panoptes

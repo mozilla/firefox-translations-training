@@ -2,9 +2,6 @@
 ##
 # Installs and compiles alignment tools
 #
-# Usage:
-#   bash compile-fast-align.sh
-#
 
 set -x
 set -euo pipefail

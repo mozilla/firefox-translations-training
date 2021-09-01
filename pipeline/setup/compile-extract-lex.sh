@@ -2,9 +2,6 @@
 ##
 # Installs and compiles alignment tools
 #
-# Usage:
-#   bash compile-extract-lex.sh
-#
 
 set -x
 set -euo pipefail
