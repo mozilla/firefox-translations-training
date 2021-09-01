@@ -75,6 +75,8 @@ configfile: 'config.yml'
 #├ logs
 
 
+data_root_dir = config['dirs']['data-root']
+
 # experiment
 src = config['experiment']['src']
 trg = config['experiment']['trg']
@@ -84,6 +86,8 @@ mono_max_sent_src = config['experiment']['mono-max-sentences-src']
 mono_max_sent_trg = config['experiment']['mono-max-sentences-trg']
 bicleaner_threshold = config['experiment']['bicleaner-threshold']
 backward_model = config['experiment']['backward-model']
+
+experiment_dir=f"{data_root_dir}/{src}-{trg}/{experiment}"
 
 # datasets
 train_datasets = config['datasets']['train']
@@ -99,9 +103,6 @@ workspace = config['resources']['workspace']
 partitions = config['resources']['partitions']
 parts = [f'{n:02d}' for n in list(range(partitions))]
 ensemble = list(range(config['experiment']['teacher-ensemble']))
-
-## directories
-data_root_dir = config['dirs']['data-root']
 
 # logging
 log_dir = f"{data_root_dir}/logs/{src}-{trg}/{experiment}"
@@ -142,25 +143,29 @@ best_model = "model.npz.best-bleu-detok.npz"
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
 CLEAN_TOOLS=pipeline/clean/tools CUDA_DIR="{cuda_dir}" BIN="{bin}"'''
 
-# todo: save experiment info
-# echo "###### save experiment "
-# experiment_dir="${EXPERIMENTS_DIR}/${SRC}-${TRG}/${EXPERIMENT}"
-# mkdir -p "${experiment_dir}"
-# cp ./config.sh "${experiment_dir}/config.sh"
-# cp -r ./pipeline/train/configs "${experiment_dir}/"
+
 
 #todo: cache original datasets across workflows using snakemake caching
 
 results = [f'{exported}/model.{src}{trg}.intgemm.alphas.bin.gz',
            f'{exported}/lex.50.50.{src}{trg}.s2t.bin.gz',
-           f'{exported}/vocab.{src}{trg}.spm.gz']
+           f'{exported}/vocab.{src}{trg}.spm.gz',
+           f'{experiment_dir}/config.yaml']
 
 rule all:
     input: results
 
 
-localrules: eval_teacher_report
+localrules: experiment, eval_teacher_report
 
+rule experiment:
+    message: "Saving experiment metadata"
+    output: f'{experiment_dir}/config.yaml'
+    shell: '''
+        mkdir -p "{experiment_dir}"
+        cp config.yaml "{output}"
+        cp -r pipeline/train/configs "{experiment_dir}/"
+    '''
 
 # setup
 
@@ -254,9 +259,8 @@ rule data_mono_src:
     log: f"{log_dir}/data_mono_src.log"
     conda: "envs/environment.yml"
     threads: 4
-    group: 'data'
     input: rules.setup.output
-    output: f'{original}/mono.{src}'
+    output: f'{original}/mono.{src}.gz'
     shell: '''bash pipeline/data/download-mono.sh \
                 "{src}" "{mono_max_sent_src}" "{original}/mono" "{cache_dir}" {mono_src_datasets} >> {log} 2>&1'''
 
@@ -266,9 +270,8 @@ if mono_trg_datasets:
         log: f"{log_dir}/data_mono_trg.log"
         conda: "envs/environment.yml"
         threads: 4
-        group: 'data'
         input: rules.setup.output
-        output: f'{original}/mono.{trg}'
+        output: f'{original}/mono.{trg}.gz'
         shell: '''bash pipeline/data/download-mono.sh \
                   "{trg}" "{mono_max_sent_trg}" "{original}/mono" "{cache_dir}" {mono_trg_datasets} >> {log} 2>&1'''
 
