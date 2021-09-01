@@ -107,6 +107,8 @@ reports_dir = f"{data_root_dir}/reports/{src}-{trg}/{experiment}"
 # binaries
 marian_dir = '3rd_party/marian-dev/build'
 kenlm = '3rd_party/kenlm'
+fast_align_build = '3rd_party/fast_align/build'
+extract_lex_build = '3rd_party/extract-lex/build'
 bin = 'bin'
 cuda_dir = config['dirs']['cuda']
 
@@ -188,7 +190,7 @@ rule fast_align:
     group: 'setup'
     input: rules.setup.output
     output: protected(f"{bin}/fast_align")
-    shell: '{envs} bash pipeline/setup/compile-fast-align.sh 3rd_party/fast_align/build {threads}  2>{log}'
+    shell: '{envs} bash pipeline/setup/compile-fast-align.sh {fast_align_build} {threads}  2>{log}'
 
 rule extract_lex:
     message: "Compiling fast align"
@@ -198,7 +200,17 @@ rule extract_lex:
     group: 'setup'
     input: rules.setup.output
     output: protected(f"{bin}/extract_lex")
-    shell: '{envs} bash pipeline/setup/compile-extract-lex.sh 3rd_party/extract-lex/build {threads} 2>{log}'
+    shell: '{envs} bash pipeline/setup/compile-extract-lex.sh {extract_lex_build} {threads} 2>{log}'
+
+rule kenlm:
+    message: "Installing kenlm"
+    log: f"{log_dir}/kenlm.log"
+    conda: "envs/environment.yml"
+    threads: workflow.cores
+    group: 'setup'
+    input: rules.setup.output
+    output: protected(f"{bin}/kenlm")
+    shell: '{envs} bash pipeline/setup/install-kenlm.sh {kenlm} {threads}  2>{log}'
 
 # data
 
@@ -274,7 +286,7 @@ rule biclean_corpus:
     log: f"{log_dir}/beclean_corpus.log"
     conda: "envs/environment.yml"
     threads: workflow.cores
-    input: src=rules.clean_corpus.output.src,trg=rules.clean_corpus.output.trg
+    input: src=rules.clean_corpus.output.src,trg=rules.clean_corpus.output.trg,kenlm=rules.kenlm.output
     output: src=f"{biclean}/corpus.{src}.gz",trg=f"{biclean}/corpus.{trg}.gz"
     params: prefix_input=f"{clean}/corpus",prefix_output=f"{biclean}/corpus"
     shell: '''{envs} bash pipeline/clean/bicleaner.sh \
@@ -333,7 +345,11 @@ if not backward_model:
             report(directory(f'{backward_model}/eval'),patterns=["{name}.bleu"],caption=f"{reports_dir}/report.rst")
         shell: '{envs} bash ./pipeline/train/eval.sh "{backward_model}" "{evaluation}" {trg} {src} 2>{log}'
 
+teacher_corpus = f'{biclean}/corpus'
+
 if mono_trg_datasets:
+    teacher_corpus = f'{augmented}/corpus'
+
     rule split_mono_trg:
         message: "Splitting monolingual trg dataset"
         log: f"{log_dir}/split_mono_trg.log"
@@ -379,10 +395,6 @@ if mono_trg_datasets:
         shell: '''bash pipeline/utils/merge-corpus.sh \
                     "{input.src1}" "{input.src1}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
                       2>{log}'''
-
-    teacher_corpus = f'{augmented}/corpus'
-else:
-    teacher_corpus = f'{augmented}/biclean'
 
 rule teacher:
     message: "Training teacher"
