@@ -13,8 +13,9 @@ test -v TRG
 
 dir=$1
 cache=$2
+datasets=( "${@:3}" )
 
-for dataset in "${@:3}"; do
+for dataset in "${datasets[@]}"; do
   name="${dataset//[^A-Za-z0-9_- ]/_}"
   bash "pipeline/data/download-corpus.sh" "${dir}/${name}" "${cache}" "${dataset}" eval
 

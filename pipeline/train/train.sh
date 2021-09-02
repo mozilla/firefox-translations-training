@@ -22,6 +22,7 @@ train_set_prefix=$5
 valid_set_prefix=$6
 model_dir=$7
 vocab=$8
+extra_params=( "${@:9}" )
 
 test -v GPUS
 test -v MARIAN
@@ -51,7 +52,7 @@ echo "### Training ${model_dir}"
   --keep-best \
   --log "${model_dir}/train.log" \
   --valid-log "${model_dir}/valid.log" \
-  "${@:9}"
+  "${extra_params[@]}"
 
 echo "### Model training is completed: ${model_dir}"
 echo "###### Done: Training a model"

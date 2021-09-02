@@ -2,9 +2,6 @@
 ##
 # Downloads corpus datasets
 #
-# Usage:
-#   bash download-corpus.sh output_prefix dataset [dataset...]
-#
 
 set -x
 set -euo pipefail
@@ -17,6 +14,7 @@ test -v TRG
 prefix=$1
 cache=$2
 id=$3
+datasets=( "${@:4}" )
 
 src_corpus="${prefix}.${SRC}.gz"
 trg_corpus="${prefix}.${TRG}.gz"
@@ -26,7 +24,7 @@ mkdir -p "${dir}"
 
 echo "### Downloading datasets"
 
-for dataset in "${@:4}"; do
+for dataset in "${datasets[@]}"; do
   echo "### Downloading dataset ${dataset}"
   name=${dataset#*_}
   type=${dataset%%_*}

@@ -12,11 +12,12 @@ test -v WORKSPACE
 
 input=$1
 vocab=$2
+models=( "${@:3}" )
 
 
 "${MARIAN}/marian-decoder" \
   -c pipeline/translate/decoder.yml \
-  -m ${@:3} \
+  -m "${models[@]}" \
   -v "${vocab}" "${vocab}" \
   -i "${input}" \
   -o "${input}.nbest" \
