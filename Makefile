@@ -29,7 +29,7 @@ dry-run:
 
 run-local: activate
 	snakemake \
-	  --use-conda --verbose --reason \
+	  --use-conda --reason \
 	  --cores all \
 	  --resources gpu=$(LOCAL_GPUS)
 

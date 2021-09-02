@@ -217,7 +217,7 @@ rule kenlm:
     threads: workflow.cores
     group: 'setup'
     input: rules.setup.output
-    output: protected(f"{bin}/kenlm")
+    output: directory(f"{bin}/kenlm")
     shell: '{envs} bash pipeline/setup/install-kenlm.sh {kenlm} {threads}  >> {log} 2>&1'
 
 # data
