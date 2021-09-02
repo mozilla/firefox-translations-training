@@ -8,7 +8,7 @@ set -x
 set -euo pipefail
 
 mono_path=$1
-output_dir=$3
+output_dir=$2
 chunks=$3
 
 mkdir -p "${output_dir}"

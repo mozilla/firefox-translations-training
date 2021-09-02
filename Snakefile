@@ -303,7 +303,7 @@ rule clean_mono:
     log: f"{log_dir}/clean_mono_{{lang}}.log"
     conda: "envs/environment.yml"
     threads: workflow.cores
-    input: rules.setup.output,f'{original}/mono.{{lang}}'
+    input: rules.setup.output,f'{original}/mono.{{lang}}.gz'
     output: f"{clean}/mono.{{lang}}.gz"
     params: lang='{lang}'
     shell: '''{envs} bash pipeline/clean/clean-mono.sh "{params.lang}" "{original}/mono" "{clean}/mono" >> {log} 2>&1'''
@@ -320,7 +320,7 @@ rule train_vocab:
         bin=rules.marian.output.vocab,
         corpus_src=rules.clean_corpus.output.src,corpus_trg=rules.clean_corpus.output.trg
     output: f"{models_dir}/vocab/vocab.spm"
-    params: prefix_train=f"{clean}/corpus",prefix_test=f"{original}/devset"
+    params: prefix_train=f"{biclean}/corpus",prefix_test=f"{original}/devset"
     shell: '{envs} bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" >> {log} 2>&1'
 
 
@@ -337,7 +337,7 @@ if not backward_model:
             val_src=rules.data_val.output.src,val_trg=rules.data_val.output.trg,
             bin=rules.marian.output.trainer
         output: model=f'{backward_model}/{best_model}'
-        params: prefix_train=f"{clean}/corpus",prefix_test=f"{original}/devset"
+        params: prefix_train=f"{biclean}/corpus",prefix_test=f"{original}/devset"
         shell: '''{envs} bash ./pipeline/train/train-s2s.sh \
                     "{output.model}" "{params.prefix_train}" "{params.prefix_test}" >> {log} 2>&1'''
 
@@ -395,8 +395,8 @@ if mono_trg_datasets:
         log: f"{log_dir}/merge_augmented.log"
         conda: "envs/environment.yml"
         input:
-            src1=rules.clean_corpus.output.src,src2=rules.collect_mono_trg.output,
-            trg1=rules.clean_corpus.output.trg,trg2=rules.split_mono_trg.input
+            src1=rules.biclean_corpus.output.src,src2=rules.collect_mono_trg.output,
+            trg1=rules.biclean_corpus.output.trg,trg2=rules.split_mono_trg.input
         output: res_src=f'{augmented}/corpus.{src}.gz',res_trg=f'{augmented}/corpus.{trg}.gz'
         shell: '''bash pipeline/utils/merge-corpus.sh \
                     "{input.src1}" "{input.src1}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
@@ -647,5 +647,8 @@ rule export:
     input:
         model=rules.quantize.output.model,shortlist=rules.alignments.output.shortlist,
         vocab=rules.train_vocab.output,marian=rules.marian.output.converter
-    output: results
+    output:
+        model=f'{exported}/model.{src}{trg}.intgemm.alphas.bin.gz',
+        shortlist=f'{exported}/lex.50.50.{src}{trg}.s2t.bin.gz',
+        vocab=f'{exported}/vocab.{src}{trg}.spm.gz'
     shell: '{envs} bash pipeline/quantize/export.sh "{speed}" "{input.shortlist}" "{input.vocab}" "{exported}" >> {log} 2>&1'
