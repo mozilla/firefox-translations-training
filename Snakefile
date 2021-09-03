@@ -4,7 +4,6 @@ from pipeline.bicleaner import packs
 
 min_version("6.6.1")
 
-configfile: 'config.yml'
 # `include` directive is not supported by Pycharm plugin, moving all rules to one file to enable live checks
 # https://github.com/JetBrains-Research/snakecharm/issues/195
 
@@ -76,6 +75,10 @@ configfile: 'config.yml'
 #├ logs
 
 
+### configuration
+
+configfile: 'config.yml'
+
 data_root_dir = config['dirs']['data-root']
 
 # experiment
@@ -140,14 +143,13 @@ speed = f"{models_dir}/speed"
 exported = f"{models_dir}/exported"
 best_model = "model.npz.best-bleu-detok.npz"
 s2s=f'{models_dir}/s2s'
-if not backward_model:
-    backward_model = s2s
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
 CLEAN_TOOLS=pipeline/clean/tools CUDA_DIR="{cuda_dir}" BIN="{bin}"'''
 
-#todo: cache original datasets across workflows using snakemake caching
+
+### workflow options
 
 results = [f'{exported}/model.{src}{trg}.intgemm.alphas.bin.gz',
            f'{exported}/lex.50.50.{src}{trg}.s2t.bin.gz',
@@ -160,12 +162,45 @@ results = [f'{exported}/model.{src}{trg}.intgemm.alphas.bin.gz',
            ]
 
 # don't evaluate pretrained model
-if backward_model == s2s:
+
+if not backward_model:
+    backward_model = s2s
     results.append(f'{backward_model}/eval')
+    train_s2s=True
+else:
+    train_s2s = False
+
+
+# bicleaner
+
+bicleaner_type = packs.find(src, trg)
+bicleaner_env = "envs/bicleaner-ai.yml" if bicleaner_type == 'bicleaner-ai' else 'envs/bicleaner.yml'
+
+if bicleaner_type:
+    clean_corpus_src = f"{biclean}/corpus.{src}.gz"
+    clean_corpus_trg = f"{biclean}/corpus.{trg}.gz"
+    teacher_corpus = f'{biclean}/corpus'
+    use_bicleaner=True
+else:
+    clean_corpus_src = f"{clean}/corpus.{src}.gz"
+    clean_corpus_trg = f"{clean}/corpus.{trg}.gz"
+    teacher_corpus = f'{clean}/corpus'
+    use_bicleaner=False
+
+
+# augmentation
+
+if mono_trg_datasets:
+    teacher_corpus = f'{augmented}/corpus'
+    augment_corpus=True
+else:
+    augment_corpus=False
+
+
+### rules
 
 rule all:
     input: results
-
 
 localrules: experiment
 ruleorder: teacher > eval_teacher
@@ -280,29 +315,18 @@ if mono_trg_datasets:
 
 # cleaning
 
-clean_corpus_src = f"{clean}/corpus.{src}.gz"
-clean_corpus_trg = f"{clean}/corpus.{trg}.gz"
-teacher_corpus = f'{clean}/corpus'
-
 rule clean_corpus:
     message: "Cleaning corpus"
     log: f"{log_dir}/clean_corpus.log"
     conda: "envs/base.yml"
     threads: workflow.cores
     input: rules.data_train.output.src,rules.data_train.output.trg,rules.setup.output
-    output: src=clean_corpus_src,trg=clean_corpus_trg
+    output: src=f"{clean}/corpus.{src}.gz",trg=f"{clean}/corpus.{trg}.gz"
     params: prefix_input=f"{original}/corpus",prefix_output=f"{clean}/corpus"
     shell: '''{envs} bash pipeline/clean/clean-corpus.sh "{params.prefix_input}" "{params.prefix_output}" >> {log} 2>&1'''
 
 
-bicleaner_type = packs.find(src, trg)
-bicleaner_env = "envs/bicleaner-ai.yml" if bicleaner_type == 'bicleaner-ai' else 'envs/bicleaner.yml'
-
-if bicleaner_type:
-    clean_corpus_src = f"{biclean}/corpus.{src}.gz"
-    clean_corpus_trg = f"{biclean}/corpus.{trg}.gz"
-    teacher_corpus = f'{biclean}/corpus'
-
+if use_bicleaner:
     rule kenlm:
         message: "Installing kenlm"
         log: f"{log_dir}/kenlm.log"
@@ -351,7 +375,7 @@ rule train_vocab:
     shell: '{envs} bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" >> {log} 2>&1'
 
 
-if backward_model == s2s:
+if train_s2s:
     rule backward:
         message: "Training backward model"
         log: f"{log_dir}/train_backward.log"
@@ -379,9 +403,7 @@ if backward_model == s2s:
 
 
 
-if mono_trg_datasets:
-    teacher_corpus = f'{augmented}/corpus'
-
+if augment_corpus:
     rule split_mono_trg:
         message: "Splitting monolingual trg dataset"
         log: f"{log_dir}/split_mono_trg.log"
@@ -503,7 +525,7 @@ rule collect_corpus:
     group: 'translate_corpus'
     input: rules.extract_best.output
     output: f'{translated}/corpus.{trg}.gz'
-    params: src_corpus=rules.clean_corpus.output.src
+    params: src_corpus=clean_corpus_src
     shell: 'bash pipeline/translate/collect.sh {translated}/corpus {output} {params.src_corpus} >> {log} 2>&1'
 
 # mono
