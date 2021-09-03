@@ -1,5 +1,6 @@
 from snakemake.utils import min_version
 import os
+from pipeline.bicleaner import packs
 
 min_version("6.6.1")
 
@@ -172,7 +173,7 @@ rule experiment:
 rule setup:
     message: "Installing dependencies"
     log: f"{log_dir}/install-deps.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: 1
     group: 'setup'
     output: touch("/tmp/flags/setup.done") # specific to local machine
@@ -181,7 +182,7 @@ rule setup:
 rule marian:
     message: "Compiling marian"
     log: f"{log_dir}/compile-marian.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: workflow.cores
     group: 'setup'
     input: rules.setup.output
@@ -193,7 +194,7 @@ rule marian:
 rule fast_align:
     message: "Compiling fast align"
     log: f"{log_dir}/compile-fast-align.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: workflow.cores
     group: 'setup'
     input: rules.setup.output
@@ -203,7 +204,7 @@ rule fast_align:
 rule extract_lex:
     message: "Compiling fast align"
     log: f"{log_dir}/compile-extract-lex.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: workflow.cores
     group: 'setup'
     input: rules.setup.output
@@ -213,7 +214,7 @@ rule extract_lex:
 rule kenlm:
     message: "Installing kenlm"
     log: f"{log_dir}/kenlm.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: workflow.cores
     group: 'setup'
     input: rules.setup.output
@@ -225,7 +226,7 @@ rule kenlm:
 rule data_train:
     message: "Downloading training corpus"
     log: f"{log_dir}/data_train.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: 4
     group: 'data'
     input: rules.setup.output
@@ -236,7 +237,7 @@ rule data_train:
 rule data_val:
     message: "Downloading validation corpus"
     log: f"{log_dir}/data_val.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: 4
     group: 'data'
     input: rules.setup.output
@@ -247,7 +248,7 @@ rule data_val:
 rule data_test:
     message: "Downloading test corpus"
     log: f"{log_dir}/data_test.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: 4
     group: 'data'
     input: rules.setup.output
@@ -257,7 +258,7 @@ rule data_test:
 rule data_mono_src:
     message: "Downloading monolingual dataset for source language"
     log: f"{log_dir}/data_mono_src.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: 4
     input: rules.setup.output
     output: f'{original}/mono.{src}.gz'
@@ -268,7 +269,7 @@ if mono_trg_datasets:
     rule data_mono_trg:
         message: "Downloading monolingual dataset for target language"
         log: f"{log_dir}/data_mono_trg.log"
-        conda: "envs/environment.yml"
+        conda: "envs/base.yml"
         threads: 4
         input: rules.setup.output
         output: f'{original}/mono.{trg}.gz'
@@ -277,31 +278,45 @@ if mono_trg_datasets:
 
 # cleaning
 
+clean_corpus_src = f"{clean}/corpus.{src}.gz"
+clean_corpus_trg = f"{clean}/corpus.{trg}.gz"
+teacher_corpus = f'{clean}/corpus'
+
 rule clean_corpus:
     message: "Cleaning corpus"
     log: f"{log_dir}/clean_corpus.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: workflow.cores
     input: rules.data_train.output.src,rules.data_train.output.trg,rules.setup.output
-    output: src=f"{clean}/corpus.{src}.gz",trg=f"{clean}/corpus.{trg}.gz"
+    output: src=clean_corpus_src,trg=clean_corpus_trg
     params: prefix_input=f"{original}/corpus",prefix_output=f"{clean}/corpus"
     shell: '''{envs} bash pipeline/clean/clean-corpus.sh "{params.prefix_input}" "{params.prefix_output}" >> {log} 2>&1'''
 
-rule biclean_corpus:
-    message: "Cleaning corpus using Bicleaner"
-    log: f"{log_dir}/beclean_corpus.log"
-    conda: "envs/environment.yml"
-    threads: workflow.cores
-    input: src=rules.clean_corpus.output.src,trg=rules.clean_corpus.output.trg,kenlm=rules.kenlm.output
-    output: src=f"{biclean}/corpus.{src}.gz",trg=f"{biclean}/corpus.{trg}.gz"
-    params: prefix_input=f"{clean}/corpus",prefix_output=f"{biclean}/corpus"
-    shell: '''{envs} bash pipeline/clean/bicleaner.sh \
-                "{params.prefix_input}" "{params.prefix_output}" {bicleaner_threshold} >> {log} 2>&1'''
+
+bicleaner_type = packs.find(src, trg)
+bicleaner_env = "envs/bicleaner-ai.yml" if bicleaner_type == 'bicleaner-ai' else 'envs/bicleaner.yml'
+
+if bicleaner_type:
+    clean_corpus_src = f"{biclean}/corpus.{src}.gz"
+    clean_corpus_trg = f"{biclean}/corpus.{trg}.gz"
+    teacher_corpus = f'{biclean}/corpus'
+
+    rule bicleaner:
+        message: f"Cleaning corpus using {bicleaner_type}"
+        log: f"{log_dir}/bicleaner.log"
+        conda: bicleaner_env
+        threads: workflow.cores
+        input: src=rules.clean_corpus.output.src,trg=rules.clean_corpus.output.trg,kenlm=rules.kenlm.output
+        output: src=clean_corpus_src,trg=clean_corpus_trg
+        params: prefix_input=f"{clean}/corpus",prefix_output=f"{biclean}/corpus"
+        shell: '''{envs} bash pipeline/bicleaner/bicleaner.sh \
+                    "{params.prefix_input}" "{params.prefix_output}" {bicleaner_threshold} {bicleaner_type} \
+                    >> {log} 2>&1'''
 
 rule clean_mono:
     message: "Cleaning monolingual dataset"
     log: f"{log_dir}/clean_mono_{{lang}}.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: workflow.cores
     input: rules.setup.output,f'{original}/mono.{{lang}}.gz'
     output: f"{clean}/mono.{{lang}}.gz"
@@ -313,12 +328,12 @@ rule clean_mono:
 rule train_vocab:
     message: "Training spm vocab"
     log: f"{log_dir}/train_vocab.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: workflow.cores / 4
     resources: gpu=1
     input:
         bin=rules.marian.output.vocab,
-        corpus_src=rules.clean_corpus.output.src,corpus_trg=rules.clean_corpus.output.trg
+        corpus_src=clean_corpus_src,corpus_trg=clean_corpus_trg
     output: f"{models_dir}/vocab/vocab.spm"
     params: prefix_train=f"{biclean}/corpus",prefix_test=f"{original}/devset"
     shell: '{envs} bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" >> {log} 2>&1'
@@ -330,10 +345,10 @@ if not backward_model:
     rule backward:
         message: "Training backward model"
         log: f"{log_dir}/train_backward.log"
-        conda: "envs/environment.yml"
+        conda: "envs/base.yml"
         threads: workflow.cores / 4
         input:
-            train_src=rules.clean_corpus.output.src,train_trg=rules.clean_corpus.output.trg,
+            train_src=clean_corpus_src,train_trg=clean_corpus_trg,
             val_src=rules.data_val.output.src,val_trg=rules.data_val.output.trg,
             bin=rules.marian.output.trainer
         output: model=f'{backward_model}/{best_model}'
@@ -344,14 +359,14 @@ if not backward_model:
     rule eval_backward:
         message: "Evaluating backward model"
         log: f"{log_dir}/eval_backward.log"
-        conda: "envs/environment.yml"
+        conda: "envs/base.yml"
         resources: gpu=gpus_num
         input: model=f'{backward_model}/{best_model}',datasets=rules.data_test.output
         output:
             report(directory(f'{backward_model}/eval'),patterns=["{name}.bleu"],caption=f"{reports_dir}/report.rst")
         shell: '{envs} bash ./pipeline/train/eval.sh "{backward_model}" "{evaluation}" {trg} {src} >> {log} 2>&1'
 
-teacher_corpus = f'{biclean}/corpus'
+
 
 if mono_trg_datasets:
     teacher_corpus = f'{augmented}/corpus'
@@ -359,7 +374,7 @@ if mono_trg_datasets:
     rule split_mono_trg:
         message: "Splitting monolingual trg dataset"
         log: f"{log_dir}/split_mono_trg.log"
-        conda: "envs/environment.yml"
+        conda: "envs/base.yml"
         threads: workflow.cores
         input: f"{clean}/mono.{trg}.gz"
         output:
@@ -370,7 +385,7 @@ if mono_trg_datasets:
     rule translate_mono_trg:
         message: "Translating monolingual trg dataset with backward model"
         log: f"{log_dir}/translate_mono_trg/{{part}}.log"
-        conda: "envs/environment.yml"
+        conda: "envs/base.yml"
         threads: workflow.cores / 4
         resources: gpu=gpus_num
         input:
@@ -382,7 +397,7 @@ if mono_trg_datasets:
     rule collect_mono_trg:
         message: "Collecting translated mono trg dataset"
         log: f"{log_dir}/collect_mono_trg.log"
-        conda: "envs/environment.yml"
+        conda: "envs/base.yml"
         threads: workflow.cores
         input:
             files=expand(f"{translated}/mono_trg/file.{{part}}.out",part=parts)
@@ -393,10 +408,10 @@ if mono_trg_datasets:
     rule merge_augmented:
         message: "Merging augmented dataset"
         log: f"{log_dir}/merge_augmented.log"
-        conda: "envs/environment.yml"
+        conda: "envs/base.yml"
         input:
-            src1=rules.biclean_corpus.output.src,src2=rules.collect_mono_trg.output,
-            trg1=rules.biclean_corpus.output.trg,trg2=rules.split_mono_trg.input
+            src1=clean_corpus_src,src2=rules.collect_mono_trg.output,
+            trg1=clean_corpus_trg,trg2=rules.split_mono_trg.input
         output: res_src=f'{augmented}/corpus.{src}.gz',res_trg=f'{augmented}/corpus.{trg}.gz'
         shell: '''bash pipeline/utils/merge-corpus.sh \
                     "{input.src1}" "{input.src1}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
@@ -405,7 +420,7 @@ if mono_trg_datasets:
 rule teacher:
     message: "Training teacher"
     log: f"{log_dir}/train_teacher{{ens}}.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: workflow.cores / 4
     resources: gpu=gpus_num
     input:
@@ -420,7 +435,7 @@ rule teacher:
 rule eval_teacher:
     message: "Evaluating teacher model"
     log: f"{log_dir}/eval_teacher{{ens}}.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     resources: gpu=gpus_num
     input: model=f'{teacher_dir}{{ens}}/{best_model}',datasets=rules.data_test.output
     output: directory(f'{teacher_dir}{{ens}}/eval')
@@ -441,9 +456,9 @@ rule eval_teacher_report:
 rule split_corpus:
     message: "Splitting the corpus to translate"
     log: f"{log_dir}/split_corpus.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: workflow.cores
-    input: corpus_src=rules.clean_corpus.output.src,corpus_trg=rules.clean_corpus.output.trg
+    input: corpus_src=clean_corpus_src,corpus_trg=clean_corpus_trg
     output: expand(f"{translated}/corpus/file.{{number}}{{ext}}",number=parts,ext=['', '.ref'])
     shell: '''bash pipeline/translate/split-corpus.sh \
                 {input.corpus_src} {input.corpus_trg} {translated}/corpus {partitions} >> {log} 2>&1'''
@@ -451,7 +466,7 @@ rule split_corpus:
 rule translate_corpus:
     message: "Translating corpus with teacher"
     log: f"{log_dir}/translate_corpus/{{part}}.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: workflow.cores / 4
     resources: gpu=gpus_num
     input:
@@ -464,7 +479,7 @@ rule translate_corpus:
 rule extract_best:
     message: "Extracting best translations for the corpus"
     log: f"{log_dir}/extract_best.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: workflow.cores
     group: 'translate_corpus'
     input: expand(f"{translated}/corpus/file.{{part}}.nbest",part=parts)
@@ -475,7 +490,7 @@ rule extract_best:
 rule collect_corpus:
     message: "Collecting translated corpus"
     log: f"{log_dir}/collect_corpus.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: workflow.cores
     group: 'translate_corpus'
     input: rules.extract_best.output
@@ -488,7 +503,7 @@ rule collect_corpus:
 rule split_mono_src:
     message: "Splitting monolingual src dataset"
     log: f"{log_dir}/split_mono_src.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: workflow.cores
     input: f"{clean}/mono.{src}.gz"
     output:
@@ -499,7 +514,7 @@ rule split_mono_src:
 rule translate_mono_src:
     message: "Translating monolingual src dataset with teacher"
     log: f"{log_dir}/translate_mono_src/{{part}}.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: workflow.cores / 4
     resources: gpu=gpus_num
     input:
@@ -512,7 +527,7 @@ rule translate_mono_src:
 rule collect_mono_src:
     message: "Collecting translated mono src dataset"
     log: f"{log_dir}/collect_mono_src.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: workflow.cores
     input:
         files=expand(f"{translated}/mono_src/file.{{part}}.out",part=parts)
@@ -520,12 +535,14 @@ rule collect_mono_src:
     params: src_mono=f"{clean}/mono.{src}.gz",dir=f'{translated}/mono_src'
     shell: 'bash pipeline/translate/collect.sh "{params.dir}" "{output}" "{params.src_mono}" >> {log} 2>&1'
 
+# merge
+
 rule merge_translated:
     message: "Merging translated datasets"
     log: f"{log_dir}/merge_translated.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     input:
-        src1=rules.clean_corpus.output.src,src2=f"{clean}/mono.{src}.gz",
+        src1=clean_corpus_src,src2=f"{clean}/mono.{src}.gz",
         trg1=rules.collect_corpus.output,trg2=rules.collect_mono_src.output
     output: res_src=f'{merged}/corpus.{src}.gz',res_trg=f'{merged}/corpus.{trg}.gz'
     shell: '''bash pipeline/utils/merge-corpus.sh \
@@ -537,7 +554,7 @@ rule merge_translated:
 rule ce_filer:
     message: "Cross entropy filtering"
     log: f"{log_dir}/ce_filter.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     input:
         model=rules.backward.output.model,vocab=rules.train_vocab.output,
         src_corpus=rules.merge_translated.output.res_src,trg_corpus=rules.merge_translated.output.res_trg
@@ -549,7 +566,7 @@ rule ce_filer:
 rule alignments:
     message: 'Training word alignment and lexical shortlists'
     log: f"{log_dir}/alignments.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     input: src_corpus=rules.ce_filer.output.src_corpus,trg_corpus=rules.ce_filer.output.trg_corpus,
         vocab=rules.train_vocab.output,
         fast_align=rules.fast_align.output.fast_align, atools=rules.fast_align.output.atools,
@@ -562,7 +579,7 @@ rule alignments:
 rule student:
     message: "Training student"
     log: f"{log_dir}/train_student.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: workflow.cores / 4
     resources: gpu=gpus_num
     input:
@@ -579,7 +596,7 @@ rule student:
 rule eval_student:
     message: "Evaluating student model"
     log: f"{log_dir}/eval_student.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     resources: gpu=gpus_num
     input: model=rules.student.output.model,datasets=rules.data_test.output
     output: report(f'{student_dir}/eval',patterns=["{name}.bleu"],caption=f"{reports_dir}/report.rst")
@@ -590,7 +607,7 @@ rule eval_student:
 rule finetune_student:
     message: "Fine-tuning student"
     log: f"{log_dir}/finetune_student.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     threads: workflow.cores / 4
     resources: gpu=gpus_num
     input:
@@ -607,7 +624,7 @@ rule finetune_student:
 rule eval_finetuned_student:
     message: "Evaluating fine-tuned student model"
     log: f"{log_dir}/eval_finetuned_student.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     resources: gpu=gpus_num
     input: model=rules.finetune_student.output.model,datasets=rules.data_test.output
     output: report(f'{student_finetuned_dir}/eval',patterns=["{name}.bleu"],caption=f"{reports_dir}/report.rst")
@@ -616,7 +633,7 @@ rule eval_finetuned_student:
 rule quantize:
     message: "Quantization"
     log: f"{log_dir}/quntize.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     resources: gpu=gpus_num
     threads: workflow.cores / 4
     input:
@@ -629,7 +646,7 @@ rule quantize:
 rule eval_quantized:
     message: "Evaluating qunatized student model"
     log: f"{log_dir}/eval_quantized.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     group: 'export'
     resources: gpu=gpus_num
     input:
@@ -641,7 +658,7 @@ rule eval_quantized:
 rule export:
     message: "Exporting models"
     log: f"{log_dir}/export.log"
-    conda: "envs/environment.yml"
+    conda: "envs/base.yml"
     group: 'export'
     threads: workflow.cores
     input:

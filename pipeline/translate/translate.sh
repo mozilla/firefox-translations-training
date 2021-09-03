@@ -12,7 +12,7 @@ test -v WORKSPACE
 
 input=$1
 vocab=$2
-models=("${@:3}" )
+models=( "${@:3}" )
 
 
 "${MARIAN}/marian-decoder" \
