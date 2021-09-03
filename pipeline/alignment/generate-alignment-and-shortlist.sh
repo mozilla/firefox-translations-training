@@ -19,16 +19,6 @@ corpus_prefix=$1
 vocab_path=$2
 output_dir=$3
 
-if [ -e "${output_dir}/corpus.aln.gz" ] && [ -e "${output_dir}/lex.s2t.pruned.gz" ]; then
-  echo "### Alignments and shortlist already exist, skipping"
-  echo "###### Done: Generating alignments and shortlist"
-  exit 0
-fi
-
-
-test -e "${BIN}/atools" || exit 1
-test -e "${BIN}/extract_lex" || exit 1
-test -e "${BIN}/fast_align" || exit 1
 
 mkdir -p "${output_dir}"
 dir="${output_dir}/tmp"

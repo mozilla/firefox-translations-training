@@ -23,16 +23,12 @@ dir="$(dirname "${output}")"
 tmp="${dir}/tmp"
 mkdir -p "${tmp}"
 
-# Check if files exist
-test -s "${data}.${SRC}.gz" || exit 1
-test -s "${data}.${TRG}.gz" || exit 1
-
 echo "### CLeaning ${data}"
 
 ######################################################################
 echo "### Basic preprocessing"
 for lng in "${SRC}" "${TRG}"; do
-  test -s "${output}.${SRC}.gz" || test -s "${output}.${lng}.nrm.gz" ||
+  test -s "${output}.${lng}.nrm.gz" ||
     pigz -dc "${data}.${lng}.gz" |
     parallel --no-notice --pipe -k -j "$(nproc)" --block 50M \
       "perl ${CLEAN_TOOLS}/remove-non-printing-char.perl | perl ${CLEAN_TOOLS}/normalize-punctuation.perl -l ${lng}" |
@@ -41,7 +37,7 @@ done
 
 ######################################################################
 echo "### Deduplication"
-test -s "${output}.${SRC}.gz" || test -s "${output}.${SRC}${TRG}.nrm.uniq.gz" ||
+test -s "${output}.${SRC}${TRG}.nrm.uniq.gz" ||
   paste <(pigz -dc "${output}.${SRC}.nrm.gz") <(pigz -dc "${output}.${TRG}.nrm.gz") |
   LC_ALL=C sort -S 10G -T "${tmp}" |
   uniq |
@@ -49,7 +45,7 @@ test -s "${output}.${SRC}.gz" || test -s "${output}.${SRC}${TRG}.nrm.uniq.gz" ||
 
 ######################################################################
 echo "### Rule-based filtering"
-test -s "${output}.${SRC}.gz" || test -s "${output}.${SRC}${TRG}.rule-based.gz" ||
+test -s "${output}.${SRC}${TRG}.rule-based.gz" ||
   pigz -dc "${output}.${SRC}${TRG}.nrm.uniq.gz" |
   parallel --no-notice --pipe -k -j "$(nproc)" --block 50M \
     "python3 ${CLEAN_TOOLS}/clean_parallel.py -l1 ${SRC} -l2 ${TRG} --debug" \
@@ -58,7 +54,7 @@ test -s "${output}.${SRC}.gz" || test -s "${output}.${SRC}${TRG}.rule-based.gz" 
 
 ######################################################################
 echo "### Language identification"
-test -s "${output}.${SRC}.gz" || test -s "${output}.${SRC}${TRG}.langid.gz" ||
+test -s "${output}.${SRC}${TRG}.langid.gz" ||
   pigz -dc "${output}.${SRC}${TRG}.rule-based.gz" |
   # memory intensive
   parallel --no-notice --pipe -k -j "$(echo "$(nproc)"/4 | bc)" --block 50M \
@@ -69,18 +65,18 @@ test -s "${output}.${SRC}.gz" || test -s "${output}.${SRC}${TRG}.langid.gz" ||
 
 ######################################################################
 echo "### Removing leading and repetitive white spaces"
-test -s "${output}.${SRC}.gz" ||
-  pigz -dc "${output}.${SRC}${TRG}.langid.gz" |
-  cut -f1 |
-  sed -e 's/^[[:space:]]*//' |
-  tr -s " " |
-  pigz >"${output}.${SRC}.gz"
-test -s "${output}.${TRG}.gz" ||
-  pigz -dc "${output}.${SRC}${TRG}.langid.gz" |
-  cut -f2 |
-  sed -e 's/^[[:space:]]*//' |
-  tr -s " " |
-  pigz >"${output}.${TRG}.gz"
+
+pigz -dc "${output}.${SRC}${TRG}.langid.gz" |
+cut -f1 |
+sed -e 's/^[[:space:]]*//' |
+tr -s " " |
+pigz >"${output}.${SRC}.gz"
+
+pigz -dc "${output}.${SRC}${TRG}.langid.gz" |
+cut -f2 |
+sed -e 's/^[[:space:]]*//' |
+tr -s " " |
+pigz >"${output}.${TRG}.gz"
 
 test -s "${output}.${SRC}.gz" || exit 1
 test -s "${output}.${TRG}.gz" || exit 1

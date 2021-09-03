@@ -351,11 +351,12 @@ if not backward_model:
         input:
             train_src=clean_corpus_src,train_trg=clean_corpus_trg,
             val_src=rules.data_val.output.src,val_trg=rules.data_val.output.trg,
-            bin=rules.marian.output.trainer
+            bin=rules.marian.output.trainer, vocab=rules.train_vocab.output
         output: model=f'{backward_model}/{best_model}'
         params: prefix_train=f"{biclean}/corpus",prefix_test=f"{original}/devset"
-        shell: '''{envs} bash ./pipeline/train/train-s2s.sh \
-                    "{output.model}" "{params.prefix_train}" "{params.prefix_test}" >> {log} 2>&1'''
+        shell: '''{envs} bash pipeline/train/train-s2s.sh \
+                    "{output.model}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" {trg} {src} \
+                     >> {log} 2>&1'''
 
     rule eval_backward:
         message: "Evaluating backward model"
@@ -365,7 +366,7 @@ if not backward_model:
         input: model=f'{backward_model}/{best_model}',datasets=rules.data_test.output
         output:
             report(directory(f'{backward_model}/eval'),patterns=["{name}.bleu"],caption=f"{reports_dir}/report.rst")
-        shell: '{envs} bash ./pipeline/train/eval.sh "{backward_model}" "{evaluation}" {trg} {src} >> {log} 2>&1'
+        shell: '{envs} bash pipeline/train/eval.sh "{backward_model}" "{evaluation}" {trg} {src} >> {log} 2>&1'
 
 
 

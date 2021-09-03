@@ -19,12 +19,9 @@ test -v CLEAN_TOOLS
 
 echo "### CLeaning ${input}"
 
-echo "### Check if files exist"
-test -s "${input}.${lang}.gz" || exit 1
-
 ######################################################################
 echo "### Basic preprocessing"
-test -s "${output}.${lang}.gz" || test -s "${output}.${lang}.nrm.gz" ||
+test -s "${output}.${lang}.nrm.gz" ||
   pigz -dc "${input}.${lang}.gz" |
   parallel --no-notice --pipe -k -j "$(nproc)" --block 50M \
     "perl ${CLEAN_TOOLS}/remove-non-printing-char.perl | perl ${CLEAN_TOOLS}/normalize-punctuation.perl -l ${lang}" |
@@ -32,7 +29,7 @@ test -s "${output}.${lang}.gz" || test -s "${output}.${lang}.nrm.gz" ||
 
 ######################################################################
 echo "### Deduplication"
-test -s "${output}.${lang}.gz" || test -s "${output}.${lang}.nrm.uniq.gz" ||
+test -s "${output}.${lang}.nrm.uniq.gz" ||
   pigz -dc "${output}.${lang}.nrm.gz" |
   LC_ALL=C sort -S 10G -T "${output}" |
   uniq |
@@ -40,7 +37,7 @@ test -s "${output}.${lang}.gz" || test -s "${output}.${lang}.nrm.uniq.gz" ||
 
 ######################################################################
 echo "### Language identification"
-test -s "${output}.${lang}.gz" || test -s "${output}.${lang}.langid.gz" ||
+test -s "${output}.${lang}.langid.gz" ||
   pigz -dc "${output}.${lang}.nrm.uniq.gz" |
   # memory intensive
   parallel --no-notice --pipe -k -j "$(echo "$(nproc)"/4 | bc)" --block 50M "python ${CLEAN_TOOLS}/langid_fasttext.py" |
@@ -49,12 +46,12 @@ test -s "${output}.${lang}.gz" || test -s "${output}.${lang}.langid.gz" ||
 
 ######################################################################
 echo "### Rule-based filtering"
-test -s "${output}.${lang}.gz" ||
-  pigz -dc "${output}.${lang}.langid.gz" |
-  parallel --no-notice --pipe -k -j "$(nproc)" --block 50M \
-    "python ${CLEAN_TOOLS}/clean_mono.py -l ${lang} --debug" \
-    2>"${output}.${lang}.clean.debug.txt" |
-  pigz >"${output}.${lang}.gz"
+
+pigz -dc "${output}.${lang}.langid.gz" |
+parallel --no-notice --pipe -k -j "$(nproc)" --block 50M \
+  "python ${CLEAN_TOOLS}/clean_mono.py -l ${lang} --debug" \
+  2>"${output}.${lang}.clean.debug.txt" |
+pigz >"${output}.${lang}.gz"
 
 test -s "${output}.${lang}.gz" || exit 1
 

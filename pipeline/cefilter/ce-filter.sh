@@ -21,20 +21,12 @@ vocab=$2
 corpus_prefix=$3
 output_prefix=$4
 
-if [ -e "${output_prefix}.${TRG}.gz" ]; then
-  echo "### Dataset already exists, skipping"
-  echo "###### Done: Cross entropy filtering"
-  exit 0
-fi
-
 # Part of the data to be removed (0.05 is 5%)
 remove=0.05
 output_dir=$(dirname "${output_prefix}")
 dir="${output_dir}/scored"
 mkdir -p "${output_dir}"
 mkdir -p "${dir}"
-
-
 
 echo "### Scoring"
 test -s "${dir}/scores.txt" ||
