@@ -20,6 +20,7 @@ model=$1
 vocab=$2
 corpus_prefix=$3
 output_prefix=$4
+threads=$5
 
 # Part of the data to be removed (0.05 is 5%)
 remove=0.05
@@ -52,7 +53,7 @@ test -s "${dir}/corpus.${SRC}" || pigz -dc "${corpus_prefix}.${SRC}.gz" >"${dir}
 echo "### Normalizing scores"
 test -s "${dir}/scores.nrm.txt" ||
   paste "${dir}/scores.txt" "${dir}/corpus.${TRG}" |
-  parallel --no-notice --pipe -k -j "$(nproc)" --block 50M "python pipeline/cefilter/normalize-scores.py" |
+  parallel --no-notice --pipe -k -j "${threads}" --block 50M "python pipeline/cefilter/normalize-scores.py" |
   cut -f1 >"${dir}/scores.nrm.txt"
 
 echo "### Sorting scores"

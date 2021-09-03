@@ -587,13 +587,14 @@ rule ce_filer:
     message: "Cross entropy filtering"
     log: f"{log_dir}/ce_filter.log"
     conda: "envs/base.yml"
+    threads: workflow.cores
     input:
         model=rules.backward.output.model,vocab=rules.train_vocab.output,
         src_corpus=rules.merge_translated.output.res_src,trg_corpus=rules.merge_translated.output.res_trg
     output: src_corpus=f"{filtered}/corpus.{src}.gz",trg_corpus=f"{filtered}/corpus.{trg}.gz"
     params: input_prefix=f'{merged}/corpus',output_prefix=f'{filtered}/corpus'
     shell: '''{envs} bash pipeline/cefilter/ce-filter.sh \
-                "{input.model}" "{input.vocab}" "{params.input_prefix}" "{params.output_prefix}"  >> {log} 2>&1'''
+                "{input.model}" "{input.vocab}" "{params.input_prefix}" "{params.output_prefix}" {threads}  >> {log} 2>&1'''
 
 rule alignments:
     message: 'Training word alignment and lexical shortlists'
@@ -669,20 +670,20 @@ rule quantize:
     log: f"{log_dir}/quntize.log"
     conda: "envs/base.yml"
     resources: gpu=gpus_num
-    threads: workflow.cores / 4
+    threads: workflow.cores
     input:
-        shortlist=rules.alignments.output.shortlist, student_model=rules.finetune_student.output.model,
+        shortlist=rules.alignments.output.shortlist, model=rules.finetune_student.output.model,
         bin=rules.marian.output.decoder, vocab=rules.train_vocab.output, devset=f"{original}/devset.{src}.gz"
     output: model=f'{speed}/model.intgemm.alphas.bin'
     shell: '{envs} bash pipeline/quantize/quantize.sh \
-                "{student_finetuned_dir}" "{input.vocab}" "{input.shortlist}" "{input.devset}" "{speed}" >> {log} 2>&1'''
+                "{input.model}" "{input.vocab}" "{input.shortlist}" "{input.devset}" "{speed}" >> {log} 2>&1'''
 
 rule eval_quantized:
     message: "Evaluating qunatized student model"
     log: f"{log_dir}/eval_quantized.log"
     conda: "envs/base.yml"
     group: 'export'
-    resources: gpu=gpus_num
+    threads: workflow.cores
     priority: 50
     input:
         model=rules.quantize.output.model,
