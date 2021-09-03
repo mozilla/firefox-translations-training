@@ -149,7 +149,7 @@ You can also use [find-corpus](pipeline/utils/find-corpus.py) tool to find all d
 
 Example:
 
-`python ./pipeline/utils/find-corpus en ru opus`
+`python ./pipeline/utils/find-corpus.py en ru opus`
 
 ### Adding a new importer
 

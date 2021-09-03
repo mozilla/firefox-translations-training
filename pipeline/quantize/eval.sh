@@ -2,9 +2,6 @@
 ##
 # Evaluate a quantized model on CPU.
 #
-# Usage:
-#   bash eval.sh model_dir shortlist
-#
 
 set -x
 set -euo pipefail

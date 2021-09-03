@@ -139,25 +139,36 @@ student_finetuned_dir = f"{models_dir}/student-finetuned"
 speed = f"{models_dir}/speed"
 exported = f"{models_dir}/exported"
 best_model = "model.npz.best-bleu-detok.npz"
+s2s=f'{models_dir}/s2s'
+if not backward_model:
+    backward_model = s2s
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
 CLEAN_TOOLS=pipeline/clean/tools CUDA_DIR="{cuda_dir}" BIN="{bin}"'''
-
-
 
 #todo: cache original datasets across workflows using snakemake caching
 
 results = [f'{exported}/model.{src}{trg}.intgemm.alphas.bin.gz',
            f'{exported}/lex.50.50.{src}{trg}.s2t.bin.gz',
            f'{exported}/vocab.{src}{trg}.spm.gz',
-           f'{experiment_dir}/config.yaml']
+           f'{experiment_dir}/config.yaml',
+           expand(f'{teacher_dir}{{ens}}/eval',ens=ensemble),
+           f'{student_dir}/eval',
+           f'{student_finetuned_dir}/eval',
+           f'{speed}/eval',
+           ]
+
+# don't evaluate pretrained model
+if backward_model == s2s:
+    results.append(f'{backward_model}/eval')
 
 rule all:
     input: results
 
 
-localrules: experiment, eval_teacher_report
+localrules: experiment
+ruleorder: teacher > eval_teacher
 
 rule experiment:
     message: "Saving experiment metadata"
@@ -340,9 +351,7 @@ rule train_vocab:
     shell: '{envs} bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" >> {log} 2>&1'
 
 
-if not backward_model:
-    backward_model = f'{models_dir}/s2s'
-
+if backward_model == s2s:
     rule backward:
         message: "Training backward model"
         log: f"{log_dir}/train_backward.log"
@@ -352,10 +361,10 @@ if not backward_model:
             train_src=clean_corpus_src,train_trg=clean_corpus_trg,
             val_src=rules.data_val.output.src,val_trg=rules.data_val.output.trg,
             bin=rules.marian.output.trainer, vocab=rules.train_vocab.output
-        output: dir=directory(backward_model), model=f'{backward_model}/{best_model}'
+        output:  model=f'{backward_model}/{best_model}'
         params: prefix_train=f"{biclean}/corpus",prefix_test=f"{original}/devset"
         shell: '''{envs} bash pipeline/train/train-s2s.sh \
-                    "{output.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" {trg} {src} \
+                    "{backward_model}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" {trg} {src} \
                      >> {log} 2>&1'''
 
     rule eval_backward:
@@ -363,9 +372,9 @@ if not backward_model:
         log: f"{log_dir}/eval_backward.log"
         conda: "envs/base.yml"
         resources: gpu=gpus_num
-        input: model=f'{backward_model}/{best_model}',datasets=rules.data_test.output
+        input: model=f'{backward_model}/{best_model}', datasets=rules.data_test.output
         output:
-            report(directory(f'{backward_model}/eval'),patterns=["{name}.bleu"],caption=f"{reports_dir}/report.rst")
+            report(directory(f'{backward_model}/eval'),patterns=["*.bleu"],caption=f"{reports_dir}/report.rst")
         shell: '{envs} bash pipeline/train/eval.sh "{backward_model}" "{evaluation}" {trg} {src} >> {log} 2>&1'
 
 
@@ -415,7 +424,7 @@ if mono_trg_datasets:
             src1=clean_corpus_src,src2=rules.collect_mono_trg.output,
             trg1=clean_corpus_trg,trg2=rules.split_mono_trg.input
         output: res_src=f'{augmented}/corpus.{src}.gz',res_trg=f'{augmented}/corpus.{trg}.gz'
-        shell: '''bash pipeline/utils/merge-corpus.sh \
+        shell: '''bash pipeline/translate/merge-corpus.sh \
                     "{input.src1}" "{input.src2}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
                       >> {log} 2>&1'''
 
@@ -429,27 +438,24 @@ rule teacher:
         train_src=f'{teacher_corpus}.{src}.gz',train_trg=f'{teacher_corpus}.{trg}.gz',
         val_src=rules.data_val.output.src,val_trg=rules.data_val.output.trg,
         bin=rules.marian.output.trainer,vocab=rules.train_vocab.output
-    output: dir=directory(f'{teacher_dir}{{ens}}'),model=f'{teacher_dir}{{ens}}/{best_model}'
-    params: prefix_train=teacher_corpus,prefix_test=f"{original}/devset"
+    output: model=f'{teacher_dir}{{ens}}/{best_model}'
+    params: prefix_train=teacher_corpus, prefix_test=f"{original}/devset", dir=directory(f'{teacher_dir}{{ens}}')
     shell: '''{envs} bash pipeline/train/train-teacher.sh \
-                "{output.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" >> {log} 2>&1'''
+                "{params.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" >> {log} 2>&1'''
 
 rule eval_teacher:
     message: "Evaluating teacher model"
     log: f"{log_dir}/eval_teacher{{ens}}.log"
     conda: "envs/base.yml"
     resources: gpu=gpus_num
-    input: model=f'{teacher_dir}{{ens}}/{best_model}',datasets=rules.data_test.output
-    output: directory(f'{teacher_dir}{{ens}}/eval')
-    shell: '{envs} bash pipeline/train/eval.sh "{backward_model}" "{evaluation}" {src} {trg} >> {log} 2>&1'
-
-rule eval_teacher_report:
-    message: "Adding teacher evaluation to the report"
-    input: expand(f'{teacher_dir}{{ens}}/eval',ens=ensemble)
+    input:
+        model=f'{teacher_dir}{{ens}}/{best_model}',
+        datasets=rules.data_test.output
     output:
-        report(expand(f'{teacher_dir}{{ens}}/eval',ens=ensemble),
-            patterns=["{name}.bleu"],
-            caption=f"{reports_dir}/report.rst")
+        report(directory(f'{teacher_dir}{{ens}}/eval'), patterns=["*.bleu"], caption=f"{reports_dir}/report.rst")
+    params: dir=f'{teacher_dir}{{ens}}'
+    shell: '{envs} bash pipeline/train/eval.sh "{params.dir}" "{evaluation}" {src} {trg} >> {log} 2>&1'
+
 
 ### translation with teacher
 
@@ -547,7 +553,7 @@ rule merge_translated:
         src1=clean_corpus_src,src2=f"{clean}/mono.{src}.gz",
         trg1=rules.collect_corpus.output,trg2=rules.collect_mono_src.output
     output: res_src=f'{merged}/corpus.{src}.gz',res_trg=f'{merged}/corpus.{trg}.gz'
-    shell: '''bash pipeline/utils/merge-corpus.sh \
+    shell: '''bash pipeline/translate/merge-corpus.sh \
                 "{input.src1}" "{input.src2}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
                   >> {log} 2>&1'''
 
@@ -589,10 +595,10 @@ rule student:
         val_src=rules.data_val.output.src, val_trg=rules.data_val.output.trg,
         alignments=rules.alignments.output.alignment,
         bin=rules.marian.output.trainer, vocab=rules.train_vocab.output
-    output: dir=directory(student_dir),model=f'{student_dir}/{best_model}'
+    output: model=f'{student_dir}/{best_model}'
     params: prefix_train=rules.ce_filer.params.output_prefix,prefix_test=f"{original}/devset"
     shell: '''{envs} bash pipeline/train/train-student.sh \
-                "{output.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
+                "{student_dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
                 "{input.alignments}" >> {log} 2>&1'''
 
 rule eval_student:
@@ -600,8 +606,8 @@ rule eval_student:
     log: f"{log_dir}/eval_student.log"
     conda: "envs/base.yml"
     resources: gpu=gpus_num
-    input: model=rules.student.output.model,datasets=rules.data_test.output
-    output: report(f'{student_dir}/eval',patterns=["{name}.bleu"],caption=f"{reports_dir}/report.rst")
+    input: model=rules.student.output.model, datasets=rules.data_test.output
+    output: report(directory(f'{student_dir}/eval'),patterns=["*.bleu"],caption=f"{reports_dir}/report.rst")
     shell: '{envs} bash pipeline/train/eval.sh "{student_dir}" "{evaluation}" {src} {trg} >> {log} 2>&1'
 
 # quantize
@@ -617,10 +623,10 @@ rule finetune_student:
         val_src=rules.data_val.output.src,  val_trg=rules.data_val.output.trg,
         alignments=rules.alignments.output.alignment, student_model=rules.student.output.model,
         bin=rules.marian.output.trainer, vocab=rules.train_vocab.output,
-    output: dir=directory(student_finetuned_dir),model=f'{student_finetuned_dir}/{best_model}'
+    output: model=f'{student_finetuned_dir}/{best_model}'
     params: prefix_train=rules.ce_filer.params.output_prefix,prefix_test=f"{original}/devset"
     shell: '''{envs} bash pipeline/train/train-student.sh \
-                "{output.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
+                "{student_finetuned_dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
                 "{input.alignments}" "{input.student_model}" >> {log} 2>&1'''
 
 rule eval_finetuned_student:
@@ -628,8 +634,8 @@ rule eval_finetuned_student:
     log: f"{log_dir}/eval_finetuned_student.log"
     conda: "envs/base.yml"
     resources: gpu=gpus_num
-    input: model=rules.finetune_student.output.model,datasets=rules.data_test.output
-    output: report(f'{student_finetuned_dir}/eval',patterns=["{name}.bleu"],caption=f"{reports_dir}/report.rst")
+    input: model=rules.finetune_student.output.model, datasets=rules.data_test.output
+    output: report(directory(f'{student_finetuned_dir}/eval'),patterns=["*.bleu"],caption=f"{reports_dir}/report.rst")
     shell: '{envs} bash pipeline/train/eval.sh "{student_finetuned_dir}" "{evaluation}" {src} {trg} >> {log} 2>&1'
 
 rule quantize:
@@ -652,10 +658,12 @@ rule eval_quantized:
     group: 'export'
     resources: gpu=gpus_num
     input:
-        model=rules.quantize.output.model,datasets=rules.data_test.output,
+        model=rules.quantize.output.model,
+        datasets=rules.data_test.output,
         shortlist=rules.alignments.output.shortlist,vocab=rules.train_vocab.output
-    output: report(f'{speed}/eval',patterns=["{name}.bleu"],caption=f"{reports_dir}/report.rst")
-    shell: '{envs} bash pipeline/quantize/eval.sh "{speed}" "{input.shortlist}" "{evaluation}" "{input.vocab}" >> {log} 2>&1'
+    output: report(directory(f'{speed}/eval'),patterns=["*.bleu"],caption=f"{reports_dir}/report.rst")
+    shell: '''{envs} bash pipeline/quantize/eval.sh "{speed}" "{input.shortlist}" "{evaluation}" "{input.vocab}" \
+            >> {log} 2>&1'''
 
 rule export:
     message: "Exporting models"
