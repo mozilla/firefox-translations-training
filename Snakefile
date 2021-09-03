@@ -161,15 +161,13 @@ results = [f'{exported}/model.{src}{trg}.intgemm.alphas.bin.gz',
            f'{speed}/eval',
            ]
 
-# don't evaluate pretrained model
-
 if not backward_model:
     backward_model = s2s
+    # don't evaluate pretrained model
     results.append(f'{backward_model}/eval')
     train_s2s=True
 else:
     train_s2s = False
-
 
 # bicleaner
 
@@ -648,7 +646,7 @@ rule finetune_student:
         train_src=rules.ce_filer.output.src_corpus, train_trg=rules.ce_filer.output.trg_corpus,
         val_src=rules.data_val.output.src,  val_trg=rules.data_val.output.trg,
         alignments=rules.alignments.output.alignment, student_model=rules.student.output.model,
-        bin=rules.marian.output.trainer, vocab=rules.train_vocab.output,
+        bin=rules.marian.output.trainer, vocab=rules.train_vocab.output
     output: model=f'{student_finetuned_dir}/{best_model}'
     params: prefix_train=rules.ce_filer.params.output_prefix,prefix_test=f"{original}/devset"
     shell: '''{envs} bash pipeline/train/train-student.sh \
