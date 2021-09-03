@@ -162,6 +162,7 @@ localrules: experiment, eval_teacher_report
 rule experiment:
     message: "Saving experiment metadata"
     output: f'{experiment_dir}/config.yaml'
+    priority: 100
     shell: '''
         mkdir -p "{experiment_dir}"
         cp config.yaml "{output}"
@@ -210,16 +211,6 @@ rule extract_lex:
     input: rules.setup.output
     output: protected(f"{bin}/extract_lex")
     shell: '{envs} bash pipeline/setup/compile-extract-lex.sh {extract_lex_build} {threads} >> {log} 2>&1'
-
-rule kenlm:
-    message: "Installing kenlm"
-    log: f"{log_dir}/kenlm.log"
-    conda: "envs/base.yml"
-    threads: workflow.cores
-    group: 'setup'
-    input: rules.setup.output
-    output: directory(f"{bin}/kenlm")
-    shell: '{envs} bash pipeline/setup/install-kenlm.sh {kenlm} {threads}  >> {log} 2>&1'
 
 # data
 
@@ -300,6 +291,16 @@ if bicleaner_type:
     clean_corpus_src = f"{biclean}/corpus.{src}.gz"
     clean_corpus_trg = f"{biclean}/corpus.{trg}.gz"
     teacher_corpus = f'{biclean}/corpus'
+
+    rule kenlm:
+        message: "Installing kenlm"
+        log: f"{log_dir}/kenlm.log"
+        conda: bicleaner_env
+        threads: workflow.cores
+        group: 'setup'
+        input: rules.setup.output
+        output: directory(f"{bin}/kenlm")
+        shell: '{envs} bash pipeline/setup/install-kenlm.sh {kenlm} {threads}  >> {log} 2>&1'
 
     rule bicleaner:
         message: f"Cleaning corpus using {bicleaner_type}"
@@ -560,7 +561,7 @@ rule ce_filer:
         src_corpus=rules.merge_translated.output.res_src,trg_corpus=rules.merge_translated.output.res_trg
     output: src_corpus=f"{filtered}/corpus.{src}.gz",trg_corpus=f"{filtered}/corpus.{trg}.gz"
     params: input_prefix=f'{merged}/corpus',output_prefix=f'{filtered}/corpus'
-    shell: '''{envs} bash pipeline/clean/ce-filter.sh \
+    shell: '''{envs} bash pipeline/cefilter/ce-filter.sh \
                 "${input.model}" "{input.vocab}" "{params.input_prefix}" "{params.output_prefix}"  >> {log} 2>&1'''
 
 rule alignments:

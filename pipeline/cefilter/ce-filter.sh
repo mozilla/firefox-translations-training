@@ -14,7 +14,6 @@ test -v MARIAN
 test -v GPUS
 test -v SRC
 test -v TRG
-test -v CLEAN_TOOLS
 test -v WORKSPACE
 
 model=$1
@@ -61,7 +60,7 @@ test -s "${dir}/corpus.${SRC}" || pigz -dc "${corpus_prefix}.${SRC}.gz" >"${dir}
 echo "### Normalizing scores"
 test -s "${dir}/scores.nrm.txt" ||
   paste "${dir}/scores.txt" "${dir}/corpus.${TRG}" |
-  parallel --no-notice --pipe -k -j "$(nproc)" --block 50M "python ${CLEAN_TOOLS}/normalize-scores.py" |
+  parallel --no-notice --pipe -k -j "$(nproc)" --block 50M "python pipeline/cefilter/normalize-scores.py" |
   cut -f1 >"${dir}/scores.nrm.txt"
 
 echo "### Sorting scores"
