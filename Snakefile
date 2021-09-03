@@ -396,6 +396,7 @@ if train_s2s:
         log: f"{log_dir}/eval_backward.log"
         conda: "envs/base.yml"
         resources: gpu=gpus_num
+        priority: 50
         input: model=f'{backward_model}/{best_model}', datasets=rules.data_test.output
         output:
             report(directory(f'{backward_model}/eval'),patterns=["*.bleu"],caption=f"{reports_dir}/report.rst")
@@ -470,6 +471,7 @@ rule eval_teacher:
     log: f"{log_dir}/eval_teacher{{ens}}.log"
     conda: "envs/base.yml"
     resources: gpu=gpus_num
+    priority: 50
     input:
         model=f'{teacher_dir}{{ens}}/{best_model}',
         datasets=rules.data_test.output
@@ -591,7 +593,7 @@ rule ce_filer:
     output: src_corpus=f"{filtered}/corpus.{src}.gz",trg_corpus=f"{filtered}/corpus.{trg}.gz"
     params: input_prefix=f'{merged}/corpus',output_prefix=f'{filtered}/corpus'
     shell: '''{envs} bash pipeline/cefilter/ce-filter.sh \
-                "${input.model}" "{input.vocab}" "{params.input_prefix}" "{params.output_prefix}"  >> {log} 2>&1'''
+                "{input.model}" "{input.vocab}" "{params.input_prefix}" "{params.output_prefix}"  >> {log} 2>&1'''
 
 rule alignments:
     message: 'Training word alignment and lexical shortlists'
@@ -628,6 +630,7 @@ rule eval_student:
     log: f"{log_dir}/eval_student.log"
     conda: "envs/base.yml"
     resources: gpu=gpus_num
+    priority: 50
     input: model=rules.student.output.model, datasets=rules.data_test.output
     output: report(directory(f'{student_dir}/eval'),patterns=["*.bleu"],caption=f"{reports_dir}/report.rst")
     shell: '{envs} bash pipeline/train/eval.sh "{student_dir}" "{evaluation}" {src} {trg} >> {log} 2>&1'
@@ -656,6 +659,7 @@ rule eval_finetuned_student:
     log: f"{log_dir}/eval_finetuned_student.log"
     conda: "envs/base.yml"
     resources: gpu=gpus_num
+    priority: 50
     input: model=rules.finetune_student.output.model, datasets=rules.data_test.output
     output: report(directory(f'{student_finetuned_dir}/eval'),patterns=["*.bleu"],caption=f"{reports_dir}/report.rst")
     shell: '{envs} bash pipeline/train/eval.sh "{student_finetuned_dir}" "{evaluation}" {src} {trg} >> {log} 2>&1'
@@ -679,6 +683,7 @@ rule eval_quantized:
     conda: "envs/base.yml"
     group: 'export'
     resources: gpu=gpus_num
+    priority: 50
     input:
         model=rules.quantize.output.model,
         datasets=rules.data_test.output,
