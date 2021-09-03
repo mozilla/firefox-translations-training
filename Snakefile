@@ -352,10 +352,10 @@ if not backward_model:
             train_src=clean_corpus_src,train_trg=clean_corpus_trg,
             val_src=rules.data_val.output.src,val_trg=rules.data_val.output.trg,
             bin=rules.marian.output.trainer, vocab=rules.train_vocab.output
-        output: model=f'{backward_model}/{best_model}'
+        output: dir=directory(backward_model), model=f'{backward_model}/{best_model}'
         params: prefix_train=f"{biclean}/corpus",prefix_test=f"{original}/devset"
         shell: '''{envs} bash pipeline/train/train-s2s.sh \
-                    "{output.model}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" {trg} {src} \
+                    "{output.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" {trg} {src} \
                      >> {log} 2>&1'''
 
     rule eval_backward:
@@ -589,7 +589,7 @@ rule student:
         val_src=rules.data_val.output.src, val_trg=rules.data_val.output.trg,
         alignments=rules.alignments.output.alignment,
         bin=rules.marian.output.trainer, vocab=rules.train_vocab.output
-    output: dir=directory(f'{student_dir}'),model=f'{student_dir}/{best_model}'
+    output: dir=directory(student_dir),model=f'{student_dir}/{best_model}'
     params: prefix_train=rules.ce_filer.params.output_prefix,prefix_test=f"{original}/devset"
     shell: '''{envs} bash pipeline/train/train-student.sh \
                 "{output.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
@@ -617,7 +617,7 @@ rule finetune_student:
         val_src=rules.data_val.output.src,  val_trg=rules.data_val.output.trg,
         alignments=rules.alignments.output.alignment, student_model=rules.student.output.model,
         bin=rules.marian.output.trainer, vocab=rules.train_vocab.output,
-    output: dir=directory(f'{student_finetuned_dir}'),model=f'{student_finetuned_dir}/{best_model}'
+    output: dir=directory(student_finetuned_dir),model=f'{student_finetuned_dir}/{best_model}'
     params: prefix_train=rules.ce_filer.params.output_prefix,prefix_test=f"{original}/devset"
     shell: '''{envs} bash pipeline/train/train-student.sh \
                 "{output.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
