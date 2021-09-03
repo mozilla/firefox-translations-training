@@ -165,7 +165,7 @@ rule experiment:
     priority: 100
     shell: '''
         mkdir -p "{experiment_dir}"
-        cp config.yaml "{output}"
+        cp config.yml "{output}"
         cp -r pipeline/train/configs "{experiment_dir}/"
     '''
 
