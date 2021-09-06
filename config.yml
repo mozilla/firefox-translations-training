@@ -1,8 +1,3 @@
-
-dirs:
-  data-root: /data/rw/group-maml/bergamot
-  cuda: /usr/local/cuda-11.2
-
 experiment:
   name: snakemake
   src: ru

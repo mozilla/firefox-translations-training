@@ -78,8 +78,9 @@ min_version("6.6.1")
 ### configuration
 
 configfile: 'config.yml'
+envvars: 'DATA_ROOT_DIR', 'CUDA_DIR'
 
-data_root_dir = config['dirs']['data-root']
+data_root_dir = os.environ['DATA_ROOT_DIR']
 
 # experiment
 src = config['experiment']['src']
@@ -91,7 +92,7 @@ mono_max_sent_trg = config['experiment']['mono-max-sentences-trg']
 bicleaner_threshold = config['experiment']['bicleaner-threshold']
 backward_model = config['experiment']['backward-model']
 
-experiment_dir=f"{data_root_dir}/{src}-{trg}/{experiment}"
+experiment_dir=f"{data_root_dir}/experiments/{src}-{trg}/{experiment}"
 
 # datasets
 train_datasets = config['datasets']['train']
@@ -119,7 +120,6 @@ kenlm = f'{cwd}/3rd_party/kenlm'
 fast_align_build = f'{cwd}/3rd_party/fast_align/build'
 extract_lex_build = f'{cwd}/3rd_party/extract-lex/build'
 bin = f'{cwd}/bin'
-cuda_dir = config['dirs']['cuda']
 
 # data
 data_dir = f"{data_root_dir}/data/{src}-{trg}/{experiment}"
@@ -146,7 +146,7 @@ s2s=f'{models_dir}/s2s'
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
-CLEAN_TOOLS=pipeline/clean/tools CUDA_DIR="{cuda_dir}" BIN="{bin}"'''
+CLEAN_TOOLS=pipeline/clean/tools BIN="{bin}"'''
 
 
 ### workflow options
@@ -399,8 +399,8 @@ if train_s2s:
         priority: 50
         input: model=f'{backward_model}/{best_model}', datasets=rules.data_test.output
         output:
-            report(directory(f'{backward_model}/eval'),patterns=["*.bleu"],
-                category='evaluation', subcategory='finetuned')
+            report(directory(f'{backward_model}/eval'),patterns=["{name}.bleu"],
+                category='evaluation', subcategory='finetuned', caption='../reports/evaluation.rst')
         shell: 'bash pipeline/train/eval.sh "{backward_model}" "{evaluation}" {trg} {src} >> {log} 2>&1'
 
 
@@ -477,8 +477,8 @@ rule eval_teacher:
         model=f'{teacher_dir}{{ens}}/{best_model}',
         datasets=rules.data_test.output
     output:
-        report(directory(f'{teacher_dir}{{ens}}/eval'), patterns=["*.bleu"],
-            category='evaluation', subcategory='teacher')
+        report(directory(f'{teacher_dir}{{ens}}/eval'), patterns=["{name}.bleu"],
+            category='evaluation', subcategory='teacher', caption='../reports/evaluation.rst')
     params: dir=f'{teacher_dir}{{ens}}'
     shell: 'bash pipeline/train/eval.sh "{params.dir}" "{evaluation}" {src} {trg} >> {log} 2>&1'
 
@@ -635,7 +635,9 @@ rule eval_student:
     resources: gpu=gpus_num
     priority: 50
     input: model=rules.student.output.model, datasets=rules.data_test.output
-    output: report(directory(f'{student_dir}/eval'),patterns=["*.bleu"],category='evaluation', subcategory='student')
+    output:
+        report(directory(f'{student_dir}/eval'),patterns=["{name}.bleu"],category='evaluation',
+            subcategory='student', caption='../reports/evaluation.rst')
     shell: 'bash pipeline/train/eval.sh "{student_dir}" "{evaluation}" {src} {trg} >> {log} 2>&1'
 
 # quantize
@@ -665,8 +667,8 @@ rule eval_finetuned_student:
     priority: 50
     input: model=rules.finetune_student.output.model, datasets=rules.data_test.output
     output:
-        report(directory(f'{student_finetuned_dir}/eval'),patterns=["*.bleu"],
-            category='evaluation', subcategory='finetuned')
+        report(directory(f'{student_finetuned_dir}/eval'),patterns=["{name}.bleu"],
+            category='evaluation', subcategory='finetuned', caption='../reports/evaluation.rst')
     shell: 'bash pipeline/train/eval.sh "{student_finetuned_dir}" "{evaluation}" {src} {trg} >> {log} 2>&1'
 
 rule quantize:
@@ -693,7 +695,9 @@ rule eval_quantized:
         model=rules.quantize.output.model,
         datasets=rules.data_test.output,
         shortlist=rules.alignments.output.shortlist,vocab=rules.train_vocab.output
-    output: report(directory(f'{speed}/eval'),patterns=["*.bleu"], category='evaluation', subcategory='quantized')
+    output:
+        report(directory(f'{speed}/eval'),patterns=["{name}.bleu"], category='evaluation',
+            subcategory='quantized', caption='../reports/evaluation.rst')
     shell: '''bash pipeline/quantize/eval.sh "{speed}" "{input.shortlist}" "{evaluation}" "{input.vocab}" \
             >> {log} 2>&1'''
 

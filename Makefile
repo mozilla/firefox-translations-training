@@ -2,11 +2,15 @@
 
 .ONESHELL:
 SHELL=/bin/bash
+
 SHARED_ROOT=/data/rw/group-maml
+DATA_ROOT_DIR=$(SHARED_ROOT)/bergamot
+CUDA_DIR=/usr/local/cuda-11.2
+
 CONDA_ACTIVATE=source $(SHARED_ROOT)/mambaforge/etc/profile.d/conda.sh ; conda activate ; conda activate
 LOCAL_GPUS=8
 
-all: install-conda, install-snakemake, dry-run
+all: install-conda, install-snakemake, activate, dry-run
 
 install-conda:
 	wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$$(uname)-$$(uname -m).sh
@@ -17,6 +21,7 @@ install-snakemake:
 	$(CONDA_ACTIVATE) base
 	mamba create -c conda-forge -c bioconda -n snakemake snakemake
 	conda install -c bioconda snakefmt
+	pip install shyaml
 
 activate:
 	$(CONDA_ACTIVATE) snakemake
@@ -27,11 +32,18 @@ dry-run:
 	  --cores all \
 	  -n
 
-run-local: activate
+report_dir: activate
+ 	SRC=cat config.yml | shyaml get-value experiment.src
+ 	TRG=cat config.yml | shyaml get-value experiment.trg
+ 	EXPERIMENT=cat config.yml | shyaml get-value experiment.name
+ 	REPORT_DIR=$(DATA_ROOT_DIR)/reports/$SRC-$TRG/$EXPERIMENT
+
+run-local: report_dir
 	snakemake \
 	  --use-conda --reason \
 	  --cores all \
-	  --resources gpu=$(LOCAL_GPUS)
+	  --resources gpu=$(LOCAL_GPUS) \
+	  --report $REPORT_DIR/report.html
 
 run-cluster: activate
 	chmod +x profiles/snakepit/*
