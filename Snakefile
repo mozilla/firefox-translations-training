@@ -400,7 +400,7 @@ if train_s2s:
         input: model=f'{backward_model}/{best_model}', datasets=rules.data_test.output
         output:
             report(directory(f'{backward_model}/eval'),patterns=["{name}.bleu"],
-                category='evaluation', subcategory='finetuned', caption='../reports/evaluation.rst')
+                category='evaluation', subcategory='finetuned', caption='reports/evaluation.rst')
         shell: 'bash pipeline/train/eval.sh "{backward_model}" "{evaluation}" {trg} {src} >> {log} 2>&1'
 
 
@@ -478,7 +478,7 @@ rule eval_teacher:
         datasets=rules.data_test.output
     output:
         report(directory(f'{teacher_dir}{{ens}}/eval'), patterns=["{name}.bleu"],
-            category='evaluation', subcategory='teacher', caption='../reports/evaluation.rst')
+            category='evaluation', subcategory='teacher', caption='reports/evaluation.rst')
     params: dir=f'{teacher_dir}{{ens}}'
     shell: 'bash pipeline/train/eval.sh "{params.dir}" "{evaluation}" {src} {trg} >> {log} 2>&1'
 
@@ -637,7 +637,7 @@ rule eval_student:
     input: model=rules.student.output.model, datasets=rules.data_test.output
     output:
         report(directory(f'{student_dir}/eval'),patterns=["{name}.bleu"],category='evaluation',
-            subcategory='student', caption='../reports/evaluation.rst')
+            subcategory='student', caption='reports/evaluation.rst')
     shell: 'bash pipeline/train/eval.sh "{student_dir}" "{evaluation}" {src} {trg} >> {log} 2>&1'
 
 # quantize
@@ -668,7 +668,7 @@ rule eval_finetuned_student:
     input: model=rules.finetune_student.output.model, datasets=rules.data_test.output
     output:
         report(directory(f'{student_finetuned_dir}/eval'),patterns=["{name}.bleu"],
-            category='evaluation', subcategory='finetuned', caption='../reports/evaluation.rst')
+            category='evaluation', subcategory='finetuned', caption='reports/evaluation.rst')
     shell: 'bash pipeline/train/eval.sh "{student_finetuned_dir}" "{evaluation}" {src} {trg} >> {log} 2>&1'
 
 rule quantize:
@@ -697,7 +697,7 @@ rule eval_quantized:
         shortlist=rules.alignments.output.shortlist,vocab=rules.train_vocab.output
     output:
         report(directory(f'{speed}/eval'),patterns=["{name}.bleu"], category='evaluation',
-            subcategory='quantized', caption='../reports/evaluation.rst')
+            subcategory='quantized', caption='reports/evaluation.rst')
     shell: '''bash pipeline/quantize/eval.sh "{speed}" "{input.shortlist}" "{evaluation}" "{input.vocab}" \
             >> {log} 2>&1'''
 
