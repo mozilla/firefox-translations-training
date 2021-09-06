@@ -75,6 +75,9 @@ run-with-monitor:
 	  --cores all \
 	  --wms-monitor http://127.0.0.1:5000
 
+run-file-server: activate
+	python -m  http.server --directory $(DATA_ROOT_DIR)/reports 8000
+
 install-snakepit-scheduler:
 	mkdir -p $(SHARED_ROOT)/snakepit
 	cd $(SHARED_ROOT)/snakepit
