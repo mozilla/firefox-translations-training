@@ -17,6 +17,11 @@ envvars: 'DATA_ROOT_DIR', 'CUDA_DIR'
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
 CLEAN_TOOLS=pipeline/clean/tools BIN="{bin}"'''
 
+
+def find_parts(wildcards, checkpoint):
+    checkpoint_output = checkpoint.get(**wildcards).output[0]
+    return glob_wildcards(os.path.join(checkpoint_output,"file.{part}")).part
+
 ### workflow options
 
 results = [f'{exported}/model.{src}{trg}.intgemm.alphas.bin.gz',
@@ -274,16 +279,14 @@ if train_s2s:
 
 
 if augment_corpus:
-    rule split_mono_trg:
+    checkpoint split_mono_trg:
         message: "Splitting monolingual trg dataset"
         log: f"{log_dir}/split_mono_trg.log"
         conda: "envs/base.yml"
         threads: workflow.cores
         input: f"{clean}/mono.{trg}.gz"
-        output:
-            dir=directory(f'{translated}/mono_trg'),
-            files=expand(f"{translated}/mono_trg/file.{{number}}",number=parts)
-        shell: 'bash pipeline/translate/split-mono.sh {input} {output.dir} {partitions} >> {log} 2>&1'
+        output: directory(f'{translated}/mono_trg')
+        shell: 'bash pipeline/translate/split-mono.sh {input} {output} {split_length} >> {log} 2>&1'
 
     rule translate_mono_trg:
         message: "Translating monolingual trg dataset with backward model"
@@ -303,7 +306,8 @@ if augment_corpus:
         conda: "envs/base.yml"
         threads: workflow.cores
         input:
-            files=expand(f"{translated}/mono_trg/file.{{part}}.out",part=parts)
+            lambda wildcards: expand(f"{translated}/mono_trg/file.{{part}}.out",
+                part=find_parts(wildcards, checkpoints.split_mono_trg))
         output: f'{translated}/mono.{src}.gz'
         params: src_mono=f"{clean}/mono.{trg}.gz",dir=directory(f'{translated}/mono_trg')
         shell: 'bash pipeline/translate/collect.sh "{params.dir}" "{output}" "{params.src_mono}" >> {log} 2>&1'
@@ -355,15 +359,15 @@ rule eval_teacher:
 
 # corpus
 
-rule split_corpus:
+checkpoint split_corpus:
     message: "Splitting the corpus to translate"
     log: f"{log_dir}/split_corpus.log"
     conda: "envs/base.yml"
     threads: workflow.cores
     input: corpus_src=clean_corpus_src,corpus_trg=clean_corpus_trg
-    output: expand(f"{translated}/corpus/file.{{number}}{{ext}}",number=parts,ext=['', '.ref'])
+    output: directory(f"{translated}/corpus")
     shell: '''bash pipeline/translate/split-corpus.sh \
-                {input.corpus_src} {input.corpus_trg} {translated}/corpus {partitions} >> {log} 2>&1'''
+                {input.corpus_src} {input.corpus_trg} {output} {split_length} >> {log} 2>&1'''
 
 rule translate_corpus:
     message: "Translating corpus with teacher"
@@ -372,7 +376,9 @@ rule translate_corpus:
     threads: workflow.cores / 4
     resources: gpu=gpus_num
     input:
-        rules.marian.output.trainer,file=f'{translated}/corpus/file.{{part}}',vocab=rules.train_vocab.output,
+        rules.marian.output.trainer,
+        file=f'{translated}/corpus/file.{{part}}',
+        vocab=rules.train_vocab.output,
         teacher_models=expand(f"{teacher_dir}{{ens}}/{best_model}",ens=ensemble)
     output: f'{translated}/corpus/file.{{part}}.nbest'
     shell: '''bash pipeline/translate/translate-nbest.sh \
@@ -380,14 +386,13 @@ rule translate_corpus:
 
 rule extract_best:
     message: "Extracting best translations for the corpus"
-    log: f"{log_dir}/extract_best.log"
+    log: f"{log_dir}/extract_best/{{part}}.log"
     conda: "envs/base.yml"
-    threads: workflow.cores
+    threads: 1
     group: 'translate_corpus'
-    input: expand(f"{translated}/corpus/file.{{part}}.nbest",part=parts)
-    output: expand(f"{translated}/corpus/file.{{part}}.nbest.out",part=parts)
-    params: prefixes=expand(f"{translated}/corpus/file.{{part}}",part=parts)
-    shell: 'bash pipeline/translate/extract-best.sh {threads} {params.prefixes} >> {log} 2>&1'
+    input: nbest=f"{translated}/corpus/file.{{part}}.nbest", ref=f"{translated}/corpus/file.{{part}}.ref"
+    output: f"{translated}/corpus/file.{{part}}.nbest.out"
+    shell: 'python pipeline/translate/bestbleu.py -i {input.nbest} -r {input.ref} -m bleu > {output} >> {log} 2>&1'
 
 rule collect_corpus:
     message: "Collecting translated corpus"
@@ -395,23 +400,23 @@ rule collect_corpus:
     conda: "envs/base.yml"
     threads: workflow.cores
     group: 'translate_corpus'
-    input: rules.extract_best.output
+    input:
+        lambda wildcards: expand(f"{translated}/corpus/file.{{part}}.nbest.out",
+            part=find_parts(wildcards, checkpoints.split_corpus))
     output: f'{translated}/corpus.{trg}.gz'
     params: src_corpus=clean_corpus_src
     shell: 'bash pipeline/translate/collect.sh {translated}/corpus {output} {params.src_corpus} >> {log} 2>&1'
 
 # mono
 
-rule split_mono_src:
+checkpoint split_mono_src:
     message: "Splitting monolingual src dataset"
     log: f"{log_dir}/split_mono_src.log"
     conda: "envs/base.yml"
     threads: workflow.cores
     input: f"{clean}/mono.{src}.gz"
-    output:
-        dir=directory(f'{translated}/mono_src'),
-        files=expand(f"{translated}/mono_src/file.{{number}}",number=parts)
-    shell: 'bash pipeline/translate/split-mono.sh {input} {output.dir} {partitions} >> {log} 2>&1'
+    output: directory(f'{translated}/mono_src')
+    shell: 'bash pipeline/translate/split-mono.sh {input} {output} {split_length} >> {log} 2>&1'
 
 rule translate_mono_src:
     message: "Translating monolingual src dataset with teacher"
@@ -432,7 +437,8 @@ rule collect_mono_src:
     conda: "envs/base.yml"
     threads: workflow.cores
     input:
-        files=expand(f"{translated}/mono_src/file.{{part}}.out",part=parts)
+       lambda wildcards: expand(f"{translated}/mono_src/file.{{part}}.out",
+           part=find_parts(wildcards, checkpoints.split_mono_src))
     output: f'{translated}/mono.{trg}.gz'
     params: src_mono=f"{clean}/mono.{src}.gz",dir=f'{translated}/mono_src'
     shell: 'bash pipeline/translate/collect.sh "{params.dir}" "{output}" "{params.src_mono}" >> {log} 2>&1'

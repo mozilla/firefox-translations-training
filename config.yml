@@ -17,7 +17,7 @@ resources:
   gpus: 8
   workspace: 9000
   # split corpus to parallelize translation
-  partitions: 16
+  split-length: 2000000
 
 datasets:
   # parallel corpus

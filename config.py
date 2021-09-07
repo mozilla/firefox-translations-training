@@ -28,9 +28,8 @@ mono_trg_datasets = config['datasets']['mono-trg']
 gpus_num = config['resources']['gpus']
 gpus = ' '.join([str(n) for n in range(int(gpus_num))])
 workspace = config['resources']['workspace']
-partitions = config['resources']['partitions']
-parts = [f'{n:02d}' for n in list(range(partitions))]
 ensemble = list(range(config['experiment']['teacher-ensemble']))
+split_length = config['resources']['split-length']
 
 # logging
 log_dir = f"{data_root_dir}/logs/{src}-{trg}/{experiment}"
