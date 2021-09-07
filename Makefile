@@ -6,6 +6,7 @@ SHELL=/bin/bash
 SHARED_ROOT=/data/rw/group-maml
 export DATA_ROOT_DIR=$(SHARED_ROOT)/bergamot
 export CUDA_DIR=/usr/local/cuda-11.2
+
 CONDA_ACTIVATE=source $(SHARED_ROOT)/mambaforge/etc/profile.d/conda.sh ; conda activate ; conda activate
 LOCAL_GPUS=8
 
@@ -36,10 +37,10 @@ run-local: activate
 	  --cores all \
 	  --resources gpu=$(LOCAL_GPUS)
 
-report: activate
-	REPORTS_DIR=$$(python utils/reports_path.py $(DATA_ROOT_DIR) config.yml); \
-	mkdir -p $$REPORTS_DIR && \
-	snakemake --report $$REPORTS_DIR/report.html
+report:
+	REPORTS=$$(python -c "from config import reports_dir; print(reports_dir)") \
+	mkdir -p $$REPORTS && \
+	snakemake --report $$REPORTS/report.html
 
 run-cluster: activate
 	chmod +x profiles/snakepit/*
@@ -73,6 +74,12 @@ run-with-monitor:
 
 run-file-server: activate
 	python -m  http.server --directory $(DATA_ROOT_DIR)/reports 8000
+
+tensorboard: activate
+	MODELS=$$(python -c "from config import models_dir; print(models_dir)"); \
+	ls -d $$MODELS/*/*/* > tb-monitored-jobs; \
+	tensorboard --logdir=$$MODELS --host=0.0.0.0 &; \
+	python utils/tb_log_parser.py --prefix=
 
 install-snakepit-scheduler:
 	mkdir -p $(SHARED_ROOT)/snakepit
