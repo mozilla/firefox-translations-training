@@ -37,8 +37,8 @@ run-local: activate
 	  --cores all \
 	  --resources gpu=$(LOCAL_GPUS)
 
-report:
-	REPORTS=$$(python -c "from config import reports_dir; print(reports_dir)") \
+report: activate
+	REPORTS=$$(python -c "from config import reports_dir; print(reports_dir)"); \
 	mkdir -p $$REPORTS && \
 	snakemake --report $$REPORTS/report.html
 
