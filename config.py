@@ -1,7 +1,7 @@
 import yaml
 import os
 
-config = yaml.load(open('config.yml'))
+config = yaml.load(open('config.yml'), Loader=yaml.FullLoader)
 
 data_root_dir = os.environ['DATA_ROOT_DIR']
 
