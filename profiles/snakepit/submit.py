@@ -27,7 +27,7 @@ cmd = f'''
 	    pit run snakemake-{name} {request} -e "bash {jobscript}"'''
 
 try:
-    res = subprocess.run(cmd, check=True, shell=True, stdout=subprocess.PIPE)
+    res = subprocess.run(cmd, check=True, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 except subprocess.CalledProcessError as e:
     raise e
 
