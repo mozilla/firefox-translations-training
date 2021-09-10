@@ -36,6 +36,7 @@ run-local: activate
 	  --use-conda --reason \
 	  --cores all \
 	  --resources gpu=$(LOCAL_GPUS)
+	$(MAKE) report
 
 report: activate
 	REPORTS=$$(python -c "from config import reports_dir; print(reports_dir)"); \
@@ -71,6 +72,27 @@ run-with-monitor:
 	  --use-conda \
 	  --cores all \
 	  --wms-monitor http://127.0.0.1:5000
+
+
+install-singularity: activate
+	conda install singularity
+	pip install spython
+	apt-get -y install tzdata
+
+containerize: activate
+	snakemake --containerize > Dockerfile
+	spython recipe Dockerfile &> Singularity.def
+
+run-container: activate
+	snakemake \
+	  --use-conda --reason --use-singularity \
+	  --cores all \
+	  --resources gpu=$(LOCAL_GPUS) --singularity-args "--bind $(DATA_ROOT_DIR):$(DATA_ROOT_DIR) --nv"
+
+build-container: activate
+	singularity build Singularity.sif Singularity.def
+
+
 
 run-file-server: activate
 	python -m  http.server --directory $(DATA_ROOT_DIR)/reports 8000
