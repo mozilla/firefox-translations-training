@@ -43,12 +43,20 @@ report: activate
 	mkdir -p $$REPORTS && \
 	snakemake --report $$REPORTS/report.html
 
-run-cluster: activate
+run-snakepit: activate
 	chmod +x profiles/snakepit/*
 	snakemake \
 	  --use-conda \
 	  --cores all \
 	  --profile=profiles/snakepit
+
+
+run-slurm: activate
+	snakemake \
+	  --use-conda \
+	  --cores 16 \
+	  --profile=profiles/slurm \
+	  --singularity-args "--nv"
 
 dag:
 	snakemake --dag | dot -Tpdf > DAG.pdf
@@ -92,7 +100,8 @@ run-container: activate
 build-container: activate
 	singularity build Singularity.sif Singularity.def
 
-
+pull-container: activate
+	singularity pull Singularity.sif library://evgenypavlov/default/bergamot:sha256.269c037aeef3f050bb8aa67eae78307efa922207d6a78a553bf20fa969dce39f
 
 run-file-server: activate
 	python -m  http.server --directory $(DATA_ROOT_DIR)/reports 8000

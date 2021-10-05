@@ -12,6 +12,7 @@ min_version("6.6.1")
 
 configfile: 'config.yml'
 envvars: 'DATA_ROOT_DIR', 'CUDA_DIR'
+container: 'Singularity.sif'
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
