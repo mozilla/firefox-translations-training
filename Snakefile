@@ -11,12 +11,12 @@ min_version("6.6.1")
 ### configuration
 
 configfile: 'config.yml'
-envvars: 'DATA_ROOT_DIR', 'CUDA_DIR'
 container: 'Singularity.sif'
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
-CLEAN_TOOLS=pipeline/clean/tools BIN="{bin}"'''
+CLEAN_TOOLS=pipeline/clean/tools BIN="{bin}" DATA_ROOT_DIR="{data_root_dir}" \
+CUDA_DIR="{cuda_dir}"'''
 
 ### workflow options
 

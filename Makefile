@@ -4,8 +4,6 @@
 SHELL=/bin/bash
 
 SHARED_ROOT=/data/rw/group-maml
-export DATA_ROOT_DIR=$(SHARED_ROOT)/bergamot
-export CUDA_DIR=/usr/local/cuda-11.2
 
 CONDA_ACTIVATE=source $(SHARED_ROOT)/mambaforge/etc/profile.d/conda.sh ; conda activate ; conda activate
 LOCAL_GPUS=8
@@ -57,7 +55,7 @@ run-slurm: activate
 	  --use-conda --reason --use-singularity \
 	  --cores 16 \
 	  --profile=profiles/slurm \
-	  --singularity-args="--nv"
+	  --singularity-args="--bind $(SHARED_ROOT):$(SHARED_ROOT) --nv"
 
 dag:
 	snakemake --dag | dot -Tpdf > DAG.pdf
@@ -96,7 +94,7 @@ run-container: activate
 	snakemake \
 	  --use-conda --reason --use-singularity \
 	  --cores all \
-	  --resources gpu=$(LOCAL_GPUS) --singularity-args "--bind $(DATA_ROOT_DIR):$(DATA_ROOT_DIR) --nv"
+	  --resources gpu=$(LOCAL_GPUS) --singularity-args "--bind $(SHARED_ROOT):$(SHARED_ROOT) --nv"
 
 build-container: activate
 	singularity build Singularity.sif Singularity.def
@@ -105,7 +103,7 @@ pull-container: activate
 	singularity pull Singularity.sif library://evgenypavlov/default/bergamot:sha256.269c037aeef3f050bb8aa67eae78307efa922207d6a78a553bf20fa969dce39f
 
 run-file-server: activate
-	python -m  http.server --directory $(DATA_ROOT_DIR)/reports 8000
+	python -m  http.server --directory $(SHARED_ROOT)/bergamot/reports 8000
 
 tensorboard: activate
 	MODELS=$$(python -c "from config import models_dir; print(models_dir)"); \

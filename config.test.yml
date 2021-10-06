@@ -12,16 +12,16 @@ experiment:
   backward-model: ""
 
   # limits per downloaded dataset
-  mono-max-sentences-src: 100000000
-  mono-max-sentences-trg: 20000000
+  mono-max-sentences-src: 100000
+  mono-max-sentences-trg: 200000
 
   bicleaner-threshold: 0.5
 
 resources:
-  gpus: 8
-  workspace: 9000
+  gpus: 4
+  workspace: 12000
   # split corpus to parallelize translation
-  split-length: 2000000
+  split-length: 100000
 
 datasets:
   # parallel corpus

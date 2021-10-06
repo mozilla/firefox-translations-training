@@ -3,7 +3,9 @@ import os
 
 config = yaml.load(open('config.yml'), Loader=yaml.FullLoader)
 
-data_root_dir = os.environ['DATA_ROOT_DIR']
+# dirs
+data_root_dir = config['dirs']['data-root']
+cuda_dir = config['dirs']['cuda']
 
 # experiment
 src = config['experiment']['src']
