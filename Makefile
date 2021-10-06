@@ -52,6 +52,7 @@ run-snakepit: activate
 
 
 run-slurm: activate
+	chmod +x profiles/slurm/*
 	snakemake \
 	  --use-conda --reason --use-singularity \
 	  --cores 16 \
