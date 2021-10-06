@@ -89,15 +89,6 @@ rule experiment:
 
 # setup
 
-rule setup:
-    message: "Installing dependencies"
-    log: f"{log_dir}/install-deps.log"
-    conda: "envs/base.yml"
-    threads: 1
-    group: 'setup'
-    output: touch("/tmp/flags/setup.done") # specific to local machine
-    shell: 'bash pipeline/setup/install-deps.sh >> {log} 2>&1'
-
 rule marian:
     message: "Compiling marian"
     log: f"{log_dir}/compile-marian.log"
@@ -105,7 +96,6 @@ rule marian:
     threads: workflow.cores
     resources: gpu=1
     group: 'setup'
-    input: rules.setup.output
     output: trainer=protected(f"{marian_dir}/marian"),decoder=protected(f"{marian_dir}/marian-decoder"),
         scorer=protected(f"{marian_dir}/marian-scorer"),vocab=protected(f'{marian_dir}/spm_train'),
         converter=protected(f'{marian_dir}/marian-conv')
@@ -117,7 +107,6 @@ rule fast_align:
     conda: "envs/base.yml"
     threads: workflow.cores
     group: 'setup'
-    input: rules.setup.output
     output: fast_align=protected(f"{bin}/fast_align"), atools=protected(f"{bin}/atools")
     shell: 'bash pipeline/setup/compile-fast-align.sh {fast_align_build} {threads}  >> {log} 2>&1'
 
@@ -127,7 +116,6 @@ rule extract_lex:
     conda: "envs/base.yml"
     threads: workflow.cores
     group: 'setup'
-    input: rules.setup.output
     output: protected(f"{bin}/extract_lex")
     shell: 'bash pipeline/setup/compile-extract-lex.sh {extract_lex_build} {threads} >> {log} 2>&1'
 
@@ -139,7 +127,6 @@ rule data_train:
     conda: "envs/base.yml"
     threads: 4
     group: 'data'
-    input: rules.setup.output
     output: src=f"{original}/corpus.{src}.gz",trg=f"{original}/corpus.{trg}.gz"
     params: prefix=f"{original}/corpus"
     shell: 'bash pipeline/data/download-corpus.sh "{params.prefix}" "{cache_dir}" train {train_datasets} >> {log} 2>&1'
@@ -150,7 +137,6 @@ rule data_val:
     conda: "envs/base.yml"
     threads: 4
     group: 'data'
-    input: rules.setup.output
     output: src=f"{original}/devset.{src}.gz",trg=f"{original}/devset.{trg}.gz"
     params: prefix=f"{original}/devset"
     shell: 'bash pipeline/data/download-corpus.sh "{params.prefix}" "{cache_dir}" valid {valid_datasets} >> {log} 2>&1'
@@ -161,7 +147,6 @@ rule data_test:
     conda: "envs/base.yml"
     threads: 4
     group: 'data'
-    input: rules.setup.output
     output: expand(f"{evaluation}/{{dataset}}.{{lng}}",dataset=eval_datasets,lng=[src, trg])
     shell: 'bash pipeline/data/download-eval.sh "{evaluation}" "{cache_dir}" {eval_datasets} >> {log} 2>&1'
 
@@ -170,7 +155,6 @@ rule data_mono_src:
     log: f"{log_dir}/data_mono_src.log"
     conda: "envs/base.yml"
     threads: 4
-    input: rules.setup.output
     output: f'{original}/mono.{src}.gz'
     shell: '''bash pipeline/data/download-mono.sh \
                 "{src}" "{mono_max_sent_src}" "{original}/mono" "{cache_dir}" {mono_src_datasets} >> {log} 2>&1'''
@@ -181,7 +165,6 @@ if mono_trg_datasets:
         log: f"{log_dir}/data_mono_trg.log"
         conda: "envs/base.yml"
         threads: 4
-        input: rules.setup.output
         output: f'{original}/mono.{trg}.gz'
         shell: '''bash pipeline/data/download-mono.sh \
                   "{trg}" "{mono_max_sent_trg}" "{original}/mono" "{cache_dir}" {mono_trg_datasets} >> {log} 2>&1'''
@@ -206,7 +189,6 @@ if use_bicleaner:
         conda: bicleaner_env
         threads: workflow.cores
         group: 'setup'
-        input: rules.setup.output
         output: directory(f"{bin}/kenlm")
         shell: 'bash pipeline/setup/install-kenlm.sh {kenlm} {threads}  >> {log} 2>&1'
 
@@ -227,7 +209,7 @@ rule clean_mono:
     log: f"{log_dir}/clean_mono_{{lang}}.log"
     conda: "envs/base.yml"
     threads: workflow.cores
-    input: rules.setup.output,f'{original}/mono.{{lang}}.gz'
+    input: f'{original}/mono.{{lang}}.gz'
     output: f"{clean}/mono.{{lang}}.gz"
     params: lang='{lang}'
     shell: '''bash pipeline/clean/clean-mono.sh "{params.lang}" "{original}/mono" "{clean}/mono" >> {log} 2>&1'''
