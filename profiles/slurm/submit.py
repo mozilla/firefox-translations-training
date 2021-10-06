@@ -10,7 +10,13 @@ job_properties = read_job_properties(jobscript)
 
 options = []
 
-name = job_properties.get("rule")
+if job_properties["type"] == 'single':
+    name = job_properties['rule']
+elif job_properties["type"] == 'group':
+    name = job_properties['groupid']
+else:
+    raise NotImplementedError(f"Don't know what to do with job_properties['type']=={job_properties['type']}")
+
 options += ['--job-name', name]
 
 if "resources" in job_properties:
