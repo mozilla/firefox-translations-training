@@ -16,8 +16,8 @@ options += ['--job-name', name]
 if "resources" in job_properties:
     resources = job_properties["resources"]
 
-    num_gpu = str(resources.get('gpu')) or '0'
-    options += ['--gpus-per-node', num_gpu]
+    num_gpu = resources.get('gpu') or '0'
+    options += ['--gpus-per-node', str(num_gpu)]
 
     if "threads" in job_properties:
         options += ["--cpus-per-task", job_properties["threads"]]

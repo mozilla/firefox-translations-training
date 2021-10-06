@@ -53,10 +53,10 @@ run-snakepit: activate
 
 run-slurm: activate
 	snakemake \
-	  --use-conda \
+	  --use-conda --reason --use-singularity \
 	  --cores 16 \
 	  --profile=profiles/slurm \
-	  --singularity-args "--nv"
+	  --singularity-args="--nv"
 
 dag:
 	snakemake --dag | dot -Tpdf > DAG.pdf
