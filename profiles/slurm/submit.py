@@ -5,6 +5,9 @@ import subprocess as sp
 
 from snakemake.utils import read_job_properties
 
+GPU_PARTITION = 'p1'
+CPU_PARTITION = 'p2'
+
 jobscript = sys.argv[-1]
 job_properties = read_job_properties(jobscript)
 
@@ -19,14 +22,18 @@ else:
 
 options += ['--job-name', name]
 
+partition = CPU_PARTITION
 if "resources" in job_properties:
     resources = job_properties["resources"]
 
-    num_gpu = resources.get('gpu') or '0'
-    options += ['--gpus-per-node', str(num_gpu)]
+    if 'gpu' in resources:
+        options += ['--gpus-per-node', str(resources['gpu'])]
+        partition = GPU_PARTITION
 
     if "threads" in job_properties:
         options += ["--cpus-per-task", str(job_properties["threads"])]
+
+options += ['-p', partition]
 
 try:
     cmd = ["sbatch"] + ["--parsable"] + options + [jobscript]

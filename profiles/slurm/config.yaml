@@ -2,5 +2,12 @@ cluster: "submit.py"
 cluster-status: "status.py"
 jobscript: "jobscript.sh"
 jobs: 10
+restart-times: 0
 immediate-submit: false
 verbose: true
+max-jobs-per-second: 1
+max-status-checks-per-second: 10
+local-cores: 1
+latency-wait: 60
+rerun-incomplete: true  # recomended for cluster submissions
+keep-going: false
