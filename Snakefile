@@ -176,7 +176,7 @@ rule clean_corpus:
     log: f"{log_dir}/clean_corpus.log"
     conda: "envs/base.yml"
     threads: workflow.cores
-    input: rules.data_train.output.src,rules.data_train.output.trg,rules.setup.output
+    input: rules.data_train.output.src,rules.data_train.output.trg
     output: src=f"{clean}/corpus.{src}.gz",trg=f"{clean}/corpus.{trg}.gz"
     params: prefix_input=f"{original}/corpus",prefix_output=f"{clean}/corpus"
     shell: '''bash pipeline/clean/clean-corpus.sh "{params.prefix_input}" "{params.prefix_output}" >> {log} 2>&1'''
