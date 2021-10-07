@@ -10,8 +10,8 @@ min_version("6.6.1")
 
 ### configuration
 
-configfile: 'config.yml'
 container: 'Singularity.sif'
+configfile: 'config.yml'
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
@@ -235,7 +235,8 @@ if train_s2s:
         message: "Training backward model"
         log: f"{log_dir}/train_backward.log"
         conda: "envs/base.yml"
-        threads: workflow.cores / 4
+        threads: gpus_num * 2
+        resources: gpu=gpus_num
         input:
             train_src=clean_corpus_src,train_trg=clean_corpus_trg,
             val_src=rules.data_val.output.src,val_trg=rules.data_val.output.trg,
@@ -250,6 +251,7 @@ if train_s2s:
         message: "Evaluating backward model"
         log: f"{log_dir}/eval_backward.log"
         conda: "envs/base.yml"
+        threads: gpus_num * 2
         resources: gpu=gpus_num
         priority: 50
         input: model=f'{backward_model}/{best_model}', datasets=rules.data_test.output
@@ -265,7 +267,7 @@ if augment_corpus:
         message: "Splitting monolingual trg dataset"
         log: f"{log_dir}/split_mono_trg.log"
         conda: "envs/base.yml"
-        threads: workflow.cores
+        threads: 4
         input: f"{clean}/mono.{trg}.gz"
         output: directory(f'{translated}/mono_trg')
         shell: 'bash pipeline/translate/split-mono.sh {input} {output} {split_length} >> {log} 2>&1'
@@ -274,7 +276,7 @@ if augment_corpus:
         message: "Translating monolingual trg dataset with backward model"
         log: f"{log_dir}/translate_mono_trg/{{part}}.log"
         conda: "envs/base.yml"
-        threads: workflow.cores / 4
+        threads: gpus_num * 2
         resources: gpu=gpus_num
         input:
             rules.marian.output.trainer,file=f'{translated}/mono_trg/file.{{part}}',
@@ -298,6 +300,7 @@ if augment_corpus:
         message: "Merging augmented dataset"
         log: f"{log_dir}/merge_augmented.log"
         conda: "envs/base.yml"
+        threads: workflow.cores
         input:
             src1=clean_corpus_src,src2=rules.collect_mono_trg.output,
             trg1=clean_corpus_trg,trg2=rules.split_mono_trg.input
@@ -310,7 +313,7 @@ rule teacher:
     message: "Training teacher"
     log: f"{log_dir}/train_teacher{{ens}}.log"
     conda: "envs/base.yml"
-    threads: workflow.cores / 4
+    threads: gpus_num*2
     resources: gpu=gpus_num
     input:
         train_src=f'{teacher_corpus}.{src}.gz',train_trg=f'{teacher_corpus}.{trg}.gz',
@@ -325,6 +328,7 @@ rule eval_teacher:
     message: "Evaluating teacher model"
     log: f"{log_dir}/eval_teacher{{ens}}.log"
     conda: "envs/base.yml"
+    threads: gpus_num*2
     resources: gpu=gpus_num
     priority: 50
     input:
@@ -345,7 +349,7 @@ checkpoint split_corpus:
     message: "Splitting the corpus to translate"
     log: f"{log_dir}/split_corpus.log"
     conda: "envs/base.yml"
-    threads: workflow.cores/4
+    threads: 4
     input: corpus_src=clean_corpus_src,corpus_trg=clean_corpus_trg
     output: directory(f"{translated}/corpus")
     shell: '''bash pipeline/translate/split-corpus.sh \
@@ -355,7 +359,7 @@ rule translate_corpus:
     message: "Translating corpus with teacher"
     log: f"{log_dir}/translate_corpus/{{part}}.log"
     conda: "envs/base.yml"
-    threads: workflow.cores / 4
+    threads: gpus_num*2
     resources: gpu=gpus_num
     input:
         rules.marian.output.trainer,
@@ -404,7 +408,7 @@ rule translate_mono_src:
     message: "Translating monolingual src dataset with teacher"
     log: f"{log_dir}/translate_mono_src/{{part}}.log"
     conda: "envs/base.yml"
-    threads: workflow.cores / 4
+    threads: gpus_num*2
     resources: gpu=gpus_num
     input:
         bin=rules.marian.output.trainer,
@@ -431,6 +435,7 @@ rule merge_translated:
     message: "Merging translated datasets"
     log: f"{log_dir}/merge_translated.log"
     conda: "envs/base.yml"
+    threads: workflow.cores
     input:
         src1=clean_corpus_src,src2=f"{clean}/mono.{src}.gz",
         trg1=rules.collect_corpus.output,trg2=rules.collect_mono_src.output
@@ -458,6 +463,7 @@ rule alignments:
     message: 'Training word alignment and lexical shortlists'
     log: f"{log_dir}/alignments.log"
     conda: "envs/base.yml"
+    threads: workflow.cores
     input: src_corpus=rules.ce_filer.output.src_corpus,trg_corpus=rules.ce_filer.output.trg_corpus,
         vocab=rules.train_vocab.output,
         fast_align=rules.fast_align.output.fast_align, atools=rules.fast_align.output.atools,
@@ -471,7 +477,7 @@ rule student:
     message: "Training student"
     log: f"{log_dir}/train_student.log"
     conda: "envs/base.yml"
-    threads: workflow.cores / 4
+    threads: gpus_num*2
     resources: gpu=gpus_num
     input:
         train_src=rules.ce_filer.output.src_corpus, train_trg=rules.ce_filer.output.trg_corpus,
@@ -488,6 +494,7 @@ rule eval_student:
     message: "Evaluating student model"
     log: f"{log_dir}/eval_student.log"
     conda: "envs/base.yml"
+    threads: gpus_num*2
     resources: gpu=gpus_num
     priority: 50
     input: model=rules.student.output.model, datasets=rules.data_test.output
@@ -502,7 +509,7 @@ rule finetune_student:
     message: "Fine-tuning student"
     log: f"{log_dir}/finetune_student.log"
     conda: "envs/base.yml"
-    threads: workflow.cores / 4
+    threads: gpus_num*2
     resources: gpu=gpus_num
     input:
         train_src=rules.ce_filer.output.src_corpus, train_trg=rules.ce_filer.output.trg_corpus,
@@ -519,6 +526,7 @@ rule eval_finetuned_student:
     message: "Evaluating fine-tuned student model"
     log: f"{log_dir}/eval_finetuned_student.log"
     conda: "envs/base.yml"
+    threads: gpus_num*2
     resources: gpu=gpus_num
     priority: 50
     input: model=rules.finetune_student.output.model, datasets=rules.data_test.output
@@ -531,6 +539,7 @@ rule quantize:
     message: "Quantization"
     log: f"{log_dir}/quntize.log"
     conda: "envs/base.yml"
+    threads: gpus_num*2
     resources: gpu=gpus_num
     threads: workflow.cores
     input:

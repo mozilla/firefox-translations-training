@@ -1,6 +1,6 @@
 dirs:
-  data-root: /data/rw/group-maml/bergamot
-  cuda: /usr/local/cuda-11.2
+  data-root: <shared-root>/bergamot
+  cuda: <cuda-dir>
 
 experiment:
   name: snakemake
@@ -18,8 +18,8 @@ experiment:
   bicleaner-threshold: 0.5
 
 resources:
-  gpus: 8
-  workspace: 9000
+  gpus: <gpus>
+  workspace: <workspace>
   # split corpus to parallelize translation
   split-length: 2000000
 

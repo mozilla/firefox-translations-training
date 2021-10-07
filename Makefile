@@ -3,12 +3,16 @@
 .ONESHELL:
 SHELL=/bin/bash
 
+### change these settings
 SHARED_ROOT=/data/rw/group-maml
+CUDA_DIR=/usr/loca/cuda
+GPUS=8
+WORKSPACE=12000
+CLUSTER_CORES=16
+CONFIG=config.prod.yml
+###
 
 CONDA_ACTIVATE=source $(SHARED_ROOT)/mambaforge/etc/profile.d/conda.sh ; conda activate ; conda activate
-LOCAL_GPUS=8
-
-all: install-conda, install-snakemake, activate, dry-run
 
 install-conda:
 	wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$$(uname)-$$(uname -m).sh
@@ -18,53 +22,66 @@ install-snakemake:
 	git submodule update --init --recursive
 	$(CONDA_ACTIVATE) base
 	mamba create -c conda-forge -c bioconda -n snakemake snakemake
-	conda install -c bioconda snakefmt
 
 activate:
 	$(CONDA_ACTIVATE) snakemake
 
-dry-run:
+install-singularity: activate
+	conda install singularity
+
+build-container: activate
+	sudo singularity build Singularity.sif Singularity.def
+
+pull-container: activate
+	singularity pull Singularity.sif library://evgenypavlov/default/bergamot:0.1
+
+install-git-modules:
+	bash pipeline/setup/install-git-modules.sh
+
+config:
+	cp configs/$(CONFIG) config.yml
+	sed -i "s/<cuda-dir>/$(CUDA_DIR)/" config.yml
+	sed -i "s/<shared-root>/$(SHARED_ROOT)/" config.yml
+	sed -i "s/<gpus>/$(GPUS)/" config.yml
+	sed -i "s/<workspace>/$(WORKSPACE)/" config.yml
+
+dry-run: activate
 	snakemake \
 	  --use-conda \
 	  --cores all \
 	  -n
 
+all: install-conda install-snakemake install-singularity pull-container install-git-modules config dry-run
+
 run-local: activate
 	snakemake \
-	  --use-conda --reason \
+	  --use-conda \
+	  --use-singularity \
+	  --reason \
 	  --cores all \
-	  --resources gpu=$(LOCAL_GPUS)
-	$(MAKE) report
+	  --resources gpu=$(GPUS) \
+	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR) --nv"
+
+run-slurm: activate
+	chmod +x profiles/slurm/*
+	snakemake \
+	  --use-conda \
+	  --use-singularity \
+	  --reason \
+	  --cores $(CLUSTER_CORES) \
+	  --profile=profiles/slurm \
+	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR) --nv"
 
 report: activate
 	REPORTS=$$(python -c "from config import reports_dir; print(reports_dir)"); \
 	mkdir -p $$REPORTS && \
 	snakemake --report $$REPORTS/report.html
 
-run-snakepit: activate
-	chmod +x profiles/snakepit/*
-	snakemake \
-	  --use-conda \
-	  --cores all \
-	  --profile=profiles/snakepit
-
-
-run-slurm: activate
-	chmod +x profiles/slurm/*
-	snakemake \
-	  --use-conda --reason --use-singularity \
-	  --cores 16 \
-	  --profile=profiles/slurm \
-	  --singularity-args="--bind $(SHARED_ROOT):$(SHARED_ROOT) --nv"
-
 dag:
 	snakemake --dag | dot -Tpdf > DAG.pdf
 
 lint:
 	snakemake --lint
-
-format:
-	snakefmt --line-length 120 Snakefile
 
 install-monitor:
 	conda create --name panoptes
@@ -80,27 +97,10 @@ run-with-monitor:
 	  --cores all \
 	  --wms-monitor http://127.0.0.1:5000
 
-
-install-singularity: activate
-	conda install singularity
-	pip install spython
-	apt-get -y install tzdata
-
 containerize: activate
+	pip install spython
 	snakemake --containerize > Dockerfile
 	spython recipe Dockerfile &> Singularity.def
-
-run-container: activate
-	snakemake \
-	  --use-conda --reason --use-singularity \
-	  --cores all \
-	  --resources gpu=$(LOCAL_GPUS) --singularity-args "--bind $(SHARED_ROOT):$(SHARED_ROOT) --nv"
-
-build-container: activate
-	singularity build Singularity.sif Singularity.def
-
-pull-container: activate
-	singularity pull Singularity.sif library://evgenypavlov/default/bergamot:sha256.269c037aeef3f050bb8aa67eae78307efa922207d6a78a553bf20fa969dce39f
 
 run-file-server: activate
 	python -m  http.server --directory $(SHARED_ROOT)/bergamot/reports 8000
@@ -128,3 +128,11 @@ install-snakepit-scheduler:
 	echo "http://10.2.224.243" > /root/.pitconnect.txt
 
 	pit status
+
+
+run-snakepit: activate
+	chmod +x profiles/snakepit/*
+	snakemake \
+	  --use-conda \
+	  --cores all \
+	  --profile=profiles/snakepit

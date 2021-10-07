@@ -30,10 +30,10 @@ if "resources" in job_properties:
         options += ['--gpus-per-node', str(resources['gpu'])]
         partition = GPU_PARTITION
 
-    if "threads" in job_properties:
-        options += ["--cpus-per-task", str(job_properties["threads"])]
-
 options += ['-p', partition]
+
+if "threads" in job_properties:
+    options += ["--cpus-per-task", str(job_properties["threads"])]
 
 try:
     cmd = ["sbatch"] + ["--parsable"] + options + [jobscript]

@@ -8,11 +8,10 @@ set -euo pipefail
 
 echo "######### Installing dependencies"
 
-echo "### Updating git submodules"
-git submodule update --init --recursive
+apt-get update
 
 echo "### Installing extra dependencies"
-sudo apt-get install -y pigz htop wget unzip parallel
+apt-get install -y pigz htop wget unzip parallel bc
 
 echo "### Installing marian dependencies"
 apt-get install -y build-essential libboost-system-dev libprotobuf10 \
