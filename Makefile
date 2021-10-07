@@ -40,8 +40,8 @@ install-git-modules:
 
 config:
 	cp configs/$(CONFIG) config.yml
-	sed -i "s/<cuda-dir>/\"$(CUDA_DIR)\"/" config.yml
-	sed -i "s/<shared-root>/\"$(SHARED_ROOT)\"/" config.yml
+	sed -i "s#<cuda-dir>#$(CUDA_DIR)#" config.yml
+	sed -i "s#<shared-root>#$(SHARED_ROOT)#" config.yml
 	sed -i "s/<gpus>/$(GPUS)/" config.yml
 	sed -i "s/<workspace>/$(WORKSPACE)/" config.yml
 
