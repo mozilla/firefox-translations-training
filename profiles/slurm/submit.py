@@ -2,6 +2,7 @@
 import re
 import sys
 import subprocess as sp
+import os
 
 from snakemake.utils import read_job_properties
 
@@ -29,6 +30,8 @@ if "resources" in job_properties:
     if 'gpu' in resources:
         options += ['--gpus-per-node', str(resources['gpu'])]
         partition = GPU_PARTITION
+        cuda_dir = os.environ['CUDA_DIR']
+        options += ['--export', f'SINGULARITY_BIND="{cuda_dir}"']
 
 options += ['-p', partition]
 

@@ -64,13 +64,14 @@ run-local: activate
 
 run-slurm: activate
 	chmod +x profiles/slurm/*
+	export CUDA_DIR=$(CUDA_DIR)
 	snakemake \
 	  --use-conda \
 	  --use-singularity \
 	  --reason \
 	  --cores $(CLUSTER_CORES) \
 	  --profile=profiles/slurm \
-	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR) --nv"
+	  --singularity-args="--bind $(SHARED_ROOT) --nv"
 
 report: activate
 	REPORTS=$$(python -c "from config import reports_dir; print(reports_dir)"); \
