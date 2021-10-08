@@ -1,5 +1,5 @@
 dirs:
-  data-root: <shared-root>/bergamot
+  data-root: <shared-root>
   cuda: <cuda-dir>
 
 experiment:

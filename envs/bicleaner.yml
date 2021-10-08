@@ -9,5 +9,6 @@ dependencies:
   - scikit-learn==0.22.1
   - fasttext==0.9.2
   - numpy>=1.18.1
+  - cmake=3.21.1
   - pip:
     - bicleaner==0.14
