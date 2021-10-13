@@ -6,8 +6,9 @@ import os
 
 from snakemake.utils import read_job_properties
 
-GPU_PARTITION = 'p1'
+MULTI_GPU_PARTITION = 'p1'
 CPU_PARTITION = 'p2'
+SINGLE_GPU_PARTITION = 'p3'
 
 jobscript = sys.argv[-1]
 job_properties = read_job_properties(jobscript)
@@ -28,10 +29,16 @@ if "resources" in job_properties:
     resources = job_properties["resources"]
 
     if 'gpu' in resources:
-        options += ['--gpus-per-node', str(resources['gpu'])]
-        partition = GPU_PARTITION
+        num_gpu = str(resources['gpu'])
+        options += ['--gpus-per-node', num_gpu]
+
+        if num_gpu == '1':
+            partition = SINGLE_GPU_PARTITION
+        else:
+            partition = MULTI_GPU_PARTITION
+
         cuda_dir = os.environ['CUDA_DIR']
-        options += ['--export', f'SINGULARITY_BIND="{cuda_dir}"']
+        options += ['--export', f'ALL,SINGULARITY_BIND="{cuda_dir}"']
 
 options += ['-p', partition]
 

@@ -5,7 +5,7 @@ SHELL=/bin/bash
 
 ### change these settings
 SHARED_ROOT=/data/rw/group-maml
-CUDA_DIR=/usr/loca/cuda
+CUDA_DIR=/usr/local/cuda
 GPUS=8
 WORKSPACE=12000
 CLUSTER_CORES=16
@@ -19,15 +19,18 @@ install-conda:
 	bash Mambaforge-$$(uname)-$$(uname -m).sh -p $(SHARED_ROOT)/mambaforge
 
 install-snakemake:
-	git submodule update --init --recursive
 	$(CONDA_ACTIVATE) base
-	mamba create -c conda-forge -c bioconda -n snakemake snakemake
+	mamba create -c conda-forge -c bioconda -n snakemake snakemake==6.9.1
 
 activate:
 	$(CONDA_ACTIVATE) snakemake
 
 install-singularity: activate
 	conda install singularity
+
+load-singularity:
+	module load gcc
+	module load singularity
 
 build-container: activate
 	sudo singularity build Singularity.sif Singularity.def
@@ -40,10 +43,10 @@ install-git-modules:
 
 config:
 	cp configs/$(CONFIG) config.yml
-	sed -i "s#<cuda-dir>#$(CUDA_DIR)#" config.yml
-	sed -i "s#<shared-root>#$(SHARED_ROOT)#" config.yml
-	sed -i "s/<gpus>/$(GPUS)/" config.yml
-	sed -i "s/<workspace>/$(WORKSPACE)/" config.yml
+	sed -i .bak "s#<cuda-dir>#$(CUDA_DIR)#" config.yml
+	sed -i .bak "s#<shared-root>#$(SHARED_ROOT)#" config.yml
+	sed -i .bak "s/<gpus>/$(GPUS)/" config.yml
+	sed -i .bak "s/<workspace>/$(WORKSPACE)/" config.yml
 
 dry-run: activate
 	snakemake \
@@ -51,7 +54,16 @@ dry-run: activate
 	  --cores all \
 	  -n
 
-all: install-conda install-snakemake install-singularity pull-container install-git-modules config dry-run
+all: | install-conda install-snakemake load-singularity pull-container install-git-modules config dry-run
+
+run-local-no-container:
+	snakemake \
+	  --use-conda \
+	  --use-singularity \
+	  --reason \
+	  --cores all \
+	  --resources gpu=$(GPUS) \
+	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR),/tmp --nv --containall"
 
 run-local: activate
 	snakemake \
@@ -60,7 +72,7 @@ run-local: activate
 	  --reason \
 	  --cores all \
 	  --resources gpu=$(GPUS) \
-	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR) --nv"
+	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR),/tmp --nv --containall"
 
 run-slurm: activate
 	chmod +x profiles/slurm/*
@@ -69,9 +81,10 @@ run-slurm: activate
 	  --use-conda \
 	  --use-singularity \
 	  --reason \
+	  --verbose \
 	  --cores $(CLUSTER_CORES) \
 	  --profile=profiles/slurm \
-	  --singularity-args="--bind $(SHARED_ROOT) --nv"
+	  --singularity-args="--bind $(SHARED_ROOT),/tmp --nv --containall"
 
 report: activate
 	REPORTS=$$(python -c "from config import reports_dir; print(reports_dir)"); \
