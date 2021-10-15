@@ -1,4 +1,4 @@
-import json
+import yaml
 import os
 
 from snakemake.utils import min_version
@@ -160,7 +160,7 @@ CUDA_DIR="{cuda_dir}"'''
 results = [f'{exported}/model.{src}{trg}.intgemm.alphas.bin.gz',
            f'{exported}/lex.50.50.{src}{trg}.s2t.bin.gz',
            f'{exported}/vocab.{src}{trg}.spm.gz',
-           f'{experiment_dir}/config.json',
+           f'{experiment_dir}/config.yml',
            expand(f'{teacher_dir}{{ens}}/eval',ens=ensemble),
            f'{student_dir}/eval',
            f'{student_finetuned_dir}/eval',
@@ -218,12 +218,12 @@ ruleorder: teacher > eval_teacher
 
 rule experiment:
     message: "Saving experiment metadata"
-    output: f'{experiment_dir}/config.json'
+    output: f'{experiment_dir}/config.yml'
     priority: 100
     run:
         os.makedirs(experiment_dir, exist_ok=True)
-        with open(f'{experiment_dir}/config.json', 'w') as f:
-            json.dump(config, f)
+        with open(f'{experiment_dir}/config.yml', 'w') as f:
+            yaml.dump(config, f)
 
 # setup
 
