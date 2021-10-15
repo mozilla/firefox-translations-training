@@ -50,7 +50,7 @@ dry-run:
 	  --use-conda \
 	  --cores all \
 	  --configfile $(CONFIG) \
-	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) deps=True  \
+	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) deps=true  \
 	  -n
 
 run-local-no-container:
@@ -61,7 +61,7 @@ run-local-no-container:
 	  --cores all \
 	  --resources gpu=$(GPUS) \
 	  --configfile $(CONFIG) \
-	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) deps=True
+	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) deps=true
 
 run-local:
 	$(CONDA_ACTIVATE) snakemake

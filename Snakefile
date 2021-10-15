@@ -84,7 +84,7 @@ container: 'Singularity.sif'
 #├ logs
 
 
-install_deps = str(config['deps']) == 'True'
+install_deps = config['deps'] == 'true'
 data_root_dir = config['root']
 cuda_dir = config['cuda']
 gpus_num = config['gpus']
@@ -166,6 +166,9 @@ results = [f'{exported}/model.{src}{trg}.intgemm.alphas.bin.gz',
            f'{student_finetuned_dir}/eval',
            f'{speed}/eval',
            ]
+
+if install_deps:
+    results.append("/tmp/flags/setup.done")
 
 if not backward_model:
     backward_model = s2s
