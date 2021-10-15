@@ -9,26 +9,20 @@ CUDA_DIR=/usr/local/cuda
 GPUS=8
 WORKSPACE=12000
 CLUSTER_CORES=16
-CONFIG=config.prod.yml
+CONFIG=configs/config.prod.yml
+CONDA_PATH=$(SHARED_ROOT)/mambaforge
 ###
 
-CONDA_ACTIVATE=source $(SHARED_ROOT)/mambaforge/etc/profile.d/conda.sh ; conda activate ; conda activate
+CONDA_ACTIVATE=source $(CONDA_PATH)/etc/profile.d/conda.sh ; conda activate ; conda activate
 
 ### 2. setup
 
 install-git-modules:
 	git submodule update --init --recursive
 
-config:
-	cp configs/$(CONFIG) config.yml
-	sed -i "s#<cuda-dir>#$(CUDA_DIR)#" config.yml
-	sed -i "s#<shared-root>#$(SHARED_ROOT)#" config.yml
-	sed -i "s/<gpus>/$(GPUS)/" config.yml
-	sed -i "s/<workspace>/$(WORKSPACE)/" config.yml
-
 install-conda:
 	wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$$(uname)-$$(uname -m).sh
-	bash Mambaforge-$$(uname)-$$(uname -m).sh -p $(SHARED_ROOT)/mambaforge
+	bash Mambaforge-$$(uname)-$$(uname -m).sh -b -p $(CONDA_PATH)
 
 install-snakemake:
 	$(CONDA_ACTIVATE) base
@@ -47,7 +41,7 @@ pull-container:
 
 # conda init and restart shell
 # or
-# . $(SHARED_ROOT)/mambaforge/etc/profile.d/conda.sh && conda activate
+# . $(CONDA_PATH)/etc/profile.d/conda.sh && conda activate
 #
 # conda activate snakemake
 
@@ -55,17 +49,30 @@ dry-run:
 	snakemake \
 	  --use-conda \
 	  --cores all \
+	  --configfile $(CONFIG) \
+	  --config cuda="$(CUDA_DIR)" \
+	  --config root="$(SHARED_ROOT)" \
+	  --config gpus=$(GPUS) \
+	  --config workspace=$(WORKSPACE) \
+	  --config deps=True \
 	  -n
 
 run-local-no-container:
-	export INSTALL_DEPS=true
+	$(CONDA_ACTIVATE) snakemake
 	snakemake \
 	  --use-conda \
 	  --reason \
 	  --cores all \
-	  --resources gpu=$(GPUS)
+	  --resources gpu=$(GPUS) \
+	  --configfile $(CONFIG) \
+	  --config cuda="$(CUDA_DIR)" \
+	  --config root="$(SHARED_ROOT)" \
+	  --config gpus=$(GPUS) \
+	  --config workspace=$(WORKSPACE) \
+	  --config deps=True
 
 run-local:
+	$(CONDA_ACTIVATE) snakemake
 	module load singularity
 	snakemake \
 	  --use-conda \
@@ -73,9 +80,15 @@ run-local:
 	  --reason \
 	  --cores all \
 	  --resources gpu=$(GPUS) \
+	  --configfile $(CONFIG) \
+	  --config cuda="$(CUDA_DIR)" \
+	  --config root="$(SHARED_ROOT)" \
+	  --config gpus=$(GPUS) \
+	  --config workspace=$(WORKSPACE) \
 	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR) --nv"
 
 run-slurm:
+	$(CONDA_ACTIVATE) snakemake
 	chmod +x profiles/slurm/*
 	export CUDA_DIR=$(CUDA_DIR)
 	module load singularity
@@ -85,6 +98,10 @@ run-slurm:
 	  --reason \
 	  --verbose \
 	  --cores $(CLUSTER_CORES) \
+	  --config cuda="$(CUDA_DIR)" \
+	  --config root="$(SHARED_ROOT)" \
+	  --config gpus=$(GPUS) \
+	  --config workspace=$(WORKSPACE) \
 	  --profile=profiles/slurm \
 	  --singularity-args="--bind $(SHARED_ROOT) --nv"
 

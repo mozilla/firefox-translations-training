@@ -1,6 +1,10 @@
-dirs:
-  data-root: <shared-root>
-  cuda: <cuda-dir>
+
+root: /root
+cuda: /usr/local/conda
+install-deps: false
+gpus: 8
+workspace: 9000
+
 
 experiment:
   name: snakemake
@@ -17,11 +21,10 @@ experiment:
 
   bicleaner-threshold: 0.5
 
-resources:
-  gpus: <gpus>
-  workspace: <workspace>
   # split corpus to parallelize translation
   split-length: 2000000
+
+
 
 datasets:
   # parallel corpus
