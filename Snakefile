@@ -10,8 +10,8 @@ min_version("6.6.1")
 
 ### configuration
 
-container: 'Singularity.sif'
 configfile: 'config.yml'
+container: 'Singularity.sif'
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
@@ -88,6 +88,17 @@ rule experiment:
     '''
 
 # setup
+
+if os.getenv('INSTALL_DEPS'):
+    rule setup:
+        message: "Installing dependencies"
+        log: f"{log_dir}/install-deps.log"
+        conda: "envs/base.yml"
+        priority: 99
+        group: 'setup'
+        output: touch("/tmp/flags/setup.done")  # specific to local machine
+        shell: 'bash pipeline/setup/install-deps.sh >> {log} 2>&1'
+
 
 rule marian:
     message: "Compiling marian"
