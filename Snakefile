@@ -218,12 +218,12 @@ ruleorder: teacher > eval_teacher
 
 rule experiment:
     message: "Saving experiment metadata"
-    output: f'{experiment_dir}/config.yaml'
+    output: f'{experiment_dir}/config.json'
     priority: 100
     run:
         os.makedirs(experiment_dir, exist_ok=True)
-        with open(f'{experiment_dir}/config.json', 'w'):
-            json.dump(config)
+        with open(f'{experiment_dir}/config.json', 'w') as f:
+            json.dump(config, f)
 
 # setup
 
