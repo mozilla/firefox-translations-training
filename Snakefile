@@ -89,7 +89,7 @@ rule experiment:
 
 # setup
 
-if os.getenv('INSTALL_DEPS'):
+if install_deps:
     rule setup:
         message: "Installing dependencies"
         log: f"{log_dir}/install-deps.log"

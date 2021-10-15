@@ -3,6 +3,8 @@ import os
 
 config = yaml.load(open('config.yml'), Loader=yaml.FullLoader)
 
+install_deps = os.getenv('INSTALL_DEPS')
+
 # dirs
 data_root_dir = config['dirs']['data-root']
 cuda_dir = config['dirs']['cuda']

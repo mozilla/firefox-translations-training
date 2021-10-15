@@ -63,8 +63,7 @@ run-local-no-container:
 	  --use-conda \
 	  --reason \
 	  --cores all \
-	  --resources gpu=$(GPUS) \
-	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR) --nv"
+	  --resources gpu=$(GPUS)
 
 run-local:
 	module load singularity
