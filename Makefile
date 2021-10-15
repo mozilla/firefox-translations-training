@@ -50,11 +50,7 @@ dry-run:
 	  --use-conda \
 	  --cores all \
 	  --configfile $(CONFIG) \
-	  --config cuda="$(CUDA_DIR)" \
-	  --config root="$(SHARED_ROOT)" \
-	  --config gpus=$(GPUS) \
-	  --config workspace=$(WORKSPACE) \
-	  --config deps=True \
+	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) deps=True  \
 	  -n
 
 run-local-no-container:
@@ -65,11 +61,7 @@ run-local-no-container:
 	  --cores all \
 	  --resources gpu=$(GPUS) \
 	  --configfile $(CONFIG) \
-	  --config cuda="$(CUDA_DIR)" \
-	  --config root="$(SHARED_ROOT)" \
-	  --config gpus=$(GPUS) \
-	  --config workspace=$(WORKSPACE) \
-	  --config deps=True
+	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) deps=True
 
 run-local:
 	$(CONDA_ACTIVATE) snakemake
@@ -81,10 +73,7 @@ run-local:
 	  --cores all \
 	  --resources gpu=$(GPUS) \
 	  --configfile $(CONFIG) \
-	  --config cuda="$(CUDA_DIR)" \
-	  --config root="$(SHARED_ROOT)" \
-	  --config gpus=$(GPUS) \
-	  --config workspace=$(WORKSPACE) \
+	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) \
 	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR) --nv"
 
 run-slurm:
@@ -98,10 +87,8 @@ run-slurm:
 	  --reason \
 	  --verbose \
 	  --cores $(CLUSTER_CORES) \
-	  --config cuda="$(CUDA_DIR)" \
-	  --config root="$(SHARED_ROOT)" \
-	  --config gpus=$(GPUS) \
-	  --config workspace=$(WORKSPACE) \
+	  --configfile $(CONFIG) \
+	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) \
 	  --profile=profiles/slurm \
 	  --singularity-args="--bind $(SHARED_ROOT) --nv"
 
