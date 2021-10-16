@@ -38,7 +38,7 @@ for src_path in "${datasets_dir}"/*."${SRC}"; do
       --shortlist "${shortlist}" false \
       --int8shiftAlphaAll |
     tee "${eval_dir}/${prefix}.${TRG}" |
-    sacrebleu -d -l "${SRC}-${TRG}" "${datasets_dir}/${prefix}.${TRG}" |
+    sacrebleu -d --score-only -l "${SRC}-${TRG}" "${datasets_dir}/${prefix}.${TRG}" |
     tee "${eval_dir}/${prefix}.${TRG}.bleu"
 
   test -e "${eval_dir}/${prefix}.${TRG}.bleu" || exit 1

@@ -96,12 +96,22 @@ run-slurm:
 #	  --singularity-args="--bind $(SHARED_ROOT),/tmp --nv --containall"
 
 
-### extra
+### 4. create a report
 
 report:
-	REPORTS=$$(python -c "from config import reports_dir; print(reports_dir)"); \
+	$(CONDA_ACTIVATE) snakemake
+	REPORTS=$(SHARED_ROOT)/reports DT=$$(date '+%Y-%m-%d_%H-%M'); \
 	mkdir -p $$REPORTS && \
-	snakemake --report $$REPORTS/report.html
+	snakemake \
+		--report $${REPORTS}/$${DT}_report.html \
+		--configfile $(CONFIG) \
+		--config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE)
+
+run-file-server:
+	$(CONDA_ACTIVATE) snakemake
+	python -m  http.server --directory $(SHARED_ROOT)/reports 8000
+
+### extra
 
 dag:
 	snakemake --dag | dot -Tpdf > DAG.pdf
@@ -110,6 +120,7 @@ lint:
 	snakemake --lint
 
 install-monitor:
+	$(CONDA_ACTIVATE) base
 	conda create --name panoptes
 	conda install -c panoptes-organization panoptes-ui
 
@@ -122,14 +133,6 @@ run-with-monitor:
 	  --use-conda \
 	  --cores all \
 	  --wms-monitor http://127.0.0.1:5000
-
-containerize:
-	pip install spython
-	snakemake --containerize > Dockerfile
-	spython recipe Dockerfile &> Singularity.def
-
-run-file-server:
-	python -m  http.server --directory $(SHARED_ROOT)/bergamot/reports 8000
 
 tensorboard:
 	MODELS=$$(python -c "from config import models_dir; print(models_dir)"); \
@@ -154,7 +157,6 @@ install-snakepit-scheduler:
 	echo "http://10.2.224.243" > /root/.pitconnect.txt
 
 	pit status
-
 
 run-snakepit:
 	chmod +x profiles/snakepit/*

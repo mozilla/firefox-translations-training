@@ -43,7 +43,7 @@ for src_path in "${datasets_dir}"/*."${src}"; do
       --log "${eval_dir}/${prefix}.log" \
       -d ${GPUS} |
     tee "${eval_dir}/${prefix}.${trg}" |
-    sacrebleu -d -l "${src}-${trg}" "${datasets_dir}/${prefix}.${trg}"  |
+    sacrebleu -d --score-only -l "${src}-${trg}" "${datasets_dir}/${prefix}.${trg}"  |
     tee "${eval_dir}/${prefix}.${trg}.bleu"
 
   test -e "${eval_dir}/${prefix}.${trg}.bleu" || exit 1
