@@ -19,6 +19,10 @@ test -v CLEAN_TOOLS
 
 echo "### CLeaning ${input}"
 
+dir="$(dirname "${output}")"
+tmp="${dir}/tmp"
+mkdir -p "${tmp}"
+
 ######################################################################
 echo "### Basic preprocessing"
 test -s "${output}.${lang}.nrm.gz" ||
@@ -31,7 +35,7 @@ test -s "${output}.${lang}.nrm.gz" ||
 echo "### Deduplication"
 test -s "${output}.${lang}.nrm.uniq.gz" ||
   pigz -dc "${output}.${lang}.nrm.gz" |
-  LC_ALL=C sort -S 10G -T "${output}" |
+  LC_ALL=C sort -S 10G -T "${tmp}" |
   uniq |
   pigz >"${output}.${lang}.nrm.uniq.gz"
 
@@ -56,7 +60,7 @@ pigz >"${output}.${lang}.gz"
 test -s "${output}.${lang}.gz" || exit 1
 
 echo "### Remove data from intermediate steps"
-rm -f "${output}".*.nrm.gz "${output}".*.nrm.uniq.gz "${output}".*.langid.gz
+rm -rf "${output}".*.nrm.gz "${output}".*.nrm.uniq.gz "${output}".*.langid.gz "${tmp}"
 
 echo "### Clean data is written to  ${output}"
 

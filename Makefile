@@ -17,23 +17,23 @@ CONDA_ACTIVATE=source $(CONDA_PATH)/etc/profile.d/conda.sh ; conda activate ; co
 
 ### 2. setup
 
-install-git-modules:
+git-modules:
 	git submodule update --init --recursive
 
-install-conda:
+conda:
 	wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$$(uname)-$$(uname -m).sh
 	bash Mambaforge-$$(uname)-$$(uname -m).sh -b -p $(CONDA_PATH)
 
-install-snakemake:
+snakemake:
 	$(CONDA_ACTIVATE) base
 	mamba create -c conda-forge -c bioconda -n snakemake snakemake==6.9.1
 
 # build container image for cluster and run-local modes (preferred)
-build-container:
+build:
 	sudo singularity build Singularity.sif Singularity.def
 
 # or pull container image from a registry if there is no sudo
-pull-container:
+pull:
 	singularity pull Singularity.sif library://evgenypavlov/default/bergamot2:latest
 
 
