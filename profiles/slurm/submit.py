@@ -6,9 +6,12 @@ import os
 
 from snakemake.utils import read_job_properties
 
-MULTI_GPU_PARTITION = 'p1'
-CPU_PARTITION = 'p2'
-SINGLE_GPU_PARTITION = 'p3'
+# todo: move to another config
+MULTI_GPU_PARTITION = 'pascal'                                                                                                                                                                                                                                                                                                                                     [20/1985]
+CPU_PARTITION = 'skylake'
+SINGLE_GPU_PARTITION = 'pascal'
+CPU_ACCOUNT = 'T2-CS119-CPU'
+GPU_ACCOUNT = 'T2-CS119-GPU'
 
 jobscript = sys.argv[-1]
 job_properties = read_job_properties(jobscript)
@@ -25,12 +28,16 @@ else:
 options += ['--job-name', name]
 
 partition = CPU_PARTITION
+account = CPU_ACCOUNT
+
 if "resources" in job_properties:
     resources = job_properties["resources"]
 
     if 'gpu' in resources:
         num_gpu = str(resources['gpu'])
         options += [f'--gres=gpu:{num_gpu}']
+
+        account = GPU_ACCOUNT
 
         if num_gpu == '1':
             partition = SINGLE_GPU_PARTITION
@@ -42,6 +49,7 @@ if "resources" in job_properties:
             options += ['--export', f'ALL,SINGULARITY_BIND="{cuda_dir}"']
 
 options += ['-p', partition]
+options += ['-A', account]
 
 if "threads" in job_properties:
     options += ["--cpus-per-task", str(job_properties["threads"])]
