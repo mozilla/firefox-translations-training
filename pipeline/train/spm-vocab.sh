@@ -6,14 +6,17 @@
 #   bash spm-vocab.sh <corpus_src> <corpus_trg> <vocab_output>
 #
 
+set -x
+set -euo pipefail
+
 test -v MARIAN
 
 corpus_src=$1
 corpus_trg=$2
 vocab_output=$3
 
-vocab_dir=$(dirname vocab_output)
-mkdir -p vocab_dir
+vocab_dir=$(dirname "${vocab_output}")
+mkdir -p "${vocab_dir}"
 
 pigz -dc "${corpus_src}" | shuf | head -n 20M >"${vocab_dir}/data.txt"
 pigz -dc "${corpus_trg}" | shuf | head -n 20M >>"${vocab_dir}/data.txt"
