@@ -7,7 +7,7 @@ import os
 from snakemake.utils import read_job_properties
 
 # todo: move to another config
-MULTI_GPU_PARTITION = 'pascal'                                                                                                                                                                                                                                                                                                                                     [20/1985]
+MULTI_GPU_PARTITION = 'pascal'
 CPU_PARTITION = 'skylake'
 SINGLE_GPU_PARTITION = 'pascal'
 CPU_ACCOUNT = 'T2-CS119-CPU'
