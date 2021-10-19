@@ -49,11 +49,12 @@ dry-run:
 	snakemake \
 	  --use-conda \
 	  --cores all \
+	  --reason \
 	  --configfile $(CONFIG) \
 	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) deps=true  \
 	  -n
 
-run-local-no-container:
+run-local:
 	$(CONDA_ACTIVATE) snakemake
 	snakemake \
 	  --use-conda \
@@ -63,7 +64,7 @@ run-local-no-container:
 	  --configfile $(CONFIG) \
 	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) deps=true
 
-run-local:
+run-local-container:
 	$(CONDA_ACTIVATE) snakemake
 	module load singularity
 	snakemake \
@@ -77,6 +78,17 @@ run-local:
 	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR) --nv"
 
 run-slurm:
+	$(CONDA_ACTIVATE) snakemake
+	chmod +x profiles/slurm/*
+	snakemake \
+	  --use-conda \
+	  --reason \
+	  --cores $(CLUSTER_CORES) \
+	  --configfile $(CONFIG) \
+	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) \
+	  --profile=profiles/slurm
+
+run-slurm-container:
 	$(CONDA_ACTIVATE) snakemake
 	chmod +x profiles/slurm/*
 	export CUDA_DIR=$(CUDA_DIR)

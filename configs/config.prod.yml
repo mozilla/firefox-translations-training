@@ -85,7 +85,7 @@ datasets:
     - sacrebleu_wmt20
     - sacrebleu_wmt18
     - sacrebleu_wmt16
-    - sacrebleu_wmt1
+    - sacrebleu_wmt13
   # monolingual datasets (ex. paracrawl-mono_paracrawl8, commoncrawl_wmt16, news-crawl_news.2020)
   # to be translated by the teacher model
   mono-src:

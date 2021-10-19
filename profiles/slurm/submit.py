@@ -30,15 +30,16 @@ if "resources" in job_properties:
 
     if 'gpu' in resources:
         num_gpu = str(resources['gpu'])
-        options += ['--gpus-per-node', num_gpu]
+        options += [f'--gres=gpu:{num_gpu}']
 
         if num_gpu == '1':
             partition = SINGLE_GPU_PARTITION
         else:
             partition = MULTI_GPU_PARTITION
 
-        cuda_dir = os.environ['CUDA_DIR']
-        options += ['--export', f'ALL,SINGULARITY_BIND="{cuda_dir}"']
+        cuda_dir = os.getenv('CUDA_DIR')
+        if cuda_dir:
+            options += ['--export', f'ALL,SINGULARITY_BIND="{cuda_dir}"']
 
 options += ['-p', partition]
 
