@@ -257,7 +257,7 @@ rule fast_align:
     message: "Compiling fast align"
     log: f"{log_dir}/compile-fast-align.log"
     conda: "envs/base.yml"
-    threads: workflow.cores
+    threads: 4
     group: 'setup'
     output: fast_align=protected(f"{bin}/fast_align"), atools=protected(f"{bin}/atools")
     shell: 'bash pipeline/setup/compile-fast-align.sh {fast_align_build} {threads}  >> {log} 2>&1'
@@ -266,7 +266,7 @@ rule extract_lex:
     message: "Compiling fast align"
     log: f"{log_dir}/compile-extract-lex.log"
     conda: "envs/base.yml"
-    threads: workflow.cores
+    threads: 4
     group: 'setup'
     output: protected(f"{bin}/extract_lex")
     shell: 'bash pipeline/setup/compile-extract-lex.sh {extract_lex_build} {threads} >> {log} 2>&1'
@@ -277,7 +277,7 @@ rule data_train:
     message: "Downloading training corpus"
     log: f"{log_dir}/data_train.log"
     conda: "envs/base.yml"
-    threads: 4
+    threads: 1
     group: 'data'
     output: src=f"{original}/corpus.{src}.gz",trg=f"{original}/corpus.{trg}.gz"
     params: prefix=f"{original}/corpus"
@@ -287,7 +287,7 @@ rule data_val:
     message: "Downloading validation corpus"
     log: f"{log_dir}/data_val.log"
     conda: "envs/base.yml"
-    threads: 4
+    threads: 1
     group: 'data'
     output: src=f"{original}/devset.{src}.gz",trg=f"{original}/devset.{trg}.gz"
     params: prefix=f"{original}/devset"
@@ -297,7 +297,7 @@ rule data_test:
     message: "Downloading test corpus"
     log: f"{log_dir}/data_test.log"
     conda: "envs/base.yml"
-    threads: 4
+    threads: 1
     group: 'data'
     output: expand(f"{evaluation}/{{dataset}}.{{lng}}",dataset=eval_datasets,lng=[src, trg])
     shell: 'bash pipeline/data/download-eval.sh "{evaluation}" "{cache_dir}" {eval_datasets} >> {log} 2>&1'
@@ -306,7 +306,7 @@ rule data_mono_src:
     message: "Downloading monolingual dataset for source language"
     log: f"{log_dir}/data_mono_src.log"
     conda: "envs/base.yml"
-    threads: 4
+    threads: 1
     output: f'{original}/mono.{src}.gz'
     shell: '''bash pipeline/data/download-mono.sh \
                 "{src}" "{mono_max_sent_src}" "{original}/mono" "{cache_dir}" {mono_src_datasets} >> {log} 2>&1'''
@@ -316,7 +316,7 @@ if mono_trg_datasets:
         message: "Downloading monolingual dataset for target language"
         log: f"{log_dir}/data_mono_trg.log"
         conda: "envs/base.yml"
-        threads: 4
+        threads: 1
         output: f'{original}/mono.{trg}.gz'
         shell: '''bash pipeline/data/download-mono.sh \
                   "{trg}" "{mono_max_sent_trg}" "{original}/mono" "{cache_dir}" {mono_trg_datasets} >> {log} 2>&1'''
@@ -372,7 +372,7 @@ rule train_vocab:
     message: "Training spm vocab"
     log: f"{log_dir}/train_vocab.log"
     conda: "envs/base.yml"
-    threads: workflow.cores / 4
+    threads: 4
     resources: gpu=1
     input:
         bin=rules.marian.output.vocab,
@@ -419,7 +419,7 @@ if augment_corpus:
         message: "Splitting monolingual trg dataset"
         log: f"{log_dir}/split_mono_trg.log"
         conda: "envs/base.yml"
-        threads: 4
+        threads: 1
         input: f"{clean}/mono.{trg}.gz"
         output: directory(f'{translated}/mono_trg')
         shell: 'bash pipeline/translate/split-mono.sh {input} {output} {split_length} >> {log} 2>&1'
@@ -440,7 +440,7 @@ if augment_corpus:
         message: "Collecting translated mono trg dataset"
         log: f"{log_dir}/collect_mono_trg.log"
         conda: "envs/base.yml"
-        threads: workflow.cores
+        threads: 1
         input:
             lambda wildcards: expand(f"{translated}/mono_trg/file.{{part}}.out",
                 part=find_parts(wildcards, checkpoints.split_mono_trg))
@@ -452,7 +452,7 @@ if augment_corpus:
         message: "Merging augmented dataset"
         log: f"{log_dir}/merge_augmented.log"
         conda: "envs/base.yml"
-        threads: workflow.cores
+        threads: 4
         input:
             src1=clean_corpus_src,src2=rules.collect_mono_trg.output,
             trg1=clean_corpus_trg,trg2=rules.split_mono_trg.input
@@ -501,7 +501,7 @@ checkpoint split_corpus:
     message: "Splitting the corpus to translate"
     log: f"{log_dir}/split_corpus.log"
     conda: "envs/base.yml"
-    threads: 4
+    threads: 1
     input: corpus_src=clean_corpus_src,corpus_trg=clean_corpus_trg
     output: directory(f"{translated}/corpus")
     shell: '''bash pipeline/translate/split-corpus.sh \
@@ -536,7 +536,7 @@ rule collect_corpus:
     message: "Collecting translated corpus"
     log: f"{log_dir}/collect_corpus.log"
     conda: "envs/base.yml"
-    threads: workflow.cores/4
+    threads: 4
     group: 'translate_corpus'
     input:
         lambda wildcards: expand(f"{translated}/corpus/file.{{part}}.nbest.out",
@@ -551,7 +551,7 @@ checkpoint split_mono_src:
     message: "Splitting monolingual src dataset"
     log: f"{log_dir}/split_mono_src.log"
     conda: "envs/base.yml"
-    threads: workflow.cores/4
+    threads: 1
     input: f"{clean}/mono.{src}.gz"
     output: directory(f'{translated}/mono_src')
     shell: 'bash pipeline/translate/split-mono.sh {input} {output} {split_length} >> {log} 2>&1'
@@ -573,7 +573,7 @@ rule collect_mono_src:
     message: "Collecting translated mono src dataset"
     log: f"{log_dir}/collect_mono_src.log"
     conda: "envs/base.yml"
-    threads: workflow.cores/4
+    threads: 1
     input:
        lambda wildcards: expand(f"{translated}/mono_src/file.{{part}}.out",
            part=find_parts(wildcards, checkpoints.split_mono_src))
@@ -587,7 +587,7 @@ rule merge_translated:
     message: "Merging translated datasets"
     log: f"{log_dir}/merge_translated.log"
     conda: "envs/base.yml"
-    threads: workflow.cores
+    threads: 4
     input:
         src1=clean_corpus_src,src2=f"{clean}/mono.{src}.gz",
         trg1=rules.collect_corpus.output,trg2=rules.collect_mono_src.output
@@ -723,7 +723,7 @@ rule export:
     log: f"{log_dir}/export.log"
     conda: "envs/base.yml"
     group: 'export'
-    threads: workflow.cores
+    threads: 1
     input:
         model=rules.quantize.output.model,shortlist=rules.alignments.output.shortlist,
         vocab=rules.train_vocab.output,marian=rules.marian.output.converter
