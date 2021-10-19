@@ -245,7 +245,8 @@ rule marian:
     message: "Compiling marian"
     log: f"{log_dir}/compile-marian.log"
     conda: "envs/base.yml"
-    threads: workflow.cores
+    # CDS3 enforces max 3 CPUs per GPU
+    threads: 3
     resources: gpu=1
     group: 'setup'
     output: trainer=protected(f"{marian_dir}/marian"),decoder=protected(f"{marian_dir}/marian-decoder"),
