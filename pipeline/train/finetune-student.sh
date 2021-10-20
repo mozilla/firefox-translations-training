@@ -14,6 +14,7 @@ devset=$3
 vocab=$4
 alignment=$5
 student=$6
+extra_params=( "${@:7}" )
 
 test -v SRC
 test -v TRG
@@ -31,8 +32,8 @@ bash "pipeline/train/train.sh" \
   "${devset}" \
   "${dir}" \
   "${vocab}" \
-  --guided-alignment "${alignment}"
-
+  --guided-alignment "${alignment}" \
+  "${extra_params[@]}"
 
 echo "###### Done: Finetuning the student model"
 

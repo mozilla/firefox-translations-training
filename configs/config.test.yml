@@ -22,6 +22,9 @@ experiment:
 
   split-length: 100000
 
+training:
+  after-epochs: 1
+
 
 datasets:
   # parallel corpus

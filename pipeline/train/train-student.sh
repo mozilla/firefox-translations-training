@@ -13,6 +13,7 @@ corpus=$2
 devset=$3
 vocab=$4
 alignment=$5
+extra_params=( "${@:6}" )
 
 test -v SRC
 test -v TRG
@@ -26,7 +27,8 @@ bash "pipeline/train/train.sh" \
   "${devset}" \
   "${dir}" \
   "${vocab}" \
-  --guided-alignment "${alignment}"
+  --guided-alignment "${alignment}" \
+  "${extra_params[@]}"
 
 echo "###### Done: Training a student model"
 

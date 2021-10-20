@@ -14,6 +14,7 @@ devset=$3
 vocab=$4
 src=$5
 trg=$6
+extra_params=( "${@:7}" )
 
 
 bash "pipeline/train/train.sh" \
@@ -24,7 +25,8 @@ bash "pipeline/train/train.sh" \
   "${corpus}" \
   "${devset}" \
   "${dir}" \
-  "${vocab}"
+  "${vocab}" \
+  "${extra_params[@]}"
 
 
 echo "###### Done: Training s2s model"

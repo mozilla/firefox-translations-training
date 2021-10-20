@@ -102,6 +102,11 @@ backward_model = config['experiment']['backward-model']
 
 experiment_dir=f"{data_root_dir}/experiments/{src}-{trg}/{experiment}"
 
+# training
+training_args = ""
+if 'training' in config:
+    training_args = ' '.join([f'--{k} {v}' for k,v in config['training'].items()])
+
 # datasets
 train_datasets = config['datasets']['train']
 valid_datasets = config['datasets']['devtest']
@@ -398,7 +403,7 @@ if train_s2s:
         params: prefix_train=f"{biclean}/corpus",prefix_test=f"{original}/devset"
         shell: '''bash pipeline/train/train-s2s.sh \
                     "{backward_model}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" {trg} {src} \
-                     >> {log} 2>&1'''
+                     {training_args} >> {log} 2>&1'''
 
     rule eval_backward:
         message: "Evaluating backward model"
@@ -475,7 +480,8 @@ rule teacher:
     output: model=f'{teacher_dir}{{ens}}/{best_model}'
     params: prefix_train=teacher_corpus, prefix_test=f"{original}/devset", dir=directory(f'{teacher_dir}{{ens}}')
     shell: '''bash pipeline/train/train-teacher.sh \
-                "{params.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" >> {log} 2>&1'''
+                "{params.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
+                {training_args} >> {log} 2>&1'''
 
 rule eval_teacher:
     message: "Evaluating teacher model"
@@ -641,7 +647,7 @@ rule student:
     params: prefix_train=rules.ce_filer.params.output_prefix,prefix_test=f"{original}/devset"
     shell: '''bash pipeline/train/train-student.sh \
                 "{student_dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
-                "{input.alignments}" >> {log} 2>&1'''
+                "{input.alignments}" {training_args} >> {log} 2>&1'''
 
 rule eval_student:
     message: "Evaluating student model"
@@ -673,7 +679,7 @@ rule finetune_student:
     params: prefix_train=rules.ce_filer.params.output_prefix,prefix_test=f"{original}/devset"
     shell: '''bash pipeline/train/train-student.sh \
                 "{student_finetuned_dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
-                "{input.alignments}" "{input.student_model}" >> {log} 2>&1'''
+                "{input.alignments}" "{input.student_model}" {training_args} >> {log} 2>&1'''
 
 rule eval_finetuned_student:
     message: "Evaluating fine-tuned student model"
