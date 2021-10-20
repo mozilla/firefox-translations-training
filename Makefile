@@ -26,7 +26,7 @@ conda:
 
 snakemake:
 	$(CONDA_ACTIVATE) base
-	mamba create -c conda-forge -c bioconda -n snakemake snakemake==6.9.1
+	mamba create -c conda-forge -c bioconda -n snakemake snakemake==6.9.1 --yes
 
 # build container image for cluster and run-local modes (preferred)
 build:
@@ -46,6 +46,7 @@ pull:
 # conda activate snakemake
 
 dry-run:
+	$(CONDA_ACTIVATE) snakemake
 	snakemake \
 	  --use-conda \
 	  --cores all \
