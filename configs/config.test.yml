@@ -1,9 +1,9 @@
 
-root: /root
-cuda: /usr/local/conda
+root: ""
+cuda: ""
 deps: false
-gpus: 8
-workspace: 9000
+gpus: ""
+workspace: ""
 
 experiment:
   name: snakemake
