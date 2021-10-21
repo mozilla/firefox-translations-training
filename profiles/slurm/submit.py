@@ -62,7 +62,7 @@ if "threads" in job_properties:
 
 try:
     cmd = ["sbatch"] + ["--parsable"] + options + [jobscript]
-    logger.debug(f'Running command: {cmd}')
+    logger.info(f'Running command: {cmd}')
     res = sp.check_output(cmd)
 except sp.CalledProcessError as e:
     raise e
