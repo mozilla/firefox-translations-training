@@ -5,6 +5,7 @@ import subprocess as sp
 import os
 
 from snakemake.utils import read_job_properties
+from snakemake.logging import logger
 
 # todo: move to another config
 MULTI_GPU_PARTITION = 'pascal'
@@ -61,6 +62,7 @@ if "threads" in job_properties:
 
 try:
     cmd = ["sbatch"] + ["--parsable"] + options + [jobscript]
+    logger.debug(f'Running command: {cmd}')
     res = sp.check_output(cmd)
 except sp.CalledProcessError as e:
     raise e
