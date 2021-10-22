@@ -19,7 +19,7 @@ test -v TRG
 
 bash "pipeline/train/train.sh" \
   "pipeline/train/configs/model/teacher.transformer.yml" \
-  "pipeline/train/configs/training/teacher.transformer.train.yml" \
+  "pipeline/train/configs/training/teacher.train.yml" \
   "${SRC}" \
   "${TRG}" \
   "${corpus}" \
