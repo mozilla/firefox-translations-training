@@ -674,7 +674,7 @@ rule finetune_student:
         bin=rules.marian.output.trainer, vocab=rules.train_vocab.output
     output: model=f'{student_finetuned_dir}/{best_model}'
     params: prefix_train=rules.ce_filer.params.output_prefix,prefix_test=f"{original}/devset"
-    shell: '''bash pipeline/train/train-student.sh \
+    shell: '''bash pipeline/train/finetune-student.sh \
                 "{student_finetuned_dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
                 "{input.alignments}" "{input.student_model}" {training_args} >> {log} 2>&1'''
 
