@@ -103,10 +103,7 @@ run-slurm-container:
 	  --configfile $(CONFIG) \
 	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) \
 	  --profile=profiles/slurm \
-	  --singularity-args="--bind $(SHARED_ROOT) --nv"
-
-# to not mount use bash profile if it breaks things
-#	  --singularity-args="--bind $(SHARED_ROOT),/tmp --nv --containall"
+	  --singularity-args="--bind $(SHARED_ROOT),/tmp --nv --containall"
 
 
 ### 4. create a report

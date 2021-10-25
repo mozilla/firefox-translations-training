@@ -250,8 +250,7 @@ rule marian:
     message: "Compiling marian"
     log: f"{log_dir}/compile-marian.log"
     conda: "envs/base.yml"
-    threads: workflow.cores
-    resources: mem_mb=20000
+    threads: 4
     group: 'setup'
     output: trainer=protected(f"{marian_dir}/marian"),decoder=protected(f"{marian_dir}/marian-decoder"),
         scorer=protected(f"{marian_dir}/marian-scorer"),vocab=protected(f'{marian_dir}/spm_train'),
@@ -344,7 +343,7 @@ if use_bicleaner:
         message: "Installing kenlm"
         log: f"{log_dir}/kenlm.log"
         conda: bicleaner_env
-        threads: workflow.cores
+        threads: 4
         group: 'setup'
         output: directory(f"{bin}/kenlm")
         shell: 'bash pipeline/setup/install-kenlm.sh {kenlm} {threads}  >> {log} 2>&1'
@@ -377,8 +376,7 @@ rule train_vocab:
     message: "Training spm vocab"
     log: f"{log_dir}/train_vocab.log"
     conda: "envs/base.yml"
-    threads: 4
-    resources: gpu=1
+    threads: 2
     input:
         bin=rules.marian.output.vocab,
         corpus_src=clean_corpus_src,corpus_trg=clean_corpus_trg
