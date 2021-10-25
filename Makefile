@@ -92,7 +92,6 @@ run-slurm:
 run-slurm-container:
 	$(CONDA_ACTIVATE) snakemake
 	chmod +x profiles/slurm/*
-	export CUDA_DIR=$(CUDA_DIR)
 	module load singularity
 	snakemake \
 	  --use-conda \
@@ -103,7 +102,11 @@ run-slurm-container:
 	  --configfile $(CONFIG) \
 	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) \
 	  --profile=profiles/slurm \
-	  --singularity-args="--bind $(SHARED_ROOT),/tmp --nv --containall"
+	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR),/tmp --nv --containall"
+# if CPU nodes don't have access to cuda dirs, use
+# export CUDA_DIR=$(CUDA_DIR)
+# --singularity-args="--bind $(SHARED_ROOT),/tmp --nv --containall"
+# swithc marian compilation to use GPU
 
 
 ### 4. create a report

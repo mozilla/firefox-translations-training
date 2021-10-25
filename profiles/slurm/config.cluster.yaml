@@ -1,0 +1,7 @@
+# CSD3
+single-gpu-partition: pascal
+multi-gpu-partition: pascal
+cpu-partition: skylake
+cpu-account: T2-CS119-CPU
+gpu-account: T2-CS119-GPU
+time-limit: 36:00:00
