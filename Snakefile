@@ -311,6 +311,7 @@ rule data_mono_src:
     log: f"{log_dir}/data_mono_src.log"
     conda: "envs/base.yml"
     threads: 1
+    group: 'data'
     output: f'{original}/mono.{src}.gz'
     shell: '''bash pipeline/data/download-mono.sh \
                 "{src}" "{mono_max_sent_src}" "{original}/mono" "{cache_dir}" {mono_src_datasets} >> {log} 2>&1'''
@@ -321,6 +322,7 @@ if mono_trg_datasets:
         log: f"{log_dir}/data_mono_trg.log"
         conda: "envs/base.yml"
         threads: 1
+        group: 'data'
         output: f'{original}/mono.{trg}.gz'
         shell: '''bash pipeline/data/download-mono.sh \
                   "{trg}" "{mono_max_sent_trg}" "{original}/mono" "{cache_dir}" {mono_trg_datasets} >> {log} 2>&1'''
@@ -392,6 +394,7 @@ if train_s2s:
         conda: "envs/base.yml"
         threads: gpus_num * 2
         resources: gpu=gpus_num
+        group: 'backward'
         input:
             train_src=clean_corpus_src,train_trg=clean_corpus_trg,
             val_src=rules.data_val.output.src,val_trg=rules.data_val.output.trg,
@@ -408,6 +411,7 @@ if train_s2s:
         conda: "envs/base.yml"
         threads: gpus_num * 2
         resources: gpu=gpus_num
+        group: 'backward'
         priority: 50
         input: model=f'{backward_model}/{best_model}', datasets=rules.data_test.output
         output:
@@ -443,7 +447,8 @@ if augment_corpus:
         message: "Collecting translated mono trg dataset"
         log: f"{log_dir}/collect_mono_trg.log"
         conda: "envs/base.yml"
-        threads: 1
+        threads: 4
+        group: 'mono_trg'
         input:
             lambda wildcards: expand(f"{translated}/mono_trg/file.{{part}}.out",
                 part=find_parts(wildcards, checkpoints.split_mono_trg))
@@ -456,6 +461,7 @@ if augment_corpus:
         log: f"{log_dir}/merge_augmented.log"
         conda: "envs/base.yml"
         threads: 4
+        group: 'mono_trg'
         input:
             src1=clean_corpus_src,src2=rules.collect_mono_trg.output,
             trg1=clean_corpus_trg,trg2=rules.split_mono_trg.input
@@ -470,6 +476,7 @@ rule teacher:
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
+    group: 'teacher{ens}'
     input:
         train_src=f'{teacher_corpus}.{src}.gz',train_trg=f'{teacher_corpus}.{trg}.gz',
         val_src=rules.data_val.output.src,val_trg=rules.data_val.output.trg,
@@ -486,6 +493,7 @@ rule eval_teacher:
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
+    group: 'teacher{ens}'
     priority: 50
     input:
         model=f'{teacher_dir}{{ens}}/{best_model}',
@@ -577,7 +585,8 @@ rule collect_mono_src:
     message: "Collecting translated mono src dataset"
     log: f"{log_dir}/collect_mono_src.log"
     conda: "envs/base.yml"
-    threads: 1
+    threads: 4
+    group: 'mono_src'
     input:
        lambda wildcards: expand(f"{translated}/mono_src/file.{{part}}.out",
            part=find_parts(wildcards, checkpoints.split_mono_src))
@@ -592,6 +601,7 @@ rule merge_translated:
     log: f"{log_dir}/merge_translated.log"
     conda: "envs/base.yml"
     threads: 4
+    group: 'mono_src'
     input:
         src1=clean_corpus_src,src2=f"{clean}/mono.{src}.gz",
         trg1=rules.collect_corpus.output,trg2=rules.collect_mono_src.output
@@ -635,6 +645,7 @@ rule student:
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
+    group: 'student'
     input:
         train_src=rules.ce_filer.output.src_corpus, train_trg=rules.ce_filer.output.trg_corpus,
         val_src=rules.data_val.output.src, val_trg=rules.data_val.output.trg,
@@ -652,6 +663,7 @@ rule eval_student:
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
+    group: 'student'
     priority: 50
     input: model=rules.student.output.model, datasets=rules.data_test.output
     output:
@@ -667,6 +679,7 @@ rule finetune_student:
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
+    group: 'finetune'
     input:
         train_src=rules.ce_filer.output.src_corpus, train_trg=rules.ce_filer.output.trg_corpus,
         val_src=rules.data_val.output.src,  val_trg=rules.data_val.output.trg,
@@ -684,6 +697,7 @@ rule eval_finetuned_student:
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
+    group: 'finetune'
     priority: 50
     input: model=rules.finetune_student.output.model, datasets=rules.data_test.output
     output:
