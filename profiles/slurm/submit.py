@@ -53,7 +53,7 @@ if "resources" in job_properties:
 options += ['-p', partition]
 options += ['-A', account]
 options += ['--nodes=1']
-options += ['-t', cluster_config['time-limit']]
+options += ['-t', str(cluster_config['time-limit'])]
 
 if "threads" in job_properties:
     options += ["--cpus-per-task", str(job_properties["threads"])]
