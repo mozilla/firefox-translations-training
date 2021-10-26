@@ -18,6 +18,7 @@ test -v CLEAN_TOOLS
 
 data=$1
 output=$2
+threads=$3
 
 dir="$(dirname "${output}")"
 tmp="${dir}/tmp"
@@ -30,7 +31,7 @@ echo "### Basic preprocessing"
 for lng in "${SRC}" "${TRG}"; do
   test -s "${output}.${lng}.nrm.gz" ||
     pigz -dc "${data}.${lng}.gz" |
-    parallel --no-notice --pipe -k -j "$(nproc)" --block 50M \
+    parallel --no-notice --pipe -k -j "${threads}" --block 50M \
       "perl ${CLEAN_TOOLS}/remove-non-printing-char.perl | perl ${CLEAN_TOOLS}/normalize-punctuation.perl -l ${lng}" |
     pigz >"${output}.${lng}.nrm.gz"
 done
@@ -47,7 +48,7 @@ test -s "${output}.${SRC}${TRG}.nrm.uniq.gz" ||
 echo "### Rule-based filtering"
 test -s "${output}.${SRC}${TRG}.rule-based.gz" ||
   pigz -dc "${output}.${SRC}${TRG}.nrm.uniq.gz" |
-  parallel --no-notice --pipe -k -j "$(nproc)" --block 50M \
+  parallel --no-notice --pipe -k -j "${threads}" --block 50M \
     "python3 ${CLEAN_TOOLS}/clean_parallel.py -l1 ${SRC} -l2 ${TRG} --debug" \
     2>"${output}.${SRC}${TRG}.clean.debug.txt" |
   pigz >"${output}.${SRC}${TRG}.rule-based.gz"
@@ -57,7 +58,7 @@ echo "### Language identification"
 test -s "${output}.${SRC}${TRG}.langid.gz" ||
   pigz -dc "${output}.${SRC}${TRG}.rule-based.gz" |
   # memory intensive
-  parallel --no-notice --pipe -k -j "$(echo "$(nproc)"/4 | bc)" --block 50M \
+  parallel --no-notice --pipe -k -j "$(echo "${threads}"/4 | bc)" --block 50M \
     "python3 -Wi ${CLEAN_TOOLS}/langid_fasttext.py -f 1 | python3 -Wi ${CLEAN_TOOLS}/langid_fasttext.py -f 1" |
   grep -P "^${SRC}\t${TRG}\t" |
   cut -f3,4 |

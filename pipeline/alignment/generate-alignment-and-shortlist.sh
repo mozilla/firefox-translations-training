@@ -18,6 +18,7 @@ test -v TRG
 corpus_prefix=$1
 vocab_path=$2
 output_dir=$3
+threads=$4
 
 
 mkdir -p "${output_dir}"
@@ -31,11 +32,11 @@ corpus_trg="${corpus_prefix}.${TRG}.gz"
 echo "### Subword segmentation with SentencePiece"
 test -s "${dir}/corpus.spm.${SRC}.gz" ||
   pigz -dc "${corpus_src}" |
-  parallel --no-notice --pipe -k -j "$(nproc)" --block 50M "${MARIAN}/spm_encode" --model "${vocab_path}" |
+  parallel --no-notice --pipe -k -j "${threads}" --block 50M "${MARIAN}/spm_encode" --model "${vocab_path}" |
   pigz >"${dir}/corpus.spm.${SRC}.gz"
 test -s "${dir}/corpus.spm.${TRG}.gz" ||
   pigz -dc "${corpus_trg}" |
-  parallel --no-notice --pipe -k -j "$(nproc)" --block 50M "${MARIAN}/spm_encode" --model "${vocab_path}" |
+  parallel --no-notice --pipe -k -j "${threads}" --block 50M "${MARIAN}/spm_encode" --model "${vocab_path}" |
   pigz >"${dir}/corpus.spm.${TRG}.gz"
 
 echo "### Creating merged corpus"
