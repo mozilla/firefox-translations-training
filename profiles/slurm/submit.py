@@ -8,7 +8,9 @@ import yaml
 from snakemake.utils import read_job_properties
 from snakemake.logging import logger
 
-cluster_config = yaml.load(open('config.cluster.yaml'), Loader=yaml.FullLoader)
+cluster_config_file = os.path.join(os.path.dirname(__file__), "config.cluster.yaml")
+cluster_config = yaml.load(open(cluster_config_file), Loader=yaml.FullLoader)
+
 jobscript = sys.argv[-1]
 job_properties = read_job_properties(jobscript)
 
@@ -38,7 +40,7 @@ if "resources" in job_properties:
         if num_gpu == '1':
             partition = cluster_config['single-gpu-partition']
         else:
-            partition =cluster_config['multi-gpu-partition']
+            partition = cluster_config['multi-gpu-partition']
 
         cuda_dir = os.getenv('CUDA_DIR')
         if cuda_dir:
