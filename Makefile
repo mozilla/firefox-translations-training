@@ -39,11 +39,8 @@ pull:
 
 ### 3. run
 
-# conda init and restart shell
-# or
-# . $(CONDA_PATH)/etc/profile.d/conda.sh && conda activate
-#
-# conda activate snakemake
+# if you need to activate conda environment for direct snakemake commands, use
+# . $(CONDA_PATH)/etc/profile.d/conda.sh && conda activate snakemake
 
 dry-run:
 	$(CONDA_ACTIVATE) snakemake
@@ -146,9 +143,13 @@ run-with-monitor:
 	  --cores all \
 	  --wms-monitor http://127.0.0.1:5000
 
+install-tensorboard:
+	$(CONDA_ACTIVATE) base
+	conda env create -f envs/tensorboard.yml
+
 tensorboard:
-	MODELS=$$(python -c "from config import models_dir; print(models_dir)"); \
-	ls -d $$MODELS/*/*/* > tb-monitored-jobs; \
+	$(CONDA_ACTIVATE) tensorboard
+	ls -d $(SHARED_ROOT)/models/*/*/* > tb-monitored-jobs; \
 	tensorboard --logdir=$$MODELS --host=0.0.0.0 &; \
 	python utils/tb_log_parser.py --prefix=
 

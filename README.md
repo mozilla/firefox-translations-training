@@ -56,11 +56,20 @@ It is also possible to deploy Slurm cluster in the cloud. Fore example, using [S
 git clone https://github.com/mozilla/firefox-translations-training.git
 cd firefox-translations-training
 ```
-1. Adjust settings in the `Makefile` (paths, which config to use, resources etc.)
+1. Adjust settings in the `Makefile` 
+    - Configure paths to a data storage `SHARED_ROOT` and CUDA libraries `CUDA_DIR`
+    - Adjust `GPUS` - number of GPUs per task that requires GPU and `WORKSPACE` - GPU memory pre-allocation for Marian
+    - Choose a config file to use (`configs/config.test.yml` is useful for testing)
+    - (Cluster mode) Adjust `CLUSTER_CORES` - total number of CPU cores to use on a cluster simultaneously
 2. Configure experiment and datasets in the chosen application config (for example `configs/config.prod.yml`)
-3. (Cluster mode) Adjust Snakemake and cluster settings in the cluster profile.
+3. Change source code if needed for the experiment
+4. (Cluster mode) Adjust Snakemake and cluster settings in the cluster profile.
    For Slurm: `profiles/slurm/config.yml` and `profiles/slurm/config.cluster.yml`
-4. Change source code if needed for the experiment
+   You can also modify `profiles/slurm/submit.sh` or create a new Snakemake [profile](https://github.com/Snakemake-Profiles).
+5. (Cluster mode) It might require further tuning of requested resources in `Snakemake` file:
+  - Use `threads` for a rule to adjust parallelism
+  - Use `resources: mem_mb=<memory>` to adjust total memory requirements per task 
+    (default is set in `profile/slurm/config.yaml`)
 
 ## Installation
 
@@ -181,15 +190,16 @@ To create a Snakemake [html report](https://snakemake.readthedocs.io/en/stable/s
 make report
 ```
 
-### Tensorboard
+### Results
 
-Using interactive mode, run:
-```
-cd ./pipeline/train/tensorboard
-MODELS=<absolute_path_to_models_directory> bash tensorboard.sh
-```
+See `Snakefile` file for directory structure documentation.
 
-Tensorboard will be available on port 6006
+The main directories inside `SHARED_ROOT` are:
+- `data/<lang_pair>/<experiment>` - data produced by the pipeline jobs
+- `logs/<lang_pair>/<experiment>` - logs of pipeline jobs for troubleshooting
+- `experiments/<lang_pair>/<experiment>` - saved experiment settings for future reference
+- `models/<lang_pair>/<experiment>` - all models produced by the pipeline. The final compressed models are in `exported` folder.
+
 
 ## Pipeline steps
 
@@ -248,10 +258,6 @@ and accepts the same parameters as the other scripts from the same folder.
 ## Development
 
 ### Architecture
-
-The pipeline is designed with workflow manager integration in mind (like [Airflow](https://airflow.apache.org/), 
-[Kubeflow pipelines](https://www.kubeflow.org/docs/components/pipelines/overview/pipelines-overview/), 
-[Snakemake](https://snakemake.readthedocs.io/en/stable/) and others).
 
 All steps are independent and contain scripts that accept input arguments, read input files from disk and output the results on disk.
 It allows to write the steps in any language (currently it's historically mostly bash and Python) and 
