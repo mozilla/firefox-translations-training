@@ -2,9 +2,6 @@
 ##
 # Downloads corpus using opus
 #
-# Usage:
-#   bash opus.sh source target dir dataset
-#
 
 set -x
 set -euo pipefail

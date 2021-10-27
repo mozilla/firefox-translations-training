@@ -2,10 +2,6 @@
 ##
 # Train a model.
 #
-# Usage:
-#   bash train.sh model_config training_config src trg data_dir train_set_prefix \
-#                 valid_set_prefix model_dir [extra_marian_params...]
-#
 
 set -x
 set -euo pipefail

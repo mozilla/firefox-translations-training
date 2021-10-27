@@ -2,9 +2,6 @@
 ##
 # Merges datasets with shuffling.
 #
-# Usage:
-#   bash merge-corpus.sh src1 src2 trg1 trg2 res_src res_trg
-#
 
 set -x
 set -euo pipefail

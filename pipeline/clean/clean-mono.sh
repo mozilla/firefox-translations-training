@@ -2,9 +2,6 @@
 ##
 # Basic cleaning of monolingual corpora.
 #
-# Usage:
-#   bash clean-mono.sh lang prefix_input prefix_output
-#
 
 set -x
 set -euo pipefail

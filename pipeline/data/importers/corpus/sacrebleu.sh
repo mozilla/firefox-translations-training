@@ -2,9 +2,6 @@
 ##
 # Downloads corpus using sacrebleu
 #
-# Usage:
-#   bash sacrebleu.sh source target dir dataset
-#
 
 set -x
 set -euo pipefail

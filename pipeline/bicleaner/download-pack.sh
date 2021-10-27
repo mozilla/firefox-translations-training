@@ -2,9 +2,6 @@
 ##
 # Downloads bicleaner-ai or bicleaner language pack
 #
-# Usage:
-#   bash download-bicleaner-pack.sh download_path type
-#
 
 set -x
 # don't use pipefail here because of wget check

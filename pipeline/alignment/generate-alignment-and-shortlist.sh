@@ -2,9 +2,6 @@
 ##
 # Generates alignment and lexical shortlist for a corpus.
 #
-# Usage:
-#   bash generate-alignment-and-shortlist.sh corpus_prefix vocab_path output_dir
-#
 
 set -x
 set -euo pipefail

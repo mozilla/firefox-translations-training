@@ -3,9 +3,6 @@
 # Downloads flores dataset
 # Dataset type can be "dev" or "devtest"
 #
-# Usage:
-#   bash flores.sh source target dir dataset
-#
 
 set -x
 set -euo pipefail

@@ -2,9 +2,6 @@
 ##
 # Downloads a dataset using mtdata
 #
-# Usage:
-#   bash mtdata.sh source target dir dataset
-#
 
 set -x
 set -euo pipefail

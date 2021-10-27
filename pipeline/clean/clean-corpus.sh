@@ -2,9 +2,6 @@
 ##
 # Basic cleaning of parallel corpora.
 #
-# Usage:
-#   bash clean-corpus.sh prefix_input prefix_output
-#
 
 set -x
 set -euo pipefail
