@@ -1,19 +1,24 @@
 # Firefox Translations training
 Training pipelines for Firefox Translations machine translation models.
-The trained models are hosted in [bergamot-models](https://github.com/mozilla-applied-ml/bergamot-models/),
+The trained models are hosted in [firefox-translations-models](https://github.com/mozilla/firefox-translations-models/),
 compatible with [bergamot-translator](https://github.com/mozilla/bergamot-translator) and can be used by
-[firefox-translations](https://github.com/mozilla-extensions/firefox-translations) web extension. This work is a part of [Bergamot](https://browser.mt/) project  that focuses on improving client-side machine translation in a web browser.
+[firefox-translations](https://github.com/mozilla/firefox-translations) web extension. This work is a part of [Bergamot](https://browser.mt/) project  that focuses on improving client-side machine translation in a web browser.
 
-The pipeline is capable of training a translation model for a language pair end to end. It uses fast tranlsation engine [Marian](https://marian-nmt.github.io).
-Translation quality will depend mostly on chosen datasets and data cleaning procedures. Some settings might require extra data cleaning.
-It was tested on relatively high resource language pair `ru-en`. Low resource pairs might require pipeline fixes.
+The pipeline is capable of training a translation model for a language pair end to end. 
+Translation quality depends on chosen datasets, data cleaning procedures and hyperparameters. 
+Some settings, especially low resource languages might require extra tuning.
+
+It uses fast translation engine [Marian](https://marian-nmt.github.io) 
+and [Snakemake](https://snakemake.github.io/) framework for workflow management and parallelization.
 
 ## System requirements
+
+### Local mode
 
 - Ubuntu 18.04 (it can work on other Linux distributions, but might require `setup` scripts fixes; see more details in [marian installation instructions](https://marian-nmt.github.io/quickstart/)).
 - One or several Nvidia GPUs with CUDA drivers installed and at least 8 GB of memory.
 - At least 16 CPU cores ( some steps of the pipeline utilize multiple cores pretty well, so the more the better).
-- 64 GB RAM (128 GB might be required for bigger datasets)
+- 64 GB RAM (128 GB+ might be required for bigger datasets)
 - 200+ GB of disk space ( mostly for datasets and transformations ). 
   It depends on chosen datasets and can be significantly higher.
   
@@ -26,38 +31,122 @@ It was tested on:
 - 100 GB of local disk space
 - Many terabytes of sshfs mounted storage
 
-## Running
+### Cluster mode
 
-### Using a target Linux machine
-```
+- Slurm cluster with CPU and Nvidia GPU nodes with CUDA
+- Singularity module if running with containerization (recommended)
+- If running without containerization, there is no procedure to configure environment automatically.
+  All the required modules (for example `parallel`) should be preinstalled and loaded in ~/.bashrc
+
+It was tested on [CSD3 HPC](https://docs.hpc.cam.ac.uk/hpc/index.html) using Singularity containers.
+
+### Cloud mode
+
+Snakemake workflows can work on Kubernetes, Google Cloud Life Sciences and other cloud platforms. 
+The pipeline was not tested in this mode and might require modificaiton.
+
+Please refer to [Cloud execution](https://snakemake.readthedocs.io/en/stable/executing/cloud.html) section of Snakemake documentation.
+
+It is also possible to deploy Slurm cluster in the cloud. Fore example, using [Slurm on Google Cloud Platform](https://github.com/SchedMD/slurm-gcp).
+
+## Configuration
+
+0. Clone the repo:
+``` 
 git clone https://github.com/mozilla/firefox-translations-training.git
 cd firefox-translations-training
-# change settings in config.sh or modify code if needed
-bash run.sh
+```
+1. Adjust settings in the `Makefile` (paths, which config to use, resources etc.)
+2. Configure experiment and datasets in the chosen application config (for example `configs/config.prod.yml`)
+3. (Cluster mode) Adjust Snakemake and cluster settings in the cluster profile.
+   For Slurm: `profiles/slurm/config.yml` and `profiles/slurm/config.cluster.yml`
+4. Change source code if needed for the experiment
+
+## Installation
+
+See also [Snakemake installation](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html)
+
+1. Install Mamba - fast Conda package manager
+
+```
+make conda
 ```
 
-To run a specific script:
+2. Install Snakemake
 
 ```
-source ./config.sh
-bash ./pipeline/.../<script>.sh <args>
+make snakemake
 ```
 
+3. Update git submodules
+
+```
+make git-modules
+```
+
+4. (Optional) Install Singularity if running with containerization 
+
+Local mode: See [Singularity installation](https://sylabs.io/guides/3.8/user-guide/quick_start.html), requries root
+
+Cluster mode: 
+
+```
+module load singularity
+```
+
+5. (Optional) Prepare a container image if using Singularity
+
+    
+Either pull the prebuilt image:
+
+```
+make pull
+```
+
+Or build it (requires root):
+
+```
+make build
+```
+
+## Running
+
+Dry run first to check that everything was installed correctly:
+
+```
+make dry-run
+```
+
+### Local mode
+
+Without containerization:
+```
+make run-local
+```
+With containerization:
+```
+make run-local-container
+```
+
+### Cluster mode
+
+To run on Slurm
+
+without containerization:
+```
+make run-slurm
+```
+with containerization (recommended):
+```
+make run-slurm-container
+```
 
 ### Using Snakepit
 
-Snakepit is Mozilla machine learning job scheduler.
+Snakepit is a Mozilla machine learning job scheduler.
 See [Snakepit installation](https://github.com/mozilla/snakepit-client).
 
-#### To run end to end
-```
-git clone https://github.com/mozilla/firefox-translations-training.git
-cd firefox-translations-training
-# change settings in config.sh or modify code if needed
-pit run --log "firefox-translations-training-ru-en" "[8:g2080]"
-```
-
-#### Interactive usage:
+#### To run the pipeline interactively:
 
 1. Create an empty directory 
 2. Create a file `.compute` in the directory:
@@ -73,16 +162,9 @@ while true; do : ; sleep 1000; done
 4. Run `pit status` to check the job id
 4. Run `pit exec <job-id> -- bash`
 5. After attaching run `tmux`
-6. (Optional) `code-server --bind-addr 0.0.0.0:8080` and 
-   then `cat ~/.config/code-server/config.yaml` to conveniently edit files in a browser using [Visual Studio Code server](https://github.com/cdr/code-server)
-7. To port forward, run in a separate terminal `pit forward <job-id> 8080 6006` (`8080`is Visual Studio, `6006` is Tensorbard)
-8. Change settings in config.sh or modify code if needed
-9. `bash run.sh` to run end to end or
-to run a specific script:
-```
-source ./config.sh
-bash ./pipeline/.../<script>.sh <args>
-```
+6. Follow configuration and installation procedures for the local mode without containerization
+7. Run `make run-local`
+
  
 #### To download exported models:
 
@@ -90,6 +172,13 @@ bash ./pipeline/.../<script>.sh <args>
 pit pull home firefox-translations-training/models/ru-en/test/exported/model.ruen.intgemm.alphas.bin.gz .
 pit pull home firefox-translations-training/models/ru-en/test/exported/lex.50.50.ruen.s2t.bin.gz .
 pit pull home firefox-translations-training/models/ru-en/test/exported/vocab.ruen.spm.gz .
+```
+
+### Reporting
+
+To create a Snakemake [html report](https://snakemake.readthedocs.io/en/stable/snakefiles/reporting.html), run:
+```
+make report
 ```
 
 ### Tensorboard
@@ -175,15 +264,12 @@ At the same time it is possible to run it all locally end to end or to do intera
 
 ### Conventions
 
-- All scripts work with respect to repo root directory which should be written to `WORKDIR` environment variable. 
+- All scripts work with respect to repo root directory. 
   It allows to not think about relative paths and execution folders.
   
 - Scripts inside the `pipeline` directory are independent and operate only using input arguments, input files 
-  and global envs from `config.sh`.
-  They don't use any extra knowledge of data naming or locations. There are some exceptions at the moment though.
+  and global envs.
   
-- All scripts have a description and definition of input arguments.
-
 - All scripts test expected environment variables early.
 
 - If a script step fails, it can be safely retried.
@@ -201,18 +287,12 @@ At the same time it is possible to run it all locally end to end or to do intera
   
 - It is expected that the specified output folder might not exist and should be created by the script.
 
-- A script creates a folder for intermediate files and cleans it in the end.
-
-- Network disks are too slow for some operations, so a script can copy and work with intermediate data on a local disk.
-  This ability is limited by a local disk size (this is the case for Snakepit cluster).
-  An exception is when parallelization across multiple machines is required.
+- A script creates a folder for intermediate files and cleans it in the end 
+  unless intermediate files are useful for retries.
     
 - Global variables are upper case, local variable are lower case.
 
-- All variables that are global for the whole pipeline are set in `config.sh`.
-
-- Scripts should automatically inspect resources available for computation and utilize them to make things faster
-  (number of cores, memory).
+- Scripts should utilize resources provided by Snakemake (number of threads, memory).
   
 
 ## References
@@ -226,3 +306,5 @@ Brussels, Belgium: Association for Computational Linguistics, October 2018
 "[Bifixer and Bicleaner: two open-source tools to clean your parallel data.](https://eamt2020.inesc-id.pt/proceedings-eamt2020.pdf#page=311)",
 in *Proceedings of the 22nd Annual Conference of the European Association for Machine Translation*.
 Lisboa, Portugal: European Association for Machine Translation, November 2020
+   
+3. Mölder, F., Jablonski, K.P., Letcher, B., Hall, M.B., Tomkins-Tinch, C.H., Sochat, V., Forster, J., Lee, S., Twardziok, S.O., Kanitz, A., Wilm, A., Holtgrewe, M., Rahmann, S., Nahnsen, S., Köster, J., 2021. Sustainable data analysis with Snakemake. F1000Res 10, 33.

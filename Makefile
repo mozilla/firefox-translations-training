@@ -106,7 +106,6 @@ run-slurm-container:
 # if CPU nodes don't have access to cuda dirs, use
 # export CUDA_DIR=$(CUDA_DIR)
 # --singularity-args="--bind $(SHARED_ROOT),/tmp --nv --containall"
-# swithc marian compilation to use GPU
 
 
 ### 4. create a report
