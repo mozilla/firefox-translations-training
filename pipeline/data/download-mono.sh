@@ -1,6 +1,6 @@
 #!/bin/bash
 ##
-# Downloads datasets
+# Downloads monolingual datasets
 #
 
 set -x

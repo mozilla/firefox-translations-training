@@ -1,6 +1,6 @@
 #!/bin/bash
 ##
-# Downloads corpus datasets
+# Downloads parallel corpus datasets
 #
 
 set -x

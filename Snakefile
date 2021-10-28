@@ -250,8 +250,7 @@ rule marian:
     message: "Compiling marian"
     log: f"{log_dir}/compile-marian.log"
     conda: "envs/base.yml"
-    threads: workflow.cores
-    resources: mem_mb=20000
+    threads: 4
     group: 'setup'
     output: trainer=protected(f"{marian_dir}/marian"),decoder=protected(f"{marian_dir}/marian-decoder"),
         scorer=protected(f"{marian_dir}/marian-scorer"),vocab=protected(f'{marian_dir}/spm_train'),
@@ -312,6 +311,7 @@ rule data_mono_src:
     log: f"{log_dir}/data_mono_src.log"
     conda: "envs/base.yml"
     threads: 1
+    group: 'data'
     output: f'{original}/mono.{src}.gz'
     shell: '''bash pipeline/data/download-mono.sh \
                 "{src}" "{mono_max_sent_src}" "{original}/mono" "{cache_dir}" {mono_src_datasets} >> {log} 2>&1'''
@@ -322,6 +322,7 @@ if mono_trg_datasets:
         log: f"{log_dir}/data_mono_trg.log"
         conda: "envs/base.yml"
         threads: 1
+        group: 'data'
         output: f'{original}/mono.{trg}.gz'
         shell: '''bash pipeline/data/download-mono.sh \
                   "{trg}" "{mono_max_sent_trg}" "{original}/mono" "{cache_dir}" {mono_trg_datasets} >> {log} 2>&1'''
@@ -336,7 +337,8 @@ rule clean_corpus:
     input: rules.data_train.output.src,rules.data_train.output.trg
     output: src=f"{clean}/corpus.{src}.gz",trg=f"{clean}/corpus.{trg}.gz"
     params: prefix_input=f"{original}/corpus",prefix_output=f"{clean}/corpus"
-    shell: '''bash pipeline/clean/clean-corpus.sh "{params.prefix_input}" "{params.prefix_output}" >> {log} 2>&1'''
+    shell: '''bash pipeline/clean/clean-corpus.sh "{params.prefix_input}" "{params.prefix_output}" {threads} \
+                >> {log} 2>&1'''
 
 
 if use_bicleaner:
@@ -344,7 +346,7 @@ if use_bicleaner:
         message: "Installing kenlm"
         log: f"{log_dir}/kenlm.log"
         conda: bicleaner_env
-        threads: workflow.cores
+        threads: 4
         group: 'setup'
         output: directory(f"{bin}/kenlm")
         shell: 'bash pipeline/setup/install-kenlm.sh {kenlm} {threads}  >> {log} 2>&1'
@@ -369,7 +371,8 @@ rule clean_mono:
     input: f'{original}/mono.{{lang}}.gz'
     output: f"{clean}/mono.{{lang}}.gz"
     params: lang='{lang}'
-    shell: '''bash pipeline/clean/clean-mono.sh "{params.lang}" "{original}/mono" "{clean}/mono" >> {log} 2>&1'''
+    shell: '''bash pipeline/clean/clean-mono.sh "{params.lang}" "{original}/mono" "{clean}/mono" {threads} \
+                >> {log} 2>&1'''
 
 # augmentation and teacher training
 
@@ -377,8 +380,7 @@ rule train_vocab:
     message: "Training spm vocab"
     log: f"{log_dir}/train_vocab.log"
     conda: "envs/base.yml"
-    threads: 4
-    resources: gpu=1
+    threads: 2
     input:
         bin=rules.marian.output.vocab,
         corpus_src=clean_corpus_src,corpus_trg=clean_corpus_trg
@@ -394,6 +396,7 @@ if train_s2s:
         conda: "envs/base.yml"
         threads: gpus_num * 2
         resources: gpu=gpus_num
+        group: 'backward'
         input:
             train_src=clean_corpus_src,train_trg=clean_corpus_trg,
             val_src=rules.data_val.output.src,val_trg=rules.data_val.output.trg,
@@ -410,6 +413,7 @@ if train_s2s:
         conda: "envs/base.yml"
         threads: gpus_num * 2
         resources: gpu=gpus_num
+        group: 'backward'
         priority: 50
         input: model=f'{backward_model}/{best_model}', datasets=rules.data_test.output
         output:
@@ -445,7 +449,8 @@ if augment_corpus:
         message: "Collecting translated mono trg dataset"
         log: f"{log_dir}/collect_mono_trg.log"
         conda: "envs/base.yml"
-        threads: 1
+        threads: 4
+        group: 'mono_trg'
         input:
             lambda wildcards: expand(f"{translated}/mono_trg/file.{{part}}.out",
                 part=find_parts(wildcards, checkpoints.split_mono_trg))
@@ -458,6 +463,7 @@ if augment_corpus:
         log: f"{log_dir}/merge_augmented.log"
         conda: "envs/base.yml"
         threads: 4
+        group: 'mono_trg'
         input:
             src1=clean_corpus_src,src2=rules.collect_mono_trg.output,
             trg1=clean_corpus_trg,trg2=rules.split_mono_trg.input
@@ -472,6 +478,7 @@ rule teacher:
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
+    group: 'teacher{ens}'
     input:
         train_src=f'{teacher_corpus}.{src}.gz',train_trg=f'{teacher_corpus}.{trg}.gz',
         val_src=rules.data_val.output.src,val_trg=rules.data_val.output.trg,
@@ -488,6 +495,7 @@ rule eval_teacher:
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
+    group: 'teacher{ens}'
     priority: 50
     input:
         model=f'{teacher_dir}{{ens}}/{best_model}',
@@ -579,7 +587,8 @@ rule collect_mono_src:
     message: "Collecting translated mono src dataset"
     log: f"{log_dir}/collect_mono_src.log"
     conda: "envs/base.yml"
-    threads: 1
+    threads: 4
+    group: 'mono_src'
     input:
        lambda wildcards: expand(f"{translated}/mono_src/file.{{part}}.out",
            part=find_parts(wildcards, checkpoints.split_mono_src))
@@ -594,6 +603,7 @@ rule merge_translated:
     log: f"{log_dir}/merge_translated.log"
     conda: "envs/base.yml"
     threads: 4
+    group: 'mono_src'
     input:
         src1=clean_corpus_src,src2=f"{clean}/mono.{src}.gz",
         trg1=rules.collect_corpus.output,trg2=rules.collect_mono_src.output
@@ -604,32 +614,47 @@ rule merge_translated:
 
 # train student
 
-rule ce_filer:
+rule score:
+    message: "Scoring"
+    log: f"{log_dir}/score.log"
+    conda: "envs/base.yml"
+    threads: gpus_num*2
+    resources: gpu=gpus_num
+    input:
+        model=rules.backward.output.model,vocab=rules.train_vocab.output,
+        src_corpus=rules.merge_translated.output.res_src,trg_corpus=rules.merge_translated.output.res_trg
+    output: f"{filtered}/scores.txt"
+    params: input_prefix=f'{merged}/corpus'
+    shell: '''bash pipeline/cefilter/score.sh \
+                "{input.model}" "{input.vocab}" "{params.input_prefix}" "{output}" >> {log} 2>&1'''
+
+rule ce_filter:
     message: "Cross entropy filtering"
     log: f"{log_dir}/ce_filter.log"
     conda: "envs/base.yml"
     threads: workflow.cores
+    resources: mem_mb=workflow.cores*5000
     input:
-        model=rules.backward.output.model,vocab=rules.train_vocab.output,
-        src_corpus=rules.merge_translated.output.res_src,trg_corpus=rules.merge_translated.output.res_trg
+        src_corpus=rules.merge_translated.output.res_src,trg_corpus=rules.merge_translated.output.res_trg,
+        scores=rules.score.output
     output: src_corpus=f"{filtered}/corpus.{src}.gz",trg_corpus=f"{filtered}/corpus.{trg}.gz"
     params: input_prefix=f'{merged}/corpus',output_prefix=f'{filtered}/corpus'
     shell: '''bash pipeline/cefilter/ce-filter.sh \
-                "{input.model}" "{input.vocab}" "{params.input_prefix}" "{params.output_prefix}" {threads}  >> {log} 2>&1'''
+                "{params.input_prefix}" "{params.output_prefix}" "{input.scores}" {threads}  >> {log} 2>&1'''
 
 rule alignments:
     message: 'Training word alignment and lexical shortlists'
     log: f"{log_dir}/alignments.log"
     conda: "envs/base.yml"
     threads: workflow.cores
-    input: src_corpus=rules.ce_filer.output.src_corpus,trg_corpus=rules.ce_filer.output.trg_corpus,
+    input: src_corpus=rules.ce_filter.output.src_corpus,trg_corpus=rules.ce_filter.output.trg_corpus,
         vocab=rules.train_vocab.output,
         fast_align=rules.fast_align.output.fast_align, atools=rules.fast_align.output.atools,
         extract_lex=rules.extract_lex.output
     output: alignment=f'{align_dir}/corpus.aln.gz',shortlist=f'{align_dir}/lex.s2t.pruned.gz'
     params: input_prefix=f'{filtered}/corpus'
     shell: '''bash pipeline/alignment/generate-alignment-and-shortlist.sh \
-                "{params.input_prefix}" "{input.vocab}" "{align_dir}" >> {log} 2>&1'''
+                "{params.input_prefix}" "{input.vocab}" "{align_dir}" {threads} >> {log} 2>&1'''
 
 rule student:
     message: "Training student"
@@ -637,13 +662,14 @@ rule student:
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
+    group: 'student'
     input:
-        train_src=rules.ce_filer.output.src_corpus, train_trg=rules.ce_filer.output.trg_corpus,
+        train_src=rules.ce_filter.output.src_corpus, train_trg=rules.ce_filter.output.trg_corpus,
         val_src=rules.data_val.output.src, val_trg=rules.data_val.output.trg,
         alignments=rules.alignments.output.alignment,
         bin=rules.marian.output.trainer, vocab=rules.train_vocab.output
     output: model=f'{student_dir}/{best_model}'
-    params: prefix_train=rules.ce_filer.params.output_prefix,prefix_test=f"{original}/devset"
+    params: prefix_train=rules.ce_filter.params.output_prefix,prefix_test=f"{original}/devset"
     shell: '''bash pipeline/train/train-student.sh \
                 "{student_dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
                 "{input.alignments}" {training_args} >> {log} 2>&1'''
@@ -654,6 +680,7 @@ rule eval_student:
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
+    group: 'student'
     priority: 50
     input: model=rules.student.output.model, datasets=rules.data_test.output
     output:
@@ -669,14 +696,15 @@ rule finetune_student:
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
+    group: 'finetune'
     input:
-        train_src=rules.ce_filer.output.src_corpus, train_trg=rules.ce_filer.output.trg_corpus,
+        train_src=rules.ce_filter.output.src_corpus, train_trg=rules.ce_filter.output.trg_corpus,
         val_src=rules.data_val.output.src,  val_trg=rules.data_val.output.trg,
         alignments=rules.alignments.output.alignment, student_model=rules.student.output.model,
         bin=rules.marian.output.trainer, vocab=rules.train_vocab.output
     output: model=f'{student_finetuned_dir}/{best_model}'
-    params: prefix_train=rules.ce_filer.params.output_prefix,prefix_test=f"{original}/devset"
-    shell: '''bash pipeline/train/train-student.sh \
+    params: prefix_train=rules.ce_filter.params.output_prefix,prefix_test=f"{original}/devset"
+    shell: '''bash pipeline/train/finetune-student.sh \
                 "{student_finetuned_dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
                 "{input.alignments}" "{input.student_model}" {training_args} >> {log} 2>&1'''
 
@@ -686,6 +714,7 @@ rule eval_finetuned_student:
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
+    group: 'finetune'
     priority: 50
     input: model=rules.finetune_student.output.model, datasets=rules.data_test.output
     output:

@@ -2,9 +2,6 @@
 ##
 # Evaluate a model.
 #
-# Usage:
-#   bash eval.sh model_dir [src] [trg]
-#
 
 set -x
 set -euo pipefail

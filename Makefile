@@ -39,11 +39,8 @@ pull:
 
 ### 3. run
 
-# conda init and restart shell
-# or
-# . $(CONDA_PATH)/etc/profile.d/conda.sh && conda activate
-#
-# conda activate snakemake
+# if you need to activate conda environment for direct snakemake commands, use
+# . $(CONDA_PATH)/etc/profile.d/conda.sh && conda activate snakemake
 
 dry-run:
 	$(CONDA_ACTIVATE) snakemake
@@ -92,7 +89,6 @@ run-slurm:
 run-slurm-container:
 	$(CONDA_ACTIVATE) snakemake
 	chmod +x profiles/slurm/*
-	export CUDA_DIR=$(CUDA_DIR)
 	module load singularity
 	snakemake \
 	  --use-conda \
@@ -103,10 +99,10 @@ run-slurm-container:
 	  --configfile $(CONFIG) \
 	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) \
 	  --profile=profiles/slurm \
-	  --singularity-args="--bind $(SHARED_ROOT) --nv"
-
-# to not mount use bash profile if it breaks things
-#	  --singularity-args="--bind $(SHARED_ROOT),/tmp --nv --containall"
+	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR),/tmp --nv --containall"
+# if CPU nodes don't have access to cuda dirs, use
+# export CUDA_DIR=$(CUDA_DIR)
+# --singularity-args="--bind $(SHARED_ROOT),/tmp --nv --containall"
 
 
 ### 4. create a report
@@ -147,9 +143,13 @@ run-with-monitor:
 	  --cores all \
 	  --wms-monitor http://127.0.0.1:5000
 
+install-tensorboard:
+	$(CONDA_ACTIVATE) base
+	conda env create -f envs/tensorboard.yml
+
 tensorboard:
-	MODELS=$$(python -c "from config import models_dir; print(models_dir)"); \
-	ls -d $$MODELS/*/*/* > tb-monitored-jobs; \
+	$(CONDA_ACTIVATE) tensorboard
+	ls -d $(SHARED_ROOT)/models/*/*/* > tb-monitored-jobs; \
 	tensorboard --logdir=$$MODELS --host=0.0.0.0 &; \
 	python utils/tb_log_parser.py --prefix=
 

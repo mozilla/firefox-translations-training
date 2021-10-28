@@ -2,9 +2,6 @@
 ##
 # Downloads monolingual data from commoncrawl
 #
-# Usage:
-#   bash commoncrawl.sh lang output_prefix dataset
-#
 
 set -x
 set -euo pipefail

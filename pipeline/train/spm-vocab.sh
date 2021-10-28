@@ -2,9 +2,6 @@
 ##
 # Train SentencePiece vocabulary model
 #
-# Usage:
-#   bash spm-vocab.sh <corpus_src> <corpus_trg> <vocab_output>
-#
 
 set -x
 set -euo pipefail

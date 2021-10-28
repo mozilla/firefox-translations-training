@@ -3,16 +3,13 @@ import re
 import sys
 import subprocess as sp
 import os
+import yaml
 
 from snakemake.utils import read_job_properties
 from snakemake.logging import logger
 
-# todo: move to another config
-MULTI_GPU_PARTITION = 'pascal'
-CPU_PARTITION = 'skylake'
-SINGLE_GPU_PARTITION = 'pascal'
-CPU_ACCOUNT = 'T2-CS119-CPU'
-GPU_ACCOUNT = 'T2-CS119-GPU'
+cluster_config_file = os.path.join(os.path.dirname(__file__), "config.cluster.yaml")
+cluster_config = yaml.load(open(cluster_config_file), Loader=yaml.FullLoader)
 
 jobscript = sys.argv[-1]
 job_properties = read_job_properties(jobscript)
@@ -28,8 +25,8 @@ else:
 
 options += ['--job-name', name]
 
-partition = CPU_PARTITION
-account = CPU_ACCOUNT
+partition = cluster_config['cpu-partition']
+account = cluster_config['cpu-account']
 
 if "resources" in job_properties:
     resources = job_properties["resources"]
@@ -38,12 +35,12 @@ if "resources" in job_properties:
         num_gpu = str(resources['gpu'])
         options += [f'--gres=gpu:{num_gpu}']
 
-        account = GPU_ACCOUNT
+        account = cluster_config['gpu-account']
 
         if num_gpu == '1':
-            partition = SINGLE_GPU_PARTITION
+            partition = cluster_config['single-gpu-partition']
         else:
-            partition = MULTI_GPU_PARTITION
+            partition = cluster_config['multi-gpu-partition']
 
         cuda_dir = os.getenv('CUDA_DIR')
         if cuda_dir:
@@ -56,6 +53,7 @@ if "resources" in job_properties:
 options += ['-p', partition]
 options += ['-A', account]
 options += ['--nodes=1']
+options += ['-t', str(cluster_config['time-limit'])]
 
 if "threads" in job_properties:
     options += ["--cpus-per-task", str(job_properties["threads"])]
