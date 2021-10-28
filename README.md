@@ -67,9 +67,9 @@ cd firefox-translations-training
    For Slurm: `profiles/slurm/config.yml` and `profiles/slurm/config.cluster.yml`
    You can also modify `profiles/slurm/submit.sh` or create a new Snakemake [profile](https://github.com/Snakemake-Profiles).
 5. (Cluster mode) It might require further tuning of requested resources in `Snakemake` file:
-  - Use `threads` for a rule to adjust parallelism
-  - Use `resources: mem_mb=<memory>` to adjust total memory requirements per task 
-    (default is set in `profile/slurm/config.yaml`)
+    - Use `threads` for a rule to adjust parallelism
+    - Use `resources: mem_mb=<memory>` to adjust total memory requirements per task 
+      (default is set in `profile/slurm/config.yaml`)
 
 ## Installation
 
@@ -196,7 +196,7 @@ See `Snakefile` file for directory structure documentation.
 
 The main directories inside `SHARED_ROOT` are:
 - `data/<lang_pair>/<experiment>` - data produced by the pipeline jobs
-- `logs/<lang_pair>/<experiment>` - logs of pipeline jobs for troubleshooting
+- `logs/<lang_pair>/<experiment>` - logs of the jobs for troubleshooting
 - `experiments/<lang_pair>/<experiment>` - saved experiment settings for future reference
 - `models/<lang_pair>/<experiment>` - all models produced by the pipeline. The final compressed models are in `exported` folder.
 
@@ -224,12 +224,13 @@ Export | Exports trained model and shortlist to (bergamot-translator)(https://gi
 
 ## Datasets importers
 
-Dataset importers can be used in `TRAIN_DATASETS, DEVTEST_DATASETS, MONO_DATASETS_SRC, MONO_DATASETS_TRG` config settings.
+Dataset importers can be used in `datasets` sections of experiment config.
 
 Example:
 ```
-TRAIN_DATASETS="opus_OPUS-ParaCrawl/v7.1 mtdata_newstest2019_ruen"
-TEST_DATASETS="sacrebleu_wmt20 sacrebleu_wmt18"
+  train:
+    - opus_ada83/v1
+    - mtdata_newstest2014_ruen
 ```
 
 Data source | Prefix | Name examples | Type | Comments
@@ -259,14 +260,15 @@ and accepts the same parameters as the other scripts from the same folder.
 
 ### Architecture
 
-All steps are independent and contain scripts that accept input arguments, read input files from disk and output the results on disk.
-It allows to write the steps in any language (currently it's historically mostly bash and Python) and 
-represent the pipeline as a DAG to be compatible with workflow managers.
+All steps are independent and contain scripts that accept arguments, read input files from disk and output the results to disk.
+It allows writing the steps in any language (currently it's historically mostly bash and Python) and 
+represent the pipeline as directed acyclic graph (DAG).
 
-The main script `run.sh` can be easily replaced with a DAG definition in workflow manager terms. 
-A workflow manager will provide easy resource management, parallelization, monitoring and scheduling which will allow horizontal scalability required to train massive number of langauges.
+Snakemake workflow manager infers the DAG implicitly from the specified inputs and outputs of the steps. The workflow manager checks which files are missing and runs the corresponding jobs either locally or on a cluster depending on configuration. 
 
-At the same time it is possible to run it all locally end to end or to do interactive experimentation running specific scripts manually.
+Snakemake parallelizes steps that can be executed simultniously. It is especially usefull for teacher ensemble training and translation.
+
+The main snakemkae process (scheduler) should be launched interactively. It runs job processes on the worker nodes in cluster mode or on a local machine in local mode.
 
 ### Conventions
 
