@@ -2,24 +2,22 @@
 ##
 # Downloads evaluation datasets
 #
-# Usage:
-#   bash download-eval.sh dir [datasets...]
-#
 
 set -x
 set -euo pipefail
 
 echo "###### Downloading evaluation datasets"
 
-test -v WORKDIR
-test -v TEST_DATASETS
+test -v SRC
+test -v TRG
 
 dir=$1
 cache=$2
+datasets=( "${@:3}" )
 
-for dataset in "${@:3}"; do
+for dataset in "${datasets[@]}"; do
   name="${dataset//[^A-Za-z0-9_- ]/_}"
-  bash "${WORKDIR}/pipeline/data/download-corpus.sh" "${dir}/${name}" "${cache}" "${dataset}"
+  bash "pipeline/data/download-corpus.sh" "${dir}/${name}" "${cache}" eval "${dataset}"
 
   test -e "${dir}/${name}.${SRC}" || pigz -dk "${dir}/${name}.${SRC}.gz"
   test -e "${dir}/${name}.${TRG}" || pigz -dk "${dir}/${name}.${TRG}.gz"

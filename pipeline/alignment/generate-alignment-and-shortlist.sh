@@ -2,9 +2,6 @@
 ##
 # Generates alignment and lexical shortlist for a corpus.
 #
-# Usage:
-#   bash generate-alignment-and-shortlist.sh corpus_prefix vocab_path output_dir
-#
 
 set -x
 set -euo pipefail
@@ -18,17 +15,8 @@ test -v TRG
 corpus_prefix=$1
 vocab_path=$2
 output_dir=$3
+threads=$4
 
-if [ -e "${output_dir}/corpus.aln.gz" ] && [ -e "${output_dir}/lex.s2t.pruned.gz" ]; then
-  echo "### Alignments and shortlist already exist, skipping"
-  echo "###### Done: Generating alignments and shortlist"
-  exit 0
-fi
-
-
-test -e "${BIN}/atools" || exit 1
-test -e "${BIN}/extract_lex" || exit 1
-test -e "${BIN}/fast_align" || exit 1
 
 mkdir -p "${output_dir}"
 dir="${output_dir}/tmp"
@@ -37,16 +25,15 @@ mkdir -p "${dir}"
 corpus_src="${corpus_prefix}.${SRC}.gz"
 corpus_trg="${corpus_prefix}.${TRG}.gz"
 
-source "${WORKDIR}/pipeline/setup/activate-python.sh"
 
 echo "### Subword segmentation with SentencePiece"
 test -s "${dir}/corpus.spm.${SRC}.gz" ||
   pigz -dc "${corpus_src}" |
-  parallel --no-notice --pipe -k -j "$(nproc)" --block 50M "${MARIAN}/spm_encode" --model "${vocab_path}" |
+  parallel --no-notice --pipe -k -j "${threads}" --block 50M "${MARIAN}/spm_encode" --model "${vocab_path}" |
   pigz >"${dir}/corpus.spm.${SRC}.gz"
 test -s "${dir}/corpus.spm.${TRG}.gz" ||
   pigz -dc "${corpus_trg}" |
-  parallel --no-notice --pipe -k -j "$(nproc)" --block 50M "${MARIAN}/spm_encode" --model "${vocab_path}" |
+  parallel --no-notice --pipe -k -j "${threads}" --block 50M "${MARIAN}/spm_encode" --model "${vocab_path}" |
   pigz >"${dir}/corpus.spm.${TRG}.gz"
 
 echo "### Creating merged corpus"
@@ -85,7 +72,7 @@ test -s "${dir}/vocab.txt" ||
 test -s "${output_dir}/lex.s2t.pruned.gz" ||
   pigz -dc "${dir}/lex.s2t.gz" |
   grep -v NULL |
-  python3 "${WORKDIR}/pipeline/alignment/prune_shortlist.py" 100 "${dir}/vocab.txt" |
+  python3 "pipeline/alignment/prune_shortlist.py" 100 "${dir}/vocab.txt" |
   pigz >"${output_dir}/lex.s2t.pruned.gz"
 
 echo "### Deleting tmp dir"

@@ -1,0 +1,10 @@
+name: bicleaner
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.7
+  - pip==21.2.2
+  - cmake=3.21.1
+  - pip:
+    - bicleaner==0.14

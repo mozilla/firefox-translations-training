@@ -2,9 +2,6 @@
 ##
 # Evaluate a quantized model on CPU.
 #
-# Usage:
-#   bash eval.sh model_dir shortlist
-#
 
 set -x
 set -euo pipefail
@@ -12,20 +9,17 @@ set -euo pipefail
 echo "###### Evaluation of a quantized model"
 
 test -v MARIAN
-test -v TEST_DATASETS
 test -v SRC
 test -v TRG
-test -v WORKDIR
 
 model_dir=$1
 shortlist=$2
 datasets_dir=$3
+vocab=$4
 
 eval_dir="${model_dir}/eval"
-vocab="${model_dir}/vocab.spm"
 
 mkdir -p "${eval_dir}"
-source "${WORKDIR}/pipeline/setup/activate-python.sh"
 
 echo "### Evaluating a model ${model_dir} on CPU"
 for src_path in "${datasets_dir}"/*."${SRC}"; do
@@ -37,14 +31,14 @@ for src_path in "${datasets_dir}"/*."${SRC}"; do
     "${MARIAN}"/marian-decoder \
       -m "${model_dir}/model.intgemm.alphas.bin" \
       -v "${vocab}" "${vocab}" \
-      -c "${WORKDIR}/pipeline/quantize/decoder.yml" \
+      -c "pipeline/quantize/decoder.yml" \
       --quiet \
       --quiet-translation \
       --log "${eval_dir}/${prefix}.log" \
       --shortlist "${shortlist}" false \
       --int8shiftAlphaAll |
     tee "${eval_dir}/${prefix}.${TRG}" |
-    sacrebleu -d -l "${SRC}-${TRG}" "${datasets_dir}/${prefix}.${TRG}" |
+    sacrebleu -d --score-only -l "${SRC}-${TRG}" "${datasets_dir}/${prefix}.${TRG}" |
     tee "${eval_dir}/${prefix}.${TRG}.bleu"
 
   test -e "${eval_dir}/${prefix}.${TRG}.bleu" || exit 1

@@ -2,9 +2,6 @@
 ##
 # Runs quantization of the student model.
 #
-# Usage:
-#   bash quantize.sh model_dir shortlist devtest_src output_dir
-#
 
 set -x
 set -euo pipefail
@@ -15,27 +12,15 @@ test -v MARIAN
 test -v BIN
 test -v SRC
 test -v TRG
-test -v WORKDIR
 
-model_dir=$1
-shortlist=$2
-devtest_src=$3
-output_dir=$4
+model=$1
+vocab=$2
+shortlist=$3
+devtest_src=$4
+output_dir=$5
 
 res_model="${output_dir}/model.intgemm.alphas.bin"
-
-if [ -e "${res_model}" ]; then
-  echo "### Converted model already exists, skipping"
-  echo "###### Done: Quantizing a model"
-  exit 0
-fi
-
-source "${WORKDIR}/pipeline/setup/activate-python.sh"
 mkdir -p "${output_dir}"
-
-model="${model_dir}/model.npz.best-bleu-detok.npz"
-vocab="${model_dir}/vocab.spm"
-
 cp "${vocab}" "${output_dir}"
 
 echo "### Decoding a sample test set in order to get typical quantization values"
@@ -43,7 +28,7 @@ test -s "${output_dir}/quantmults" ||
   "${MARIAN}"/marian-decoder \
     -m "${model}" \
     -v "${vocab}" "${vocab}" \
-    -c "${WORKDIR}/pipeline/quantize/decoder.yml" \
+    -c "pipeline/quantize/decoder.yml" \
     -i "${devtest_src}" \
     -o "${output_dir}/output.${TRG}" \
     --shortlist "${shortlist}" false \

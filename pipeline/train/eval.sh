@@ -2,9 +2,6 @@
 ##
 # Evaluate a model.
 #
-# Usage:
-#   bash eval.sh model_dir [src] [trg]
-#
 
 set -x
 set -euo pipefail
@@ -14,8 +11,6 @@ echo "###### Evaluation of a model"
 test -v GPUS
 test -v MARIAN
 test -v WORKSPACE
-test -v TEST_DATASETS
-test -v WORKDIR
 
 model_dir=$1
 datasets_dir=$2
@@ -29,7 +24,6 @@ eval_dir="${model_dir}/eval"
 echo "### Checking model files"
 test -e "${config}" || exit 1
 mkdir -p "${eval_dir}"
-source "${WORKDIR}/pipeline/setup/activate-python.sh"
 
 echo "### Evaluating a model ${model_dir}"
 for src_path in "${datasets_dir}"/*."${src}"; do
@@ -46,7 +40,7 @@ for src_path in "${datasets_dir}"/*."${src}"; do
       --log "${eval_dir}/${prefix}.log" \
       -d ${GPUS} |
     tee "${eval_dir}/${prefix}.${trg}" |
-    sacrebleu -d -l "${src}-${trg}" "${datasets_dir}/${prefix}.${trg}"  |
+    sacrebleu -d --score-only -l "${src}-${trg}" "${datasets_dir}/${prefix}.${trg}"  |
     tee "${eval_dir}/${prefix}.${trg}.bleu"
 
   test -e "${eval_dir}/${prefix}.${trg}.bleu" || exit 1

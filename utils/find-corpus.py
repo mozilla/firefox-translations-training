@@ -51,4 +51,4 @@ for name in names:
     if not filter:
         cleaned.add(name)
 
-print(' '.join(cleaned))
+print('\n'.join([f'\t\t- {name}' for name in cleaned]))

@@ -2,9 +2,6 @@
 ##
 # Downloads corpus using sacrebleu
 #
-# Usage:
-#   bash sacrebleu.sh source target dir dataset
-#
 
 set -x
 set -euo pipefail
@@ -16,9 +13,6 @@ trg=$2
 dir=$3
 dataset=$4
 
-test -v WORKDIR
-
-source "${WORKDIR}/pipeline/setup/activate-python.sh"
 name="${dataset//[^A-Za-z0-9_- ]/_}"
 
 test -s "${dir}/${name}.${src}" ||

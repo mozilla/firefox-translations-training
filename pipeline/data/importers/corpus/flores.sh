@@ -3,9 +3,6 @@
 # Downloads flores dataset
 # Dataset type can be "dev" or "devtest"
 #
-# Usage:
-#   bash flores.sh source target dir dataset
-#
 
 set -x
 set -euo pipefail
@@ -24,8 +21,6 @@ test -s "${tmp}/flores101_dataset.tar.gz" ||
   wget -O "${tmp}/flores101_dataset.tar.gz" "https://dl.fbaipublicfiles.com/flores101/dataset/flores101_dataset.tar.gz"
 
 tar -xzf "${tmp}/flores101_dataset.tar.gz" -C "${tmp}" --no-same-owner
-
-source "${WORKDIR}/pipeline/setup/activate-python.sh"
 
 flores_code() {
   code=$1

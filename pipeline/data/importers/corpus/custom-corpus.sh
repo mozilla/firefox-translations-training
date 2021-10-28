@@ -3,9 +3,6 @@
 # Use custom dataset that is already downloaded to a local disk
 # Local path prefix without `.<lang_code>.gz` should be specified as a "dataset" parameter
 #
-# Usage:
-#   bash custom-corpus.sh source target dir dataset
-#
 
 set -x
 set -euo pipefail

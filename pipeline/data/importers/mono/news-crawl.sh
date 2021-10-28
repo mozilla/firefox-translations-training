@@ -2,9 +2,6 @@
 ##
 # Downloads monolingual data from WMT news crawl
 #
-# Usage:
-#   bash opus.sh lang output_prefix dataset
-#
 
 set -x
 set -euo pipefail

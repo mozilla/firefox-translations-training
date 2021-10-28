@@ -2,10 +2,6 @@
 ##
 # Train a model.
 #
-# Usage:
-#   bash train.sh model_config training_config src trg data_dir train_set_prefix \
-#                 valid_set_prefix model_dir [extra_marian_params...]
-#
 
 set -x
 set -euo pipefail
@@ -21,19 +17,18 @@ trg=$4
 train_set_prefix=$5
 valid_set_prefix=$6
 model_dir=$7
+vocab=$8
+extra_params=( "${@:9}" )
 
 test -v GPUS
 test -v MARIAN
 test -v WORKSPACE
 
-test -e "${train_set_prefix}.${src}.gz" || exit 1
-test -e "${train_set_prefix}.${trg}.gz" || exit 1
-test -e "${valid_set_prefix}.${src}.gz" || exit 1
-test -e "${valid_set_prefix}.${trg}.gz" || exit 1
-
 mkdir -p "${model_dir}/tmp"
 
 echo "### Training ${model_dir}"
+
+# if doesn't fit in RAM, remove --shuffle-in-ram and add --shuffle batches
 
 "${MARIAN}/marian" \
   --model "${model_dir}/model.npz" \
@@ -41,7 +36,7 @@ echo "### Training ${model_dir}"
   --train-sets "${train_set_prefix}".{"${src}","${trg}"}.gz \
   -T "${model_dir}/tmp" \
   --shuffle-in-ram \
-  --vocabs "${model_dir}/vocab.spm" "${model_dir}/vocab.spm" \
+  --vocabs "${vocab}" "${vocab}" \
   -w "${WORKSPACE}" \
   --devices ${GPUS} \
   --sync-sgd \
@@ -53,7 +48,7 @@ echo "### Training ${model_dir}"
   --keep-best \
   --log "${model_dir}/train.log" \
   --valid-log "${model_dir}/valid.log" \
-  "${@:8}"
+  "${extra_params[@]}"
 
 echo "### Model training is completed: ${model_dir}"
 echo "###### Done: Training a model"

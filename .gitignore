@@ -132,3 +132,4 @@ dmypy.json
 .data
 .models
 .bin
+.snakemake

@@ -4,7 +4,6 @@ mini-batch: 16
 mini-batch-words: 2000
 maxi-batch: 1000
 maxi-batch-sort: src
-workspace: 8000
 max-length: 200
 max-length-crop: true
 beam-size: 8

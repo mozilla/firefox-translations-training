@@ -1,0 +1,29 @@
+Bootstrap: docker
+From: ubuntu:18.04
+Stage: spython-base
+
+%files
+pipeline/setup/install-deps.sh install-deps.sh
+%post
+
+
+bash install-deps.sh
+
+wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh
+
+CONDA_DIR=/opt/conda
+LANG=C.UTF-8
+LC_ALL=C.UTF-8
+PATH=${CONDA_DIR}/bin:${PATH}
+
+bash Mambaforge-$(uname)-$(uname -m).sh -b -p ${CONDA_DIR}
+. ${CONDA_DIR}/etc/profile.d/conda.sh && conda activate base
+%environment
+export CONDA_DIR=/opt/conda
+export LANG=C.UTF-8
+export LC_ALL=C.UTF-8
+export PATH=${CONDA_DIR}/bin:${PATH}
+%runscript
+exec /bin/bash "$@"
+%startscript
+exec /bin/bash "$@"

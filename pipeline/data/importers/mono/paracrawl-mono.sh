@@ -2,9 +2,6 @@
 ##
 # Downloads monolingual Paracrawl data
 #
-# Usage:
-#   bash paracrawl.sh lang dir dataset
-#
 
 set -x
 set -euo pipefail
