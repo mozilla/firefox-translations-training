@@ -29,7 +29,7 @@ for lng in "${SRC}" "${TRG}"; do
   test -s "${output}.${lng}.nrm.gz" ||
     pigz -dc "${data}.${lng}.gz" |
     parallel --no-notice --pipe -k -j "${threads}" --block 50M \
-      "perl ${CLEAN_TOOLS}/remove-non-printing-char.perl | perl ${CLEAN_TOOLS}/normalize-punctuation.perl -l ${lng}" |
+      "perl ${CLEAN_TOOLS}/remove-non-printing-char.perl" |
     pigz >"${output}.${lng}.nrm.gz"
 done
 

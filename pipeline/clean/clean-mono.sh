@@ -26,7 +26,7 @@ echo "### Basic preprocessing"
 test -s "${output}.${lang}.nrm.gz" ||
   pigz -dc "${input}.${lang}.gz" |
   parallel --no-notice --pipe -k -j "${threads}" --block 50M \
-    "perl ${CLEAN_TOOLS}/remove-non-printing-char.perl | perl ${CLEAN_TOOLS}/normalize-punctuation.perl -l ${lang}" |
+    "perl ${CLEAN_TOOLS}/remove-non-printing-char.perl" |
   pigz >"${output}.${lang}.nrm.gz"
 
 ######################################################################
