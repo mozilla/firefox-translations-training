@@ -40,7 +40,7 @@ echo "### Training ${model_dir}"
   -w "${WORKSPACE}" \
   --devices ${GPUS} \
   --sync-sgd \
-  --valid-metrics bleu-detok ce-mean-words perplexity \
+  --valid-metrics ce-mean-words bleu-detok \
   --valid-sets "${valid_set_prefix}".{"${src}","${trg}"}.gz \
   --valid-translation-output "${model_dir}/devset.out" \
   --quiet-translation \

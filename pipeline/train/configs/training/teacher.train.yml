@@ -1,24 +1,7 @@
-# https://github.com/marian-nmt/marian-examples/tree/master/transformer
-beam-size: 6
-clip-norm: 5
-cost-type: ce-mean-words
-disp-first: 10
-disp-freq: 500
-early-stopping: 10
-exponential-smoothing: True
-label-smoothing: 0.1
+disp-freq: 100
 learn-rate: 0.0003 # Turn this down if you get a diverged model, maybe 0.0001
-lr-decay-inv-sqrt: 16000
-lr-report: True
-lr-warmup: 16000
-max-length: 100
-maxi-batch: 1000
-mini-batch-fit: True
-normalize: 0.6
 optimizer-delay: 1 # Roughly GPU devices * optimizer-delay = 8, but keep as an integer
-optimizer-params: [0.9, 0.98, 1e-09]
 save-freq: 5000
-valid-freq: 5000
-valid-mini-batch: 64
-
-
+valid-freq: 3000
+valid-max-length: 300
+valid-mini-batch: 8
