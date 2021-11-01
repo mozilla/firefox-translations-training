@@ -151,7 +151,7 @@ student_dir = f"{models_dir}/student"
 student_finetuned_dir = f"{models_dir}/student-finetuned"
 speed = f"{models_dir}/speed"
 exported = f"{models_dir}/exported"
-best_model = "model.npz.best-bleu-detok.npz"
+best_model = "model.npz.best-ce-mean-words.npz"
 s2s=f'{models_dir}/s2s'
 
 
@@ -204,10 +204,13 @@ else:
 
 if mono_trg_datasets:
     teacher_corpus = f'{augmented}/corpus'
-    augment_corpus=True
+    augment_corpus = True
+    continue_teacher = True # continue training on parallel corpus
+    teacher_all_output = 'model.npz'
 else:
-    augment_corpus=False
-
+    augment_corpus = False
+    continue_teacher = False
+    teacher_all_output = best_model
 
 
 ### rules
@@ -222,7 +225,7 @@ rule all:
     input: results
 
 localrules: experiment
-ruleorder: teacher > eval_teacher
+ruleorder: teacher_all > eval_teacher
 
 rule experiment:
     message: "Saving experiment metadata"
@@ -472,9 +475,11 @@ if augment_corpus:
                     "{input.src1}" "{input.src2}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
                       >> {log} 2>&1'''
 
-rule teacher:
-    message: "Training teacher"
-    log: f"{log_dir}/train_teacher{{ens}}.log"
+
+
+rule teacher_all:
+    message: "Training teacher on all data"
+    log: f"{log_dir}/train_teacher_all{{ens}}.log"
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
@@ -483,11 +488,31 @@ rule teacher:
         train_src=f'{teacher_corpus}.{src}.gz',train_trg=f'{teacher_corpus}.{trg}.gz',
         val_src=rules.data_val.output.src,val_trg=rules.data_val.output.trg,
         bin=rules.marian.output.trainer,vocab=rules.train_vocab.output
-    output: model=f'{teacher_dir}{{ens}}/{best_model}'
+    output: model=f'{teacher_dir}{{ens}}/{teacher_all_output}'
     params: prefix_train=teacher_corpus, prefix_test=f"{original}/devset", dir=directory(f'{teacher_dir}{{ens}}')
     shell: '''bash pipeline/train/train-teacher.sh \
                 "{params.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
                 {training_args} >> {log} 2>&1'''
+
+if continue_teacher:
+    # ruleorder: teacher_all > teacher_parallel > eval_teacher
+    rule teacher_parallel:
+        message: "Continue training teacher on parallel corpus"
+        log: f"{log_dir}/train_teacher_parallel{{ens}}.log"
+        conda: "envs/base.yml"
+        threads: gpus_num * 2
+        resources: gpu=gpus_num
+        group: 'teacher{ens}'
+        input:
+            model = f'{teacher_dir}{{ens}}/model.npz',
+            train_src=clean_corpus_src,train_trg=clean_corpus_trg,
+            val_src=rules.data_val.output.src,val_trg=rules.data_val.output.trg,
+            bin=rules.marian.output.trainer,vocab=rules.train_vocab.output
+        output: model=f'{teacher_dir}{{ens}}/{best_model}'
+        params: prefix_train=teacher_corpus,prefix_test=f"{original}/devset",dir=directory(f'{teacher_dir}{{ens}}')
+        shell: '''bash pipeline/train/train-teacher.sh \
+                    "{params.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
+                    {training_args} >> {log} 2>&1'''
 
 rule eval_teacher:
     message: "Evaluating teacher model"
