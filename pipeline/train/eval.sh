@@ -12,20 +12,16 @@ test -v GPUS
 test -v MARIAN
 test -v WORKSPACE
 
-model_dir=$1
+eval_dir=$1
 datasets_dir=$2
-src="${3:-${SRC}}"
-trg="${4:-${TRG}}"
+src=$3
+trg=$4
+models=( "${@:5}" )
 
 
-config="${model_dir}/model.npz.best-bleu-detok.npz.decoder.yml"
-eval_dir="${model_dir}/eval"
-
-echo "### Checking model files"
-test -e "${config}" || exit 1
 mkdir -p "${eval_dir}"
 
-echo "### Evaluating a model ${model_dir}"
+echo "### Evaluating the model"
 for src_path in "${datasets_dir}"/*."${src}"; do
   prefix=$(basename "${src_path}" ".${src}")
   echo "### Evaluating ${prefix} ${src}-${trg}"
@@ -33,7 +29,8 @@ for src_path in "${datasets_dir}"/*."${src}"; do
   test -s "${eval_dir}/${prefix}.${trg}.bleu" ||
     tee "${eval_dir}/${prefix}.${src}" < "${src_path}" |
     "${MARIAN}"/marian-decoder \
-      -c "${config}" \
+      -m "${models[@]}" \
+      -c "${models[0]}/decoder.yml" \
       -w "${WORKSPACE}" \
       --quiet \
       --quiet-translation \

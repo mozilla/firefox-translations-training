@@ -72,6 +72,7 @@ container: 'Singularity.sif'
 #│   │      ├ student
 #│   │      ├ student-finetuned
 #│   │      ├ speed
+#│   │      ├ evaluation
 #│   │      └ exported
 #│   ├ en-ru
 #│      └ test
@@ -151,9 +152,16 @@ student_dir = f"{models_dir}/student"
 student_finetuned_dir = f"{models_dir}/student-finetuned"
 speed = f"{models_dir}/speed"
 exported = f"{models_dir}/exported"
-best_model = "model.npz.best-ce-mean-words.npz"
+best_model = f"model.npz.best-{config['experiment']['best-model']}.npz"
 s2s=f'{models_dir}/s2s'
 
+#evaluation
+eval_res = f"{models_dir}/evaluation"
+eval_backward = f'{eval_res}/s2s'
+eval_student = f'{eval_res}/student',
+eval_student_finetuned = f'{eval_res}/student-finetuned',
+eval_speed = f'{eval_res}/speed',
+eval_teacher_ens = f'{eval_res}/teacher-ensemble',
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
@@ -166,10 +174,11 @@ results = [f'{exported}/model.{src}{trg}.intgemm.alphas.bin.gz',
            f'{exported}/lex.50.50.{src}{trg}.s2t.bin.gz',
            f'{exported}/vocab.{src}{trg}.spm.gz',
            f'{experiment_dir}/config.yml',
-           expand(f'{teacher_dir}{{ens}}/eval',ens=ensemble),
-           f'{student_dir}/eval',
-           f'{student_finetuned_dir}/eval',
-           f'{speed}/eval',
+           expand(f'{eval_res}/teacher{{ens}}',ens=ensemble),
+           f'{eval_res}/student',
+           f'{eval_res}/student-finetuned',
+           f'{eval_res}/speed',
+           f'{eval_res}/teacher-ensemble',
            ]
 
 if install_deps:
@@ -178,7 +187,7 @@ if install_deps:
 if not backward_model:
     backward_model = s2s
     # don't evaluate pretrained model
-    results.append(f'{backward_model}/eval')
+    results.append(eval_backward)
     train_s2s=True
 else:
     train_s2s = False
@@ -420,9 +429,9 @@ if train_s2s:
         priority: 50
         input: model=f'{backward_model}/{best_model}', datasets=rules.data_test.output
         output:
-            report(directory(f'{backward_model}/eval'),patterns=["{name}.bleu"],
+            report(directory(eval_backward),patterns=["{name}.bleu"],
                 category='evaluation', subcategory='finetuned', caption='reports/evaluation.rst')
-        shell: 'bash pipeline/train/eval.sh "{backward_model}" "{evaluation}" {trg} {src} >> {log} 2>&1'
+        shell: 'bash pipeline/train/eval.sh "{eval_backward}" "{evaluation}" {trg} {src} {input.model} >> {log} 2>&1'
 
 
 
@@ -526,10 +535,27 @@ rule eval_teacher:
         model=f'{teacher_dir}{{ens}}/{best_model}',
         datasets=rules.data_test.output
     output:
-        report(directory(f'{teacher_dir}{{ens}}/eval'), patterns=["{name}.bleu"],
+        report(directory(f'{eval_res}/teacher{{ens}}'), patterns=["{name}.bleu"],
             category='evaluation', subcategory='teacher', caption='reports/evaluation.rst')
-    params: dir=f'{teacher_dir}{{ens}}'
-    shell: 'bash pipeline/train/eval.sh "{params.dir}" "{evaluation}" {src} {trg} >> {log} 2>&1'
+    params: dir=f'{eval_res}/teacher{{ens}}'
+    shell: 'bash pipeline/train/eval.sh "{params.dir}" "{evaluation}" {src} {trg} {input.model} >> {log} 2>&1'
+
+
+if len(ensemble) > 1:
+    rule eval_teacher_ensemble:
+        message: "Evaluating an ensemble of teacher models"
+        log: f"{log_dir}/eval_teacher_ensemble.log"
+        conda: "envs/base.yml"
+        threads: gpus_num * 2
+        resources: gpu=gpus_num
+        priority: 50
+        input:
+            models=[f'{teacher_dir}{ens}/{best_model}' for ens in ensemble],
+            datasets=rules.data_test.output
+        output:
+            report(directory(eval_teacher_ens),patterns=["{name}.bleu"],
+                category='evaluation',subcategory='teacher_ensemble',caption='reports/evaluation.rst')
+        shell: 'bash pipeline/train/eval.sh "{eval_teacher_ens}" "{evaluation}" {src} {trg} {input.models} >> {log} 2>&1'
 
 
 ### translation with teacher
@@ -709,9 +735,9 @@ rule eval_student:
     priority: 50
     input: model=rules.student.output.model, datasets=rules.data_test.output
     output:
-        report(directory(f'{student_dir}/eval'),patterns=["{name}.bleu"],category='evaluation',
+        report(directory(eval_student),patterns=["{name}.bleu"],category='evaluation',
             subcategory='student', caption='reports/evaluation.rst')
-    shell: 'bash pipeline/train/eval.sh "{student_dir}" "{evaluation}" {src} {trg} >> {log} 2>&1'
+    shell: 'bash pipeline/train/eval.sh "{eval_student}" "{evaluation}" {src} {trg} {input.model} >> {log} 2>&1'
 
 # quantize
 
@@ -743,9 +769,10 @@ rule eval_finetuned_student:
     priority: 50
     input: model=rules.finetune_student.output.model, datasets=rules.data_test.output
     output:
-        report(directory(f'{student_finetuned_dir}/eval'),patterns=["{name}.bleu"],
+        report(directory(eval_student_finetuned),patterns=["{name}.bleu"],
             category='evaluation', subcategory='finetuned', caption='reports/evaluation.rst')
-    shell: 'bash pipeline/train/eval.sh "{student_finetuned_dir}" "{evaluation}" {src} {trg} >> {log} 2>&1'
+    shell: 'bash pipeline/train/eval.sh "{eval_student_finetuned}" "{evaluation}" {src} {trg} {input.model} \
+                >> {log} 2>&1'
 
 rule quantize:
     message: "Quantization"
@@ -773,9 +800,9 @@ rule eval_quantized:
         datasets=rules.data_test.output,
         shortlist=rules.alignments.output.shortlist,vocab=rules.train_vocab.output
     output:
-        report(directory(f'{speed}/eval'),patterns=["{name}.bleu"], category='evaluation',
+        report(directory(eval_speed),patterns=["{name}.bleu"], category='evaluation',
             subcategory='quantized', caption='reports/evaluation.rst')
-    shell: '''bash pipeline/quantize/eval.sh "{speed}" "{input.shortlist}" "{evaluation}" "{input.vocab}" \
+    shell: '''bash pipeline/quantize/eval.sh "{speed}" "{input.shortlist}" "{evaluation}" "{input.vocab}" "{eval_speed}" \
             >> {log} 2>&1'''
 
 rule export:

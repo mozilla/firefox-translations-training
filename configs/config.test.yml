@@ -20,7 +20,10 @@ experiment:
 
   bicleaner-threshold: 0.5
 
+  # split corpus to parallelize translation
   split-length: 100000
+
+  best-model: chrf
 
 training:
   after-epochs: 1

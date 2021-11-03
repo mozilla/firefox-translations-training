@@ -16,8 +16,7 @@ model_dir=$1
 shortlist=$2
 datasets_dir=$3
 vocab=$4
-
-eval_dir="${model_dir}/eval"
+eval_dir=$5
 
 mkdir -p "${eval_dir}"
 

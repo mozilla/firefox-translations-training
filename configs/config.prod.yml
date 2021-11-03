@@ -24,6 +24,8 @@ experiment:
   # split corpus to parallelize translation
   split-length: 2000000
 
+  best-model: chrf
+
 
 
 datasets:
