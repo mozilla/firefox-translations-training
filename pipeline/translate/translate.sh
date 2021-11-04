@@ -25,3 +25,4 @@ models=( "${@:3}" )
   -d ${GPUS} \
   -w "${WORKSPACE}"
 
+test "$(wc -l <"${input}")" == "$(wc -l <"${input}.out")"

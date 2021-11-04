@@ -26,3 +26,4 @@ models=( "${@:3}" )
   -d ${GPUS} \
   -w "${WORKSPACE}"
 
+test "$(wc -l <"${input}.nbest")" -eq "$(( $(wc -l <"${input}") * 8 ))"
