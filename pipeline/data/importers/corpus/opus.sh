@@ -12,7 +12,7 @@ src=$1
 trg=$2
 dir=$3
 dataset=$4
-
+# todo: write to output file instead of dir
 name=${dataset%%/*}
 
 if [ ! -s "${dir}/${name}.${src}-${trg}.${trg}" ] && [ ! -s "${dir}/${name}.${trg}-${src}.${trg}" ]; then

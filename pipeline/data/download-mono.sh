@@ -8,12 +8,12 @@ set -euo pipefail
 
 echo "###### Downloading monolingual data"
 
-lang=$1
-max_sent=$2
-prefix=$3
-cache=$4
-datasets=( "${@:5}" )
+dataset=$1
+lang=$2
+max_sent=$3
+prefix=$4
 
+#todo: fix downloading
 file_name="${prefix}.${lang}.gz"
 dir=$(dirname "${prefix}")/mono
 
@@ -22,37 +22,30 @@ if [ ! -e "${file_name}" ]; then
   mkdir -p "${dir}"
   coef=0.1
 
-  for dataset in "${datasets[@]}"; do
-    echo "### Downloading dataset ${dataset}"
-    source_prefix="${dir}/${dataset}.original.${lang}"
-    gz_path="${dir}/${dataset}.${lang}.gz"
-    name=${dataset#*_}
-    type=${dataset%%_*}
+  echo "### Downloading dataset ${dataset}"
+  source_prefix="${dir}/${dataset}.original.${lang}"
+  gz_path="${dir}/${dataset}.${lang}.gz"
+  name=${dataset#*_}
+  type=${dataset%%_*}
 
-    test -s "${source_prefix}.gz" ||
-      bash "pipeline/data/importers/mono/${type}.sh" "${lang}" "${source_prefix}" "${name}"
+  test -s "${source_prefix}.gz" ||
+    bash "pipeline/data/importers/mono/${type}.sh" "${lang}" "${source_prefix}" "${name}"
 
-    echo "### Sampling dataset ${dataset}"
-    # temporary disable pipefail because perl operation causes SIGPIPE (141)
-    set +o pipefail
-    test -s "${gz_path}" ||
-      pigz -dc "${source_prefix}.gz" |
-      shuf -n "$(bc -l <<<"${max_sent}+${max_sent}*${coef}")" |
-      perl -ne 'print if(split(/\s/, $_) < 100)' |
-      head -n "${max_sent}" |
-      pigz >"${gz_path}"
-    set -o pipefail
+  echo "### Sampling dataset ${dataset}"
+  # temporary disable pipefail because perl operation causes SIGPIPE (141)
+  set +o pipefail
+  test -s "${gz_path}" ||
+    pigz -dc "${source_prefix}.gz" |
+    shuf -n "$(bc -l <<<"${max_sent}+${max_sent}*${coef}")" |
+    perl -ne 'print if(split(/\s/, $_) < 100)' |
+    head -n "${max_sent}" |
+    pigz >"${gz_path}"
+  set -o pipefail
 
-    rm "${source_prefix}"*
-  done
-
-  pigz -dc "${dir}"/*."${lang}".gz | shuf -n "${max_sent}" | pigz >"${file_name}"
+  rm "${source_prefix}"*
 
 fi
 
 test -s "${file_name}"
-
-lines=$(pigz -dc "${file_name}" | wc -l)
-echo "### Number of sentences: ${lines}"
 
 echo "###### Done: Downloading monolingual data"

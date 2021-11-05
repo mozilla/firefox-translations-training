@@ -123,7 +123,11 @@ run-file-server:
 ### extra
 
 dag:
-	snakemake --dag | dot -Tpdf > DAG.pdf
+	snakemake \
+	  --dag \
+	  --configfile $(CONFIG) \
+	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) \
+	  | dot -Tpdf > DAG.pdf
 
 lint:
 	snakemake --lint

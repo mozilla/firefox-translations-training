@@ -20,7 +20,7 @@ models=( "${@:5}" )
 
 
 mkdir -p "${eval_dir}"
-
+#todo: work with gz corpus
 echo "### Evaluating the model"
 for src_path in "${datasets_dir}"/*."${src}"; do
   prefix=$(basename "${src_path}" ".${src}")

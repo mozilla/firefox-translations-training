@@ -15,6 +15,7 @@ corpus_prefix=$1
 output_prefix=$2
 bicleaner_threshold=$3
 type=$4
+threads=$5
 
 output_dir=$(dirname "${output_prefix}")
 tmp_dir="${output_dir}/tmp"
@@ -36,7 +37,7 @@ fi
 echo "### Classifying and filtering"
 test -s "${tmp_dir}/best.gz" ||
   paste <(pigz -dc "${corpus_prefix}.${SRC}.gz") <(pigz -dc "${corpus_prefix}.${TRG}.gz") |
-  ${cmd} --scol 1 --tcol 1 - - "${tmp_dir}"/*.yaml |
+  ${cmd} --scol 1 --tcol 1 --processes "${threads}"  - - "${tmp_dir}"/*.yaml |
   awk -v threshold=${bicleaner_threshold} '{if ($3>threshold) {print $0}}' |
   pigz >"${tmp_dir}/best.gz"
 

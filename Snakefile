@@ -15,76 +15,6 @@ min_version("6.6.1")
 
 container: 'Singularity.sif'
 
-
-# Directories structure
-#
-#├ data
-#│   ├ cache
-#│   │  ├ corpus
-#│   │  │  └ opus
-#│   │  │    ├ ada83_v1.en.gz
-#│   │  │    └ ada83_v1.ru.gz
-#│   │  └ mono
-#│   │     └ news-crawl
-#│   │       ├ news.2019.ru.gz
-#│   │       └ news.2019.en.gz
-#│   └ ru-en
-#│      └ test
-#│        ├ original
-#│        │   ├ corpus.ru.gz
-#│        │   ├ corpus.en.gz
-#│        │   ├ mono.ru.gz
-#│        │   ├ mono.en.gz
-#│        │   ├ devset.ru.gz
-#│        │   └ devset.en.gz
-#│        ├ evaluation
-#│        │   ├ wmt12.ru
-#│        │   ├ wmt12.en
-#│        │   ├ wmt20.ru
-#│        │   ├ wmt20.en
-#│        ├ clean
-#│        │   ├ corpus.ru.gz
-#│        │   ├ corpus.en.gz
-#│        │   ├ mono.ru.gz
-#│        │   └ mono.en.gz
-#│        ├ biclean
-#│        │   ├ corpus.ru.gz
-#│        │   ├ corpus.en.gz
-#│        ├ translated
-#│        │   ├ mono.ru.gz
-#│        │   └ mono.en.gz
-#│        ├ augmented
-#│        │   ├ corpus.ru.gz
-#│        │   └ corpus.en.gz
-#│        ├ alignment
-#│        │   ├ corpus.aln.gz
-#│        │   └ lex.s2t.pruned.gz
-#│        ├ merged
-#│        │   ├ corpus.ru.gz
-#│        │   └ corpus.en.gz
-#│        └ filtered
-#│            ├ corpus.ru.gz
-#│            └ corpus.en.gz
-#├ models
-#│   ├ ru-en
-#│   │   └ test
-#│   │      ├ teacher
-#│   │      ├ student
-#│   │      ├ student-finetuned
-#│   │      ├ speed
-#│   │      ├ evaluation
-#│   │      └ exported
-#│   ├ en-ru
-#│      └ test
-#│         └ s2s
-#│
-#├ experiments
-#│   └ ru-en
-#│      └ test
-#│         └ config.sh
-#├ logs
-
-
 install_deps = config['deps'] == 'true'
 data_root_dir = config['root']
 cuda_dir = config['cuda']
@@ -114,6 +44,9 @@ valid_datasets = config['datasets']['devtest']
 eval_datasets = config['datasets']['test']
 mono_src_datasets = config['datasets']['mono-src']
 mono_trg_datasets = config['datasets']['mono-trg']
+
+mono_datasets = {src: mono_src_datasets, trg: mono_trg_datasets}
+mono_max_sent = {src: mono_max_sent_src, trg: mono_max_sent_trg}
 
 # parallelization
 gpus = ' '.join([str(n) for n in range(int(gpus_num))])
@@ -162,6 +95,7 @@ eval_student = f'{eval_res}/student',
 eval_student_finetuned = f'{eval_res}/student-finetuned',
 eval_speed = f'{eval_res}/speed',
 eval_teacher_ens = f'{eval_res}/teacher-ensemble',
+full_eval_datasets = [expand(f'{original}/eval/{{dataset}}.{{lang}}.gz', dataset=eval_datasets, lang=[src,trg])]
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
@@ -177,9 +111,11 @@ results = [f'{exported}/model.{src}{trg}.intgemm.alphas.bin.gz',
            expand(f'{eval_res}/teacher{{ens}}',ens=ensemble),
            f'{eval_res}/student',
            f'{eval_res}/student-finetuned',
-           f'{eval_res}/speed',
-           f'{eval_res}/teacher-ensemble',
+           f'{eval_res}/speed'
            ]
+
+if len(ensemble) > 1:
+    results.append(f'{eval_res}/teacher-ensemble')
 
 if install_deps:
     results.append("/tmp/flags/setup.done")
@@ -198,15 +134,16 @@ bicleaner_type = packs.find(src, trg)
 bicleaner_env = "envs/bicleaner-ai.yml" if bicleaner_type == 'bicleaner-ai' else 'envs/bicleaner.yml'
 
 if bicleaner_type:
-    clean_corpus_src = f"{biclean}/corpus.{src}.gz"
-    clean_corpus_trg = f"{biclean}/corpus.{trg}.gz"
+    clean_corpus_prefix = f'{biclean}/corpus'
     teacher_corpus = f'{biclean}/corpus'
     use_bicleaner = True
 else:
-    clean_corpus_src = f"{clean}/corpus.{src}.gz"
-    clean_corpus_trg = f"{clean}/corpus.{trg}.gz"
+    clean_corpus_prefix = f'{clean}/corpus'
     teacher_corpus = f'{clean}/corpus'
     use_bicleaner = False
+
+clean_corpus_src = f'{clean_corpus_prefix}.{src}.gz'
+clean_corpus_trg = f'{clean_corpus_prefix}.{trg}.gz'
 
 
 # augmentation
@@ -287,71 +224,59 @@ rule extract_lex:
     output: protected(f"{bin}/extract_lex")
     shell: 'bash pipeline/setup/compile-extract-lex.sh {extract_lex_build} {threads} >> {log} 2>&1'
 
-# data
+# data downloading
 
-rule data_train:
-    message: "Downloading training corpus"
-    log: f"{log_dir}/data_train.log"
+rule download_corpus:
+    message: "Downloading parallel corpus"
+    log: f"{log_dir}/download_corpus/{{kind}}/{{dataset}}.log"
     conda: "envs/base.yml"
     threads: 1
     group: 'data'
-    output: src=f"{original}/corpus.{src}.gz",trg=f"{original}/corpus.{trg}.gz"
-    params: prefix=f"{original}/corpus"
-    shell: 'bash pipeline/data/download-corpus.sh "{params.prefix}" "{cache_dir}" train {train_datasets} >> {log} 2>&1'
+    wildcard_constraints:
+        kind="corpus|devset|eval"
+    output: multiext(f"{original}/{{kind}}/{{dataset}}", f".{src}.gz", f".{trg}.gz")
+    params: prefix=f"{original}/{{kind}}/{{dataset}}"
+    shell: 'bash pipeline/data/download-corpus.sh "{wildcards.dataset}" "{params.prefix}"  >> {log} 2>&1'
 
-rule data_val:
-    message: "Downloading validation corpus"
-    log: f"{log_dir}/data_val.log"
-    conda: "envs/base.yml"
-    threads: 1
-    group: 'data'
-    output: src=f"{original}/devset.{src}.gz",trg=f"{original}/devset.{trg}.gz"
-    params: prefix=f"{original}/devset"
-    shell: 'bash pipeline/data/download-corpus.sh "{params.prefix}" "{cache_dir}" valid {valid_datasets} >> {log} 2>&1'
-
-rule data_test:
-    message: "Downloading test corpus"
-    log: f"{log_dir}/data_test.log"
-    conda: "envs/base.yml"
-    threads: 1
-    group: 'data'
-    output: expand(f"{evaluation}/{{dataset}}.{{lng}}",dataset=eval_datasets,lng=[src, trg])
-    shell: 'bash pipeline/data/download-eval.sh "{evaluation}" "{cache_dir}" {eval_datasets} >> {log} 2>&1'
-
-rule data_mono_src:
+rule download_mono:
     message: "Downloading monolingual dataset for source language"
-    log: f"{log_dir}/data_mono_src.log"
+    log: f"{log_dir}/download_mono/{{dataset}}.{{lang}}.log"
     conda: "envs/base.yml"
     threads: 1
     group: 'data'
-    output: f'{original}/mono.{src}.gz'
+    wildcard_constraints:
+        lang=f"{src}|{trg}"
+    output: f'{original}/mono/{{dataset}}.{{lang}}.gz'
+    params: prefix=f"{original}/mono/{{dataset}}", max_sent=lambda wildcards: mono_max_sent[wildcards.lang]
     shell: '''bash pipeline/data/download-mono.sh \
-                "{src}" "{mono_max_sent_src}" "{original}/mono" "{cache_dir}" {mono_src_datasets} >> {log} 2>&1'''
-
-if mono_trg_datasets:
-    rule data_mono_trg:
-        message: "Downloading monolingual dataset for target language"
-        log: f"{log_dir}/data_mono_trg.log"
-        conda: "envs/base.yml"
-        threads: 1
-        group: 'data'
-        output: f'{original}/mono.{trg}.gz'
-        shell: '''bash pipeline/data/download-mono.sh \
-                  "{trg}" "{mono_max_sent_trg}" "{original}/mono" "{cache_dir}" {mono_trg_datasets} >> {log} 2>&1'''
+                "{wildcards.dataset}" {wildcards.lang} {params.max_sent} "{params.prefix}"  >> {log} 2>&1'''
 
 # cleaning
 
 rule clean_corpus:
-    message: "Cleaning corpus"
-    log: f"{log_dir}/clean_corpus.log"
+    message: "Cleaning dataset"
+    log: f"{log_dir}/clean_corpus/{{dataset}}.log"
     conda: "envs/base.yml"
+    group: "clean_corpus"
     threads: workflow.cores
-    input: rules.data_train.output.src,rules.data_train.output.trg
-    output: src=f"{clean}/corpus.{src}.gz",trg=f"{clean}/corpus.{trg}.gz"
-    params: prefix_input=f"{original}/corpus",prefix_output=f"{clean}/corpus"
+    input: multiext(f"{original}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
+    output: multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
+    params: prefix_input=f"{original}/corpus/{{dataset}}",prefix_output=f"{clean}/corpus/{{dataset}}"
     shell: '''bash pipeline/clean/clean-corpus.sh "{params.prefix_input}" "{params.prefix_output}" {threads} \
                 >> {log} 2>&1'''
 
+rule clean_mono:
+    message: "Cleaning monolingual dataset"
+    log: f"{log_dir}/clean_mono/{{dataset}}.{{lang}}.log"
+    conda: "envs/base.yml"
+    threads: workflow.cores
+    group: "clean_mono{lang}"
+    wildcard_constraints:
+        lang=f"{src}|{trg}"
+    input: f'{original}/mono/{{dataset}}.{{lang}}.gz'
+    output: f'{clean}/mono/{{dataset}}.{{lang}}.gz'
+    shell: '''bash pipeline/clean/clean-mono.sh {wildcards.lang} "{input}" "{output}" {threads} \
+                >> {log} 2>&1'''
 
 if use_bicleaner:
     rule kenlm:
@@ -365,26 +290,52 @@ if use_bicleaner:
 
     rule bicleaner:
         message: f"Cleaning corpus using {bicleaner_type}"
-        log: f"{log_dir}/bicleaner.log"
+        log: f"{log_dir}/bicleaner/{{dataset}}.log"
         conda: bicleaner_env
+        group: "clean_corpus"
         threads: workflow.cores
-        input: src=rules.clean_corpus.output.src,trg=rules.clean_corpus.output.trg,kenlm=rules.kenlm.output
-        output: src=clean_corpus_src,trg=clean_corpus_trg
-        params: prefix_input=f"{clean}/corpus",prefix_output=f"{biclean}/corpus"
+        input: rules.kenlm.output, multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
+        output: multiext(f"{biclean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
+        params: prefix_input=f"{clean}/corpus/{{dataset}}",prefix_output=f"{biclean}/corpus/{{dataset}}"
         shell: '''bash pipeline/bicleaner/bicleaner.sh \
-                    "{params.prefix_input}" "{params.prefix_output}" {bicleaner_threshold} {bicleaner_type} \
+                    "{params.prefix_input}" "{params.prefix_output}" {bicleaner_threshold} {bicleaner_type} {threads} \
                     >> {log} 2>&1'''
 
-rule clean_mono:
-    message: "Cleaning monolingual dataset"
-    log: f"{log_dir}/clean_mono_{{lang}}.log"
+rule merge_corpus:
+    message: "Merging clean parallel datasets"
+    log: f"{log_dir}/merge_corpus.log"
     conda: "envs/base.yml"
     threads: workflow.cores
-    input: f'{original}/mono.{{lang}}.gz'
+    group: "clean_corpus"
+    input:  [expand(f"{clean_corpus_prefix}/{{dataset}}.{{lang}}.gz", dataset=train_datasets, lang=[src, trg])]
+    output: src=clean_corpus_src,trg=clean_corpus_trg
+    params: prefix_output=clean_corpus_prefix, prefixes=[expand(f"{clean_corpus_prefix}/{{dataset}}", dataset=train_datasets)]
+    shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
+
+rule merge_devset:
+    message: "Merging clean parallel datasets"
+    log: f"{log_dir}/merge_corpus.log"
+    conda: "envs/base.yml"
+    threads: workflow.cores
+    group: "clean_corpus"
+    input:  [expand(f"{original}/devset/{{dataset}}.{{lang}}.gz", dataset=valid_datasets, lang=[src, trg])]
+    output: multiext(f"{original}/devset", f".{src}.gz", f".{trg}.gz")
+    params: prefix_output=f"{original}/devset", prefixes=[expand(f"{original}/devset/{{dataset}}", dataset=valid_datasets)]
+    shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
+
+rule merge_mono:
+    message: "Merging clean monolingual datasets"
+    log: f"{log_dir}/merge_mono_{{lang}}.log"
+    conda: "envs/base.yml"
+    threads: workflow.cores
+    group: "clean_mono{lang}"
+    input:
+        lambda wildcards: expand(f"{clean}/mono/{{dataset}}.{{lang}}.gz",
+            dataset=mono_datasets[wildcards.lang], lang=wildcards.lang)
     output: f"{clean}/mono.{{lang}}.gz"
-    params: lang='{lang}'
-    shell: '''bash pipeline/clean/clean-mono.sh "{params.lang}" "{original}/mono" "{clean}/mono" {threads} \
-                >> {log} 2>&1'''
+    params: max_sent=lambda wildcards: mono_max_sent[wildcards.lang]
+    shell: '''bash pipeline/clean/merge-mono.sh "{output}" {params.max_sent} {input} >> {log} 2>&1'''
+
 
 # augmentation and teacher training
 
@@ -397,7 +348,7 @@ rule train_vocab:
         bin=rules.marian.output.vocab,
         corpus_src=clean_corpus_src,corpus_trg=clean_corpus_trg
     output: f"{models_dir}/vocab/vocab.spm"
-    params: prefix_train=f"{biclean}/corpus",prefix_test=f"{original}/devset"
+    params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset"
     shell: 'bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" >> {log} 2>&1'
 
 
@@ -410,9 +361,8 @@ if train_s2s:
         resources: gpu=gpus_num
         group: 'backward'
         input:
-            train_src=clean_corpus_src,train_trg=clean_corpus_trg,
-            val_src=rules.data_val.output.src,val_trg=rules.data_val.output.trg,
-            bin=rules.marian.output.trainer, vocab=rules.train_vocab.output
+            rules.merge_devset.output, train_src=clean_corpus_src,train_trg=clean_corpus_trg,
+            bin=rules.marian.output.trainer, vocab=rules.train_vocab.output,
         output:  model=f'{backward_model}/{best_model}'
         params: prefix_train=f"{biclean}/corpus",prefix_test=f"{original}/devset"
         shell: '''bash pipeline/train/train-s2s.sh \
@@ -427,7 +377,9 @@ if train_s2s:
         resources: gpu=gpus_num
         group: 'backward'
         priority: 50
-        input: model=f'{backward_model}/{best_model}', datasets=rules.data_test.output
+        input:
+            full_eval_datasets,
+            model=f'{backward_model}/{best_model}'
         output:
             report(directory(eval_backward),patterns=["{name}.bleu"],
                 category='evaluation', subcategory='finetuned', caption='reports/evaluation.rst')
@@ -494,8 +446,7 @@ rule teacher_all:
     resources: gpu=gpus_num
     group: 'teacher{ens}'
     input:
-        train_src=f'{teacher_corpus}.{src}.gz',train_trg=f'{teacher_corpus}.{trg}.gz',
-        val_src=rules.data_val.output.src,val_trg=rules.data_val.output.trg,
+        rules.merge_devset.output, train_src=f'{teacher_corpus}.{src}.gz',train_trg=f'{teacher_corpus}.{trg}.gz',
         bin=rules.marian.output.trainer,vocab=rules.train_vocab.output
     output: model=f'{teacher_dir}{{ens}}/{teacher_all_output}'
     params: prefix_train=teacher_corpus, prefix_test=f"{original}/devset", dir=directory(f'{teacher_dir}{{ens}}')
@@ -504,7 +455,6 @@ rule teacher_all:
                 {training_args} >> {log} 2>&1'''
 
 if continue_teacher:
-    # ruleorder: teacher_all > teacher_parallel > eval_teacher
     rule teacher_parallel:
         message: "Continue training teacher on parallel corpus"
         log: f"{log_dir}/train_teacher_parallel{{ens}}.log"
@@ -513,9 +463,8 @@ if continue_teacher:
         resources: gpu=gpus_num
         group: 'teacher{ens}'
         input:
-            model = f'{teacher_dir}{{ens}}/model.npz',
+            rules.merge_devset.output, model = f'{teacher_dir}{{ens}}/model.npz',
             train_src=clean_corpus_src,train_trg=clean_corpus_trg,
-            val_src=rules.data_val.output.src,val_trg=rules.data_val.output.trg,
             bin=rules.marian.output.trainer,vocab=rules.train_vocab.output
         output: model=f'{teacher_dir}{{ens}}/{best_model}'
         params: prefix_train=teacher_corpus,prefix_test=f"{original}/devset",dir=directory(f'{teacher_dir}{{ens}}')
@@ -532,8 +481,8 @@ rule eval_teacher:
     group: 'teacher{ens}'
     priority: 50
     input:
-        model=f'{teacher_dir}{{ens}}/{best_model}',
-        datasets=rules.data_test.output
+        full_eval_datasets,
+        model=f'{teacher_dir}{{ens}}/{best_model}'
     output:
         report(directory(f'{eval_res}/teacher{{ens}}'), patterns=["{name}.bleu"],
             category='evaluation', subcategory='teacher', caption='reports/evaluation.rst')
@@ -550,8 +499,7 @@ if len(ensemble) > 1:
         resources: gpu=gpus_num
         priority: 50
         input:
-            models=[f'{teacher_dir}{ens}/{best_model}' for ens in ensemble],
-            datasets=rules.data_test.output
+            full_eval_datasets, models=[f'{teacher_dir}{ens}/{best_model}' for ens in ensemble]
         output:
             report(directory(eval_teacher_ens),patterns=["{name}.bleu"],
                 category='evaluation',subcategory='teacher_ensemble',caption='reports/evaluation.rst')
@@ -715,8 +663,7 @@ rule student:
     resources: gpu=gpus_num
     group: 'student'
     input:
-        train_src=rules.ce_filter.output.src_corpus, train_trg=rules.ce_filter.output.trg_corpus,
-        val_src=rules.data_val.output.src, val_trg=rules.data_val.output.trg,
+        rules.merge_devset.output, train_src=rules.ce_filter.output.src_corpus, train_trg=rules.ce_filter.output.trg_corpus,
         alignments=rules.alignments.output.alignment,
         bin=rules.marian.output.trainer, vocab=rules.train_vocab.output
     output: model=f'{student_dir}/{best_model}'
@@ -733,7 +680,7 @@ rule eval_student:
     resources: gpu=gpus_num
     group: 'student'
     priority: 50
-    input: model=rules.student.output.model, datasets=rules.data_test.output
+    input: full_eval_datasets, model=rules.student.output.model
     output:
         report(directory(eval_student),patterns=["{name}.bleu"],category='evaluation',
             subcategory='student', caption='reports/evaluation.rst')
@@ -749,8 +696,7 @@ rule finetune_student:
     resources: gpu=gpus_num
     group: 'finetune'
     input:
-        train_src=rules.ce_filter.output.src_corpus, train_trg=rules.ce_filter.output.trg_corpus,
-        val_src=rules.data_val.output.src,  val_trg=rules.data_val.output.trg,
+        rules.merge_devset.output, train_src=rules.ce_filter.output.src_corpus, train_trg=rules.ce_filter.output.trg_corpus,
         alignments=rules.alignments.output.alignment, student_model=rules.student.output.model,
         bin=rules.marian.output.trainer, vocab=rules.train_vocab.output
     output: model=f'{student_finetuned_dir}/{best_model}'
@@ -767,7 +713,7 @@ rule eval_finetuned_student:
     resources: gpu=gpus_num
     group: 'finetune'
     priority: 50
-    input: model=rules.finetune_student.output.model, datasets=rules.data_test.output
+    input: full_eval_datasets, model=rules.finetune_student.output.model
     output:
         report(directory(eval_student_finetuned),patterns=["{name}.bleu"],
             category='evaluation', subcategory='finetuned', caption='reports/evaluation.rst')
@@ -796,8 +742,8 @@ rule eval_quantized:
     threads: workflow.cores
     priority: 50
     input:
+        full_eval_datasets,
         model=rules.quantize.output.model,
-        datasets=rules.data_test.output,
         shortlist=rules.alignments.output.shortlist,vocab=rules.train_vocab.output
     output:
         report(directory(eval_speed),patterns=["{name}.bleu"], category='evaluation',

@@ -19,7 +19,7 @@ vocab=$4
 eval_dir=$5
 
 mkdir -p "${eval_dir}"
-
+#todo: work with gz corpus
 echo "### Evaluating a model ${model_dir} on CPU"
 for src_path in "${datasets_dir}"/*."${SRC}"; do
   prefix=$(basename "${src_path}" ".${SRC}")

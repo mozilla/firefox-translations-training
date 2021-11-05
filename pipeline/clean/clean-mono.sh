@@ -29,6 +29,19 @@ test -s "${output}.${lang}.nrm.gz" ||
     "perl ${CLEAN_TOOLS}/remove-non-printing-char.perl" |
   pigz >"${output}.${lang}.nrm.gz"
 
+#todo
+#####################################################################
+# Apply monolingual fixes
+for lng in $SRC $TRG; do
+    if [[ ! -x fixes/$data.$lng.sh ]]; then
+        cp $data.$lng.nrm.gz $data.$lng.monofix.gz
+    else
+        pigz -dc $data.$lng.nrm.gz \
+            | fixes/$data.$lng.sh \
+            | pigz >$data.$lng.monofix.gz
+    fi
+done
+
 ######################################################################
 echo "### Deduplication"
 test -s "${output}.${lang}.nrm.uniq.gz" ||

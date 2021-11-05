@@ -256,6 +256,85 @@ Example:
 Just add a shell script to [corpus](pipeline/data/importers/corpus) or [mono]() which is named as `<prefix>.sh` 
 and accepts the same parameters as the other scripts from the same folder.
 
+## Directory structure
+    
+    ├ data
+    │   └ ru-en
+    │      └ test
+    │        ├ original
+    │        │   ├ corpus
+    │        │   │   ├ mtdata_JW300.en.gz
+    │        │   │   └ mtdata_JW300.ru.gz
+    │        │   ├ devset
+    │        │   │   ├ flores_dev.en.gz
+    │        │   │   └ flores_dev.ru.gz
+    │        │   ├ eval
+    │        │   │   ├ sacrebleu_wmt20.en.gz
+    │        │   │   └ sacrebleu_wmt20.ru.gz
+    │        │   ├ mono
+    │        │   │   ├ news-crawl_news.2020.ru.gz
+    │        │   │   └ news-crawl_news.2020.en.gz
+    │        │   ├ devset.ru.gz
+    │        │   └ devset.en.gz
+    │        ├ clean
+    │        │   ├ corpus
+    │        │   │   ├ mtdata_JW300.en.gz
+    │        │   │   └ mtdata_JW300.ru.gz
+    │        │   ├ mono
+    │        │   │   ├ news-crawl_news.2020.ru.gz
+    │        │   │   └ news-crawl_news.2020.en.gz
+    │        │   ├ mono.ru.gz
+    │        │   └ mono.en.gz
+    │        ├ biclean
+    │        │   ├ corpus
+    │        │   │   ├ mtdata_JW300.en.gz
+    │        │   │   └ mtdata_JW300.ru.gz
+    │        │   ├ corpus.ru.gz
+    │        │   ├ corpus.en.gz
+    │        ├ translated
+    │        │   ├ mono.ru.gz
+    │        │   └ mono.en.gz
+    │        ├ augmented
+    │        │   ├ corpus.ru.gz
+    │        │   └ corpus.en.gz
+    │        ├ alignment
+    │        │   ├ corpus.aln.gz
+    │        │   └ lex.s2t.pruned.gz
+    │        ├ merged
+    │        │   ├ corpus.ru.gz
+    │        │   └ corpus.en.gz
+    │        └ filtered
+    │            ├ corpus.ru.gz
+    │            └ corpus.en.gz
+    ├ models
+    │   ├ ru-en
+    │   │   └ test
+    │   │      ├ teacher
+    │   │      ├ student
+    │   │      ├ student-finetuned
+    │   │      ├ speed
+    │   │      ├ evaluation
+    │   │      │  ├ s2s
+    │   │      │  ├ teacher0
+    │   │      │  ├ teacher1
+    │   │      │  ├ teacher-ensemble
+    │   │      │  ├ student
+    │   │      │  ├ student-finetuned
+    │   │      │  └ speed
+    │   │      └ exported
+    │   ├ en-ru
+    │      └ test
+    │         └ s2s
+    │
+    ├ experiments
+    │   └ ru-en
+    │      └ test
+    │         └ config.sh
+    ├ logs
+    │   └ ru-en
+    │      └ test
+    │         └ clean_corpus.log
+
 ## Development
 
 ### Architecture

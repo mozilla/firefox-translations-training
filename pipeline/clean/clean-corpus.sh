@@ -16,6 +16,7 @@ test -v CLEAN_TOOLS
 data=$1
 output=$2
 threads=$3
+dataset=$4
 
 dir="$(dirname "${output}")"
 tmp="${dir}/tmp"
@@ -32,6 +33,31 @@ for lng in "${SRC}" "${TRG}"; do
       "perl ${CLEAN_TOOLS}/remove-non-printing-char.perl" |
     pigz >"${output}.${lng}.nrm.gz"
 done
+
+#todo
+#####################################################################
+# Apply monolingual fixes
+for lng in $SRC $TRG; do
+    if [[ ! -x fixes/$dataset.$lng.sh ]]; then
+        cp "${output}.${lng}.nrm.gz" "${output}.${lng}.monofix.gz"
+    else
+        pigz -dc "${output}.${lng}.nrm.gz" \
+            | fixes/$dataset.$lng.sh \
+            | pigz >"${output}.${lng}.monofix.gz"
+    fi
+done
+
+######################################################################
+# Apply bilingual fixes and bifixer, not dedup
+if [[ -x fixes/$dataset.sh ]]; then
+    FIX="fixes/dataset.sh $SRC $TRG"
+else
+    FIX=cat
+fi
+paste <(pigz -dc $data.$SRC.monofix.gz) <(pigz -dc $data.$TRG.monofix.gz) \
+    | $FIX \
+    | pigz > $data.$SRC$TRG.fix.gz
+
 
 ######################################################################
 echo "### Deduplication"
@@ -79,7 +105,7 @@ pigz >"${output}.${TRG}.gz"
 test -s "${output}.${SRC}.gz" || exit 1
 test -s "${output}.${TRG}.gz" || exit 1
 
-echo "### Remove ${data} from intermediate steps"
+echo "### Remove data from intermediate steps"
 rm -f "${output}".*.nrm.gz "${output}".*.nrm.uniq.gz "${output}".*.langid.gz "${output}".*.rule-based.gz
 rm -rf "${tmp}"
 
