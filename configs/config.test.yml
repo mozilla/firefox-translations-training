@@ -18,12 +18,15 @@ experiment:
   mono-max-sentences-src: 100000
   mono-max-sentences-trg: 200000
 
-  bicleaner-threshold: 0.5
-
   # split corpus to parallelize translation
   split-length: 100000
 
   best-model: chrf
+
+  bicleaner:
+    default-threshold: 0.5
+    dataset-thresholds:
+      mtdata_neulab_tedtalksv1_train: 0.6
 
 training:
   after-epochs: 1

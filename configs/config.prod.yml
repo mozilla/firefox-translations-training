@@ -26,6 +26,16 @@ experiment:
 
   best-model: chrf
 
+  bicleaner:
+    default-threshold: 0.5
+    dataset-thresholds:
+      opus_CCAligned/v1: 0.7
+      opus_WikiMatrix/v1: 0.7
+      mtdata_cc_aligned: 0.7
+      mtdata_wiki_titles_v1: 0.7
+      mtdata_WikiMatrix_v1: 0.7
+      mtdata_wiki_titles_v2: 0.7
+
 
 
 datasets:

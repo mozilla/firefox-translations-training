@@ -28,7 +28,8 @@ experiment = config['experiment']['name']
 
 mono_max_sent_src = config['experiment']['mono-max-sentences-src']
 mono_max_sent_trg = config['experiment']['mono-max-sentences-trg']
-bicleaner_threshold = config['experiment']['bicleaner-threshold']
+bicl_default_threshold = config['experiment']['bicleaner']['default-threshold']
+bicl_dataset_thresholds = config['experiment']['bicleaner']['dataset-thresholds']
 backward_model = config['experiment']['backward-model']
 
 experiment_dir=f"{data_root_dir}/experiments/{src}-{trg}/{experiment}"
@@ -296,9 +297,11 @@ if use_bicleaner:
         threads: workflow.cores
         input: rules.kenlm.output, multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
         output: multiext(f"{biclean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
-        params: prefix_input=f"{clean}/corpus/{{dataset}}",prefix_output=f"{biclean}/corpus/{{dataset}}"
+        params:
+            prefix_input=f"{clean}/corpus/{{dataset}}",prefix_output=f"{biclean}/corpus/{{dataset}}",
+            threshold=lambda wildcards: bicl_dataset_thresholds.get(wildcards.dataset) or bicl_default_threshold
         shell: '''bash pipeline/bicleaner/bicleaner.sh \
-                    "{params.prefix_input}" "{params.prefix_output}" {bicleaner_threshold} {bicleaner_type} {threads} \
+                    "{params.prefix_input}" "{params.prefix_output}" {params.threshold} {bicleaner_type} {threads} \
                     >> {log} 2>&1'''
 
 rule merge_corpus:
