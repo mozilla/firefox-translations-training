@@ -20,14 +20,17 @@ models=( "${@:5}" )
 
 
 mkdir -p "${eval_dir}"
-#todo: work with gz corpus
+
 echo "### Evaluating the model"
-for src_path in "${datasets_dir}"/*."${src}"; do
-  prefix=$(basename "${src_path}" ".${src}")
+for src_path in "${datasets_dir}"/*."${src}.gz"; do
+  prefix=$(basename "${src_path}" ".${src}.gz")
   echo "### Evaluating ${prefix} ${src}-${trg}"
 
+  pigz -dc "${datasets_dir}/${prefix}.${TRG}.gz" > "${eval_dir}/${prefix}.${TRG}.ref"
+
   test -s "${eval_dir}/${prefix}.${trg}.bleu" ||
-    tee "${eval_dir}/${prefix}.${src}" < "${src_path}" |
+    pigz -dc "${src_path}" |
+    tee "${eval_dir}/${prefix}.${src}" |
     "${MARIAN}"/marian-decoder \
       -m "${models[@]}" \
       -c "${models[0]}/decoder.yml" \
@@ -37,7 +40,7 @@ for src_path in "${datasets_dir}"/*."${src}"; do
       --log "${eval_dir}/${prefix}.log" \
       -d ${GPUS} |
     tee "${eval_dir}/${prefix}.${trg}" |
-    sacrebleu -d --score-only -l "${src}-${trg}" "${datasets_dir}/${prefix}.${trg}"  |
+    sacrebleu -d --score-only -l "${src}-${trg}" "${eval_dir}/${prefix}.${TRG}.ref"  |
     tee "${eval_dir}/${prefix}.${trg}.bleu"
 
   test -e "${eval_dir}/${prefix}.${trg}.bleu" || exit 1
