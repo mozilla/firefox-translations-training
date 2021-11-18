@@ -12,6 +12,7 @@ lang=$1
 input=$2
 output=$3
 threads=$4
+dataset=$5
 
 test -v CLEAN_TOOLS
 
@@ -29,23 +30,22 @@ test -s "${output}.${lang}.nrm.gz" ||
     "perl ${CLEAN_TOOLS}/remove-non-printing-char.perl" |
   pigz >"${output}.${lang}.nrm.gz"
 
-#todo
 #####################################################################
-# Apply monolingual fixes
-for lng in $SRC $TRG; do
-    if [[ ! -x fixes/$data.$lng.sh ]]; then
-        cp $data.$lng.nrm.gz $data.$lng.monofix.gz
-    else
-        pigz -dc $data.$lng.nrm.gz \
-            | fixes/$data.$lng.sh \
-            | pigz >$data.$lng.monofix.gz
-    fi
-done
+echo "### Apply monolingual fixes"
+if [[ ! -x pipeline/clean/fixes/${dataset}.${lang}.sh ]]; then
+  test -s "${output}.${lang}.monofix.gz" ||
+    cp "${output}.${lang}.nrm.gz" "${output}.${lang}.monofix.gz"
+else
+  test -s "${output}.${lang}.monofix.gz" ||
+    pigz -dc "${output}.${lang}.nrm.gz" \
+        | pipeline/clean/fixes/"${dataset}"."${lang}".sh \
+        | pigz >"${output}.${lang}.monofix.gz"
+fi
 
 ######################################################################
 echo "### Deduplication"
 test -s "${output}.${lang}.nrm.uniq.gz" ||
-  pigz -dc "${output}.${lang}.nrm.gz" |
+  pigz -dc "${output}.${lang}.monofix.gz" |
   LC_ALL=C sort -S 10G -T "${tmp}" |
   uniq |
   pigz >"${output}.${lang}.nrm.uniq.gz"

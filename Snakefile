@@ -166,6 +166,9 @@ def find_parts(wildcards, checkpoint):
     checkpoint_output = checkpoint.get(**wildcards).output[0]
     return glob_wildcards(os.path.join(checkpoint_output,"file.{part,\d+}")).part
 
+def dataset_norm(name: str):
+    return name.replace('/','_')
+
 shell.prefix(f"{envs} ")
 
 rule all:
@@ -194,7 +197,6 @@ if install_deps:
         group: 'setup'
         output: touch("/tmp/flags/setup.done")  # specific to local machine
         shell: 'bash pipeline/setup/install-deps.sh >> {log} 2>&1'
-
 
 rule marian:
     message: "Compiling marian"
@@ -233,20 +235,18 @@ rule download_corpus:
     conda: "envs/base.yml"
     threads: 1
     group: 'data'
-    wildcard_constraints:
-        kind="corpus|devset|eval"
+    wildcard_constraints: kind="corpus|devset|eval"
     output: multiext(f"{original}/{{kind}}/{{dataset}}", f".{src}.gz", f".{trg}.gz")
     params: prefix=f"{original}/{{kind}}/{{dataset}}"
     shell: 'bash pipeline/data/download-corpus.sh "{wildcards.dataset}" "{params.prefix}"  >> {log} 2>&1'
 
 rule download_mono:
-    message: "Downloading monolingual dataset for source language"
+    message: "Downloading monolingual dataset"
     log: f"{log_dir}/download_mono/{{dataset}}.{{lang}}.log"
     conda: "envs/base.yml"
     threads: 1
     group: 'data'
-    wildcard_constraints:
-        lang=f"{src}|{trg}"
+    wildcard_constraints: lang=f"{src}|{trg}"
     output: f'{original}/mono/{{dataset}}.{{lang}}.gz'
     params: prefix=f"{original}/mono/{{dataset}}", max_sent=lambda wildcards: mono_max_sent[wildcards.lang]
     shell: '''bash pipeline/data/download-mono.sh \
@@ -262,8 +262,9 @@ rule clean_corpus:
     threads: workflow.cores
     input: multiext(f"{original}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
     output: multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
-    params: prefix_input=f"{original}/corpus/{{dataset}}",prefix_output=f"{clean}/corpus/{{dataset}}"
-    shell: '''bash pipeline/clean/clean-corpus.sh "{params.prefix_input}" "{params.prefix_output}" {threads} \
+    params: prefix_input=f"{original}/corpus/{{dataset}}",prefix_output=f"{clean}/corpus/{{dataset}}",
+            dataset=lambda wildcards: dataset_norm(wildcards.dataset)
+    shell: '''bash pipeline/clean/clean-corpus.sh "{params.prefix_input}" "{params.prefix_output}" {threads} {params.dataset} \
                 >> {log} 2>&1'''
 
 rule clean_mono:
@@ -272,11 +273,11 @@ rule clean_mono:
     conda: "envs/base.yml"
     threads: workflow.cores
     group: "clean_mono{lang}"
-    wildcard_constraints:
-        lang=f"{src}|{trg}"
+    wildcard_constraints: lang=f"{src}|{trg}"
     input: f'{original}/mono/{{dataset}}.{{lang}}.gz'
     output: f'{clean}/mono/{{dataset}}.{{lang}}.gz'
-    shell: '''bash pipeline/clean/clean-mono.sh {wildcards.lang} "{input}" "{output}" {threads} \
+    params: dataset=lambda wildcards: dataset_norm(wildcards.dataset)
+    shell: '''bash pipeline/clean/clean-mono.sh {wildcards.lang} "{input}" "{output}" {threads} {params.dataset} \
                 >> {log} 2>&1'''
 
 if use_bicleaner:

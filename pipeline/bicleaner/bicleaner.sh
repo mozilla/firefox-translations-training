@@ -1,4 +1,5 @@
-#!/bin/bash
+
+*-----9bash.0-+a--0p-!/bin/bash
 ##
 # Cleans corpus using bicleaner-ai or bicleaner
 #

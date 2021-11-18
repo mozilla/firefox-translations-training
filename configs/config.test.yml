@@ -1,4 +1,5 @@
 
+# these are set in the Makefile
 root: ""
 cuda: ""
 deps: false
