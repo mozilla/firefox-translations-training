@@ -11,15 +11,15 @@ test -v TRG
 
 
 dataset=$1
-output=$2
+output_prefix=$2
 
 echo "### Downloading dataset ${dataset}"
 
-dir=$(dirname "${output}")
+dir=$(dirname "${output_prefix}")
 mkdir -p "${dir}"
 
 name=${dataset#*_}
 type=${dataset%%_*}
-bash "pipeline/data/importers/corpus/${type}.sh" "${SRC}" "${TRG}" "${output}" "${name}"
+bash "pipeline/data/importers/corpus/${type}.sh" "${SRC}" "${TRG}" "${output_prefix}" "${name}"
 
 echo "### Downloading dataset ${dataset}"

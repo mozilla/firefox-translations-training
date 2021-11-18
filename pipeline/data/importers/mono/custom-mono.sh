@@ -13,7 +13,7 @@ lang=$1
 output_prefix=$2
 dataset=$3
 
-cp "${dataset}.${lang}.gz" "${output_prefix}.${lang}.gz"
+cp "${dataset}.${lang}.gz" "${output_prefix}.gz"
 
 
 echo "###### Done: Copying custom monolingual dataset"

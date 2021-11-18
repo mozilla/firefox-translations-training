@@ -6,46 +6,37 @@
 set -x
 set -euo pipefail
 
-echo "###### Downloading monolingual data"
-
 dataset=$1
 lang=$2
 max_sent=$3
-prefix=$4
+output_prefix=$4
+coef=0.1
 
-#todo: fix downloading
-file_name="${prefix}.${lang}.gz"
-dir=$(dirname "${prefix}")/mono
+echo "###### Downloading monolingual data for language ${lang} dataset ${dataset}"
 
-if [ ! -e "${file_name}" ]; then
-  echo "### Downloading monolingual corpus for ${lang}"
-  mkdir -p "${dir}"
-  coef=0.1
+tmp=$(dirname "${output_prefix}")/mono
+mkdir -p "${tmp}"
 
-  echo "### Downloading dataset ${dataset}"
-  source_prefix="${dir}/${dataset}.original.${lang}"
-  gz_path="${dir}/${dataset}.${lang}.gz"
-  name=${dataset#*_}
-  type=${dataset%%_*}
+echo "### Downloading dataset"
+original_prefix="${tmp}/${dataset}.original.${lang}"
+output_file_name="${output_prefix}.${lang}.gz"
+name=${dataset#*_}
+type=${dataset%%_*}
 
-  test -s "${source_prefix}.gz" ||
-    bash "pipeline/data/importers/mono/${type}.sh" "${lang}" "${source_prefix}" "${name}"
+test -s "${original_prefix}.gz" ||
+  bash "pipeline/data/importers/mono/${type}.sh" "${lang}" "${original_prefix}" "${name}"
 
-  echo "### Sampling dataset ${dataset}"
-  # temporary disable pipefail because perl operation causes SIGPIPE (141)
-  set +o pipefail
-  test -s "${gz_path}" ||
-    pigz -dc "${source_prefix}.gz" |
-    shuf -n "$(bc -l <<<"${max_sent}+${max_sent}*${coef}")" |
-    perl -ne 'print if(split(/\s/, $_) < 100)' |
-    head -n "${max_sent}" |
-    pigz >"${gz_path}"
-  set -o pipefail
+echo "### Sampling dataset"
+# temporary disable pipefail because perl operation causes SIGPIPE (141)
+set +o pipefail
+test -s "${output_file_name}" ||
+  pigz -dc "${original_prefix}.gz" |
+  shuf -n "$(bc -l <<<"${max_sent}+${max_sent}*${coef}")" |
+  perl -ne 'print if(split(/\s/, $_) < 100)' |
+  head -n "${max_sent}" |
+  pigz >"${output_file_name}"
+set -o pipefail
 
-  rm "${source_prefix}"*
-
-fi
-
-test -s "${file_name}"
+rm -rf "${original_prefix}.gz"
 
 echo "###### Done: Downloading monolingual data"
