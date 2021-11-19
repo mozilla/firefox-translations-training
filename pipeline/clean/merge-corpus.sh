@@ -14,12 +14,12 @@ test -v TRG
 output_prefix=$1
 input_prefixes=( "${@:2}" )
 
-tmp="${output_prefix}"
+tmp="${output_prefix}/merge"
 mkdir -p "${tmp}"
 
 echo "### Merging"
-cat "${input_prefixes[@]/*.${SRC}.gz}" >"${tmp}/corpus.${SRC}.dup.gz"
-cat "${input_prefixes[@]/*.${TRG}.gz}" >"${tmp}/corpus.${TRG}.dup.gz"
+cat "${input_prefixes[@]/%//*.${SRC}.gz}" >"${tmp}/corpus.${SRC}.dup.gz"
+cat "${input_prefixes[@]/%//*.${TRG}.gz}" >"${tmp}/corpus.${TRG}.dup.gz"
 
 echo "### Deduplication"
 paste <(pigz -dc "${tmp}/corpus.${SRC}.dup.gz") <(pigz -dc "${tmp}/corpus.${TRG}.dup.gz") |
