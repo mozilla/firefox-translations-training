@@ -33,7 +33,7 @@ for src_path in "${datasets_dir}"/*."${src}.gz"; do
     tee "${eval_dir}/${prefix}.${src}" |
     "${MARIAN}"/marian-decoder \
       -m "${models[@]}" \
-      -c "${models[0]}/decoder.yml" \
+      -c "${models[0]}.decoder.yml" \
       -w "${WORKSPACE}" \
       --quiet \
       --quiet-translation \
