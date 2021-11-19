@@ -1,5 +1,4 @@
-
-*-----9bash.0-+a--0p-!/bin/bash
+#!/bin/bash
 ##
 # Cleans corpus using bicleaner-ai or bicleaner
 #
@@ -17,6 +16,7 @@ output_prefix=$2
 bicleaner_threshold=$3
 type=$4
 threads=$5
+pack_dir=$6
 
 output_dir=$(dirname "${output_prefix}")
 tmp_dir="${output_dir}/tmp"
@@ -24,11 +24,9 @@ mkdir -p "${tmp_dir}"
 
 if [ "${type}" == 'bicleaner-ai' ]; then
   echo "### Using bicleaner-ai"
-  bash "pipeline/bicleaner/download-pack.sh" "${tmp_dir}" "bicleaner-ai"
   cmd=bicleaner-ai-classify
 elif [ "${type}" == 'bicleaner' ]; then
   echo "### Using bicleaner"
-  bash "pipeline/bicleaner/download-pack.sh" "${tmp_dir}" "bicleaner"
   cmd=bicleaner-classify
 else
   echo "### Unsupported type: ${type}"
@@ -38,7 +36,7 @@ fi
 echo "### Classifying and filtering"
 test -s "${tmp_dir}/best.gz" ||
   paste <(pigz -dc "${corpus_prefix}.${SRC}.gz") <(pigz -dc "${corpus_prefix}.${TRG}.gz") |
-  ${cmd} --scol 1 --tcol 1 --processes "${threads}"  - - "${tmp_dir}"/*.yaml |
+  ${cmd} --scol 1 --tcol 1 --processes "${threads}"  - - "${pack_dir}"/*.yaml |
   awk -v threshold=${bicleaner_threshold} '{if ($3>threshold) {print $0}}' |
   pigz >"${tmp_dir}/best.gz"
 

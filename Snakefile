@@ -290,20 +290,31 @@ if use_bicleaner:
         output: directory(f"{bin}/kenlm")
         shell: 'bash pipeline/setup/install-kenlm.sh {kenlm} {threads}  >> {log} 2>&1'
 
+    rule bicleaner_pack:
+        message: f"Downloading language pack for bicleaner"
+        log: f"{log_dir}/bicleaner_pack.log"
+        conda: bicleaner_env
+        group: "clean_corpus"
+        threads: 1
+        input: rules.kenlm.output
+        output: directory(f"{biclean}/pack")
+        shell: '''bash pipeline/bicleaner/download-pack.sh "{output}" {bicleaner_type} >> {log} 2>&1'''
+
     rule bicleaner:
         message: f"Cleaning corpus using {bicleaner_type}"
         log: f"{log_dir}/bicleaner/{{dataset}}.log"
         conda: bicleaner_env
         group: "clean_corpus"
         threads: workflow.cores
-        input: rules.kenlm.output, multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
+        input: rules.kenlm.output, multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz"),
+                pack_dir=rules.bicleaner_pack.output
         output: multiext(f"{biclean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
         params:
             prefix_input=f"{clean}/corpus/{{dataset}}",prefix_output=f"{biclean}/corpus/{{dataset}}",
             threshold=lambda wildcards: bicl_dataset_thresholds.get(wildcards.dataset) or bicl_default_threshold
         shell: '''bash pipeline/bicleaner/bicleaner.sh \
-                    "{params.prefix_input}" "{params.prefix_output}" {params.threshold} {bicleaner_type} {threads} \
-                    >> {log} 2>&1'''
+                    "{params.prefix_input}" "{params.prefix_output}" {params.threshold} {bicleaner_type} {threads} 
+                    "{input.pack_dir}" >> {log} 2>&1'''
 
 rule merge_corpus:
     message: "Merging clean parallel datasets"
