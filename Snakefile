@@ -96,7 +96,7 @@ eval_student = f'{eval_res}/student',
 eval_student_finetuned = f'{eval_res}/student-finetuned',
 eval_speed = f'{eval_res}/speed',
 eval_teacher_ens = f'{eval_res}/teacher-ensemble',
-full_eval_datasets = [expand(f'{original}/eval/{{dataset}}.{{lang}}.gz', dataset=eval_datasets, lang=[src,trg])]
+full_eval_datasets = expand(f'{original}/eval/{{dataset}}.{{lang}}.gz', dataset=eval_datasets, lang=[src,trg])
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
@@ -306,7 +306,7 @@ if use_bicleaner:
         log: f"{log_dir}/bicleaner/{{dataset}}.log"
         conda: bicleaner_env
         group: "clean_corpus"
-        threads: workflow.cores
+        threads: 1
         input: rules.kenlm.output, multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz"),
                 pack_dir=rules.bicleaner_pack.output
         output: multiext(f"{biclean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
@@ -323,20 +323,20 @@ rule merge_corpus:
     conda: "envs/base.yml"
     threads: workflow.cores
     group: "clean_corpus"
-    input:  [expand(f"{clean_corpus_prefix}/{{dataset}}.{{lang}}.gz", dataset=train_datasets, lang=[src, trg])]
+    input:  expand(f"{clean_corpus_prefix}/{{dataset}}.{{lang}}.gz", dataset=train_datasets, lang=[src, trg])
     output: src=clean_corpus_src,trg=clean_corpus_trg
-    params: prefix_output=clean_corpus_prefix, prefixes=[expand(f"{clean_corpus_prefix}/{{dataset}}", dataset=train_datasets)]
+    params: prefix_output=clean_corpus_prefix, prefixes=expand(f"{clean_corpus_prefix}/{{dataset}}", dataset=train_datasets)
     shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
 
 rule merge_devset:
-    message: "Merging clean parallel datasets"
+    message: "Merging devsets"
     log: f"{log_dir}/merge_corpus.log"
     conda: "envs/base.yml"
     threads: workflow.cores
     group: "clean_corpus"
-    input:  [expand(f"{original}/devset/{{dataset}}.{{lang}}.gz", dataset=valid_datasets, lang=[src, trg])]
+    input:  expand(f"{original}/devset/{{dataset}}.{{lang}}.gz", dataset=valid_datasets, lang=[src, trg])
     output: multiext(f"{original}/devset", f".{src}.gz", f".{trg}.gz")
-    params: prefix_output=f"{original}/devset", prefixes=[expand(f"{original}/devset/{{dataset}}", dataset=valid_datasets)]
+    params: prefix_output=f"{original}/devset", prefixes=expand(f"{original}/devset/{{dataset}}", dataset=valid_datasets)
     shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
 
 rule merge_mono:
