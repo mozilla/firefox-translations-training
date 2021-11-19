@@ -72,7 +72,6 @@ clean = f"{data_dir}/clean"
 biclean = f"{data_dir}/biclean"
 cache_dir = f"{data_dir}/cache"
 original = f"{data_dir}/original"
-evaluation = f"{data_dir}/evaluation"
 translated = f"{data_dir}/translated"
 augmented = f"{data_dir}/augmented"
 merged = f"{data_dir}/merged"
@@ -90,13 +89,14 @@ best_model = f"model.npz.best-{config['experiment']['best-model']}.npz"
 s2s=f'{models_dir}/s2s'
 
 #evaluation
+eval_data = f"{original}/eval"
 eval_res = f"{models_dir}/evaluation"
 eval_backward = f'{eval_res}/s2s'
 eval_student = f'{eval_res}/student',
 eval_student_finetuned = f'{eval_res}/student-finetuned',
 eval_speed = f'{eval_res}/speed',
 eval_teacher_ens = f'{eval_res}/teacher-ensemble',
-full_eval_datasets = expand(f'{original}/eval/{{dataset}}.{{lang}}.gz', dataset=eval_datasets, lang=[src,trg])
+full_eval_datasets = expand(f'{eval_data}/{{dataset}}.{{lang}}.gz', dataset=eval_datasets, lang=[src,trg])
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
@@ -399,7 +399,7 @@ if train_s2s:
         output:
             report(directory(eval_backward),patterns=["{name}.bleu"],
                 category='evaluation', subcategory='finetuned', caption='reports/evaluation.rst')
-        shell: 'bash pipeline/train/eval.sh "{eval_backward}" "{evaluation}" {trg} {src} {input.model} >> {log} 2>&1'
+        shell: 'bash pipeline/train/eval.sh "{eval_backward}" "{eval_data}" {trg} {src} {input.model} >> {log} 2>&1'
 
 
 
@@ -503,7 +503,7 @@ rule eval_teacher:
         report(directory(f'{eval_res}/teacher{{ens}}'), patterns=["{name}.bleu"],
             category='evaluation', subcategory='teacher', caption='reports/evaluation.rst')
     params: dir=f'{eval_res}/teacher{{ens}}'
-    shell: 'bash pipeline/train/eval.sh "{params.dir}" "{evaluation}" {src} {trg} {input.model} >> {log} 2>&1'
+    shell: 'bash pipeline/train/eval.sh "{params.dir}" "{eval_data}" {src} {trg} {input.model} >> {log} 2>&1'
 
 
 if len(ensemble) > 1:
@@ -519,7 +519,7 @@ if len(ensemble) > 1:
         output:
             report(directory(eval_teacher_ens),patterns=["{name}.bleu"],
                 category='evaluation',subcategory='teacher_ensemble',caption='reports/evaluation.rst')
-        shell: 'bash pipeline/train/eval.sh "{eval_teacher_ens}" "{evaluation}" {src} {trg} {input.models} >> {log} 2>&1'
+        shell: 'bash pipeline/train/eval.sh "{eval_teacher_ens}" "{eval_data}" {src} {trg} {input.models} >> {log} 2>&1'
 
 
 ### translation with teacher
@@ -700,7 +700,7 @@ rule eval_student:
     output:
         report(directory(eval_student),patterns=["{name}.bleu"],category='evaluation',
             subcategory='student', caption='reports/evaluation.rst')
-    shell: 'bash pipeline/train/eval.sh "{eval_student}" "{evaluation}" {src} {trg} {input.model} >> {log} 2>&1'
+    shell: 'bash pipeline/train/eval.sh "{eval_student}" "{eval_data}" {src} {trg} {input.model} >> {log} 2>&1'
 
 # quantize
 
@@ -733,7 +733,7 @@ rule eval_finetuned_student:
     output:
         report(directory(eval_student_finetuned),patterns=["{name}.bleu"],
             category='evaluation', subcategory='finetuned', caption='reports/evaluation.rst')
-    shell: 'bash pipeline/train/eval.sh "{eval_student_finetuned}" "{evaluation}" {src} {trg} {input.model} \
+    shell: 'bash pipeline/train/eval.sh "{eval_student_finetuned}" "{eval_data}" {src} {trg} {input.model} \
                 >> {log} 2>&1'
 
 rule quantize:
@@ -764,7 +764,7 @@ rule eval_quantized:
     output:
         report(directory(eval_speed),patterns=["{name}.bleu"], category='evaluation',
             subcategory='quantized', caption='reports/evaluation.rst')
-    shell: '''bash pipeline/quantize/eval.sh "{speed}" "{input.shortlist}" "{evaluation}" "{input.vocab}" "{eval_speed}" \
+    shell: '''bash pipeline/quantize/eval.sh "{speed}" "{input.shortlist}" "{eval_data}" "{input.vocab}" "{eval_speed}" \
             >> {log} 2>&1'''
 
 rule export:
