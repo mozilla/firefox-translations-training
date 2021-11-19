@@ -8,15 +8,17 @@ set -euo pipefail
 
 echo "###### Cleaning corpus"
 
-export PYTHONPATH="${CLEAN_TOOLS}"
+
 test -v SRC
 test -v TRG
-test -v CLEAN_TOOLS
 
 input_prefix=$1
 output_prefix=$2
 threads=$3
 dataset=$4
+
+cd "$(dirname "${0}")"
+export PYTHONPATH="tools"
 
 dir="$(dirname "${output_prefix}")"
 tmp="${dir}/tmp"
@@ -30,28 +32,28 @@ for lng in "${SRC}" "${TRG}"; do
   test -s "${output_prefix}.${lng}.nrm.gz" ||
     pigz -dc "${input_prefix}.${lng}.gz" |
     parallel --no-notice --pipe -k -j "${threads}" --block 50M \
-      "perl ${CLEAN_TOOLS}/remove-non-printing-char.perl" |
+      "perl tools/remove-non-printing-char.perl" |
     pigz >"${output_prefix}.${lng}.nrm.gz"
 done
 
 #####################################################################
 echo "### Apply monolingual fixes"
 for lng in $SRC $TRG; do
-    if [[ ! -x pipeline/clean/fixes/${dataset}.${lng}.sh ]]; then
+    if [[ ! -x fixes/${dataset}.${lng}.sh ]]; then
       test -s "${output_prefix}.${lng}.monofix.gz" ||
         cp "${output_prefix}.${lng}.nrm.gz" "${output_prefix}.${lng}.monofix.gz"
     else
         test -s "${output_prefix}.${lng}.monofix.gz" ||
           pigz -dc "${output_prefix}.${lng}.nrm.gz" \
-              | pipeline/clean/fixes/"${dataset}"."${lng}".sh \
+              | fixes/"${dataset}"."${lng}".sh \
               | pigz >"${output_prefix}.${lng}.monofix.gz"
     fi
 done
 
 ######################################################################
 echo "### Apply bilingual fixes"
-if [[ -x pipeline/clean/fixes/${dataset}.sh ]]; then
-    FIX="pipeline/clean/fixes/${dataset}.sh ${SRC} ${TRG}"
+if [[ -x fixes/${dataset}.sh ]]; then
+    FIX="fixes/${dataset}.sh ${SRC} ${TRG}"
 else
     FIX="cat"
 fi
@@ -73,7 +75,7 @@ echo "### Rule-based filtering"
 test -s "${output_prefix}.${SRC}${TRG}.rule-based.gz" ||
   pigz -dc "${output_prefix}.${SRC}${TRG}.nrm.uniq.gz" |
   parallel --no-notice --pipe -k -j "${threads}" --block 50M \
-    "python3 ${CLEAN_TOOLS}/clean_parallel.py -l1 ${SRC} -l2 ${TRG} --debug" \
+    "python3 tools/clean_parallel.py -l1 ${SRC} -l2 ${TRG} --debug" \
     2>"${output_prefix}.${SRC}${TRG}.clean.debug.txt" |
   pigz >"${output_prefix}.${SRC}${TRG}.rule-based.gz"
 
@@ -83,7 +85,7 @@ test -s "${output_prefix}.${SRC}${TRG}.langid.gz" ||
   pigz -dc "${output_prefix}.${SRC}${TRG}.rule-based.gz" |
   # memory intensive
   parallel --no-notice --pipe -k -j "$(echo "${threads}"/4 | bc)" --block 50M \
-    "python3 -Wi ${CLEAN_TOOLS}/langid_fasttext.py -f 1 | python3 -Wi ${CLEAN_TOOLS}/langid_fasttext.py -f 1" |
+    "python3 -Wi tools/langid_fasttext.py -f 1 | python3 -Wi tools/langid_fasttext.py -f 1" |
   grep -P "^${SRC}\t${TRG}\t" |
   cut -f3,4 |
   pigz >"${output_prefix}.${SRC}${TRG}.langid.gz"

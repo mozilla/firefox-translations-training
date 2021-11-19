@@ -100,7 +100,7 @@ full_eval_datasets = expand(f'{original}/eval/{{dataset}}.{{lang}}.gz', dataset=
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
-CLEAN_TOOLS=pipeline/clean/tools BIN="{bin}" DATA_ROOT_DIR="{data_root_dir}" \
+BIN="{bin}" DATA_ROOT_DIR="{data_root_dir}" \
 CUDA_DIR="{cuda_dir}"'''
 
 ### workflow options
