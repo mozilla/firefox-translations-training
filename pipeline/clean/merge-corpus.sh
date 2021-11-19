@@ -14,10 +14,8 @@ test -v TRG
 output_prefix=$1
 input_prefixes=( "${@:2}" )
 
-dir=$(dirname "${output_prefix}")
-tmp="${dir}/tmp"
-
-mkdir -p "${dir}"
+tmp="${output_prefix}"
+mkdir -p "${tmp}"
 
 echo "### Merging"
 cat "${input_prefixes[@]/*.${SRC}.gz}" >"${tmp}/corpus.${SRC}.dup.gz"

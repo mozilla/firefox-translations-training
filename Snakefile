@@ -330,7 +330,7 @@ rule merge_corpus:
 
 rule merge_devset:
     message: "Merging devsets"
-    log: f"{log_dir}/merge_corpus.log"
+    log: f"{log_dir}/merge_devset.log"
     conda: "envs/base.yml"
     threads: workflow.cores
     group: "clean_corpus"
