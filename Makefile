@@ -14,6 +14,7 @@ CONDA_PATH=$(SHARED_ROOT)/mambaforge
 ###
 
 CONDA_ACTIVATE=source $(CONDA_PATH)/etc/profile.d/conda.sh ; conda activate ; conda activate
+SNAKEMAKE=export SNAKEMAKE_OUTPUT_CACHE=$(SHARED_ROOT)/cache; snakemake
 
 ### 2. setup
 
@@ -44,9 +45,10 @@ pull:
 
 dry-run:
 	$(CONDA_ACTIVATE) snakemake
-	snakemake \
+	$(SNAKEMAKE) \
 	  --use-conda \
 	  --cores all \
+	  --cache \
 	  --reason \
 	  --configfile $(CONFIG) \
 	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) deps=true  \
@@ -54,10 +56,11 @@ dry-run:
 
 run-local:
 	$(CONDA_ACTIVATE) snakemake
-	snakemake \
+	$(SNAKEMAKE) \
 	  --use-conda \
 	  --reason \
 	  --cores all \
+	  --cache \
 	  --resources gpu=$(GPUS) \
 	  --configfile $(CONFIG) \
 	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) deps=true
@@ -65,11 +68,12 @@ run-local:
 run-local-container:
 	$(CONDA_ACTIVATE) snakemake
 	module load singularity
-	snakemake \
+	$(SNAKEMAKE) \
 	  --use-conda \
 	  --use-singularity \
 	  --reason \
 	  --cores all \
+	  --cache \
 	  --resources gpu=$(GPUS) \
 	  --configfile $(CONFIG) \
 	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) \
@@ -78,10 +82,11 @@ run-local-container:
 run-slurm:
 	$(CONDA_ACTIVATE) snakemake
 	chmod +x profiles/slurm/*
-	snakemake \
+	$(SNAKEMAKE) \
 	  --use-conda \
 	  --reason \
 	  --cores $(CLUSTER_CORES) \
+	  --cache \
 	  --configfile $(CONFIG) \
 	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) \
 	  --profile=profiles/slurm
@@ -90,18 +95,19 @@ run-slurm-container:
 	$(CONDA_ACTIVATE) snakemake
 	chmod +x profiles/slurm/*
 	module load singularity
-	snakemake \
+	$(SNAKEMAKE) \
 	  --use-conda \
 	  --use-singularity \
 	  --reason \
 	  --verbose \
 	  --cores $(CLUSTER_CORES) \
+	  --cache \
 	  --configfile $(CONFIG) \
 	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) \
 	  --profile=profiles/slurm \
 	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR),/tmp --nv --containall"
 # if CPU nodes don't have access to cuda dirs, use
-# export CUDA_DIR=$(CUDA_DIR)
+# export CUDA_DIR=$(CUDA_DIR); $(SNAKEMAKE) \
 # --singularity-args="--bind $(SHARED_ROOT),/tmp --nv --containall"
 
 

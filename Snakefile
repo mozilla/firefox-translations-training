@@ -235,6 +235,7 @@ rule download_corpus:
     conda: "envs/base.yml"
     threads: 1
     group: 'data'
+    cache: True
     wildcard_constraints: kind="corpus|devset|eval"
     output: multiext(f"{original}/{{kind}}/{{dataset}}", f".{src}.gz", f".{trg}.gz")
     params: prefix=f"{original}/{{kind}}/{{dataset}}"
@@ -246,6 +247,7 @@ rule download_mono:
     conda: "envs/base.yml"
     threads: 1
     group: 'data'
+    cache: True
     wildcard_constraints: lang=f"{src}|{trg}"
     output: f'{original}/mono/{{dataset}}.{{lang}}.gz'
     params: max_sent=lambda wildcards: mono_max_sent[wildcards.lang]
