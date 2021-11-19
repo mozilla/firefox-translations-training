@@ -17,9 +17,11 @@ extra_params=( "${@:5}" )
 test -v SRC
 test -v TRG
 
-bash "pipeline/train/train.sh" \
-  "pipeline/train/configs/model/teacher.transformer.yml" \
-  "pipeline/train/configs/training/teacher.train.yml" \
+cd "$(dirname "${0}")"
+
+bash "train.sh" \
+  "configs/model/teacher.transformer.yml" \
+  "configs/training/teacher.train.yml" \
   "${SRC}" \
   "${TRG}" \
   "${corpus}" \

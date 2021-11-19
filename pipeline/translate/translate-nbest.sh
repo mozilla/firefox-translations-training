@@ -14,9 +14,10 @@ input=$1
 vocab=$2
 models=( "${@:3}" )
 
+cd "$(dirname "${0}")"
 
 "${MARIAN}/marian-decoder" \
-  -c pipeline/translate/decoder.yml \
+  -c decoder.yml \
   -m "${models[@]}" \
   -v "${vocab}" "${vocab}" \
   -i "${input}" \

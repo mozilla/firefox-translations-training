@@ -14,6 +14,8 @@ coef=0.1
 
 echo "###### Downloading monolingual data for language ${lang} dataset ${dataset}"
 
+cd "$(dirname "${0}")"
+
 tmp=$(dirname "${output_path}")/original
 mkdir -p "${tmp}"
 
@@ -23,7 +25,7 @@ name=${dataset#*_}
 type=${dataset%%_*}
 
 test -s "${original_prefix}.gz" ||
-  bash "pipeline/data/importers/mono/${type}.sh" "${lang}" "${original_prefix}" "${name}"
+  bash "importers/mono/${type}.sh" "${lang}" "${original_prefix}" "${name}"
 
 echo "### Sampling dataset"
 # temporary disable pipefail because perl operation causes SIGPIPE (141)

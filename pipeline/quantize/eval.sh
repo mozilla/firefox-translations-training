@@ -18,6 +18,8 @@ datasets_dir=$3
 vocab=$4
 eval_dir=$5
 
+cd "$(dirname "${0}")"
+
 mkdir -p "${eval_dir}"
 #todo: work with gz corpus
 echo "### Evaluating a model ${model_dir} on CPU"
@@ -33,7 +35,7 @@ for src_path in "${datasets_dir}"/*."${SRC}.gz"; do
     "${MARIAN}"/marian-decoder \
       -m "${model_dir}/model.intgemm.alphas.bin" \
       -v "${vocab}" "${vocab}" \
-      -c "pipeline/quantize/decoder.yml" \
+      -c "decoder.yml" \
       --quiet \
       --quiet-translation \
       --log "${eval_dir}/${prefix}.log" \

@@ -15,6 +15,8 @@ output_prefix=$2
 scores=$3
 threads=$4
 
+cd "$(dirname "${0}")"
+
 # Part of the data to be removed (0.05 is 5%)
 remove=0.05
 output_dir=$(dirname "${output_prefix}")
@@ -29,7 +31,7 @@ test -s "${tmp}/corpus.${SRC}" || pigz -dc "${corpus_prefix}.${SRC}.gz" >"${tmp}
 echo "### Normalizing scores"
 test -s "${tmp}/scores.nrm.txt" ||
   paste "${scores}" "${tmp}/corpus.${TRG}" |
-  parallel --no-notice --pipe -k -j "${threads}" --block 50M "python pipeline/cefilter/normalize-scores.py" |
+  parallel --no-notice --pipe -k -j "${threads}" --block 50M "python normalize-scores.py" |
   cut -f1 >"${tmp}/scores.nrm.txt"
 
 echo "### Sorting scores"

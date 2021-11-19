@@ -19,13 +19,14 @@ extra_params=( "${@:7}" )
 test -v SRC
 test -v TRG
 
+cd "$(dirname "${0}")"
 
 mkdir -p "${dir}"
 cp "${student}" "${dir}/model.npz"
 
-bash "pipeline/train/train.sh" \
-  "pipeline/train/configs/model/student.tiny11.yml" \
-  "pipeline/train/configs/training/student.finetune.yml" \
+bash "train.sh" \
+  "configs/model/student.tiny11.yml" \
+  "configs/training/student.finetune.yml" \
   "${SRC}" \
   "${TRG}" \
   "${corpus}" \

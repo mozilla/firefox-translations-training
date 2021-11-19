@@ -18,9 +18,11 @@ extra_params=( "${@:6}" )
 test -v SRC
 test -v TRG
 
-bash "pipeline/train/train.sh" \
-  "pipeline/train/configs/model/student.tiny11.yml" \
-  "pipeline/train/configs/training/student.train.yml" \
+cd "$(dirname "${0}")"
+
+bash "train.sh" \
+  "configs/model/student.tiny11.yml" \
+  "configs/training/student.train.yml" \
   "${SRC}" \
   "${TRG}" \
   "${corpus}" \

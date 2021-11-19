@@ -16,10 +16,11 @@ src=$5
 trg=$6
 extra_params=( "${@:7}" )
 
+cd "$(dirname "${0}")"
 
-bash "pipeline/train/train.sh" \
-  "pipeline/train/configs/model/s2s.yml" \
-  "pipeline/train/configs/training/s2s.train.yml" \
+bash "train.sh" \
+  "configs/model/s2s.yml" \
+  "configs/training/s2s.train.yml" \
   "${src}" \
   "${trg}" \
   "${corpus}" \
