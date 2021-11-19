@@ -9,70 +9,70 @@ set -euo pipefail
 echo "###### Cleaning monolingual data"
 
 lang=$1
-input=$2
-output=$3
+input_prefix=$2
+output_prefix=$3
 threads=$4
 dataset=$5
 
 test -v CLEAN_TOOLS
 
-echo "### CLeaning ${input}"
+echo "### CLeaning ${input_prefix}"
 
-dir="$(dirname "${output}")"
+dir="$(dirname "${output_prefix}")"
 tmp="${dir}/tmp"
 mkdir -p "${tmp}"
 
 ######################################################################
 echo "### Basic preprocessing"
-test -s "${output}.${lang}.nrm.gz" ||
-  pigz -dc "${input}.${lang}.gz" |
+test -s "${output_prefix}.${lang}.nrm.gz" ||
+  pigz -dc "${input_prefix}.${lang}.gz" |
   parallel --no-notice --pipe -k -j "${threads}" --block 50M \
     "perl ${CLEAN_TOOLS}/remove-non-printing-char.perl" |
-  pigz >"${output}.${lang}.nrm.gz"
+  pigz >"${output_prefix}.${lang}.nrm.gz"
 
 #####################################################################
 echo "### Apply monolingual fixes"
 if [[ ! -x pipeline/clean/fixes/${dataset}.${lang}.sh ]]; then
-  test -s "${output}.${lang}.monofix.gz" ||
-    cp "${output}.${lang}.nrm.gz" "${output}.${lang}.monofix.gz"
+  test -s "${output_prefix}.${lang}.monofix.gz" ||
+    cp "${output_prefix}.${lang}.nrm.gz" "${output_prefix}.${lang}.monofix.gz"
 else
-  test -s "${output}.${lang}.monofix.gz" ||
-    pigz -dc "${output}.${lang}.nrm.gz" \
+  test -s "${output_prefix}.${lang}.monofix.gz" ||
+    pigz -dc "${output_prefix}.${lang}.nrm.gz" \
         | pipeline/clean/fixes/"${dataset}"."${lang}".sh \
-        | pigz >"${output}.${lang}.monofix.gz"
+        | pigz >"${output_prefix}.${lang}.monofix.gz"
 fi
 
 ######################################################################
 echo "### Deduplication"
-test -s "${output}.${lang}.nrm.uniq.gz" ||
-  pigz -dc "${output}.${lang}.monofix.gz" |
+test -s "${output_prefix}.${lang}.nrm.uniq.gz" ||
+  pigz -dc "${output_prefix}.${lang}.monofix.gz" |
   LC_ALL=C sort -S 10G -T "${tmp}" |
   uniq |
-  pigz >"${output}.${lang}.nrm.uniq.gz"
+  pigz >"${output_prefix}.${lang}.nrm.uniq.gz"
 
 ######################################################################
 echo "### Language identification"
-test -s "${output}.${lang}.langid.gz" ||
-  pigz -dc "${output}.${lang}.nrm.uniq.gz" |
+test -s "${output_prefix}.${lang}.langid.gz" ||
+  pigz -dc "${output_prefix}.${lang}.nrm.uniq.gz" |
   # memory intensive
   parallel --no-notice --pipe -k -j "$(echo "${threads}"/4 | bc)" --block 50M "python ${CLEAN_TOOLS}/langid_fasttext.py" |
   grep -P "^${lang}\t" | cut -f2 |
-  pigz >"${output}.${lang}.langid.gz"
+  pigz >"${output_prefix}.${lang}.langid.gz"
 
 ######################################################################
 echo "### Rule-based filtering"
 
-pigz -dc "${output}.${lang}.langid.gz" |
+pigz -dc "${output_prefix}.${lang}.langid.gz" |
 parallel --no-notice --pipe -k -j "${threads}" --block 50M \
   "python ${CLEAN_TOOLS}/clean_mono.py -l ${lang} --debug" \
-  2>"${output}.${lang}.clean.debug.txt" |
-pigz >"${output}.${lang}.gz"
+  2>"${output_prefix}.${lang}.clean.debug.txt" |
+pigz >"${output_prefix}.${lang}.gz"
 
-test -s "${output}.${lang}.gz" || exit 1
+test -s "${output_prefix}.${lang}.gz" || exit 1
 
 echo "### Remove data from intermediate steps"
-rm -rf "${output}".*.nrm.gz "${output}".*.nrm.uniq.gz "${output}".*.langid.gz "${tmp}"
+rm -rf "${output_prefix}".*.nrm.gz "${output_prefix}".*.nrm.uniq.gz "${output_prefix}".*.langid.gz "${tmp}"
 
-echo "### Clean data is written to  ${output}"
+echo "### Clean data is written to  ${output_prefix}"
 
 echo "###### Done: Cleaning monolingual data"

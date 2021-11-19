@@ -248,9 +248,9 @@ rule download_mono:
     group: 'data'
     wildcard_constraints: lang=f"{src}|{trg}"
     output: f'{original}/mono/{{dataset}}.{{lang}}.gz'
-    params: prefix=f"{original}/mono/{{dataset}}", max_sent=lambda wildcards: mono_max_sent[wildcards.lang]
+    params: max_sent=lambda wildcards: mono_max_sent[wildcards.lang]
     shell: '''bash pipeline/data/download-mono.sh \
-                "{wildcards.dataset}" {wildcards.lang} {params.max_sent} "{params.prefix}"  >> {log} 2>&1'''
+                "{wildcards.dataset}" {wildcards.lang} {params.max_sent} "{output}"  >> {log} 2>&1'''
 
 # cleaning
 
@@ -276,9 +276,10 @@ rule clean_mono:
     wildcard_constraints: lang=f"{src}|{trg}"
     input: f'{original}/mono/{{dataset}}.{{lang}}.gz'
     output: f'{clean}/mono/{{dataset}}.{{lang}}.gz'
-    params: dataset=lambda wildcards: dataset_norm(wildcards.dataset)
-    shell: '''bash pipeline/clean/clean-mono.sh {wildcards.lang} "{input}" "{output}" {threads} {params.dataset} \
-                >> {log} 2>&1'''
+    params: prefix_input=f"{original}/mono/{{dataset}}", prefix_output=f"{clean}/mono/{{dataset}}",
+            dataset=lambda wildcards: dataset_norm(wildcards.dataset)
+    shell: '''bash pipeline/clean/clean-mono.sh {wildcards.lang} "{params.prefix_input}" "{params.prefix_output}" \
+                {threads} {params.dataset} >> {log} 2>&1'''
 
 if use_bicleaner:
     rule kenlm:
