@@ -35,9 +35,10 @@ backward_model = config['experiment']['backward-model']
 experiment_dir=f"{data_root_dir}/experiments/{src}-{trg}/{experiment}"
 
 # training
-training_args = ""
+training_args = {}
 if 'training' in config:
-    training_args = ' '.join([f'--{k} {v}' for k,v in config['training'].items()])
+    training_args = {name: ' '.join([f'--{k} {v}' for k,v in conf.items() ])
+                     for name, conf in config['training'].items()}
 
 # datasets
 train_datasets = config['datasets']['train']
@@ -275,6 +276,7 @@ rule clean_mono:
     conda: "envs/base.yml"
     threads: workflow.cores
     group: "clean_mono{lang}"
+    cache: True
     wildcard_constraints: lang=f"{src}|{trg}"
     input: f'{original}/mono/{{dataset}}.{{lang}}.gz'
     output: f'{clean}/mono/{{dataset}}.{{lang}}.gz'
@@ -382,10 +384,11 @@ if train_s2s:
             rules.merge_devset.output, train_src=clean_corpus_src,train_trg=clean_corpus_trg,
             bin=rules.marian.output.trainer, vocab=rules.train_vocab.output,
         output:  model=f'{backward_model}/{best_model}'
-        params: prefix_train=f"{biclean}/corpus",prefix_test=f"{original}/devset"
+        params: prefix_train=f"{biclean}/corpus",prefix_test=f"{original}/devset",
+                args=training_args.get("s2s")
         shell: '''bash pipeline/train/train-s2s.sh \
                     "{backward_model}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" {trg} {src} \
-                     {training_args} >> {log} 2>&1'''
+                     {params.args} >> {log} 2>&1'''
 
     rule eval_backward:
         message: "Evaluating backward model"
@@ -467,10 +470,11 @@ rule teacher_all:
         rules.merge_devset.output, train_src=f'{teacher_corpus}.{src}.gz',train_trg=f'{teacher_corpus}.{trg}.gz',
         bin=rules.marian.output.trainer,vocab=rules.train_vocab.output
     output: model=f'{teacher_dir}{{ens}}/{teacher_all_output}'
-    params: prefix_train=teacher_corpus, prefix_test=f"{original}/devset", dir=directory(f'{teacher_dir}{{ens}}')
+    params: prefix_train=teacher_corpus, prefix_test=f"{original}/devset", dir=directory(f'{teacher_dir}{{ens}}'),
+                args=training_args.get("teacher-all")
     shell: '''bash pipeline/train/train-teacher.sh \
                 "{params.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
-                {training_args} >> {log} 2>&1'''
+                {params.args} >> {log} 2>&1'''
 
 if continue_teacher:
     rule teacher_parallel:
@@ -485,10 +489,11 @@ if continue_teacher:
             train_src=clean_corpus_src,train_trg=clean_corpus_trg,
             bin=rules.marian.output.trainer,vocab=rules.train_vocab.output
         output: model=f'{teacher_dir}{{ens}}/{best_model}'
-        params: prefix_train=teacher_corpus,prefix_test=f"{original}/devset",dir=directory(f'{teacher_dir}{{ens}}')
+        params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset",dir=directory(f'{teacher_dir}{{ens}}'),
+                args=training_args.get("teacher-parallel")
         shell: '''bash pipeline/train/train-teacher.sh \
                     "{params.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
-                    {training_args} >> {log} 2>&1'''
+                    {params.args} >> {log} 2>&1'''
 
 rule eval_teacher:
     message: "Evaluating teacher model"
@@ -685,10 +690,11 @@ rule student:
         alignments=rules.alignments.output.alignment,
         bin=rules.marian.output.trainer, vocab=rules.train_vocab.output
     output: model=f'{student_dir}/{best_model}'
-    params: prefix_train=rules.ce_filter.params.output_prefix,prefix_test=f"{original}/devset"
+    params: prefix_train=rules.ce_filter.params.output_prefix,prefix_test=f"{original}/devset",
+            args=training_args.get("student")
     shell: '''bash pipeline/train/train-student.sh \
                 "{student_dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
-                "{input.alignments}" {training_args} >> {log} 2>&1'''
+                "{input.alignments}" {params.args} >> {log} 2>&1'''
 
 rule eval_student:
     message: "Evaluating student model"
@@ -718,10 +724,11 @@ rule finetune_student:
         alignments=rules.alignments.output.alignment, student_model=rules.student.output.model,
         bin=rules.marian.output.trainer, vocab=rules.train_vocab.output
     output: model=f'{student_finetuned_dir}/{best_model}'
-    params: prefix_train=rules.ce_filter.params.output_prefix,prefix_test=f"{original}/devset"
+    params: prefix_train=rules.ce_filter.params.output_prefix,prefix_test=f"{original}/devset",
+            args=training_args.get("student-finetune")
     shell: '''bash pipeline/train/finetune-student.sh \
                 "{student_finetuned_dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
-                "{input.alignments}" "{input.student_model}" {training_args} >> {log} 2>&1'''
+                "{input.alignments}" "{input.student_model}" {params.args} >> {log} 2>&1'''
 
 rule eval_finetuned_student:
     message: "Evaluating fine-tuned student model"
