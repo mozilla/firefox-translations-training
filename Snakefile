@@ -239,8 +239,8 @@ rule download_corpus:
     cache: True
     wildcard_constraints: kind="corpus|devset|eval"
     output: multiext(f"{original}/{{kind}}/{{dataset}}", f".{src}.gz", f".{trg}.gz")
-    params: prefix=f"{original}/{{kind}}/{{dataset}}"
-    shell: 'bash pipeline/data/download-corpus.sh "{wildcards.dataset}" "{params.prefix}"  >> {log} 2>&1'
+    params: prefix=f"{original}/{{kind}}/{{dataset}}", dataset="{dataset}"
+    shell: 'bash pipeline/data/download-corpus.sh "{params.dataset}" "{params.prefix}"  >> {log} 2>&1'
 
 rule download_mono:
     message: "Downloading monolingual dataset"
@@ -251,9 +251,9 @@ rule download_mono:
     cache: True
     wildcard_constraints: lang=f"{src}|{trg}"
     output: f'{original}/mono/{{dataset}}.{{lang}}.gz'
-    params: max_sent=lambda wildcards: mono_max_sent[wildcards.lang]
+    params: max_sent=lambda wildcards: mono_max_sent[wildcards.lang], dataset='{dataset}', lang='{lang}'
     shell: '''bash pipeline/data/download-mono.sh \
-                "{wildcards.dataset}" {wildcards.lang} {params.max_sent} "{output}"  >> {log} 2>&1'''
+                "{params.dataset}" {params.lang} {params.max_sent} "{output}"  >> {log} 2>&1'''
 
 # cleaning
 

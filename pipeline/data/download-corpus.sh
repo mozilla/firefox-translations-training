@@ -13,7 +13,7 @@ test -v TRG
 dataset=$1
 output_prefix=$2
 
-echo "### Downloading dataset ${dataset}"
+echo "###### Downloading dataset ${dataset}"
 
 cd "$(dirname "${0}")"
 
@@ -24,4 +24,4 @@ name=${dataset#*_}
 type=${dataset%%_*}
 bash "importers/corpus/${type}.sh" "${SRC}" "${TRG}" "${output_prefix}" "${name}"
 
-echo "### Downloading dataset ${dataset}"
+echo "###### Done: Downloading dataset ${dataset}"
