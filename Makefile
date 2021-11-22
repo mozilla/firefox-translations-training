@@ -11,10 +11,11 @@ WORKSPACE=12000
 CLUSTER_CORES=16
 CONFIG=configs/config.prod.yml
 CONDA_PATH=$(SHARED_ROOT)/mambaforge
+SNAKEMAKE_OUTPUT_CACHE=$(SHARED_ROOT)/cache
 ###
 
 CONDA_ACTIVATE=source $(CONDA_PATH)/etc/profile.d/conda.sh ; conda activate ; conda activate
-SNAKEMAKE=export SNAKEMAKE_OUTPUT_CACHE=$(SHARED_ROOT)/cache; snakemake
+SNAKEMAKE=export SNAKEMAKE_OUTPUT_CACHE=$(SNAKEMAKE_OUTPUT_CACHE);  snakemake
 
 ### 2. setup
 
@@ -28,6 +29,7 @@ conda:
 snakemake:
 	$(CONDA_ACTIVATE) base
 	mamba create -c conda-forge -c bioconda -n snakemake snakemake==6.9.1 --yes
+	mkdir -p "$(SNAKEMAKE_OUTPUT_CACHE)"
 
 # build container image for cluster and run-local modes (preferred)
 build:
