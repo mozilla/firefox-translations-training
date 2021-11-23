@@ -21,8 +21,7 @@ cd "$(dirname "${0}")"
 export PYTHONPATH="tools"
 
 dir="$(dirname "${output_prefix}")"
-tmp="${dir}/tmp"
-mkdir -p "${tmp}"
+mkdir -p "${dir}"
 
 echo "### Cleaning ${input_prefix}"
 
@@ -63,17 +62,9 @@ test -s "${output_prefix}.${SRC}${TRG}.fix.gz" ||
       | pigz > "${output_prefix}.${SRC}${TRG}.fix.gz"
 
 ######################################################################
-echo "### Deduplication"
-test -s "${output_prefix}.${SRC}${TRG}.nrm.uniq.gz" ||
-  pigz -dc "${output_prefix}.${SRC}${TRG}.fix.gz" |
-  LC_ALL=C sort -S 10G -T "${tmp}" |
-  uniq |
-  pigz >"${output_prefix}.${SRC}${TRG}.nrm.uniq.gz"
-
-######################################################################
 echo "### Rule-based filtering"
 test -s "${output_prefix}.${SRC}${TRG}.rule-based.gz" ||
-  pigz -dc "${output_prefix}.${SRC}${TRG}.nrm.uniq.gz" |
+  pigz -dc "${output_prefix}.${SRC}${TRG}.fix.gz" |
   parallel --no-notice --pipe -k -j "${threads}" --block 50M \
     "python3 tools/clean_parallel.py -l1 ${SRC} -l2 ${TRG} --debug" \
     2>"${output_prefix}.${SRC}${TRG}.clean.debug.txt" |
@@ -109,8 +100,8 @@ test -s "${output_prefix}.${SRC}.gz" || exit 1
 test -s "${output_prefix}.${TRG}.gz" || exit 1
 
 echo "### Remove input_prefix from intermediate steps"
-rm -rf "${output_prefix}".*.nrm.gz "${output_prefix}".*.nrm.uniq.gz "${output_prefix}".*.langid.gz \
-  "${output_prefix}".*.rule-based.gz "${output_prefix}".*.*fix.gz "${tmp}"
+rm -rf "${output_prefix}".*.nrm.gz "${output_prefix}".*.langid.gz \
+  "${output_prefix}".*.rule-based.gz "${output_prefix}".*.*fix.gz
 
 echo "### Clean ${input_prefix} is written to  ${output_prefix}"
 

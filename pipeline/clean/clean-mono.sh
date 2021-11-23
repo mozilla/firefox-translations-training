@@ -20,8 +20,7 @@ cd "$(dirname "${0}")"
 export PYTHONPATH="tools"
 
 dir="$(dirname "${output_prefix}")"
-tmp="${dir}/tmp"
-mkdir -p "${tmp}"
+mkdir -p "${dir}"
 
 ######################################################################
 echo "### Basic preprocessing"
@@ -44,17 +43,9 @@ else
 fi
 
 ######################################################################
-echo "### Deduplication"
-test -s "${output_prefix}.${lang}.nrm.uniq.gz" ||
-  pigz -dc "${output_prefix}.${lang}.monofix.gz" |
-  LC_ALL=C sort -S 10G -T "${tmp}" |
-  uniq |
-  pigz >"${output_prefix}.${lang}.nrm.uniq.gz"
-
-######################################################################
 echo "### Language identification"
 test -s "${output_prefix}.${lang}.langid.gz" ||
-  pigz -dc "${output_prefix}.${lang}.nrm.uniq.gz" |
+  pigz -dc "${output_prefix}.${lang}.monofix.gz" |
   # memory intensive
   parallel --no-notice --pipe -k -j "$(echo "${threads}"/4 | bc)" --block 50M "python tools/langid_fasttext.py" |
   grep -P "^${lang}\t" | cut -f2 |
@@ -72,8 +63,8 @@ pigz >"${output_prefix}.${lang}.gz"
 test -s "${output_prefix}.${lang}.gz" || exit 1
 
 echo "### Remove data from intermediate steps"
-rm -rf "${output_prefix}".*.nrm.gz "${output_prefix}".*.nrm.uniq.gz "${output_prefix}".*.langid.gz \
-  "${output_prefix}".*.monofix.gz "${tmp}"
+rm -rf "${output_prefix}".*.nrm.gz "${output_prefix}".*.langid.gz \
+  "${output_prefix}".*.monofix.gz
 
 echo "### Clean data is written to  ${output_prefix}"
 
