@@ -2,4 +2,4 @@
 set -e
 
 # Detokenize neulabs
-fixes/detok.sh $1 $2
+fixes/detok.sh $1 $2 $3

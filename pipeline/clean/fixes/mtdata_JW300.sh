@@ -2,4 +2,4 @@
 set -e
 
 # Detokenize JW300
-fixes/detok.sh
+fixes/detok.sh $1 $2 $3

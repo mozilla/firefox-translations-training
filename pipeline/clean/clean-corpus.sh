@@ -53,7 +53,7 @@ done
 ######################################################################
 echo "### Apply bilingual fixes"
 if [[ -x fixes/${dataset}.sh ]]; then
-    FIX="fixes/${dataset}.sh ${SRC} ${TRG}"
+    FIX="fixes/${dataset}.sh ${SRC} ${TRG} ${threads}"
 else
     FIX="cat"
 fi
