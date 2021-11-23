@@ -24,7 +24,7 @@ dir="$(dirname "${output_prefix}")"
 tmp="${dir}/tmp"
 mkdir -p "${tmp}"
 
-echo "### CLeaning ${input_prefix}"
+echo "### Cleaning ${input_prefix}"
 
 ######################################################################
 echo "### Basic preprocessing"
@@ -109,9 +109,9 @@ test -s "${output_prefix}.${SRC}.gz" || exit 1
 test -s "${output_prefix}.${TRG}.gz" || exit 1
 
 echo "### Remove input_prefix from intermediate steps"
-rm -f "${output_prefix}".*.nrm.gz "${output_prefix}".*.nrm.uniq.gz "${output_prefix}".*.langid.gz "${output_prefix}".*.rule-based.gz
-rm -rf "${tmp}"
+rm -rf "${output_prefix}".*.nrm.gz "${output_prefix}".*.nrm.uniq.gz "${output_prefix}".*.langid.gz \
+  "${output_prefix}".*.rule-based.gz "${output_prefix}".*.*fix.gz "${tmp}"
 
-echo "### Clean input_prefix is written to  ${output_prefix}"
+echo "### Clean ${input_prefix} is written to  ${output_prefix}"
 
 echo "###### Done: Cleaning corpus"

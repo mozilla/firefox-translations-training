@@ -72,7 +72,8 @@ pigz >"${output_prefix}.${lang}.gz"
 test -s "${output_prefix}.${lang}.gz" || exit 1
 
 echo "### Remove data from intermediate steps"
-rm -rf "${output_prefix}".*.nrm.gz "${output_prefix}".*.nrm.uniq.gz "${output_prefix}".*.langid.gz "${tmp}"
+rm -rf "${output_prefix}".*.nrm.gz "${output_prefix}".*.nrm.uniq.gz "${output_prefix}".*.langid.gz \
+  "${output_prefix}".*.monofix.gz "${tmp}"
 
 echo "### Clean data is written to  ${output_prefix}"
 
