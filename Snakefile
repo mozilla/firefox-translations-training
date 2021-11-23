@@ -276,7 +276,7 @@ rule clean_mono:
     conda: "envs/base.yml"
     threads: workflow.cores
     group: "clean_mono{lang}"
-    cache: True
+    cache: False
     wildcard_constraints: lang=f"{src}|{trg}"
     input: f'{original}/mono/{{dataset}}.{{lang}}.gz'
     output: f'{clean}/mono/{{dataset}}.{{lang}}.gz'
