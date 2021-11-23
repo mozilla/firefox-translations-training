@@ -402,7 +402,7 @@ if train_s2s:
             full_eval_datasets,
             model=f'{backward_model}/{best_model}'
         output:
-            report(directory(eval_backward),patterns=["{name}.bleu"],
+            report(directory(eval_backward),patterns=["{name}.metrics"],
                 category='evaluation', subcategory='finetuned', caption='reports/evaluation.rst')
         shell: 'bash pipeline/train/eval.sh "{eval_backward}" "{eval_data}" {trg} {src} {input.model} >> {log} 2>&1'
 
@@ -507,7 +507,7 @@ rule eval_teacher:
         full_eval_datasets,
         model=f'{teacher_dir}{{ens}}/{best_model}'
     output:
-        report(directory(f'{eval_res}/teacher{{ens}}'), patterns=["{name}.bleu"],
+        report(directory(f'{eval_res}/teacher{{ens}}'), patterns=["{name}.metrics"],
             category='evaluation', subcategory='teacher', caption='reports/evaluation.rst')
     params: dir=f'{eval_res}/teacher{{ens}}'
     shell: 'bash pipeline/train/eval.sh "{params.dir}" "{eval_data}" {src} {trg} {input.model} >> {log} 2>&1'
@@ -524,7 +524,7 @@ if len(ensemble) > 1:
         input:
             full_eval_datasets, models=[f'{teacher_dir}{ens}/{best_model}' for ens in ensemble]
         output:
-            report(directory(eval_teacher_ens),patterns=["{name}.bleu"],
+            report(directory(eval_teacher_ens),patterns=["{name}.metrics"],
                 category='evaluation',subcategory='teacher_ensemble',caption='reports/evaluation.rst')
         shell: 'bash pipeline/train/eval.sh "{eval_teacher_ens}" "{eval_data}" {src} {trg} {input.models} >> {log} 2>&1'
 
@@ -706,7 +706,7 @@ rule eval_student:
     priority: 50
     input: full_eval_datasets, model=rules.student.output.model
     output:
-        report(directory(eval_student),patterns=["{name}.bleu"],category='evaluation',
+        report(directory(eval_student),patterns=["{name}.metrics"],category='evaluation',
             subcategory='student', caption='reports/evaluation.rst')
     shell: 'bash pipeline/train/eval.sh "{eval_student}" "{eval_data}" {src} {trg} {input.model} >> {log} 2>&1'
 
@@ -740,7 +740,7 @@ rule eval_finetuned_student:
     priority: 50
     input: full_eval_datasets, model=rules.finetune_student.output.model
     output:
-        report(directory(eval_student_finetuned),patterns=["{name}.bleu"],
+        report(directory(eval_student_finetuned),patterns=["{name}.metrics"],
             category='evaluation', subcategory='finetuned', caption='reports/evaluation.rst')
     shell: 'bash pipeline/train/eval.sh "{eval_student_finetuned}" "{eval_data}" {src} {trg} {input.model} \
                 >> {log} 2>&1'
@@ -771,7 +771,7 @@ rule eval_quantized:
         model=rules.quantize.output.model,
         shortlist=rules.alignments.output.shortlist,vocab=rules.train_vocab.output
     output:
-        report(directory(eval_speed),patterns=["{name}.bleu"], category='evaluation',
+        report(directory(eval_speed),patterns=["{name}.metrics"], category='evaluation',
             subcategory='quantized', caption='reports/evaluation.rst')
     shell: '''bash pipeline/quantize/eval.sh "{speed}" "{input.shortlist}" "{eval_data}" "{input.vocab}" "{eval_speed}" \
             >> {log} 2>&1'''

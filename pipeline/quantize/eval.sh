@@ -42,10 +42,10 @@ for src_path in "${datasets_dir}"/*."${SRC}.gz"; do
       --shortlist "${shortlist}" false \
       --int8shiftAlphaAll |
     tee "${eval_dir}/${prefix}.${TRG}" |
-    sacrebleu -d --score-only -l "${SRC}-${TRG}" "${eval_dir}/${prefix}.${TRG}.ref" |
-    tee "${eval_dir}/${prefix}.${TRG}.bleu"
+    sacrebleu "${eval_dir}/${prefix}.${TRG}.ref" -d -f text --score-only -l "${SRC}-${TRG}" -m bleu chrf  |
+    tee "${eval_dir}/${prefix}.${TRG}.metrics"
 
-  test -e "${eval_dir}/${prefix}.${TRG}.bleu" || exit 1
+  test -e "${eval_dir}/${prefix}.${TRG}.metrics" || exit 1
 done
 
 echo "###### Done: Evaluation of a quantized model"

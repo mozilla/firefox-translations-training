@@ -40,10 +40,10 @@ for src_path in "${datasets_dir}"/*."${src}.gz"; do
       --log "${eval_dir}/${prefix}.log" \
       -d ${GPUS} |
     tee "${eval_dir}/${prefix}.${trg}" |
-    sacrebleu -d --score-only -l "${src}-${trg}" "${eval_dir}/${prefix}.${TRG}.ref"  |
-    tee "${eval_dir}/${prefix}.${trg}.bleu"
+    sacrebleu "${eval_dir}/${prefix}.${TRG}.ref" -d -f text --score-only -l "${src}-${trg}" -m bleu chrf  |
+    tee "${eval_dir}/${prefix}.${trg}.metrics"
 
-  test -e "${eval_dir}/${prefix}.${trg}.bleu" || exit 1
+  test -e "${eval_dir}/${prefix}.${trg}.metrics" || exit 1
 done
 
 
