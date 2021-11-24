@@ -1,5 +1,4 @@
 ## https://github.com/marian-nmt/marian-examples/tree/master/wmt2017-uedin
-after-epochs: 10
 beam-size: 12
 cost-type: ce-mean-words
 disp-freq: 1000

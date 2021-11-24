@@ -32,12 +32,20 @@ experiment:
     dataset-thresholds:
       opus_CCAligned/v1: 0.7
       opus_WikiMatrix/v1: 0.7
+      opus_OpenSubtitles/v2018: 0.9
+      opus_bible-uedin/v1: 0.7
       mtdata_cc_aligned: 0.7
       mtdata_wiki_titles_v1: 0.7
       mtdata_WikiMatrix_v1: 0.7
       mtdata_wiki_titles_v2: 0.7
       mtdata_wmt13_commoncrawl: 0.7
 
+training:
+  s2s:
+    after-epochs: 10
+  # limit number of epochs on augmented dataset (high resource languages)
+  teacher-all:
+    after-epochs: 5
 
 
 datasets:

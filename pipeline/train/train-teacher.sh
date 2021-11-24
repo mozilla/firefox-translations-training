@@ -1,6 +1,6 @@
 #!/bin/bash
 ##
-# Train a teacher model.
+# Trains a teacher model.
 #
 
 set -x
@@ -30,4 +30,4 @@ bash "train.sh" \
   "${vocab}" \
   "${extra_params[@]}"
 
-echo "###### Training a teacher model"
+echo "###### Done: Training a teacher model"
