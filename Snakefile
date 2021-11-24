@@ -385,7 +385,7 @@ if train_s2s:
             bin=rules.marian.output.trainer, vocab=rules.train_vocab.output,
         output:  model=f'{backward_model}/{best_model}'
         params: prefix_train=f"{biclean}/corpus",prefix_test=f"{original}/devset",
-                args=training_args.get("s2s")
+                args=training_args.get("s2s") or ''
         shell: '''bash pipeline/train/train-s2s.sh \
                     "{backward_model}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" {trg} {src} \
                      {params.args} >> {log} 2>&1'''
@@ -471,7 +471,7 @@ rule teacher_all:
         bin=rules.marian.output.trainer,vocab=rules.train_vocab.output
     output: model=f'{teacher_dir}{{ens}}/{teacher_all_output}'
     params: prefix_train=teacher_corpus, prefix_test=f"{original}/devset", dir=directory(f'{teacher_dir}{{ens}}'),
-                args=training_args.get("teacher-all")
+                args=training_args.get("teacher-all") or ''
     shell: '''bash pipeline/train/train-teacher.sh \
                 "{params.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
                 {params.args} >> {log} 2>&1'''
@@ -490,7 +490,7 @@ if continue_teacher:
             bin=rules.marian.output.trainer,vocab=rules.train_vocab.output
         output: model=f'{teacher_dir}{{ens}}/{best_model}'
         params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset",dir=directory(f'{teacher_dir}{{ens}}'),
-                args=training_args.get("teacher-parallel")
+                args=training_args.get("teacher-parallel") or ''
         shell: '''bash pipeline/train/train-teacher.sh \
                     "{params.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
                     {params.args} >> {log} 2>&1'''
@@ -691,7 +691,7 @@ rule student:
         bin=rules.marian.output.trainer, vocab=rules.train_vocab.output
     output: model=f'{student_dir}/{best_model}'
     params: prefix_train=rules.ce_filter.params.output_prefix,prefix_test=f"{original}/devset",
-            args=training_args.get("student")
+            args=training_args.get("student") or ''
     shell: '''bash pipeline/train/train-student.sh \
                 "{student_dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
                 "{input.alignments}" {params.args} >> {log} 2>&1'''
@@ -725,7 +725,7 @@ rule finetune_student:
         bin=rules.marian.output.trainer, vocab=rules.train_vocab.output
     output: model=f'{student_finetuned_dir}/{best_model}'
     params: prefix_train=rules.ce_filter.params.output_prefix,prefix_test=f"{original}/devset",
-            args=training_args.get("student-finetune")
+            args=training_args.get("student-finetune") or ''
     shell: '''bash pipeline/train/finetune-student.sh \
                 "{student_finetuned_dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
                 "{input.alignments}" "{input.student_model}" {params.args} >> {log} 2>&1'''
