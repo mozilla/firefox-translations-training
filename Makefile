@@ -137,24 +137,6 @@ dag:
 	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) \
 	  | dot -Tpdf > DAG.pdf
 
-lint:
-	snakemake --lint
-
-install-monitor:
-	$(CONDA_ACTIVATE) base
-	conda create --name panoptes
-	conda install -c panoptes-organization panoptes-ui
-
-run-monitor:
-	$(CONDA_ACTIVATE) panoptes
-	panoptes
-
-run-with-monitor:
-	snakemake \
-	  --use-conda \
-	  --cores all \
-	  --wms-monitor http://127.0.0.1:5000
-
 install-tensorboard:
 	$(CONDA_ACTIVATE) base
 	conda env create -f envs/tensorboard.yml
@@ -164,28 +146,3 @@ tensorboard:
 	ls -d $(SHARED_ROOT)/models/*/*/* > tb-monitored-jobs; \
 	tensorboard --logdir=$$MODELS --host=0.0.0.0 &; \
 	python utils/tb_log_parser.py --prefix=
-
-install-snakepit-scheduler:
-	mkdir -p $(SHARED_ROOT)/snakepit
-	cd $(SHARED_ROOT)/snakepit
-
-	curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-	sudo apt install nodejs
-
-	if [ ! -e snakepit-client ]; then
-	  git clone https://github.com/mozilla/snakepit-client.git
-	fi
-	cd snakepit-client
-	npm install
-	sudo npm link
-
-	echo "http://10.2.224.243" > /root/.pitconnect.txt
-
-	pit status
-
-run-snakepit:
-	chmod +x profiles/snakepit/*
-	snakemake \
-	  --use-conda \
-	  --cores all \
-	  --profile=profiles/snakepit
