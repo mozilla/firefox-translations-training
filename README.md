@@ -209,20 +209,23 @@ Step | Description | Bottleneck | Comments
 --- | --- | --- | ---
 Installation | Installing dependencies and compiling | CPU | Takes ~1 hour
 Data downloading | Downloads datasets, samples sentences | Network, Disk | Time depends on dataset size, sampling of huge mono datasets (100M+ sentences) is the most intensive operation.
-Data cleaning | Basic preprocessing, language specific, rule based, deduplication,  and other attempts to clean noisy data in parallel and mono datasets | CPU | Good parallelization across CPU cores. To make cleaning of a new language more efficient add it to [clean_parallel.py](/pipeline/clean/clean_parallel.py).
-Bicleaner | Filters noisy sentence pairs in a parallel corpus using [bicleaner](https://github.com/bitextor/bicleaner) or [bicleaner-ai](https://github.com/bitextor/bicleaner-ai) depending on available language packs. | CPU, GPU | If there are no pretrained language packs for bicleaner-ai, it uses bicleaner. If there are no ones for bicleaner either, this step is skipped. Cleaning threshold is controlled by `BICLEANER_THRESHOLD` config setting.
+Data cleaning | Basic preprocessing, dataset specific, language specific, rule based and other attempts to clean noisy data in parallel and mono datasets | CPU | Good parallelization across CPU cores. To make cleaning of a new language more efficient add it to [clean_parallel.py](/pipeline/clean/tools/clean_parallel.py).
+Bicleaner | Filters noisy sentence pairs in a parallel corpus using [bicleaner](https://github.com/bitextor/bicleaner) or [bicleaner-ai](https://github.com/bitextor/bicleaner-ai) depending on available language packs. | CPU, GPU | If there are no pretrained language packs for bicleaner-ai, it uses bicleaner. If there are no ones for bicleaner either, this step is skipped. Cleaning thresholds are configurable per dataset, see [Dataset cleaning](##Dataset cleaning).
+Merge and dedupe | Merges clean dataset and applies deduplicaiton | CPU, Disk | 
 Training s2s | Trains a backward shallow s2s model, which is useful for back-translations and ce-filtering | GPU | Inspired by a [marian example](https://github.com/marian-nmt/marian-examples/tree/master/training-basics-sentencepiece).
-Augmentation with back-translations | Translates mono corpus combined from `MONO_DATASETS_TRG` using shallow s2s model. | GPU | It is more useful for low-resource languages and can be skipped for others.
-Training teacher | Trains one or multiple big transformer models | GPU | You might want to adjust [early stopping](pipeline/train/configs/training/teacher.transformer.train.yml) parameters depending on datasets size. Inspired by [transformer](https://github.com/marian-nmt/marian-examples/tree/master/transformer) and [wmt2017-uedin](https://github.com/marian-nmt/marian-examples/tree/master/wmt2017-uedin) marian examples and extended with [SentencePiece](https://github.com/google/sentencepiece).
+Augmentation with back-translations | Translates mono corpus combined from monolingual datasets in target language using shallow s2s model. | GPU | It is more useful for low-resource languages and can be skipped for others.
+Training teacher | Trains an ensemble of big transformer models on augmented dataset | GPU | You might want to adjust [early stopping](pipeline/train/configs/training/teacher.transformer.train.yml) or `after-epochs` parameters depending on datasets size.
+Continue training teacher | Continue training an ensemble of teachers on parallel data only | GPU | You might want to adjust [early stopping](pipeline/train/configs/training/teacher.transformer.train.yml) parameters depending on datasets size.
 Translation by teacher | Translates a corpus and monolingual data combined from `MONO_DATASETS_SRC` using the teacher model (ensemble is not supported yet) | GPU | The slowest part of the pipeline. Can take days. It is possible to speed it up launching the same scripts ([corpus](pipeline/translate/translate-corpus.sh), [mono](pipeline/translate/translate-mono.sh)) in parallel from another machine with access to the same network directory.
 Cross-entropy filtering | Scores translated corpus with backward s2s model and removes a part of the corpus with the lowest scores to reduce noise | GPU, CPU, Disk | At this point we work with huge datasets, so it utilizes copying to a local disk to make things faster.
 Training alignments and shortlist | Trains alignments using [fast_align](https://github.com/clab/fast_align) and extracts lexical shortlist using [extract_lex](https://github.com/marian-nmt/extract-lex) tool | CPU, Disk | Some tools requires uncompressed datasets on disk and they are huge at this point. Data is copied to a local disk to make things faster. Might take 100+GB of local disk depending on a dataset size. Good CPU parallelization.
-Training student | Trains a small transformer student model on filtered data and using alignments | GPU | Run [Tensorboard](utils/tensorboard/tensorboard.sh) manually to see training visualization.
+Training student | Trains a small transformer student model on filtered data and using alignments | GPU |
 Fine-tuning student | Finetunes the student model by emulating 8bit GEMM during training | GPU | Converges very quickly and then degrades. It's quick but you might want to reduce early stopping threshold.
 Quantizaiton |  Applies 8 bit quantization to the fined-tuned student model and evaluates on CPU | CPU | CPU threads must be set to 1 for this step.
+Evaluation |  Calculates metrics for all models (BLEU, chrf) using [SacreBLEU](https://github.com/mjpost/sacrebleu) | GPU | Uses `datasets.test` configuration section.
 Export | Exports trained model and shortlist to (bergamot-translator)(https://github.com/mozilla/bergamot-translator) format | |
 
-## Datasets importers
+## Dataset importers
 
 Dataset importers can be used in `datasets` sections of experiment config.
 
@@ -255,6 +258,40 @@ Example:
 
 Just add a shell script to [corpus](pipeline/data/importers/corpus) or [mono]() which is named as `<prefix>.sh` 
 and accepts the same parameters as the other scripts from the same folder.
+
+## Dataset fixing
+
+Some datasets require fixes like detokenization. Dataset and language specific fixes are implemented in [pipeline/clean/fixes]([pipeline/clean/fixes]).
+Naming convention: 
+- `<dataset_name>.sh` for parallel dataset cleaning
+- `<dataset_name>.<lang>.sh` for language specific cleaning of parallel or monolingual dataset
+- `/` in dataset name should be replaced with `_`
+
+## Dataset cleaning
+Some parallel datasets require more aggressive filtering.
+Dataset specific Bicleaner thretholds can be set in config. Example:
+
+```angular2html
+experiment:
+...
+  bicleaner:
+    default-threshold: 0.5
+    dataset-thresholds:
+      mtdata_neulab_tedtalksv1_train: 0.6
+```
+
+## Utilities
+
+### Tensorboard
+
+To see training graphs run tensorboard:
+
+```
+make install-tensorboard
+make tensorboard
+```
+
+Then port forward 6006.
 
 ## Directory structure
     
@@ -350,9 +387,6 @@ Snakemake parallelizes steps that can be executed simultniously. It is especiall
 The main snakemkae process (scheduler) should be launched interactively. It runs job processes on the worker nodes in cluster mode or on a local machine in local mode.
 
 ### Conventions
-
-- All scripts work with respect to repo root directory. 
-  It allows to not think about relative paths and execution folders.
   
 - Scripts inside the `pipeline` directory are independent and operate only using input arguments, input files 
   and global envs.
