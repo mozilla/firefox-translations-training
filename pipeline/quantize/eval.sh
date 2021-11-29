@@ -21,7 +21,7 @@ eval_dir=$5
 cd "$(dirname "${0}")"
 
 mkdir -p "${eval_dir}"
-#todo: work with gz corpus
+
 echo "### Evaluating a model ${model_dir} on CPU"
 for src_path in "${datasets_dir}"/*."${SRC}.gz"; do
   prefix=$(basename "${src_path}" ".${SRC}.gz")

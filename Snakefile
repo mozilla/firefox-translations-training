@@ -508,7 +508,7 @@ rule eval_teacher:
         model=f'{teacher_dir}{{ens}}/{best_model}'
     output:
         report(directory(f'{eval_res}/teacher{{ens}}'), patterns=["{name}.metrics"],
-            category='evaluation', subcategory='teacher', caption='reports/evaluation.rst')
+            category='evaluation', subcategory='teacher{ens}', caption='reports/evaluation.rst')
     params: dir=f'{eval_res}/teacher{{ens}}'
     shell: 'bash pipeline/train/eval.sh "{params.dir}" "{eval_data}" {src} {trg} {input.model} >> {log} 2>&1'
 
