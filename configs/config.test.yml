@@ -1,5 +1,8 @@
+####
+# Test config, it rus the pipeline quickly end to end
+###
 
-# these are set in the Makefile
+
 root: ""
 cuda: ""
 deps: false
@@ -7,19 +10,15 @@ gpus: ""
 workspace: ""
 
 experiment:
-  name: snakemake
+  name: test
   src: ru
   trg: en
 
   teacher-ensemble: 2
-  # path to a pretrained backward model (optional)
   backward-model: ""
 
-  # limits per downloaded dataset
   mono-max-sentences-src: 100000
   mono-max-sentences-trg: 200000
-
-  # split corpus to parallelize translation
   split-length: 100000
 
   best-model: chrf
@@ -30,20 +29,19 @@ experiment:
       mtdata_neulab_tedtalksv1_train: 0.6
 
 training:
-  s2s:
-    after-epochs: 1
+  backward:
+    after: 10000u
   teacher-all:
-    after-epochs: 1
+    after: 10000u
   teacher-parallel:
-    after-epochs: 2
+    after: 10000u
   student:
-    after-epochs: 1
+    after: 10000u
   student-finetune:
-    after-epochs: 1
+    after: 10000u
 
 
 datasets:
-  # parallel corpus
   train:
     - opus_ada83/v1
     - opus_GNOME/v1
@@ -55,12 +53,8 @@ datasets:
     - flores_devtest
     - sacrebleu_wmt20
     - sacrebleu_wmt18
-  # monolingual datasets (ex. paracrawl-mono_paracrawl8, commoncrawl_wmt16, news-crawl_news.2020)
-  # to be translated by the teacher model
   mono-src:
     - news-crawl_news.2020
-  # to be translated by the shallow backward model to augment teacher corpus with back-translations
-  # leave empty to skip augmentation step (high resource languages)
   mono-trg:
     - news-crawl_news.2020
 

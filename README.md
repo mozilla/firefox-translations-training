@@ -351,7 +351,7 @@ Then port forward 6006.
     │   │      ├ student-finetuned
     │   │      ├ speed
     │   │      ├ evaluation
-    │   │      │  ├ s2s
+    │   │      │  ├ backward
     │   │      │  ├ teacher0
     │   │      │  ├ teacher1
     │   │      │  ├ teacher-ensemble
@@ -361,7 +361,7 @@ Then port forward 6006.
     │   │      └ exported
     │   ├ en-ru
     │      └ test
-    │         └ s2s
+    │         └ backward
     │
     ├ experiments
     │   └ ru-en

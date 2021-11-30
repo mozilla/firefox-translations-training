@@ -1,4 +1,0 @@
-# https://discourse.translatelocally.com/t/marian-configuration-to-use/24
-dim-vocabs: [32000, 32000]
-type: transformer
-task: transformer-big

@@ -30,7 +30,7 @@ mono_max_sent_src = config['experiment']['mono-max-sentences-src']
 mono_max_sent_trg = config['experiment']['mono-max-sentences-trg']
 bicl_default_threshold = config['experiment']['bicleaner']['default-threshold']
 bicl_dataset_thresholds = config['experiment']['bicleaner']['dataset-thresholds']
-backward_model = config['experiment']['backward-model']
+backward_pretrained = config['experiment']['backward-model']
 
 experiment_dir=f"{data_root_dir}/experiments/{src}-{trg}/{experiment}"
 
@@ -87,12 +87,12 @@ student_finetuned_dir = f"{models_dir}/student-finetuned"
 speed = f"{models_dir}/speed"
 exported = f"{models_dir}/exported"
 best_model = f"model.npz.best-{config['experiment']['best-model']}.npz"
-s2s=f'{models_dir}/s2s'
+backward = f'{models_dir}/backward'
 
 #evaluation
 eval_data = f"{original}/eval"
 eval_res = f"{models_dir}/evaluation"
-eval_backward = f'{eval_res}/s2s'
+eval_backward = f'{eval_res}/backward'
 eval_student = f'{eval_res}/student',
 eval_student_finetuned = f'{eval_res}/student-finetuned',
 eval_speed = f'{eval_res}/speed',
@@ -122,13 +122,13 @@ if len(ensemble) > 1:
 if install_deps:
     results.append("/tmp/flags/setup.done")
 
-if not backward_model:
-    backward_model = s2s
+if not backward_pretrained:
     # don't evaluate pretrained model
     results.append(eval_backward)
-    train_s2s=True
+    train_backward=True
 else:
-    train_s2s = False
+    train_backward = False
+    backward = backward_pretrained
 
 # bicleaner
 
@@ -372,7 +372,7 @@ rule train_vocab:
     shell: 'bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" >> {log} 2>&1'
 
 
-if train_s2s:
+if train_backward:
     rule backward:
         message: "Training backward model"
         log: f"{log_dir}/train_backward.log"
@@ -383,12 +383,12 @@ if train_s2s:
         input:
             rules.merge_devset.output, train_src=clean_corpus_src,train_trg=clean_corpus_trg,
             bin=rules.marian.output.trainer, vocab=rules.train_vocab.output,
-        output:  model=f'{backward_model}/{best_model}'
+        output:  model=f'{backward}/{best_model}'
         params: prefix_train=f"{biclean}/corpus",prefix_test=f"{original}/devset",
-                args=training_args.get("s2s") or ""
-        shell: '''bash pipeline/train/train-s2s.sh \
-                    "{backward_model}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" {trg} {src} \
-                     {params.args} >> {log} 2>&1'''
+                args=training_args.get("backward") or ""
+        shell: '''bash pipeline/train/train.sh \
+                    backward train {trg} {src} "{params.prefix_train}" "{params.prefix_test}" "{backward}" \
+                    "{input.vocab}" {params.args} >> {log} 2>&1'''
 
     rule eval_backward:
         message: "Evaluating backward model"
@@ -400,7 +400,7 @@ if train_s2s:
         priority: 50
         input:
             full_eval_datasets,
-            model=f'{backward_model}/{best_model}'
+            model=f'{backward}/{best_model}'
         output:
             report(directory(eval_backward),patterns=["{name}.metrics"],
                 category='evaluation', subcategory='finetuned', caption='reports/evaluation.rst')
@@ -426,7 +426,7 @@ if augment_corpus:
         resources: gpu=gpus_num
         input:
             rules.marian.output.trainer,file=f'{translated}/mono_trg/file.{{part}}',
-            vocab=rules.train_vocab.output,model=f'{backward_model}/{best_model}'
+            vocab=rules.train_vocab.output,model=f'{backward}/{best_model}'
         output: f'{translated}/mono_trg/file.{{part}}.out'
         shell: 'bash pipeline/translate/translate.sh "{input.file}" "{input.vocab}" {input.model} >> {log} 2>&1'
 
@@ -472,9 +472,9 @@ rule teacher_all:
     output: model=f'{teacher_dir}{{ens}}/{teacher_all_output}'
     params: prefix_train=teacher_corpus, prefix_test=f"{original}/devset", dir=directory(f'{teacher_dir}{{ens}}'),
                 args=training_args.get("teacher-all") or ""
-    shell: '''bash pipeline/train/train-teacher.sh \
-                "{params.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
-                {params.args} >> {log} 2>&1'''
+    shell: '''bash pipeline/train/train.sh \
+                teacher train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
+                "{input.vocab}" {params.args} >> {log} 2>&1'''
 
 if continue_teacher:
     rule teacher_parallel:
@@ -491,9 +491,9 @@ if continue_teacher:
         output: model=f'{teacher_dir}{{ens}}/{best_model}'
         params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset",dir=directory(f'{teacher_dir}{{ens}}'),
                 args=training_args.get("teacher-parallel") or ""
-        shell: '''bash pipeline/train/continue-teacher.sh \
-                    "{params.dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
-                    {params.args} >> {log} 2>&1'''
+        shell: '''bash pipeline/train/train.sh \
+                    teacher continue {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
+                    "{input.vocab}" {params.args} >> {log} 2>&1'''
 
 rule eval_teacher:
     message: "Evaluating teacher model"
@@ -693,8 +693,8 @@ rule student:
     params: prefix_train=rules.ce_filter.params.output_prefix,prefix_test=f"{original}/devset",
             args=training_args.get("student") or ""
     shell: '''bash pipeline/train/train-student.sh \
-                "{student_dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
-                "{input.alignments}" {params.args} >> {log} 2>&1'''
+                "{input.alignments}" student train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" \
+                "{student_dir}" "{input.vocab}" {params.args} >> {log} 2>&1'''
 
 rule eval_student:
     message: "Evaluating student model"
@@ -726,9 +726,9 @@ rule finetune_student:
     output: model=f'{student_finetuned_dir}/{best_model}'
     params: prefix_train=rules.ce_filter.params.output_prefix,prefix_test=f"{original}/devset",
             args=training_args.get("student-finetune") or ""
-    shell: '''bash pipeline/train/finetune-student.sh \
-                "{student_finetuned_dir}" "{params.prefix_train}" "{params.prefix_test}" "{input.vocab}" \
-                "{input.alignments}" "{input.student_model}" {params.args} >> {log} 2>&1'''
+    shell: '''bash pipeline/train/train-student.sh \
+                "{input.alignments}" student finetune {src} {trg} "{params.prefix_train}" "{params.prefix_test}" \
+                "{student_finetuned_dir}" "{input.vocab}" {params.args} >> {log} 2>&1'''
 
 rule eval_finetuned_student:
     message: "Evaluating fine-tuned student model"
