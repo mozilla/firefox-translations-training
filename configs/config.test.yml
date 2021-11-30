@@ -30,15 +30,15 @@ experiment:
 
 training:
   backward:
-    after: 10000u
+    after: 1000u
   teacher-all:
-    after: 10000u
+    after: 1000u
   teacher-parallel:
-    after: 10000u
+    after: 1000u
   student:
-    after: 10000u
+    after: 1000u
   student-finetune:
-    after: 10000u
+    after: 1000u
 
 
 datasets:
