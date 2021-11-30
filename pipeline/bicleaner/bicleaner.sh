@@ -40,8 +40,10 @@ test -s "${output_prefix}.best.gz" ||
   pigz >"${output_prefix}.best.gz"
 
 echo "### Writing output corpus"
-pigz -dc "${output_prefix}.best.gz" | cut -f1 | pigz >"${output_prefix}.${SRC}.gz"
-pigz -dc "${output_prefix}.best.gz" | cut -f2 | pigz >"${output_prefix}.${TRG}.gz"
+pigz -dc "${output_prefix}.best.gz" |
+  tee >(cut -f1 | pigz >"${output_prefix}.${SRC}.gz") |
+  cut -f2 |
+  pigz >"${output_prefix}.${TRG}.gz"
 
 echo "### Cleaning files"
 rm "${output_prefix}.best.gz"
