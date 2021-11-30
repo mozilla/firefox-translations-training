@@ -12,7 +12,7 @@ CLUSTER_CORES=16
 CONFIG=configs/config.prod.yml
 CONDA_PATH=$(SHARED_ROOT)/mambaforge
 SNAKEMAKE_OUTPUT_CACHE=$(SHARED_ROOT)/cache
-TARGET=all
+TARGET=
 ###
 
 CONDA_ACTIVATE=source $(CONDA_PATH)/etc/profile.d/conda.sh ; conda activate ; conda activate
