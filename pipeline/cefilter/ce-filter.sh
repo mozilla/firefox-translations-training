@@ -13,7 +13,6 @@ test -v TRG
 corpus_prefix=$1
 output_prefix=$2
 scores=$3
-threads=$4
 
 cd "$(dirname "${0}")"
 
@@ -23,21 +22,10 @@ output_dir=$(dirname "${output_prefix}")
 tmp="${output_dir}/tmp"
 mkdir -p "${tmp}"
 
-echo "### Decompressing corpus"
-test -s "${tmp}/corpus.${TRG}" || pigz -dc "${corpus_prefix}.${TRG}.gz" >"${tmp}/corpus.${TRG}"
-test -s "${tmp}/corpus.${SRC}" || pigz -dc "${corpus_prefix}.${SRC}.gz" >"${tmp}/corpus.${SRC}"
-
-
-echo "### Normalizing scores"
-test -s "${tmp}/scores.nrm.txt" ||
-  paste "${scores}" "${tmp}/corpus.${TRG}" |
-  parallel --no-notice --pipe -k -j "${threads}" --block 50M "python normalize-scores.py" |
-  cut -f1 >"${tmp}/scores.nrm.txt"
-
 echo "### Sorting scores"
 if [ ! -s "${tmp}/sorted.gz" ]; then
   buffer_size="$(echo "$(grep MemTotal /proc/meminfo | awk '{print $2}')"*0.9 | bc | cut -f1 -d.)"
-  paste "${tmp}/scores.nrm.txt" "${tmp}/corpus.${SRC}" "${tmp}/corpus.${TRG}" |
+  paste "${scores}" <(pigz -dc "${corpus_prefix}.${SRC}.gz") <(pigz -dc "${corpus_prefix}.${TRG}.gz") |
   LC_ALL=C sort -n -k1,1 -S "${buffer_size}K" -T "${tmp}" |
   pigz >"${tmp}/sorted.gz"
 fi
@@ -50,8 +38,9 @@ if [ ! -s "${tmp}/best.gz" ]; then
 fi
 
 echo "### Writing output corpus"
-pigz -dc "${tmp}/best.gz" | cut -f1 | pigz >"${output_prefix}.${SRC}.gz"
-pigz -dc "${tmp}/best.gz" | cut -f2 | pigz >"${output_prefix}.${TRG}.gz"
+pigz -dc "${tmp}/best.gz" |
+  tee >(cut -f1 | pigz >"${output_prefix}.${SRC}.gz") |
+  cut -f2 | pigz >"${output_prefix}.${TRG}.gz"
 
 echo "### Deleting tmp dir"
 rm -rf "${tmp}"

@@ -662,7 +662,7 @@ rule ce_filter:
     output: src_corpus=f"{filtered}/corpus.{src}.gz",trg_corpus=f"{filtered}/corpus.{trg}.gz"
     params: input_prefix=f'{merged}/corpus',output_prefix=f'{filtered}/corpus'
     shell: '''bash pipeline/cefilter/ce-filter.sh \
-                "{params.input_prefix}" "{params.output_prefix}" "{input.scores}" {threads}  >> {log} 2>&1'''
+                "{params.input_prefix}" "{params.output_prefix}" "{input.scores}" >> {log} 2>&1'''
 
 rule alignments:
     message: 'Training word alignment and lexical shortlists'
