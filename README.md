@@ -128,14 +128,23 @@ make dry-run
 
 ### Local mode
 
-Without containerization:
+#### Without containerization
+
 ```
 make run-local
 ```
-With containerization:
+To test the whole pipeline end to end (it supposed to run quickly and does not train anything useful):
+
+```
+make test
+```
+Or run
+#### With containerization
 ```
 make run-local-container
 ```
+
+
 
 ### Cluster mode
 

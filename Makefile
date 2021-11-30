@@ -57,6 +57,7 @@ dry-run:
 	  -n
 
 run-local:
+	echo "Running with config $(CONFIG)"
 	$(CONDA_ACTIVATE) snakemake
 	$(SNAKEMAKE) \
 	  --use-conda \
@@ -66,6 +67,9 @@ run-local:
 	  --resources gpu=$(GPUS) \
 	  --configfile $(CONFIG) \
 	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) deps=true
+
+test: CONFIG=configs/config.test.yml
+test: run-local
 
 run-local-container:
 	$(CONDA_ACTIVATE) snakemake
