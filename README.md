@@ -158,6 +158,18 @@ with containerization (recommended):
 ```
 make run-slurm-container
 ```
+### Specific target
+
+By default, all Snakemake rules are executed. To run the pipeline up to a specific rule use:
+```
+make <run-command> TARGET=<non-wildcard-rule>
+```
+
+For example, collect corpus first:
+```
+make run-local TARGET=merge_corpus
+```
+
 
 ### Using Snakepit
 
