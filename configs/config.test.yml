@@ -32,7 +32,7 @@ training:
   backward:
     after: 1000u
   teacher-all:
-    after: 1000u
+    after: 2000u
   teacher-parallel:
     after: 1000u
   student:
