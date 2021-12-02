@@ -749,9 +749,7 @@ rule quantize:
     message: "Quantization"
     log: f"{log_dir}/quntize.log"
     conda: "envs/base.yml"
-    threads: gpus_num*2
-    resources: gpu=gpus_num
-    threads: workflow.cores
+    threads: 1
     input:
         shortlist=rules.alignments.output.shortlist, model=rules.finetune_student.output.model,
         bin=rules.marian.output.decoder, vocab=rules.train_vocab.output, devset=f"{original}/devset.{src}.gz"
@@ -764,7 +762,7 @@ rule eval_quantized:
     log: f"{log_dir}/eval_quantized.log"
     conda: "envs/base.yml"
     group: 'export'
-    threads: workflow.cores
+    threads: 1
     priority: 50
     input:
         full_eval_datasets,
