@@ -12,38 +12,38 @@ test -v GPUS
 test -v MARIAN
 test -v WORKSPACE
 
-model_dir=$1
+eval_dir=$1
 datasets_dir=$2
-src="${3:-${SRC}}"
-trg="${4:-${TRG}}"
+src=$3
+trg=$4
+models=( "${@:5}" )
 
 
-config="${model_dir}/model.npz.best-bleu-detok.npz.decoder.yml"
-eval_dir="${model_dir}/eval"
-
-echo "### Checking model files"
-test -e "${config}" || exit 1
 mkdir -p "${eval_dir}"
 
-echo "### Evaluating a model ${model_dir}"
-for src_path in "${datasets_dir}"/*."${src}"; do
-  prefix=$(basename "${src_path}" ".${src}")
+echo "### Evaluating the model"
+for src_path in "${datasets_dir}"/*."${src}.gz"; do
+  prefix=$(basename "${src_path}" ".${src}.gz")
   echo "### Evaluating ${prefix} ${src}-${trg}"
 
+  pigz -dc "${datasets_dir}/${prefix}.${TRG}.gz" > "${eval_dir}/${prefix}.${TRG}.ref"
+
   test -s "${eval_dir}/${prefix}.${trg}.bleu" ||
-    tee "${eval_dir}/${prefix}.${src}" < "${src_path}" |
+    pigz -dc "${src_path}" |
+    tee "${eval_dir}/${prefix}.${src}" |
     "${MARIAN}"/marian-decoder \
-      -c "${config}" \
+      -m "${models[@]}" \
+      -c "${models[0]}.decoder.yml" \
       -w "${WORKSPACE}" \
       --quiet \
       --quiet-translation \
       --log "${eval_dir}/${prefix}.log" \
       -d ${GPUS} |
     tee "${eval_dir}/${prefix}.${trg}" |
-    sacrebleu -d --score-only -l "${src}-${trg}" "${datasets_dir}/${prefix}.${trg}"  |
-    tee "${eval_dir}/${prefix}.${trg}.bleu"
+    sacrebleu "${eval_dir}/${prefix}.${TRG}.ref" -d -f text --score-only -l "${src}-${trg}" -m bleu chrf  |
+    tee "${eval_dir}/${prefix}.${trg}.metrics"
 
-  test -e "${eval_dir}/${prefix}.${trg}.bleu" || exit 1
+  test -e "${eval_dir}/${prefix}.${trg}.metrics" || exit 1
 done
 
 

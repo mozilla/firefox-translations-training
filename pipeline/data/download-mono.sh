@@ -6,53 +6,37 @@
 set -x
 set -euo pipefail
 
-echo "###### Downloading monolingual data"
+dataset=$1
+lang=$2
+max_sent=$3
+output_path=$4
+coef=0.1
 
-lang=$1
-max_sent=$2
-prefix=$3
-cache=$4
-datasets=( "${@:5}" )
+echo "###### Downloading monolingual data for language ${lang} dataset ${dataset}"
 
-file_name="${prefix}.${lang}.gz"
-dir=$(dirname "${prefix}")/mono
+cd "$(dirname "${0}")"
 
-if [ ! -e "${file_name}" ]; then
-  echo "### Downloading monolingual corpus for ${lang}"
-  mkdir -p "${dir}"
-  coef=0.1
+tmp=$(dirname "${output_path}")/original
+mkdir -p "${tmp}"
 
-  for dataset in "${datasets[@]}"; do
-    echo "### Downloading dataset ${dataset}"
-    source_prefix="${dir}/${dataset}.original.${lang}"
-    gz_path="${dir}/${dataset}.${lang}.gz"
-    name=${dataset#*_}
-    type=${dataset%%_*}
+echo "### Downloading dataset"
+original_prefix="${tmp}/${dataset}.original.${lang}"
+name=${dataset#*_}
+type=${dataset%%_*}
 
-    test -s "${source_prefix}.gz" ||
-      bash "pipeline/data/importers/mono/${type}.sh" "${lang}" "${source_prefix}" "${name}"
+test -s "${original_prefix}.gz" ||
+  bash "importers/mono/${type}.sh" "${lang}" "${original_prefix}" "${name}"
 
-    echo "### Sampling dataset ${dataset}"
-    # temporary disable pipefail because perl operation causes SIGPIPE (141)
-    set +o pipefail
-    test -s "${gz_path}" ||
-      pigz -dc "${source_prefix}.gz" |
-      shuf -n "$(bc -l <<<"${max_sent}+${max_sent}*${coef}")" |
-      perl -ne 'print if(split(/\s/, $_) < 100)' |
-      head -n "${max_sent}" |
-      pigz >"${gz_path}"
-    set -o pipefail
+echo "### Sampling dataset"
+# temporary disable pipefail because perl operation causes SIGPIPE (141)
+set +o pipefail
+pigz -dc "${original_prefix}.gz" |
+shuf -n "$(bc -l <<<"${max_sent}+${max_sent}*${coef}")" |
+perl -ne 'print if(split(/\s/, $_) < 100)' |
+head -n "${max_sent}" |
+pigz >"${output_path}"
+set -o pipefail
 
-    rm "${source_prefix}"*
-  done
-
-  pigz -dc "${dir}"/*."${lang}".gz | shuf -n "${max_sent}" | pigz >"${file_name}"
-
-fi
-
-test -s "${file_name}"
-
-lines=$(pigz -dc "${file_name}" | wc -l)
-echo "### Number of sentences: ${lines}"
+rm -rf "${original_prefix}.gz"
 
 echo "###### Done: Downloading monolingual data"

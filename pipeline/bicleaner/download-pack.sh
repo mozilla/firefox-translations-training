@@ -13,6 +13,7 @@ test -v TRG
 download_path=$1
 type=$2
 
+mkdir -p download_path
 
 invalid_url() {
   wget -S --spider -o - $1 | grep -q '404 Not Found'
@@ -47,11 +48,11 @@ else
   lang2=$TRG
 fi
 
-if ! test -s "${download_path}"/*.yaml; then
-  wget -P "${download_path}" "${url}/${prefix}${lang1}-${lang2}.${extension}"
-  tar xvf "${download_path}/${prefix}${lang1}-${lang2}.${extension}" -C "${download_path}" --no-same-owner
-  mv "${download_path}/${lang1}-${lang2}"/* "${download_path}/"
-  rm "${download_path}/${prefix}${lang1}-${lang2}.${extension}"
-fi
+
+wget -P "${download_path}" "${url}/${prefix}${lang1}-${lang2}.${extension}"
+tar xvf "${download_path}/${prefix}${lang1}-${lang2}.${extension}" -C "${download_path}" --no-same-owner
+mv "${download_path}/${lang1}-${lang2}"/* "${download_path}/"
+rm "${download_path}/${prefix}${lang1}-${lang2}.${extension}"
+
 
 echo "### ${type} language pack ${url} is downloaded"

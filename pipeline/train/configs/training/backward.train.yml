@@ -1,5 +1,5 @@
 ## https://github.com/marian-nmt/marian-examples/tree/master/wmt2017-uedin
-after-epochs: 10
+after: 10e # change based on available training data
 beam-size: 12
 cost-type: ce-mean-words
 disp-freq: 1000

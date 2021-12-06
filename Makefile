@@ -11,9 +11,12 @@ WORKSPACE=12000
 CLUSTER_CORES=16
 CONFIG=configs/config.prod.yml
 CONDA_PATH=$(SHARED_ROOT)/mambaforge
+SNAKEMAKE_OUTPUT_CACHE=$(SHARED_ROOT)/cache
+TARGET=
 ###
 
 CONDA_ACTIVATE=source $(CONDA_PATH)/etc/profile.d/conda.sh ; conda activate ; conda activate
+SNAKEMAKE=export SNAKEMAKE_OUTPUT_CACHE=$(SNAKEMAKE_OUTPUT_CACHE);  snakemake
 
 ### 2. setup
 
@@ -26,7 +29,8 @@ conda:
 
 snakemake:
 	$(CONDA_ACTIVATE) base
-	mamba create -c conda-forge -c bioconda -n snakemake snakemake==6.9.1 --yes
+	mamba create -c conda-forge -c bioconda -n snakemake snakemake==6.10.0 --yes
+	mkdir -p "$(SNAKEMAKE_OUTPUT_CACHE)"
 
 # build container image for cluster and run-local modes (preferred)
 build:
@@ -44,64 +48,78 @@ pull:
 
 dry-run:
 	$(CONDA_ACTIVATE) snakemake
-	snakemake \
+	$(SNAKEMAKE) \
 	  --use-conda \
 	  --cores all \
+	  --cache \
 	  --reason \
 	  --configfile $(CONFIG) \
 	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) deps=true  \
-	  -n
+	  -n \
+	  $(TARGET)
 
 run-local:
+	echo "Running with config $(CONFIG)"
 	$(CONDA_ACTIVATE) snakemake
-	snakemake \
+	$(SNAKEMAKE) \
 	  --use-conda \
 	  --reason \
 	  --cores all \
+	  --cache \
 	  --resources gpu=$(GPUS) \
 	  --configfile $(CONFIG) \
-	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) deps=true
+	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) deps=true \
+	  $(TARGET)
+
+test: CONFIG=configs/config.test.yml
+test: run-local
 
 run-local-container:
 	$(CONDA_ACTIVATE) snakemake
 	module load singularity
-	snakemake \
+	$(SNAKEMAKE) \
 	  --use-conda \
 	  --use-singularity \
 	  --reason \
 	  --cores all \
+	  --cache \
 	  --resources gpu=$(GPUS) \
 	  --configfile $(CONFIG) \
 	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) \
-	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR) --nv"
+	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR) --nv" \
+	  $(TARGET)
 
 run-slurm:
 	$(CONDA_ACTIVATE) snakemake
 	chmod +x profiles/slurm/*
-	snakemake \
+	$(SNAKEMAKE) \
 	  --use-conda \
 	  --reason \
 	  --cores $(CLUSTER_CORES) \
+	  --cache \
 	  --configfile $(CONFIG) \
 	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) \
-	  --profile=profiles/slurm
+	  --profile=profiles/slurm \
+	  $(TARGET)
 
 run-slurm-container:
 	$(CONDA_ACTIVATE) snakemake
 	chmod +x profiles/slurm/*
 	module load singularity
-	snakemake \
+	$(SNAKEMAKE) \
 	  --use-conda \
 	  --use-singularity \
 	  --reason \
 	  --verbose \
 	  --cores $(CLUSTER_CORES) \
+	  --cache \
 	  --configfile $(CONFIG) \
 	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) \
 	  --profile=profiles/slurm \
-	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR),/tmp --nv --containall"
+	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR),/tmp --nv --containall" \
+	  $(TARGET)
 # if CPU nodes don't have access to cuda dirs, use
-# export CUDA_DIR=$(CUDA_DIR)
+# export CUDA_DIR=$(CUDA_DIR); $(SNAKEMAKE) \
 # --singularity-args="--bind $(SHARED_ROOT),/tmp --nv --containall"
 
 
@@ -123,25 +141,11 @@ run-file-server:
 ### extra
 
 dag:
-	snakemake --dag | dot -Tpdf > DAG.pdf
-
-lint:
-	snakemake --lint
-
-install-monitor:
-	$(CONDA_ACTIVATE) base
-	conda create --name panoptes
-	conda install -c panoptes-organization panoptes-ui
-
-run-monitor:
-	$(CONDA_ACTIVATE) panoptes
-	panoptes
-
-run-with-monitor:
 	snakemake \
-	  --use-conda \
-	  --cores all \
-	  --wms-monitor http://127.0.0.1:5000
+	  --dag \
+	  --configfile $(CONFIG) \
+	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) \
+	  | dot -Tpdf > DAG.pdf
 
 install-tensorboard:
 	$(CONDA_ACTIVATE) base
@@ -152,28 +156,3 @@ tensorboard:
 	ls -d $(SHARED_ROOT)/models/*/*/* > tb-monitored-jobs; \
 	tensorboard --logdir=$$MODELS --host=0.0.0.0 &; \
 	python utils/tb_log_parser.py --prefix=
-
-install-snakepit-scheduler:
-	mkdir -p $(SHARED_ROOT)/snakepit
-	cd $(SHARED_ROOT)/snakepit
-
-	curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-	sudo apt install nodejs
-
-	if [ ! -e snakepit-client ]; then
-	  git clone https://github.com/mozilla/snakepit-client.git
-	fi
-	cd snakepit-client
-	npm install
-	sudo npm link
-
-	echo "http://10.2.224.243" > /root/.pitconnect.txt
-
-	pit status
-
-run-snakepit:
-	chmod +x profiles/snakepit/*
-	snakemake \
-	  --use-conda \
-	  --cores all \
-	  --profile=profiles/snakepit

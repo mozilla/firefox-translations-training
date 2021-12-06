@@ -12,8 +12,7 @@ lang=$1
 output_prefix=$2
 dataset=$3
 
-test -s "${output_prefix}.gz" ||
-  wget -O "${output_prefix}.xz" \
+wget -O "${output_prefix}.xz" \
     "http://web-language-models.s3-website-us-east-1.amazonaws.com/${dataset}/deduped/${lang}.xz"
 xzcat "${output_prefix}.xz" | pigz >"${output_prefix}.gz"
 

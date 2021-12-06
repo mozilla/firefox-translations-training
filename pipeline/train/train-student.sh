@@ -8,27 +8,15 @@ set -euo pipefail
 
 echo "###### Training a student model"
 
-dir=$1
-corpus=$2
-devset=$3
-vocab=$4
-alignment=$5
-extra_params=( "${@:6}" )
+alignment=$1
+extra_params=( "${@:2}" )
 
-test -v SRC
-test -v TRG
+cd "$(dirname "${0}")"
 
-bash "pipeline/train/train.sh" \
-  "pipeline/train/configs/model/student.tiny11.yml" \
-  "pipeline/train/configs/training/student.train.yml" \
-  "${SRC}" \
-  "${TRG}" \
-  "${corpus}" \
-  "${devset}" \
-  "${dir}" \
-  "${vocab}" \
+bash "train.sh" \
+  "${extra_params[@]}" \
   --guided-alignment "${alignment}" \
-  "${extra_params[@]}"
+
 
 echo "###### Done: Training a student model"
 

@@ -12,8 +12,7 @@ dataset=$3
 
 echo "###### Downloading WMT newscrawl monolingual data"
 
-test -s "${output_prefix}.gz" ||
-  wget -O "${output_prefix}.gz" \
+wget -O "${output_prefix}.gz" \
     "http://data.statmt.org/news-crawl/${lang}/${dataset}.${lang}.shuffled.deduped.gz"
 
 echo "###### Done: Downloading WMT newscrawl monolingual data"

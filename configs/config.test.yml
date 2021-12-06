@@ -1,3 +1,7 @@
+####
+# Test config, it rus the pipeline quickly end to end
+###
+
 
 root: ""
 cuda: ""
@@ -6,28 +10,38 @@ gpus: ""
 workspace: ""
 
 experiment:
-  name: snakemake
+  name: test
   src: ru
   trg: en
 
   teacher-ensemble: 2
-  # path to a pretrained backward model (optional)
   backward-model: ""
 
-  # limits per downloaded dataset
   mono-max-sentences-src: 100000
   mono-max-sentences-trg: 200000
-
-  bicleaner-threshold: 0.5
-
   split-length: 100000
 
+  best-model: chrf
+
+  bicleaner:
+    default-threshold: 0.5
+    dataset-thresholds:
+      mtdata_neulab_tedtalksv1_train: 0.6
+
 training:
-  after-epochs: 1
+  backward:
+    after: 1000u
+  teacher-all:
+    after: 2000u
+  teacher-parallel:
+    after: 1000u
+  student:
+    after: 1000u
+  student-finetune:
+    after: 1000u
 
 
 datasets:
-  # parallel corpus
   train:
     - opus_ada83/v1
     - opus_GNOME/v1
@@ -39,12 +53,8 @@ datasets:
     - flores_devtest
     - sacrebleu_wmt20
     - sacrebleu_wmt18
-  # monolingual datasets (ex. paracrawl-mono_paracrawl8, commoncrawl_wmt16, news-crawl_news.2020)
-  # to be translated by the teacher model
   mono-src:
     - news-crawl_news.2020
-  # to be translated by the shallow backward model to augment teacher corpus with back-translations
-  # leave empty to skip augmentation step (high resource languages)
   mono-trg:
     - news-crawl_news.2020
 

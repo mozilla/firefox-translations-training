@@ -17,6 +17,7 @@ vocab_path=$2
 output_dir=$3
 threads=$4
 
+cd "$(dirname "${0}")"
 
 mkdir -p "${output_dir}"
 dir="${output_dir}/tmp"
@@ -72,7 +73,7 @@ test -s "${dir}/vocab.txt" ||
 test -s "${output_dir}/lex.s2t.pruned.gz" ||
   pigz -dc "${dir}/lex.s2t.gz" |
   grep -v NULL |
-  python3 "pipeline/alignment/prune_shortlist.py" 100 "${dir}/vocab.txt" |
+  python3 "prune_shortlist.py" 100 "${dir}/vocab.txt" |
   pigz >"${output_dir}/lex.s2t.pruned.gz"
 
 echo "### Deleting tmp dir"

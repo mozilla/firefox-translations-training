@@ -8,10 +8,8 @@ set -euo pipefail
 
 echo "###### Training a model"
 
-#TODO too many positional args here, replace with names args
-
-model_config=$1
-training_config=$2
+model_type=$1
+training_type=$2
 src=$3
 trg=$4
 train_set_prefix=$5
@@ -24,6 +22,7 @@ test -v GPUS
 test -v MARIAN
 test -v WORKSPACE
 
+cd "$(dirname "${0}")"
 mkdir -p "${model_dir}/tmp"
 
 echo "### Training ${model_dir}"
@@ -32,7 +31,7 @@ echo "### Training ${model_dir}"
 
 "${MARIAN}/marian" \
   --model "${model_dir}/model.npz" \
-  -c "${model_config}" "${training_config}" \
+  -c "configs/model/${model_type}.yml" "configs/training/${model_type}.${training_type}.yml" \
   --train-sets "${train_set_prefix}".{"${src}","${trg}"}.gz \
   -T "${model_dir}/tmp" \
   --shuffle-in-ram \
@@ -40,7 +39,7 @@ echo "### Training ${model_dir}"
   -w "${WORKSPACE}" \
   --devices ${GPUS} \
   --sync-sgd \
-  --valid-metrics bleu-detok ce-mean-words perplexity \
+  --valid-metrics ce-mean-words bleu-detok chrf \
   --valid-sets "${valid_set_prefix}".{"${src}","${trg}"}.gz \
   --valid-translation-output "${model_dir}/devset.out" \
   --quiet-translation \

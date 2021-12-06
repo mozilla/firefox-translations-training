@@ -1,4 +1,12 @@
+####
+# Example of a production config
+# Change language pair, experiment name, datasets and other settings if needed
+# Training low resource languages might require more tuning of pipeline/training/configs
+###
 
+
+# These settings depend on execution environment
+# They are set in the Makefile
 root: ""
 cuda: ""
 deps: false
@@ -7,7 +15,7 @@ workspace: ""
 
 
 experiment:
-  name: snakemake
+  name: prod
   src: ru
   trg: en
 
@@ -19,15 +27,26 @@ experiment:
   mono-max-sentences-src: 100000000
   mono-max-sentences-trg: 20000000
 
-  bicleaner-threshold: 0.5
-
   # split corpus to parallelize translation
   split-length: 2000000
 
+  best-model: chrf
 
+  bicleaner:
+    default-threshold: 0.5
+    dataset-thresholds:
+      opus_CCAligned/v1: 0.7
+      opus_WikiMatrix/v1: 0.7
+      opus_OpenSubtitles/v2018: 0.9
+      opus_bible-uedin/v1: 0.7
+      mtdata_cc_aligned: 0.7
+      mtdata_wiki_titles_v1: 0.7
+      mtdata_WikiMatrix_v1: 0.7
+      mtdata_wiki_titles_v2: 0.7
+      mtdata_wmt13_commoncrawl: 0.7
 
 datasets:
-  # parallel corpus
+  # parallel training corpus
   train:
     - opus_ada83/v1
     - opus_UN/v20090831
@@ -74,12 +93,14 @@ datasets:
     - mtdata_news_commentary_v14
     - mtdata_neulab_tedtalksv1_test
     - mtdata_JW300
+  # datasets to merge for validation while training
   devtest:
     - flores_dev
     - mtdata_newstest2019_ruen
     - mtdata_newstest2017_ruen
     - mtdata_newstest2015_ruen
     - mtdata_newstest2014_ruen
+  # datasets for evaluation
   test:
     - flores_devtest
     - sacrebleu_wmt20
@@ -99,7 +120,7 @@ datasets:
     - news-crawl_news.2013
     - news-crawl_news.2012
     - news-crawl_news.2011
-  # to be translated by the shallow backward model to augment teacher corpus with back-translations
+  # to be translated by the backward model to augment teacher corpus with back-translations
   # leave empty to skip augmentation step (high resource languages)
   mono-trg:
     - news-crawl_news.2020

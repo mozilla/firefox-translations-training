@@ -19,6 +19,8 @@ shortlist=$3
 devtest_src=$4
 output_dir=$5
 
+cd "$(dirname "${0}")"
+
 res_model="${output_dir}/model.intgemm.alphas.bin"
 mkdir -p "${output_dir}"
 cp "${vocab}" "${output_dir}"
@@ -28,7 +30,7 @@ test -s "${output_dir}/quantmults" ||
   "${MARIAN}"/marian-decoder \
     -m "${model}" \
     -v "${vocab}" "${vocab}" \
-    -c "pipeline/quantize/decoder.yml" \
+    -c "decoder.yml" \
     -i "${devtest_src}" \
     -o "${output_dir}/output.${TRG}" \
     --shortlist "${shortlist}" false \

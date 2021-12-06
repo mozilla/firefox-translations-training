@@ -10,24 +10,20 @@ echo "###### Downloading mtdata corpus"
 
 src=$1
 trg=$2
-dir=$3
+output_prefix=$3
 dataset=$4
+
+tmp="$(dirname "${output_prefix}")/mtdata/${dataset}"
+mkdir -p "${tmp}"
 
 src_iso=$(python -c "from mtdata.iso import iso3_code; print(iso3_code('${src}', fail_error=True))")
 trg_iso=$(python -c "from mtdata.iso import iso3_code; print(iso3_code('${trg}', fail_error=True))")
 
-if [ ! -e "${dir}/${dataset}.${trg}" ]; then
-  mtdata get -l "${src}-${trg}" -tr "${dataset}" -o "${dir}"
+mtdata get -l "${src}-${trg}" -tr "${dataset}" -o "${tmp}"
 
-  for f in "${dir}"/train-parts/*."${src_iso}"; do
-    mv "${f}" "${dir}/${dataset}.${src}"
-  done
-  for f in "${dir}"/train-parts/*."${trg_iso}"; do
-    mv "${f}" "${dir}/${dataset}.${trg}"
-  done
+pigz -c "${tmp}/train-parts/${dataset}-${src_iso}_${trg_iso}.${src_iso}" > "${output_prefix}.${src}.gz"
+pigz -c "${tmp}/train-parts/${dataset}-${src_iso}_${trg_iso}.${trg_iso}" > "${output_prefix}.${trg}.gz"
 
-  rm -rf "${dir}/train-parts"
-fi
-
+rm -rf "${tmp}"
 
 echo "###### Done: Downloading mtdata corpus"

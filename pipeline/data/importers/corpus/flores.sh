@@ -11,15 +11,13 @@ echo "###### Downloading flores corpus"
 
 src=$1
 trg=$2
-dir=$3
+output_prefix=$3
 dataset=$4
 
-tmp="${dir}/flores"
+tmp="$(dirname "${output_prefix}")/flores/${dataset}"
 mkdir -p "${tmp}"
 
-test -s "${tmp}/flores101_dataset.tar.gz" ||
-  wget -O "${tmp}/flores101_dataset.tar.gz" "https://dl.fbaipublicfiles.com/flores101/dataset/flores101_dataset.tar.gz"
-
+wget -O "${tmp}/flores101_dataset.tar.gz" "https://dl.fbaipublicfiles.com/flores101/dataset/flores101_dataset.tar.gz"
 tar -xzf "${tmp}/flores101_dataset.tar.gz" -C "${tmp}" --no-same-owner
 
 flores_code() {
@@ -39,8 +37,8 @@ flores_code() {
 src_flores=$(flores_code "${src}")
 trg_flores=$(flores_code "${trg}")
 
-cp "${tmp}/flores101_dataset/${dataset}/${src_flores}.${dataset}" "${dir}/flores.${src}"
-cp "${tmp}/flores101_dataset/${dataset}/${trg_flores}.${dataset}" "${dir}/flores.${trg}"
+pigz -c "${tmp}/flores101_dataset/${dataset}/${src_flores}.${dataset}" > "${output_prefix}.${src}.gz"
+pigz -c "${tmp}/flores101_dataset/${dataset}/${trg_flores}.${dataset}" > "${output_prefix}.${trg}.gz"
 
 rm -rf "${tmp}"
 

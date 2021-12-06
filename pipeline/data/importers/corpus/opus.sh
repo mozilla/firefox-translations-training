@@ -10,23 +10,27 @@ echo "###### Downloading opus corpus"
 
 src=$1
 trg=$2
-dir=$3
+output_prefix=$3
 dataset=$4
 
 name=${dataset%%/*}
+name_and_version="${dataset//[^A-Za-z0-9_- ]/_}"
 
-if [ ! -s "${dir}/${name}.${src}-${trg}.${trg}" ] && [ ! -s "${dir}/${name}.${trg}-${src}.${trg}" ]; then
-  mkdir -p "${dir}/opus"
+tmp="$(dirname "${output_prefix}")/opus/${name_and_version}"
+mkdir -p "${tmp}"
 
-  name_and_version="${dataset//[^A-Za-z0-9_- ]/_}"
-  archive_path="${dir}/opus/${name_and_version}.txt.zip"
+archive_path="${tmp}/${name}.txt.zip"
 
-  test -s "${archive_path}" ||
-    wget -O "${archive_path}" "https://object.pouta.csc.fi/OPUS-${dataset}/moses/${src}-${trg}.txt.zip" ||
-    wget -O "${archive_path}" "https://object.pouta.csc.fi/OPUS-${dataset}/moses/${trg}-${src}.txt.zip"
-  unzip -o "${archive_path}" -d "${dir}"
+wget -O "${archive_path}" "https://object.pouta.csc.fi/OPUS-${dataset}/moses/${src}-${trg}.txt.zip" ||
+  wget -O "${archive_path}" "https://object.pouta.csc.fi/OPUS-${dataset}/moses/${trg}-${src}.txt.zip"
+unzip -o "${archive_path}" -d "${tmp}"
 
-  rm -rf "${dir}/opus"
-fi
+for lang in ${src} ${trg}; do
+  pigz -c "${tmp}/${name}.${src}-${trg}.${lang}" > "${output_prefix}.${lang}.gz" ||
+    pigz -c "${tmp}/${name}.${trg}-${src}.${lang}" > "${output_prefix}.${lang}.gz"
+done
+
+rm -rf "${tmp}"
+
 
 echo "###### Done: Downloading opus corpus"
