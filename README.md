@@ -271,9 +271,11 @@ Custom mono | custom-mono | /tmp/test-mono | mono | Custom monolingual dataset t
 
 You can also use [find-corpus](pipeline/utils/find-corpus.py) tool to find all datasets for an importer and get them formatted to use in config.
 
-Example:
-
-`python ./pipeline/utils/find-corpus.py en ru opus`
+```
+conda env create -f envs/corpus.yml 
+conda activate corpus
+python utils/find-corpus.py en ru opus
+```
 
 ### Adding a new importer
 
