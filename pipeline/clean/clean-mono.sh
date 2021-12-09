@@ -27,7 +27,7 @@ echo "### Basic preprocessing"
 test -s "${output_prefix}.${lang}.nrm.gz" ||
   pigz -dc "${input_prefix}.${lang}.gz" |
   parallel --no-notice --pipe -k -j "${threads}" --block 50M \
-    "perl tools/remove-non-printing-char.perl" |
+    "perl tools/deescape-special-chars.perl | perl tools/remove-non-printing-char.perl" |
   pigz >"${output_prefix}.${lang}.nrm.gz"
 
 #####################################################################
