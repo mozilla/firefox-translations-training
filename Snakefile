@@ -18,7 +18,8 @@ container: 'Singularity.sif'
 install_deps = config['deps'] == 'true'
 data_root_dir = config['root']
 cuda_dir = config['cuda']
-gpus_num = config['gpus']
+gpus_num = config['numgpus']
+gpus = config['gpus'] if config['gpus'] else ' '.join([str(n) for n in range(int(gpus_num))])
 workspace = config['workspace']
 
 # experiment
@@ -50,7 +51,7 @@ mono_datasets = {src: mono_src_datasets, trg: mono_trg_datasets}
 mono_max_sent = {src: mono_max_sent_src, trg: mono_max_sent_trg}
 
 # parallelization
-gpus = ' '.join([str(n) for n in range(int(gpus_num))])
+
 ensemble = list(range(config['experiment']['teacher-ensemble']))
 split_length = config['experiment']['split-length']
 

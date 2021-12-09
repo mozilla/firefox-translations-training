@@ -11,6 +11,7 @@ root: ""
 cuda: ""
 deps: false
 gpus: ""
+numgpus: ""
 workspace: ""
 
 

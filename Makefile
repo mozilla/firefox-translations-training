@@ -6,7 +6,9 @@ SHELL=/bin/bash
 ### 1. change these settings
 SHARED_ROOT=/data/rw/group-maml
 CUDA_DIR=/usr/local/cuda
-GPUS=8
+NUM_GPUS=8
+# (optional) override available GPU ids, example GPUS="0 2 5 6"
+GPUS=
 WORKSPACE=12000
 CLUSTER_CORES=16
 CONFIG=configs/config.prod.yml
@@ -17,6 +19,7 @@ TARGET=
 
 CONDA_ACTIVATE=source $(CONDA_PATH)/etc/profile.d/conda.sh ; conda activate ; conda activate
 SNAKEMAKE=export SNAKEMAKE_OUTPUT_CACHE=$(SNAKEMAKE_OUTPUT_CACHE);  snakemake
+CONFIG_OPTIONS=root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) numgpus=$(NUM_GPUS)
 
 ### 2. setup
 
@@ -54,7 +57,7 @@ dry-run:
 	  --cache \
 	  --reason \
 	  --configfile $(CONFIG) \
-	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) deps=true  \
+	  --config $(CONFIG_OPTIONS) deps=true  \
 	  -n \
 	  $(TARGET)
 
@@ -68,7 +71,7 @@ run-local:
 	  --cache \
 	  --resources gpu=$(GPUS) \
 	  --configfile $(CONFIG) \
-	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) deps=true \
+	  --config $(CONFIG_OPTIONS) deps=true \
 	  $(TARGET)
 
 test: CONFIG=configs/config.test.yml
@@ -85,7 +88,7 @@ run-local-container:
 	  --cache \
 	  --resources gpu=$(GPUS) \
 	  --configfile $(CONFIG) \
-	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) \
+	  --config $(CONFIG_OPTIONS) \
 	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR) --nv" \
 	  $(TARGET)
 
@@ -98,7 +101,7 @@ run-slurm:
 	  --cores $(CLUSTER_CORES) \
 	  --cache \
 	  --configfile $(CONFIG) \
-	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) \
+	  --config $(CONFIG_OPTIONS) \
 	  --profile=profiles/slurm \
 	  $(TARGET)
 
@@ -114,7 +117,7 @@ run-slurm-container:
 	  --cores $(CLUSTER_CORES) \
 	  --cache \
 	  --configfile $(CONFIG) \
-	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) \
+	  --config $(CONFIG_OPTIONS) \
 	  --profile=profiles/slurm \
 	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR),/tmp --nv --containall" \
 	  $(TARGET)
@@ -132,7 +135,7 @@ report:
 	snakemake \
 		--report $${REPORTS}/$${DT}_report.html \
 		--configfile $(CONFIG) \
-		--config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE)
+		--config $(CONFIG_OPTIONS)
 
 run-file-server:
 	$(CONDA_ACTIVATE) snakemake
@@ -144,7 +147,7 @@ dag:
 	snakemake \
 	  --dag \
 	  --configfile $(CONFIG) \
-	  --config root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) \
+	  --config $(CONFIG_OPTIONS) \
 	  | dot -Tpdf > DAG.pdf
 
 install-tensorboard:
