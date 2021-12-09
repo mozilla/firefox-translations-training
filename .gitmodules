@@ -6,6 +6,9 @@
 	url = https://github.com/marian-nmt/extract-lex
 [submodule "marian-dev"]
 	path = 3rd_party/marian-dev
+	url = https://github.com/marian-nmt/marian-dev
+[submodule "browsermt-marian-dev"]
+	path = 3rd_party/browsermt-marian-dev
 	url = https://github.com/browsermt/marian-dev
 [submodule "3rd_party/kenlm"]
 	path = 3rd_party/kenlm

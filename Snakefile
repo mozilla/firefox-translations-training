@@ -61,7 +61,18 @@ reports_dir = f"{data_root_dir}/reports/{src}-{trg}/{experiment}"
 
 # binaries
 cwd = os.getcwd()
-marian_dir = f'{cwd}/3rd_party/marian-dev/build'
+third_party_dir = f'{cwd}/3rd_party'
+marian_dir = f'{third_party_dir}/marian-dev/build'
+bmt_marian_dir = f'{third_party_dir}/browsermt-marian-dev/build'
+trainer = f'{marian_dir}/marian'
+decoder = f'{marian_dir}/marian-decoder'
+scorer = f'{marian_dir}/marian-scorer'
+spm_encoder = f'{marian_dir}/spm_encode'
+spm_trainer = f'{marian_dir}/spm_train'
+spm_exporter = f'{marian_dir}/spm_export_vocab'
+bmt_decoder = f'{bmt_marian_dir}/marian-decoder'
+bmt_converter = f'{bmt_marian_dir}/marian-conv'
+
 kenlm = f'{cwd}/3rd_party/kenlm'
 fast_align_build = f'{cwd}/3rd_party/fast_align/build'
 extract_lex_build = f'{cwd}/3rd_party/extract-lex/build'
@@ -100,7 +111,7 @@ eval_teacher_ens = f'{eval_res}/teacher-ensemble',
 full_eval_datasets = expand(f'{eval_data}/{{dataset}}.{{lang}}.gz', dataset=eval_datasets, lang=[src,trg])
 
 # set common environment variables
-envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
+envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" BMT_MARIAN="{bmt_marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
 BIN="{bin}" DATA_ROOT_DIR="{data_root_dir}" \
 CUDA_DIR="{cuda_dir}"'''
 
@@ -201,14 +212,20 @@ if install_deps:
 
 rule marian:
     message: "Compiling marian"
-    log: f"{log_dir}/compile-marian.log"
+    log: f"{log_dir}/compile-{{marian_type}}.log"
     conda: "envs/base.yml"
     threads: 4
     group: 'setup'
-    output: trainer=protected(f"{marian_dir}/marian"),decoder=protected(f"{marian_dir}/marian-decoder"),
-        scorer=protected(f"{marian_dir}/marian-scorer"),vocab=protected(f'{marian_dir}/spm_train'),
-        converter=protected(f'{marian_dir}/marian-conv')
-    shell: 'bash pipeline/setup/compile-marian.sh {threads} >> {log} 2>&1'
+    output:
+        trainer=protected(f"{third_party_dir}/{{marian_type}}/build/marian"),
+        decoder=protected(f"{third_party_dir}/{{marian_type}}/build/marian-decoder"),
+        scorer=protected(f"{third_party_dir}/{{marian_type}}/build/marian-scorer"),
+        converter=protected(f'{third_party_dir}/{{marian_type}}/build/marian-conv'),
+        spm_trainer=protected(f'{third_party_dir}/{{marian_type}}/build/spm_train'),
+        spm_encoder=protected(f'{third_party_dir}/{{marian_type}}/build/spm_encode'),
+        spm_exporter=protected(f'{third_party_dir}/{{marian_type}}/build/spm_export_vocab')
+    params: build_dir=f'{third_party_dir}/{{marian_type}}/build'
+    shell: 'bash pipeline/setup/compile-marian.sh {params.build_dir} {threads} >> {log} 2>&1'
 
 rule fast_align:
     message: "Compiling fast align"
@@ -364,9 +381,7 @@ rule train_vocab:
     log: f"{log_dir}/train_vocab.log"
     conda: "envs/base.yml"
     threads: 2
-    input:
-        bin=rules.marian.output.vocab,
-        corpus_src=clean_corpus_src,corpus_trg=clean_corpus_trg
+    input: bin=spm_trainer, corpus_src=clean_corpus_src, corpus_trg=clean_corpus_trg
     output: f"{models_dir}/vocab/vocab.spm"
     params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset"
     shell: 'bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" >> {log} 2>&1'
@@ -382,7 +397,7 @@ if train_backward:
         group: 'backward'
         input:
             rules.merge_devset.output, train_src=clean_corpus_src,train_trg=clean_corpus_trg,
-            bin=rules.marian.output.trainer, vocab=rules.train_vocab.output,
+            bin=trainer, vocab=rules.train_vocab.output,
         output:  model=f'{backward}/{best_model}'
         params: prefix_train=f"{biclean}/corpus",prefix_test=f"{original}/devset",
                 args=training_args.get("backward") or ""
@@ -399,7 +414,7 @@ if train_backward:
         group: 'backward'
         priority: 50
         input:
-            full_eval_datasets,
+            full_eval_datasets, decoder,
             model=f'{backward}/{best_model}'
         output:
             report(directory(eval_backward),patterns=["{name}.metrics"],
@@ -425,8 +440,8 @@ if augment_corpus:
         threads: gpus_num * 2
         resources: gpu=gpus_num
         input:
-            rules.marian.output.trainer,file=f'{translated}/mono_trg/file.{{part}}',
-            vocab=rules.train_vocab.output,model=f'{backward}/{best_model}'
+            bin=decoder, file=f'{translated}/mono_trg/file.{{part}}',
+            vocab=rules.train_vocab.output, model=f'{backward}/{best_model}'
         output: f'{translated}/mono_trg/file.{{part}}.out'
         shell: 'bash pipeline/translate/translate.sh "{input.file}" "{input.vocab}" {input.model} >> {log} 2>&1'
 
@@ -468,7 +483,7 @@ rule teacher_all:
     group: 'teacher{ens}'
     input:
         rules.merge_devset.output, train_src=f'{teacher_corpus}.{src}.gz',train_trg=f'{teacher_corpus}.{trg}.gz',
-        bin=rules.marian.output.trainer,vocab=rules.train_vocab.output
+        bin=trainer, vocab=rules.train_vocab.output
     output: model=f'{teacher_dir}{{ens}}/{teacher_all_output}'
     params: prefix_train=teacher_corpus, prefix_test=f"{original}/devset", dir=directory(f'{teacher_dir}{{ens}}'),
                 args=training_args.get("teacher-all") or ""
@@ -486,8 +501,8 @@ if continue_teacher:
         group: 'teacher{ens}'
         input:
             rules.merge_devset.output, model = f'{teacher_dir}{{ens}}/model.npz',
-            train_src=clean_corpus_src,train_trg=clean_corpus_trg,
-            bin=rules.marian.output.trainer,vocab=rules.train_vocab.output
+            train_src=clean_corpus_src, train_trg=clean_corpus_trg,
+            bin=trainer, vocab=rules.train_vocab.output
         output: model=f'{teacher_dir}{{ens}}/{best_model}'
         params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset",dir=directory(f'{teacher_dir}{{ens}}'),
                 args=training_args.get("teacher-parallel") or ""
@@ -504,7 +519,7 @@ rule eval_teacher:
     group: 'teacher{ens}'
     priority: 50
     input:
-        full_eval_datasets,
+        full_eval_datasets, decoder,
         model=f'{teacher_dir}{{ens}}/{best_model}'
     output:
         report(directory(f'{eval_res}/teacher{{ens}}'), patterns=["{name}.metrics"],
@@ -522,7 +537,8 @@ if len(ensemble) > 1:
         resources: gpu=gpus_num
         priority: 50
         input:
-            full_eval_datasets, models=[f'{teacher_dir}{ens}/{best_model}' for ens in ensemble]
+            full_eval_datasets, decoder,
+            models=[f'{teacher_dir}{ens}/{best_model}' for ens in ensemble]
         output:
             report(directory(eval_teacher_ens),patterns=["{name}.metrics"],
                 category='evaluation',subcategory='teacher_ensemble',caption='reports/evaluation.rst')
@@ -550,7 +566,7 @@ rule translate_corpus:
     threads: gpus_num*2
     resources: gpu=gpus_num
     input:
-        rules.marian.output.trainer,
+        decoder,
         file=f'{translated}/corpus/file.{{part}}',
         vocab=rules.train_vocab.output,
         teacher_models=expand(f"{teacher_dir}{{ens}}/{best_model}",ens=ensemble)
@@ -599,7 +615,7 @@ rule translate_mono_src:
     threads: gpus_num*2
     resources: gpu=gpus_num
     input:
-        bin=rules.marian.output.trainer,
+        bin=decoder,
         file=f'{translated}/mono_src/file.{{part}}',vocab=rules.train_vocab.output,
         teacher_models=expand(f"{teacher_dir}{{ens}}/{best_model}",ens=ensemble)
     output: f'{translated}/mono_src/file.{{part}}.out'
@@ -643,8 +659,9 @@ rule score:
     threads: gpus_num*2
     resources: gpu=gpus_num
     input:
-        model=rules.backward.output.model,vocab=rules.train_vocab.output,
-        src_corpus=rules.merge_translated.output.res_src,trg_corpus=rules.merge_translated.output.res_trg
+        scorer,
+        model=rules.backward.output.model, vocab=rules.train_vocab.output,
+        src_corpus=rules.merge_translated.output.res_src, trg_corpus=rules.merge_translated.output.res_trg
     output: f"{filtered}/scores.txt"
     params: input_prefix=f'{merged}/corpus'
     shell: '''bash pipeline/cefilter/score.sh \
@@ -669,7 +686,9 @@ rule alignments:
     log: f"{log_dir}/alignments.log"
     conda: "envs/base.yml"
     threads: workflow.cores
-    input: src_corpus=rules.ce_filter.output.src_corpus,trg_corpus=rules.ce_filter.output.trg_corpus,
+    input:
+        spm_encoder, spm_exporter,
+        src_corpus=rules.ce_filter.output.src_corpus,trg_corpus=rules.ce_filter.output.trg_corpus,
         vocab=rules.train_vocab.output,
         fast_align=rules.fast_align.output.fast_align, atools=rules.fast_align.output.atools,
         extract_lex=rules.extract_lex.output
@@ -686,9 +705,10 @@ rule student:
     resources: gpu=gpus_num
     group: 'student'
     input:
-        rules.merge_devset.output, train_src=rules.ce_filter.output.src_corpus, train_trg=rules.ce_filter.output.trg_corpus,
+        rules.merge_devset.output, trainer,
+        train_src=rules.ce_filter.output.src_corpus, train_trg=rules.ce_filter.output.trg_corpus,
         alignments=rules.alignments.output.alignment,
-        bin=rules.marian.output.trainer, vocab=rules.train_vocab.output
+        vocab=rules.train_vocab.output
     output: model=f'{student_dir}/{best_model}'
     params: prefix_train=rules.ce_filter.params.output_prefix,prefix_test=f"{original}/devset",
             args=training_args.get("student") or ""
@@ -704,7 +724,7 @@ rule eval_student:
     resources: gpu=gpus_num
     group: 'student'
     priority: 50
-    input: full_eval_datasets, model=rules.student.output.model
+    input: full_eval_datasets, decoder, model=rules.student.output.model
     output:
         report(directory(eval_student),patterns=["{name}.metrics"],category='evaluation',
             subcategory='student', caption='reports/evaluation.rst')
@@ -720,9 +740,10 @@ rule finetune_student:
     resources: gpu=gpus_num
     group: 'finetune'
     input:
-        rules.merge_devset.output, train_src=rules.ce_filter.output.src_corpus, train_trg=rules.ce_filter.output.trg_corpus,
+        rules.merge_devset.output, trainer,
+        train_src=rules.ce_filter.output.src_corpus, train_trg=rules.ce_filter.output.trg_corpus,
         alignments=rules.alignments.output.alignment, student_model=rules.student.output.model,
-        bin=rules.marian.output.trainer, vocab=rules.train_vocab.output
+        vocab=rules.train_vocab.output
     output: model=f'{student_finetuned_dir}/{best_model}'
     params: prefix_train=rules.ce_filter.params.output_prefix,prefix_test=f"{original}/devset",
             args=training_args.get("student-finetune") or ""
@@ -738,7 +759,7 @@ rule eval_finetuned_student:
     resources: gpu=gpus_num
     group: 'finetune'
     priority: 50
-    input: full_eval_datasets, model=rules.finetune_student.output.model
+    input: full_eval_datasets, decoder, model=rules.finetune_student.output.model
     output:
         report(directory(eval_student_finetuned),patterns=["{name}.metrics"],
             category='evaluation', subcategory='finetuned', caption='reports/evaluation.rst')
@@ -751,8 +772,9 @@ rule quantize:
     conda: "envs/base.yml"
     threads: 1
     input:
+        bmt_decoder, bmt_converter,
         shortlist=rules.alignments.output.shortlist, model=rules.finetune_student.output.model,
-        bin=rules.marian.output.decoder, vocab=rules.train_vocab.output, devset=f"{original}/devset.{src}.gz"
+        vocab=rules.train_vocab.output, devset=f"{original}/devset.{src}.gz"
     output: model=f'{speed}/model.intgemm.alphas.bin'
     shell: 'bash pipeline/quantize/quantize.sh \
                 "{input.model}" "{input.vocab}" "{input.shortlist}" "{input.devset}" "{speed}" >> {log} 2>&1'''
@@ -765,9 +787,8 @@ rule eval_quantized:
     threads: 1
     priority: 50
     input:
-        full_eval_datasets,
-        model=rules.quantize.output.model,
-        shortlist=rules.alignments.output.shortlist,vocab=rules.train_vocab.output
+        full_eval_datasets, bmt_decoder,  model=rules.quantize.output.model,
+        shortlist=rules.alignments.output.shortlist, vocab=rules.train_vocab.output
     output:
         report(directory(eval_speed),patterns=["{name}.metrics"], category='evaluation',
             subcategory='quantized', caption='reports/evaluation.rst')
@@ -782,7 +803,7 @@ rule export:
     threads: 1
     input:
         model=rules.quantize.output.model,shortlist=rules.alignments.output.shortlist,
-        vocab=rules.train_vocab.output,marian=rules.marian.output.converter
+        vocab=rules.train_vocab.output,marian=bmt_converter
     output:
         model=f'{exported}/model.{src}{trg}.intgemm.alphas.bin.gz',
         shortlist=f'{exported}/lex.50.50.{src}{trg}.s2t.bin.gz',

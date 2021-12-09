@@ -8,7 +8,7 @@ set -euo pipefail
 
 echo "###### Evaluation of a quantized model"
 
-test -v MARIAN
+test -v BMT_MARIAN
 test -v SRC
 test -v TRG
 
@@ -32,7 +32,7 @@ for src_path in "${datasets_dir}"/*."${SRC}.gz"; do
   test -s "${eval_dir}/${prefix}.${TRG}.bleu" ||
     pigz -dc "${src_path}" |
     tee "${eval_dir}/${prefix}.${SRC}" |
-    "${MARIAN}"/marian-decoder \
+    "${BMT_MARIAN}"/marian-decoder \
       -m "${model_dir}/model.intgemm.alphas.bin" \
       -v "${vocab}" "${vocab}" \
       -c "decoder.yml" \

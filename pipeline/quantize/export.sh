@@ -10,7 +10,7 @@ echo "###### Exporting a quantized model"
 
 test -v SRC
 test -v TRG
-test -v MARIAN
+test -v BMT_MARIAN
 
 model_dir=$1
 shortlist=$2
@@ -24,7 +24,7 @@ cp "${model_dir}/model.intgemm.alphas.bin" "${model}"
 pigz "${model}"
 
 shortlist_bin="${output_dir}/lex.50.50.${SRC}${TRG}.s2t.bin"
-"${MARIAN}"/marian-conv \
+"${BMT_MARIAN}"/marian-conv \
   --shortlist "${shortlist}" 50 50 0 \
   --dump "${shortlist_bin}" \
   --vocabs "${vocab}" "${vocab}"
