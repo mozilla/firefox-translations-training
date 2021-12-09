@@ -20,6 +20,7 @@ experiment:
   mono-max-sentences-src: 100000
   mono-max-sentences-trg: 200000
   split-length: 100000
+  spm-sample-size: 100000
 
   best-model: chrf
 

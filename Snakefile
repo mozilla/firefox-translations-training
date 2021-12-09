@@ -46,7 +46,6 @@ valid_datasets = config['datasets']['devtest']
 eval_datasets = config['datasets']['test']
 mono_src_datasets = config['datasets']['mono-src']
 mono_trg_datasets = config['datasets']['mono-trg']
-
 mono_datasets = {src: mono_src_datasets, trg: mono_trg_datasets}
 mono_max_sent = {src: mono_max_sent_src, trg: mono_max_sent_trg}
 
@@ -99,6 +98,7 @@ speed = f"{models_dir}/speed"
 exported = f"{models_dir}/exported"
 best_model = f"model.npz.best-{config['experiment']['best-model']}.npz"
 backward = f'{models_dir}/backward'
+spm_sample_size=config['experiment']['spm-sample-size']
 
 #evaluation
 eval_data = f"{original}/eval"
@@ -384,7 +384,8 @@ rule train_vocab:
     input: bin=spm_trainer, corpus_src=clean_corpus_src, corpus_trg=clean_corpus_trg
     output: f"{models_dir}/vocab/vocab.spm"
     params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset"
-    shell: 'bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" >> {log} 2>&1'
+    shell: '''bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" {spm_sample_size} \
+                >> {log} 2>&1'''
 
 
 if train_backward:

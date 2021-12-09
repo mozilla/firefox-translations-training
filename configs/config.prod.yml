@@ -26,9 +26,9 @@ experiment:
   # limits per downloaded dataset
   mono-max-sentences-src: 100000000
   mono-max-sentences-trg: 20000000
-
   # split corpus to parallelize translation
   split-length: 2000000
+  spm-sample-size: 10000000
 
   best-model: chrf
 
