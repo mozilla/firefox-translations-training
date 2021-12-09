@@ -29,7 +29,7 @@ conda:
 
 snakemake:
 	$(CONDA_ACTIVATE) base
-	mamba create -c conda-forge -c bioconda -n snakemake snakemake==6.10.0 --yes
+	mamba create -c conda-forge -c bioconda -n snakemake snakemake==6.12.2 --yes
 	mkdir -p "$(SNAKEMAKE_OUTPUT_CACHE)"
 
 # build container image for cluster and run-local modes (preferred)
