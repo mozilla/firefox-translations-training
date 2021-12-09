@@ -31,7 +31,7 @@ account = cluster_config['cpu-account']
 if "resources" in job_properties:
     resources = job_properties["resources"]
 
-    if 'gpu' in resources:
+    if 'gpu' in resources and int(resources['gpu']) >= 1:
         num_gpu = str(resources['gpu'])
         options += [f'--gres=gpu:{num_gpu}']
 
