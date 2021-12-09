@@ -27,6 +27,7 @@ experiment:
   bicleaner:
     default-threshold: 0.5
     dataset-thresholds:
+      opus_ada83/v1: 0
       mtdata_neulab_tedtalksv1_train: 0.6
 
 training:

@@ -292,14 +292,18 @@ Naming convention:
 
 ## Dataset cleaning
 Some parallel datasets require more aggressive filtering.
-Dataset specific Bicleaner thretholds can be set in config. Example:
+Dataset specific Bicleaner thresholds can be set in config. 
+`0` means skipping filtering entrirely (useful for Paracrawl).
 
-```angular2html
+Example:
+
+```
 experiment:
 ...
   bicleaner:
     default-threshold: 0.5
     dataset-thresholds:
+      opus_ParaCrawl/v8: 0
       mtdata_neulab_tedtalksv1_train: 0.6
 ```
 
