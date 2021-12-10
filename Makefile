@@ -8,7 +8,7 @@ SHARED_ROOT=/data/rw/group-maml
 CUDA_DIR=/usr/local/cuda
 NUM_GPUS=8
 # (optional) override available GPU ids, example GPUS=0 2 5 6
-GPUS=0 2 3
+GPUS=
 WORKSPACE=12000
 CLUSTER_CORES=16
 CONFIG=configs/config.prod.yml
@@ -50,7 +50,7 @@ pull:
 # . $(CONDA_PATH)/etc/profile.d/conda.sh && conda activate snakemake
 
 dry-run:
-	#$(CONDA_ACTIVATE) snakemake
+	$(CONDA_ACTIVATE) snakemake
 	$(SNAKEMAKE) \
 	  --use-conda \
 	  --cores all \
@@ -60,6 +60,9 @@ dry-run:
 	  --config $(CONFIG_OPTIONS) deps=true  \
 	  -n \
 	  $(TARGET)
+
+test-dry-run: CONFIG=configs/config.test.yml
+test-dry-run: dry-run
 
 run-local:
 	echo "Running with config $(CONFIG)"
