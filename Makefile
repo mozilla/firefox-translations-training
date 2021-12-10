@@ -7,8 +7,8 @@ SHELL=/bin/bash
 SHARED_ROOT=/data/rw/group-maml
 CUDA_DIR=/usr/local/cuda
 NUM_GPUS=8
-# (optional) override available GPU ids, example GPUS="0 2 5 6"
-GPUS=
+# (optional) override available GPU ids, example GPUS=0 2 5 6
+GPUS=0 2 3
 WORKSPACE=12000
 CLUSTER_CORES=16
 CONFIG=configs/config.prod.yml
@@ -19,7 +19,7 @@ TARGET=
 
 CONDA_ACTIVATE=source $(CONDA_PATH)/etc/profile.d/conda.sh ; conda activate ; conda activate
 SNAKEMAKE=export SNAKEMAKE_OUTPUT_CACHE=$(SNAKEMAKE_OUTPUT_CACHE);  snakemake
-CONFIG_OPTIONS=root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" gpus=$(GPUS) workspace=$(WORKSPACE) numgpus=$(NUM_GPUS)
+CONFIG_OPTIONS=root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" workspace=$(WORKSPACE) numgpus=$(NUM_GPUS) $(if $(GPUS),gpus="$(GPUS)",)
 
 ### 2. setup
 
@@ -50,7 +50,7 @@ pull:
 # . $(CONDA_PATH)/etc/profile.d/conda.sh && conda activate snakemake
 
 dry-run:
-	$(CONDA_ACTIVATE) snakemake
+	#$(CONDA_ACTIVATE) snakemake
 	$(SNAKEMAKE) \
 	  --use-conda \
 	  --cores all \

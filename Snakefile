@@ -35,11 +35,9 @@ backward_pretrained = config['experiment']['backward-model']
 
 experiment_dir=f"{data_root_dir}/experiments/{src}-{trg}/{experiment}"
 
-# training
-training_args = {}
-if 'training' in config:
-    training_args = {name: ' '.join([f'--{k} {v}' for k,v in conf.items() ])
-                     for name, conf in config['training'].items()}
+# override marian cofings
+marian_args = {name: ' '.join([f'--{k} {v}' for k,v in conf.items() ])
+               for name, conf in config['marian-args'].items()}
 
 # datasets
 train_datasets = config['datasets']['train']
@@ -173,7 +171,7 @@ else:
     teacher_all_output = best_model
 
 
-### rules
+### helper functions
 
 def find_parts(wildcards, checkpoint):
     checkpoint_output = checkpoint.get(**wildcards).output[0]
@@ -181,6 +179,12 @@ def find_parts(wildcards, checkpoint):
 
 def dataset_norm(name: str):
     return name.replace('/','_')
+
+def get_args(section):
+    return marian_args.get(section) or ""
+
+
+### rules
 
 shell.prefix(f"{envs} ")
 
@@ -406,7 +410,7 @@ if train_backward:
             bin=trainer, vocab=rules.train_vocab.output,
         output:  model=f'{backward}/{best_model}'
         params: prefix_train=f"{biclean}/corpus",prefix_test=f"{original}/devset",
-                args=training_args.get("backward") or ""
+                args=get_args("training-backward")
         shell: '''bash pipeline/train/train.sh \
                     backward train {trg} {src} "{params.prefix_train}" "{params.prefix_test}" "{backward}" \
                     "{input.vocab}" {params.args} >> {log} 2>&1'''
@@ -449,7 +453,9 @@ if augment_corpus:
             bin=decoder, file=f'{translated}/mono_trg/file.{{part}}',
             vocab=rules.train_vocab.output, model=f'{backward}/{best_model}'
         output: f'{translated}/mono_trg/file.{{part}}.out'
-        shell: 'bash pipeline/translate/translate.sh "{input.file}" "{input.vocab}" {input.model} >> {log} 2>&1'
+        params: args = get_args("decoding-backward")
+        shell: '''bash pipeline/translate/translate.sh "{input.file}" "{input.vocab}" {input.model} {params.args} \
+                >> {log} 2>&1'''
 
     rule collect_mono_trg:
         message: "Collecting translated mono trg dataset"
@@ -492,7 +498,7 @@ rule teacher_all:
         bin=trainer, vocab=rules.train_vocab.output
     output: model=f'{teacher_dir}{{ens}}/{teacher_all_output}'
     params: prefix_train=teacher_corpus, prefix_test=f"{original}/devset", dir=directory(f'{teacher_dir}{{ens}}'),
-                args=training_args.get("teacher-all") or ""
+            args=get_args("training-teacher-all")
     shell: '''bash pipeline/train/train.sh \
                 teacher train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
                 "{input.vocab}" {params.args} >> {log} 2>&1'''
@@ -511,7 +517,7 @@ if continue_teacher:
             bin=trainer, vocab=rules.train_vocab.output
         output: model=f'{teacher_dir}{{ens}}/{best_model}'
         params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset",dir=directory(f'{teacher_dir}{{ens}}'),
-                args=training_args.get("teacher-parallel") or ""
+                args=get_args("training-teacher-parallel")
         shell: '''bash pipeline/train/train.sh \
                     teacher continue {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
                     "{input.vocab}" {params.args} >> {log} 2>&1'''
@@ -577,8 +583,9 @@ rule translate_corpus:
         vocab=rules.train_vocab.output,
         teacher_models=expand(f"{teacher_dir}{{ens}}/{best_model}",ens=ensemble)
     output: f'{translated}/corpus/file.{{part}}.nbest'
+    params: args=get_args('decoding-teacher')
     shell: '''bash pipeline/translate/translate-nbest.sh \
-                "{input.file}" "{input.vocab}" {input.teacher_models} >> {log} 2>&1'''
+                "{input.file}" "{input.vocab}" {input.teacher_models} {params.args} >> {log} 2>&1'''
 
 rule extract_best:
     message: "Extracting best translations for the corpus"
@@ -625,7 +632,9 @@ rule translate_mono_src:
         file=f'{translated}/mono_src/file.{{part}}',vocab=rules.train_vocab.output,
         teacher_models=expand(f"{teacher_dir}{{ens}}/{best_model}",ens=ensemble)
     output: f'{translated}/mono_src/file.{{part}}.out'
-    shell: 'bash pipeline/translate/translate.sh "{input.file}" "{input.vocab}" {input.teacher_models} >> {log} 2>&1'
+    params: args=get_args('decoding-teacher')
+    shell: '''bash pipeline/translate/translate.sh "{input.file}" "{input.vocab}" {input.teacher_models} \
+              {params.args} >> {log} 2>&1'''
 
 rule collect_mono_src:
     message: "Collecting translated mono src dataset"
@@ -717,7 +726,7 @@ rule student:
         vocab=rules.train_vocab.output
     output: model=f'{student_dir}/{best_model}'
     params: prefix_train=rules.ce_filter.params.output_prefix,prefix_test=f"{original}/devset",
-            args=training_args.get("student") or ""
+            args=get_args("training-student")
     shell: '''bash pipeline/train/train-student.sh \
                 "{input.alignments}" student train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" \
                 "{student_dir}" "{input.vocab}" {params.args} >> {log} 2>&1'''
@@ -752,7 +761,7 @@ rule finetune_student:
         vocab=rules.train_vocab.output
     output: model=f'{student_finetuned_dir}/{best_model}'
     params: prefix_train=rules.ce_filter.params.output_prefix,prefix_test=f"{original}/devset",
-            args=training_args.get("student-finetune") or ""
+            args=get_args("training-student-finetune")
     shell: '''bash pipeline/train/train-student.sh \
                 "{input.alignments}" student finetune {src} {trg} "{params.prefix_train}" "{params.prefix_test}" \
                 "{student_finetuned_dir}" "{input.vocab}" {params.args} >> {log} 2>&1'''

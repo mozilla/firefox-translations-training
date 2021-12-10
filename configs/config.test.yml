@@ -31,18 +31,21 @@ experiment:
       opus_ada83/v1: 0
       mtdata_neulab_tedtalksv1_train: 0.6
 
-training:
-  backward:
+marian-args:
+  training-backward:
     after: 1000u
-  teacher-all:
+  training-teacher-all:
     after: 2000u
-  teacher-parallel:
+  training-teacher-parallel:
     after: 1000u
-  student:
+  training-student:
     after: 1000u
-  student-finetune:
+  training-student-finetune:
     after: 1000u
-
+  decoding-backward:
+    mini-batch-words: 2000
+  decoding-teacher:
+    mini-batch-words: 500
 
 datasets:
   train:
