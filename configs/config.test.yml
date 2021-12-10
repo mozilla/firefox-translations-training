@@ -44,8 +44,10 @@ marian-args:
     after: 1000u
   decoding-backward:
     mini-batch-words: 2000
+    precision: float16
   decoding-teacher:
     mini-batch-words: 500
+    precision: float16
 
 datasets:
   train:

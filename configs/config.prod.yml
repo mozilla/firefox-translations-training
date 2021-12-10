@@ -62,9 +62,13 @@ marian-args:
   decoding-backward:
     # 12 Gb GPU, s2s model
     mini-batch-words: 2000
+    # 2080ti or newer
+    precision: float16
   decoding-teacher:
     # 12 Gb GPU, ensemble of 4 teachers
     mini-batch-words: 500
+    # 2080ti or newer
+    precision: float16
 
 
 datasets:
