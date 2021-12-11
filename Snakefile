@@ -734,6 +734,8 @@ rule evaluate:
     resources: gpu=gpus_num
     group: '{model}'
     priority: 50
+    wildcard_constraints:
+        model="[\w-]+"
     input:
         decoder,
         data=multiext(f'{eval_data_dir}/{{dataset}}',f".{src}.gz",f".{trg}.gz"),
@@ -752,7 +754,7 @@ rule evaluate:
                             if wildcards.model != 'teacher-ensemble'
                             else f'{teacher_dir}0/{best_model}.decoder.yml'
     shell:
-        '''bash pipeline/evaluation/eval-gpu.sh "{params.res_dir}" "{params.dataset_prefix}" \
+        '''bash pipeline/eval/eval-gpu.sh "{params.res_dir}" "{params.dataset_prefix}" \
              {params.src_lng} {params.trg_lng} "{params.decoder_config}" {input.models} >> {log} 2>&1'''
 
 rule eval_quantized:
@@ -774,5 +776,5 @@ rule eval_quantized:
     params:
         dataset_prefix=f'{eval_data_dir}/{{dataset}}',
         decoder_config='pipeline/quantized/decoder.yml'
-    shell: '''bash pipeline/evaluation/eval-quantized.sh "{input.model}" "{input.shortlist}" "{params.dataset_prefix}" \ 
+    shell: '''bash pipeline/eval/eval-quantized.sh "{input.model}" "{input.shortlist}" "{params.dataset_prefix}" \ 
             "{input.vocab}" "{eval_speed_dir}" "{params.decoder_config}" >> {log} 2>&1'''
