@@ -60,7 +60,6 @@ datasets:
   test:
     - flores_devtest
     - sacrebleu_wmt20
-    - sacrebleu_wmt18
   mono-src:
     - news-crawl_news.2020
   mono-trg:

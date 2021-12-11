@@ -72,7 +72,7 @@ run-local:
 	  --reason \
 	  --cores all \
 	  --cache \
-	  --resources gpu=$(GPUS) \
+	  --resources gpu=$(NUM_GPUS) \
 	  --configfile $(CONFIG) \
 	  --config $(CONFIG_OPTIONS) deps=true \
 	  $(TARGET)
@@ -89,7 +89,7 @@ run-local-container:
 	  --reason \
 	  --cores all \
 	  --cache \
-	  --resources gpu=$(GPUS) \
+	  --resources gpu=$(NUM_GPUS) \
 	  --configfile $(CONFIG) \
 	  --config $(CONFIG_OPTIONS) \
 	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR) --nv" \
@@ -146,6 +146,7 @@ run-file-server:
 
 ### extra
 
+dag: CONFIG=configs/config.test.yml
 dag:
 	snakemake \
 	  --dag \

@@ -93,21 +93,20 @@ models_dir = f"{data_root_dir}/models/{src}-{trg}/{experiment}"
 teacher_dir = f"{models_dir}/teacher"
 student_dir = f"{models_dir}/student"
 student_finetuned_dir = f"{models_dir}/student-finetuned"
-speed = f"{models_dir}/speed"
-exported = f"{models_dir}/exported"
+speed_dir = f"{models_dir}/speed"
+exported_dir = f"{models_dir}/exported"
 best_model = f"model.npz.best-{config['experiment']['best-model']}.npz"
-backward = f'{models_dir}/backward'
+backward_dir = f'{models_dir}/backward'
 spm_sample_size=config['experiment']['spm-sample-size']
 
 #evaluation
-eval_data = f"{original}/eval"
-eval_res = f"{models_dir}/evaluation"
-eval_backward = f'{eval_res}/backward'
-eval_student = f'{eval_res}/student',
-eval_student_finetuned = f'{eval_res}/student-finetuned',
-eval_speed = f'{eval_res}/speed',
-eval_teacher_ens = f'{eval_res}/teacher-ensemble',
-full_eval_datasets = expand(f'{eval_data}/{{dataset}}.{{lang}}.gz', dataset=eval_datasets, lang=[src,trg])
+eval_data_dir = f"{original}/eval"
+eval_res_dir = f"{models_dir}/evaluation"
+eval_backward_dir = f'{eval_res_dir}/backward'
+eval_student_dir = f'{eval_res_dir}/student'
+eval_student_finetuned_dir = f'{eval_res_dir}/student-finetuned'
+eval_speed_dir = f'{eval_res_dir}/speed'
+eval_teacher_ens_dir = f'{eval_res_dir}/teacher-ensemble'
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" BMT_MARIAN="{bmt_marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
@@ -116,29 +115,30 @@ CUDA_DIR="{cuda_dir}"'''
 
 ### workflow options
 
-results = [f'{exported}/model.{src}{trg}.intgemm.alphas.bin.gz',
-           f'{exported}/lex.50.50.{src}{trg}.s2t.bin.gz',
-           f'{exported}/vocab.{src}{trg}.spm.gz',
+results = [f'{exported_dir}/model.{src}{trg}.intgemm.alphas.bin.gz',
+           f'{exported_dir}/lex.50.50.{src}{trg}.s2t.bin.gz',
+           f'{exported_dir}/vocab.{src}{trg}.spm.gz',
            f'{experiment_dir}/config.yml',
-           expand(f'{eval_res}/teacher{{ens}}',ens=ensemble),
-           f'{eval_res}/student',
-           f'{eval_res}/student-finetuned',
-           f'{eval_res}/speed'
+           *expand(f'{eval_res_dir}/teacher{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=eval_datasets),
+           *expand(f'{eval_student_dir}/{{dataset}}.metrics', dataset=eval_datasets),
+           *expand(f'{eval_student_finetuned_dir}/{{dataset}}.metrics', dataset=eval_datasets),
+           *expand(f'{eval_speed_dir}/{{dataset}}.metrics', dataset=eval_datasets)
            ]
 
+
 if len(ensemble) > 1:
-    results.append(f'{eval_res}/teacher-ensemble')
+    results.extend(expand(f'{eval_teacher_ens_dir}/{{dataset}}.metrics', dataset=eval_datasets))
 
 if install_deps:
     results.append("/tmp/flags/setup.done")
 
 if not backward_pretrained:
     # don't evaluate pretrained model
-    results.append(eval_backward)
-    train_backward=True
+    results.extend(expand(f'{eval_backward_dir}/{{dataset}}.metrics',dataset=eval_datasets))
+    do_train_backward=True
 else:
-    train_backward = False
-    backward = backward_pretrained
+    do_train_backward = False
+    backward_dir = backward_pretrained
 
 # bicleaner
 
@@ -192,7 +192,6 @@ rule all:
     input: results
 
 localrules: experiment
-ruleorder: teacher_all > eval_teacher
 
 rule experiment:
     message: "Saving experiment metadata"
@@ -382,7 +381,6 @@ rule merge_mono:
     params: max_sent=lambda wildcards: mono_max_sent[wildcards.lang]
     shell: '''bash pipeline/clean/merge-mono.sh "{output}" {params.max_sent} {input} >> {log} 2>&1'''
 
-
 # augmentation and teacher training
 
 rule train_vocab:
@@ -396,9 +394,8 @@ rule train_vocab:
     shell: '''bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" {spm_sample_size} \
                 >> {log} 2>&1'''
 
-
-if train_backward:
-    rule backward:
+if do_train_backward:
+    rule train_backward:
         message: "Training backward model"
         log: f"{log_dir}/train_backward.log"
         conda: "envs/base.yml"
@@ -408,30 +405,12 @@ if train_backward:
         input:
             rules.merge_devset.output, train_src=clean_corpus_src,train_trg=clean_corpus_trg,
             bin=trainer, vocab=rules.train_vocab.output,
-        output:  model=f'{backward}/{best_model}'
+        output:  model=f'{backward_dir}/{best_model}'
         params: prefix_train=f"{biclean}/corpus",prefix_test=f"{original}/devset",
                 args=get_args("training-backward")
         shell: '''bash pipeline/train/train.sh \
-                    backward train {trg} {src} "{params.prefix_train}" "{params.prefix_test}" "{backward}" \
+                    backward train {trg} {src} "{params.prefix_train}" "{params.prefix_test}" "{backward_dir}" \
                     "{input.vocab}" {params.args} >> {log} 2>&1'''
-
-    rule eval_backward:
-        message: "Evaluating backward model"
-        log: f"{log_dir}/eval_backward.log"
-        conda: "envs/base.yml"
-        threads: gpus_num * 2
-        resources: gpu=gpus_num
-        group: 'backward'
-        priority: 50
-        input:
-            full_eval_datasets, decoder,
-            model=f'{backward}/{best_model}'
-        output:
-            report(directory(eval_backward),patterns=["{name}.metrics"],
-                category='evaluation', subcategory='finetuned', caption='reports/evaluation.rst')
-        shell: 'bash pipeline/train/eval.sh "{eval_backward}" "{eval_data}" {trg} {src} {input.model} >> {log} 2>&1'
-
-
 
 if augment_corpus:
     checkpoint split_mono_trg:
@@ -451,7 +430,7 @@ if augment_corpus:
         resources: gpu=gpus_num
         input:
             bin=decoder, file=f'{translated}/mono_trg/file.{{part}}',
-            vocab=rules.train_vocab.output, model=f'{backward}/{best_model}'
+            vocab=rules.train_vocab.output, model=f'{backward_dir}/{best_model}'
         output: f'{translated}/mono_trg/file.{{part}}.out'
         params: args = get_args("decoding-backward")
         shell: '''bash pipeline/translate/translate.sh "{input.file}" "{input.vocab}" {input.model} {params.args} \
@@ -483,8 +462,6 @@ if augment_corpus:
         shell: '''bash pipeline/translate/merge-corpus.sh \
                     "{input.src1}" "{input.src2}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
                       >> {log} 2>&1'''
-
-
 
 rule teacher_all:
     message: "Training teacher on all data"
@@ -521,41 +498,6 @@ if continue_teacher:
         shell: '''bash pipeline/train/train.sh \
                     teacher continue {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
                     "{input.vocab}" {params.args} >> {log} 2>&1'''
-
-rule eval_teacher:
-    message: "Evaluating teacher model"
-    log: f"{log_dir}/eval_teacher{{ens}}.log"
-    conda: "envs/base.yml"
-    threads: gpus_num*2
-    resources: gpu=gpus_num
-    group: 'teacher{ens}'
-    priority: 50
-    input:
-        full_eval_datasets, decoder,
-        model=f'{teacher_dir}{{ens}}/{best_model}'
-    output:
-        report(directory(f'{eval_res}/teacher{{ens}}'), patterns=["{name}.metrics"],
-            category='evaluation', subcategory='teacher{ens}', caption='reports/evaluation.rst')
-    params: dir=f'{eval_res}/teacher{{ens}}'
-    shell: 'bash pipeline/train/eval.sh "{params.dir}" "{eval_data}" {src} {trg} {input.model} >> {log} 2>&1'
-
-
-if len(ensemble) > 1:
-    rule eval_teacher_ensemble:
-        message: "Evaluating an ensemble of teacher models"
-        log: f"{log_dir}/eval_teacher_ensemble.log"
-        conda: "envs/base.yml"
-        threads: gpus_num * 2
-        resources: gpu=gpus_num
-        priority: 50
-        input:
-            full_eval_datasets, decoder,
-            models=[f'{teacher_dir}{ens}/{best_model}' for ens in ensemble]
-        output:
-            report(directory(eval_teacher_ens),patterns=["{name}.metrics"],
-                category='evaluation',subcategory='teacher_ensemble',caption='reports/evaluation.rst')
-        shell: 'bash pipeline/train/eval.sh "{eval_teacher_ens}" "{eval_data}" {src} {trg} {input.models} >> {log} 2>&1'
-
 
 ### translation with teacher
 
@@ -675,7 +617,7 @@ rule score:
     resources: gpu=gpus_num
     input:
         scorer,
-        model=rules.backward.output.model, vocab=rules.train_vocab.output,
+        model=rules.train_backward.output.model, vocab=rules.train_vocab.output,
         src_corpus=rules.merge_translated.output.res_src, trg_corpus=rules.merge_translated.output.res_trg
     output: f"{filtered}/scores.txt"
     params: input_prefix=f'{merged}/corpus'
@@ -731,20 +673,6 @@ rule student:
                 "{input.alignments}" student train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" \
                 "{student_dir}" "{input.vocab}" {params.args} >> {log} 2>&1'''
 
-rule eval_student:
-    message: "Evaluating student model"
-    log: f"{log_dir}/eval_student.log"
-    conda: "envs/base.yml"
-    threads: gpus_num*2
-    resources: gpu=gpus_num
-    group: 'student'
-    priority: 50
-    input: full_eval_datasets, decoder, model=rules.student.output.model
-    output:
-        report(directory(eval_student),patterns=["{name}.metrics"],category='evaluation',
-            subcategory='student', caption='reports/evaluation.rst')
-    shell: 'bash pipeline/train/eval.sh "{eval_student}" "{eval_data}" {src} {trg} {input.model} >> {log} 2>&1'
-
 # quantize
 
 rule finetune_student:
@@ -753,7 +681,7 @@ rule finetune_student:
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
-    group: 'finetune'
+    group: 'student-finetuned'
     input:
         rules.merge_devset.output, trainer,
         train_src=rules.ce_filter.output.src_corpus, train_trg=rules.ce_filter.output.trg_corpus,
@@ -766,21 +694,6 @@ rule finetune_student:
                 "{input.alignments}" student finetune {src} {trg} "{params.prefix_train}" "{params.prefix_test}" \
                 "{student_finetuned_dir}" "{input.vocab}" {params.args} >> {log} 2>&1'''
 
-rule eval_finetuned_student:
-    message: "Evaluating fine-tuned student model"
-    log: f"{log_dir}/eval_finetuned_student.log"
-    conda: "envs/base.yml"
-    threads: gpus_num*2
-    resources: gpu=gpus_num
-    group: 'finetune'
-    priority: 50
-    input: full_eval_datasets, decoder, model=rules.finetune_student.output.model
-    output:
-        report(directory(eval_student_finetuned),patterns=["{name}.metrics"],
-            category='evaluation', subcategory='finetuned', caption='reports/evaluation.rst')
-    shell: 'bash pipeline/train/eval.sh "{eval_student_finetuned}" "{eval_data}" {src} {trg} {input.model} \
-                >> {log} 2>&1'
-
 rule quantize:
     message: "Quantization"
     log: f"{log_dir}/quntize.log"
@@ -790,25 +703,9 @@ rule quantize:
         bmt_decoder, bmt_converter,
         shortlist=rules.alignments.output.shortlist, model=rules.finetune_student.output.model,
         vocab=rules.train_vocab.output, devset=f"{original}/devset.{src}.gz"
-    output: model=f'{speed}/model.intgemm.alphas.bin'
+    output: model=f'{speed_dir}/model.intgemm.alphas.bin'
     shell: 'bash pipeline/quantize/quantize.sh \
-                "{input.model}" "{input.vocab}" "{input.shortlist}" "{input.devset}" "{speed}" >> {log} 2>&1'''
-
-rule eval_quantized:
-    message: "Evaluating qunatized student model"
-    log: f"{log_dir}/eval_quantized.log"
-    conda: "envs/base.yml"
-    group: 'export'
-    threads: 1
-    priority: 50
-    input:
-        full_eval_datasets, bmt_decoder,  model=rules.quantize.output.model,
-        shortlist=rules.alignments.output.shortlist, vocab=rules.train_vocab.output
-    output:
-        report(directory(eval_speed),patterns=["{name}.metrics"], category='evaluation',
-            subcategory='quantized', caption='reports/evaluation.rst')
-    shell: '''bash pipeline/quantize/eval.sh "{speed}" "{input.shortlist}" "{eval_data}" "{input.vocab}" "{eval_speed}" \
-            >> {log} 2>&1'''
+                "{input.model}" "{input.vocab}" "{input.shortlist}" "{input.devset}" "{speed_dir}" >> {log} 2>&1'''
 
 rule export:
     message: "Exporting models"
@@ -820,7 +717,62 @@ rule export:
         model=rules.quantize.output.model,shortlist=rules.alignments.output.shortlist,
         vocab=rules.train_vocab.output,marian=bmt_converter
     output:
-        model=f'{exported}/model.{src}{trg}.intgemm.alphas.bin.gz',
-        shortlist=f'{exported}/lex.50.50.{src}{trg}.s2t.bin.gz',
-        vocab=f'{exported}/vocab.{src}{trg}.spm.gz'
-    shell: 'bash pipeline/quantize/export.sh "{speed}" "{input.shortlist}" "{input.vocab}" "{exported}" >> {log} 2>&1'
+        model=f'{exported_dir}/model.{src}{trg}.intgemm.alphas.bin.gz',
+        shortlist=f'{exported_dir}/lex.50.50.{src}{trg}.s2t.bin.gz',
+        vocab=f'{exported_dir}/vocab.{src}{trg}.spm.gz'
+    shell:
+        'bash pipeline/quantize/export.sh "{speed_dir}" "{input.shortlist}" "{input.vocab}" "{exported_dir}" >> {log} 2>&1'
+
+
+### evaluation
+
+rule evaluate:
+    message: "Evaluating a model"
+    log: f"{log_dir}/eval/eval_{{model}}_{{dataset}}.log"
+    conda: "envs/base.yml"
+    threads: gpus_num * 2
+    resources: gpu=gpus_num
+    group: '{model}'
+    priority: 50
+    input:
+        decoder,
+        data=multiext(f'{eval_data_dir}/{{dataset}}',f".{src}.gz",f".{trg}.gz"),
+        models=lambda wildcards: f'{models_dir}/{wildcards.model}/{best_model}'
+                                    if wildcards.model != 'teacher-ensemble'
+                                    else [f'{teacher_dir}{ens}/{best_model}' for ens in ensemble]
+    output:
+        report(f'{eval_res_dir}/{{model}}/{{dataset}}.metrics',
+            category='evaluation', subcategory='{model}', caption='reports/evaluation.rst')
+    params:
+        dataset_prefix=f'{eval_data_dir}/{{dataset}}',
+        res_dir=f'{eval_res_dir}/{{model}}',
+        src_lng=lambda wildcards: src if wildcards.model != 'backward' else trg,
+        trg_lng=lambda wildcards: trg if wildcards.model != 'backward' else src,
+        decoder_config=lambda wildcards: f'{models_dir}/{wildcards.model}/{best_model}.decoder.yml'
+                            if wildcards.model != 'teacher-ensemble'
+                            else f'{teacher_dir}0/{best_model}.decoder.yml'
+    shell:
+        '''bash pipeline/evaluation/eval-gpu.sh "{params.res_dir}" "{params.dataset_prefix}" \
+             {params.src_lng} {params.trg_lng} "{params.decoder_config}" {input.models} >> {log} 2>&1'''
+
+rule eval_quantized:
+    message: "Evaluating qunatized student model"
+    log: f"{log_dir}/eval_quantized_{{dataset}}.log"
+    conda: "envs/base.yml"
+    group: 'export'
+    threads: 1
+    priority: 50
+    input:
+        bmt_decoder,
+        data=multiext(f'{eval_data_dir}/{{dataset}}',f".{src}.gz",f".{trg}.gz"),
+        model=rules.quantize.output.model,
+        shortlist=rules.alignments.output.shortlist,
+        vocab=rules.train_vocab.output,
+    output:
+        report(f'{eval_speed_dir}/{{dataset}}.metrics', category='evaluation',
+            subcategory='quantized', caption='reports/evaluation.rst')
+    params:
+        dataset_prefix=f'{eval_data_dir}/{{dataset}}',
+        decoder_config='pipeline/quantized/decoder.yml'
+    shell: '''bash pipeline/evaluation/eval-quantized.sh "{input.model}" "{input.shortlist}" "{params.dataset_prefix}" \ 
+            "{input.vocab}" "{eval_speed_dir}" "{params.decoder_config}" >> {log} 2>&1'''
