@@ -341,8 +341,7 @@ if use_bicleaner:
         params:
             prefix_input=f"{clean}/corpus/{{dataset}}",prefix_output=f"{biclean}/corpus/{{dataset}}",
             threshold=lambda wildcards: bicl_dataset_thresholds.get(wildcards.dataset) or bicl_default_threshold
-        shell: '''export CUDA_VISIBLE_DEVICES={gpus}; \
-                    bash pipeline/bicleaner/bicleaner.sh \
+        shell: '''CUDA_VISIBLE_DEVICES="{gpus}" bash pipeline/bicleaner/bicleaner.sh \
                     "{params.prefix_input}" "{params.prefix_output}" {params.threshold} {bicleaner_type} {threads} \
                     "{input.pack_dir}" >> {log} 2>&1'''
 
