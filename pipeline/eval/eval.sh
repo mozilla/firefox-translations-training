@@ -32,7 +32,7 @@ pigz -dc "${dataset_prefix}.${src}.gz" |
     --log "${eval_dir}/${prefix}.log" \
     "${args[@]}" |
   tee "${eval_dir}/${prefix}.${trg}" |
-  sacrebleu "${eval_dir}/${prefix}.${TRG}.ref" -d -f text --score-only -l "${src}-${trg}" -m bleu chrf  |
+  sacrebleu "${eval_dir}/${prefix}.${trg}.ref" -d -f text --score-only -l "${src}-${trg}" -m bleu chrf  |
   tee "${eval_dir}/${prefix}.${trg}.metrics"
 
 echo "###### Done: Evaluation of a model"
