@@ -110,8 +110,7 @@ eval_teacher_ens_dir = f'{eval_res_dir}/teacher-ensemble'
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" BMT_MARIAN="{bmt_marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
-BIN="{bin}" " \
-CUDA_DIR="{cuda_dir}"'''
+BIN="{bin}" CUDA_DIR="{cuda_dir}"'''
 
 ### workflow options
 
