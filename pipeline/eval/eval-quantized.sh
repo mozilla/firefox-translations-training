@@ -16,13 +16,13 @@ model_path=$1
 shortlist=$2
 dataset_prefix=$3
 vocab=$4
-eval_dir=$5
+res_prefix=$5
 decoder_config=$6
 
 cd "$(dirname "${0}")"
 
 bash eval.sh \
-      "${eval_dir}" \
+      "${res_prefix}" \
       "${dataset_prefix}" \
       "${SRC}" \
       "${TRG}" \

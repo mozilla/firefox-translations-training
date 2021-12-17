@@ -745,14 +745,14 @@ rule evaluate:
             category='evaluation', subcategory='{model}', caption='reports/evaluation.rst')
     params:
         dataset_prefix=f'{eval_data_dir}/{{dataset}}',
-        res_dir=f'{eval_res_dir}/{{model}}',
+        res_prefix=f'{eval_res_dir}/{{model}}/{{dataset}}',
         src_lng=lambda wildcards: src if wildcards.model != 'backward' else trg,
         trg_lng=lambda wildcards: trg if wildcards.model != 'backward' else src,
         decoder_config=lambda wildcards: f'{models_dir}/{wildcards.model}/{best_model}.decoder.yml'
                             if wildcards.model != 'teacher-ensemble'
                             else f'{teacher_dir}0/{best_model}.decoder.yml'
     shell:
-        '''bash pipeline/eval/eval-gpu.sh "{params.res_dir}" "{params.dataset_prefix}" \
+        '''bash pipeline/eval/eval-gpu.sh "{params.res_prefix}" "{params.dataset_prefix}" \
              {params.src_lng} {params.trg_lng} "{params.decoder_config}" {input.models} >> {log} 2>&1'''
 
 rule eval_quantized:
@@ -773,6 +773,7 @@ rule eval_quantized:
             subcategory='quantized', caption='reports/evaluation.rst')
     params:
         dataset_prefix=f'{eval_data_dir}/{{dataset}}',
+        res_prefix=f'{eval_speed_dir}/{{dataset}}',
         decoder_config='pipeline/quantized/decoder.yml'
     shell: '''bash pipeline/eval/eval-quantized.sh "{input.model}" "{input.shortlist}" "{params.dataset_prefix}" \ 
-            "{input.vocab}" "{eval_speed_dir}" "{params.decoder_config}" >> {log} 2>&1'''
+            "{input.vocab}" "{params.res_prefix}" "{params.decoder_config}" >> {log} 2>&1'''

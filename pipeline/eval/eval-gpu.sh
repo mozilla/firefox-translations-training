@@ -12,7 +12,7 @@ test -v GPUS
 test -v MARIAN
 test -v WORKSPACE
 
-eval_dir=$1
+res_prefix=$1
 dataset_prefix=$2
 src=$3
 trg=$4
@@ -22,7 +22,7 @@ models=( "${@:6}" )
 cd "$(dirname "${0}")"
 
 bash eval.sh \
-      "${eval_dir}" \
+      "${res_prefix}" \
       "${dataset_prefix}" \
       "${src}" \
       "${trg}" \
