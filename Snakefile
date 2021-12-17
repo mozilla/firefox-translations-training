@@ -62,9 +62,13 @@ cwd = os.getcwd()
 third_party_dir = f'{cwd}/3rd_party'
 marian_dir = f'{third_party_dir}/marian-dev/build'
 bmt_marian_dir = f'{third_party_dir}/browsermt-marian-dev/build'
-trainer = f'{marian_dir}/marian'
-decoder = f'{marian_dir}/marian-decoder'
-scorer = f'{marian_dir}/marian-scorer'
+# trainer = f'{marian_dir}/marian'
+# decoder = f'{marian_dir}/marian-decoder'
+# scorer = f'{marian_dir}/marian-scorer'
+# todo: switch back to marian
+trainer = f'{bmt_marian_dir}/marian'
+decoder = f'{bmt_marian_dir}/marian-decoder'
+scorer = f'{bmt_marian_dir}/marian-scorer'
 spm_encoder = f'{bmt_marian_dir}/spm_encode'
 spm_trainer = f'{bmt_marian_dir}/spm_train'
 spm_exporter = f'{bmt_marian_dir}/spm_export_vocab'
@@ -109,8 +113,9 @@ eval_speed_dir = f'{eval_res_dir}/speed'
 eval_teacher_ens_dir = f'{eval_res_dir}/teacher-ensemble'
 
 # set common environment variables
-envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" BMT_MARIAN="{bmt_marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
-BIN="{bin}" DATA_ROOT_DIR="{data_root_dir}" \
+# todo: switch back to marian
+envs = f'''SRC={src} TRG={trg} MARIAN="{bmt_marian_dir}" BMT_MARIAN="{bmt_marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
+BIN="{bin}" " \
 CUDA_DIR="{cuda_dir}"'''
 
 ### workflow options
@@ -124,7 +129,6 @@ results = [f'{exported_dir}/model.{src}{trg}.intgemm.alphas.bin.gz',
            *expand(f'{eval_student_finetuned_dir}/{{dataset}}.metrics', dataset=eval_datasets),
            *expand(f'{eval_speed_dir}/{{dataset}}.metrics', dataset=eval_datasets)
            ]
-
 
 if len(ensemble) > 1:
     results.extend(expand(f'{eval_teacher_ens_dir}/{{dataset}}.metrics', dataset=eval_datasets))
