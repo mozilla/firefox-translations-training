@@ -13,6 +13,7 @@ deps: false
 gpus: ""
 numgpus: ""
 workspace: ""
+mariancmake: ""
 
 
 experiment:

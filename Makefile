@@ -14,12 +14,15 @@ CLUSTER_CORES=16
 CONFIG=configs/config.prod.yml
 CONDA_PATH=$(SHARED_ROOT)/mambaforge
 SNAKEMAKE_OUTPUT_CACHE=$(SHARED_ROOT)/cache
+# for CSD3 cluster
+# MARIAN_CMAKE=-DBUILD_ARCH=core-avx2
+MARIAN_CMAKE=
 TARGET=
 ###
 
 CONDA_ACTIVATE=source $(CONDA_PATH)/etc/profile.d/conda.sh ; conda activate ; conda activate
 SNAKEMAKE=export SNAKEMAKE_OUTPUT_CACHE=$(SNAKEMAKE_OUTPUT_CACHE);  snakemake
-CONFIG_OPTIONS=root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" workspace=$(WORKSPACE) numgpus=$(NUM_GPUS) $(if $(GPUS),gpus="$(GPUS)",)
+CONFIG_OPTIONS=root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" workspace=$(WORKSPACE) numgpus=$(NUM_GPUS) $(if $(MARIAN_CMAKE),mariancmake="$(MARIAN_CMAKE)",) $(if $(GPUS),gpus="$(GPUS)",)
 
 ### 2. setup
 

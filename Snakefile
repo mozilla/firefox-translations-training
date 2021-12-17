@@ -21,6 +21,7 @@ cuda_dir = config['cuda']
 gpus_num = config['numgpus']
 gpus = config['gpus'] if config['gpus'] else ' '.join([str(n) for n in range(int(gpus_num))])
 workspace = config['workspace']
+marian_cmake = config['mariancmake']
 
 # experiment
 src = config['experiment']['src']
@@ -227,7 +228,7 @@ rule marian:
         spm_encoder=protected(f'{third_party_dir}/{{marian_type}}/build/spm_encode'),
         spm_exporter=protected(f'{third_party_dir}/{{marian_type}}/build/spm_export_vocab')
     params: build_dir=f'{third_party_dir}/{{marian_type}}/build'
-    shell: 'bash pipeline/setup/compile-marian.sh {params.build_dir} {threads} >> {log} 2>&1'
+    shell: 'bash pipeline/setup/compile-marian.sh {params.build_dir} {threads} {marian_cmake} >> {log} 2>&1'
 
 rule fast_align:
     message: "Compiling fast align"
