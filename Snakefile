@@ -62,16 +62,12 @@ cwd = os.getcwd()
 third_party_dir = f'{cwd}/3rd_party'
 marian_dir = f'{third_party_dir}/marian-dev/build'
 bmt_marian_dir = f'{third_party_dir}/browsermt-marian-dev/build'
-# trainer = f'{marian_dir}/marian'
-# decoder = f'{marian_dir}/marian-decoder'
-# scorer = f'{marian_dir}/marian-scorer'
-# todo: switch back to marian
-trainer = f'{bmt_marian_dir}/marian'
-decoder = f'{bmt_marian_dir}/marian-decoder'
-scorer = f'{bmt_marian_dir}/marian-scorer'
-spm_encoder = f'{bmt_marian_dir}/spm_encode'
-spm_trainer = f'{bmt_marian_dir}/spm_train'
-spm_exporter = f'{bmt_marian_dir}/spm_export_vocab'
+trainer = f'{marian_dir}/marian'
+decoder = f'{marian_dir}/marian-decoder'
+scorer = f'{marian_dir}/marian-scorer'
+spm_encoder = f'{marian_dir}/spm_encode'
+spm_trainer = f'{marian_dir}/spm_train'
+spm_exporter = f'{marian_dir}/spm_export_vocab'
 bmt_decoder = f'{bmt_marian_dir}/marian-decoder'
 bmt_converter = f'{bmt_marian_dir}/marian-conv'
 
@@ -113,8 +109,7 @@ eval_speed_dir = f'{eval_res_dir}/speed'
 eval_teacher_ens_dir = f'{eval_res_dir}/teacher-ensemble'
 
 # set common environment variables
-# todo: switch back to marian
-envs = f'''SRC={src} TRG={trg} MARIAN="{bmt_marian_dir}" BMT_MARIAN="{bmt_marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
+envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" BMT_MARIAN="{bmt_marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
 BIN="{bin}" " \
 CUDA_DIR="{cuda_dir}"'''
 
