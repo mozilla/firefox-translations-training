@@ -6,7 +6,7 @@
 set -x
 set -euo pipefail
 
-test -v MARIAN
+test -v BMT_MARIAN
 
 corpus_src=$1
 corpus_trg=$2
@@ -19,7 +19,7 @@ mkdir -p "${vocab_dir}"
 pigz -dc "${corpus_src}" >"${vocab_dir}/data.txt"
 pigz -dc "${corpus_trg}" >>"${vocab_dir}/data.txt"
 
-"${MARIAN}/spm_train" --bos_id=-1 --eos_id=0 --unk_id=1 --user_defined_symbols="" \
+"${BMT_MARIAN}/spm_train" --bos_id=-1 --eos_id=0 --unk_id=1 --user_defined_symbols="" \
   --model_prefix="${vocab_dir}/vocab" --vocab_size=32000 \
   --input="${vocab_dir}/data.txt" \
   --input_sentence_size="${sample_size}" --shuffle_input_sentence=true

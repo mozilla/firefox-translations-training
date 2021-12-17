@@ -7,7 +7,7 @@ set -x
 set -euo pipefail
 
 echo "###### Generating alignments and shortlist"
-test -v MARIAN
+test -v BMT_MARIAN
 test -v BIN
 test -v SRC
 test -v TRG
@@ -30,11 +30,11 @@ corpus_trg="${corpus_prefix}.${TRG}.gz"
 echo "### Subword segmentation with SentencePiece"
 test -s "${dir}/corpus.spm.${SRC}.gz" ||
   pigz -dc "${corpus_src}" |
-  parallel --no-notice --pipe -k -j "${threads}" --block 50M "${MARIAN}/spm_encode" --model "${vocab_path}" |
+  parallel --no-notice --pipe -k -j "${threads}" --block 50M "${BMT_MARIAN}/spm_encode" --model "${vocab_path}" |
   pigz >"${dir}/corpus.spm.${SRC}.gz"
 test -s "${dir}/corpus.spm.${TRG}.gz" ||
   pigz -dc "${corpus_trg}" |
-  parallel --no-notice --pipe -k -j "${threads}" --block 50M "${MARIAN}/spm_encode" --model "${vocab_path}" |
+  parallel --no-notice --pipe -k -j "${threads}" --block 50M "${BMT_MARIAN}/spm_encode" --model "${vocab_path}" |
   pigz >"${dir}/corpus.spm.${TRG}.gz"
 
 echo "### Creating merged corpus"
@@ -69,7 +69,7 @@ test -s "${dir}/lex.s2t" && pigz "${dir}/lex.s2t"
 
 echo "### Shortlist pruning"
 test -s "${dir}/vocab.txt" ||
-  "${MARIAN}/spm_export_vocab" --model="${vocab_path}" --output="${dir}/vocab.txt"
+  "${BMT_MARIAN}/spm_export_vocab" --model="${vocab_path}" --output="${dir}/vocab.txt"
 test -s "${output_dir}/lex.s2t.pruned.gz" ||
   pigz -dc "${dir}/lex.s2t.gz" |
   grep -v NULL |
