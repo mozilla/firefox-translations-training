@@ -14,8 +14,6 @@ trg=$2
 output_prefix=$3
 dataset=$4
 
-mkdir -p "$(dirname "${output_prefix}")"
-
 cp "${dataset}.${src}.gz" "${output_prefix}.${src}.gz"
 cp "${dataset}.${trg}.gz" "${output_prefix}.${trg}.gz"
 
