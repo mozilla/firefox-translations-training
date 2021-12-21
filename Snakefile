@@ -490,7 +490,7 @@ if continue_teacher:
             rules.merge_devset.output, model = f'{teacher_dir}{{ens}}/model.npz',
             train_src=clean_corpus_src, train_trg=clean_corpus_trg,
             bin=trainer, vocab=rules.train_vocab.output
-        output: model=f'{teacher_dir}{{ens}}/{best_model}'
+        output: model=protected(f'{teacher_dir}{{ens}}/{best_model}')
         params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset",dir=directory(f'{teacher_dir}{{ens}}'),
                 args=get_args("training-teacher-parallel")
         shell: '''bash pipeline/train/train.sh \
