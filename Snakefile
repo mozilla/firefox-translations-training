@@ -702,7 +702,7 @@ rule quantize:
         shortlist=rules.alignments.output.shortlist, model=rules.finetune_student.output.model,
         vocab=rules.train_vocab.output, devset=f"{original}/devset.{src}.gz"
     output: model=f'{speed_dir}/model.intgemm.alphas.bin'
-    shell: 'bash pipeline/quantize/quantize.sh \
+    shell: '''bash pipeline/quantize/quantize.sh \
                 "{input.model}" "{input.vocab}" "{input.shortlist}" "{input.devset}" "{speed_dir}" >> {log} 2>&1'''
 
 rule export:
@@ -751,8 +751,7 @@ rule evaluate:
         decoder_config=lambda wildcards: f'{models_dir}/{wildcards.model}/{best_model}.decoder.yml'
                             if wildcards.model != 'teacher-ensemble'
                             else f'{teacher_dir}0/{best_model}.decoder.yml'
-    shell:
-        '''bash pipeline/eval/eval-gpu.sh "{params.res_prefix}" "{params.dataset_prefix}" \
+    shell: '''bash pipeline/eval/eval-gpu.sh "{params.res_prefix}" "{params.dataset_prefix}" \
              {params.src_lng} {params.trg_lng} "{params.decoder_config}" {input.models} >> {log} 2>&1'''
 
 rule eval_quantized:
@@ -767,13 +766,13 @@ rule eval_quantized:
         data=multiext(f'{eval_data_dir}/{{dataset}}',f".{src}.gz",f".{trg}.gz"),
         model=rules.quantize.output.model,
         shortlist=rules.alignments.output.shortlist,
-        vocab=rules.train_vocab.output,
+        vocab=rules.train_vocab.output
     output:
         report(f'{eval_speed_dir}/{{dataset}}.metrics', category='evaluation',
             subcategory='quantized', caption='reports/evaluation.rst')
     params:
         dataset_prefix=f'{eval_data_dir}/{{dataset}}',
         res_prefix=f'{eval_speed_dir}/{{dataset}}',
-        decoder_config='pipeline/quantized/decoder.yml'
-    shell: '''bash pipeline/eval/eval-quantized.sh "{input.model}" "{input.shortlist}" "{params.dataset_prefix}" \ 
+        decoder_config='../quantize/decoder.yml'
+    shell: '''bash pipeline/eval/eval-quantized.sh "{input.model}" "{input.shortlist}" "{params.dataset_prefix}" \
             "{input.vocab}" "{params.res_prefix}" "{params.decoder_config}" >> {log} 2>&1'''
