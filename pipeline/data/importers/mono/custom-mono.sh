@@ -13,6 +13,8 @@ lang=$1
 output_prefix=$2
 dataset=$3
 
+mkdir -p "$(dirname "${output_prefix}")"
+
 cp "${dataset}.${lang}.gz" "${output_prefix}.gz"
 
 
