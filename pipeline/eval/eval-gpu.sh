@@ -29,5 +29,5 @@ bash eval.sh \
       "${MARIAN}" \
       "${decoder_config}" \
       -w "${WORKSPACE}" \
-      -d "${GPUS}" \
+      --devices ${GPUS} \
       -m "${models[@]}"
