@@ -36,9 +36,9 @@ marian-args:
   training-backward:
     after: 1000u
   training-teacher-all:
-    after: 2000u
-  training-teacher-parallel:
     after: 1000u
+  training-teacher-parallel:
+    after: 2000u
   training-student:
     after: 1000u
   training-student-finetune:
@@ -47,7 +47,7 @@ marian-args:
     mini-batch-words: 2000
     precision: float16
   decoding-teacher:
-    mini-batch-words: 500
+    mini-batch-words: 1000
     precision: float16
 
 datasets:

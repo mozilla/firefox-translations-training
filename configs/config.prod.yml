@@ -21,7 +21,7 @@ experiment:
   src: ru
   trg: en
 
-  teacher-ensemble: 4
+  teacher-ensemble: 2
   # path to a pretrained backward model (optional)
   backward-model: ""
 
@@ -66,8 +66,8 @@ marian-args:
     # 2080ti or newer
     precision: float16
   decoding-teacher:
-    # 12 Gb GPU, ensemble of 4 teachers
-    mini-batch-words: 500
+    # 12 Gb GPU, ensemble of 2 teachers
+    mini-batch-words: 1000
     # 2080ti or newer
     precision: float16
 
