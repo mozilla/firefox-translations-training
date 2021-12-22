@@ -72,12 +72,12 @@ run-local:
 	$(CONDA_ACTIVATE) snakemake
 	$(SNAKEMAKE) \
 	  --use-conda \
-	  --reason \
-	  --cores all \
-	  --cache \
 	  --resources gpu=$(NUM_GPUS) \
 	  --configfile $(CONFIG) \
 	  --config $(CONFIG_OPTIONS) deps=true \
+	  --cores all \
+	  --cache \
+	  --reason \
 	  $(TARGET)
 
 test: CONFIG=configs/config.test.yml
