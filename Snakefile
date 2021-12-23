@@ -404,7 +404,7 @@ if do_train_backward:
             rules.merge_devset.output, train_src=clean_corpus_src,train_trg=clean_corpus_trg,
             bin=trainer, vocab=rules.train_vocab.output,
         output:  model=f'{backward_dir}/{best_model}'
-        params: prefix_train=f"{biclean}/corpus",prefix_test=f"{original}/devset",
+        params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset",
                 args=get_args("training-backward")
         shell: '''bash pipeline/train/train.sh \
                     backward train {trg} {src} "{params.prefix_train}" "{params.prefix_test}" "{backward_dir}" \
