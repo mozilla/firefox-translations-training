@@ -104,11 +104,21 @@ def clean_parallel(src, trg, src_lang, trg_lang):
         num_alpha = sum(
             [1 if re.match(CHARS[src_lang], t, re.IGNORECASE) else 0 for t in src_toks])
         if num_alpha / float(src_len) < RATIO_ALPHA_WORDS:
-            return "RATIO_ALPHA"
+            return "RATIO_ALPHA_SRC"
 
         char_alpha = len(re.findall(CHARS[src_lang], src, re.IGNORECASE))
         if char_alpha / float(len(src.replace(' ', ''))) < RATIO_ALPHA_CHARS:
-            return "RATIO_CHARS"
+            return "RATIO_CHARS_SRC"
+
+    if trg_lang in CHARS:
+        num_alpha = sum(
+            [1 if re.match(CHARS[trg_lang], t, re.IGNORECASE) else 0 for t in trg_toks])
+        if num_alpha / float(trg_len) < RATIO_ALPHA_WORDS:
+            return "RATIO_ALPHA_TRG"
+
+        char_alpha = len(re.findall(CHARS[trg_lang], trg, re.IGNORECASE))
+        if char_alpha / float(len(trg.replace(' ', ''))) < RATIO_ALPHA_CHARS:
+            return "RATIO_CHARS_TRG"
 
     return None
 
