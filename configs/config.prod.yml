@@ -11,7 +11,9 @@ root: ""
 cuda: ""
 deps: false
 gpus: ""
+numgpus: ""
 workspace: ""
+mariancmake: ""
 
 
 experiment:
@@ -19,16 +21,17 @@ experiment:
   src: ru
   trg: en
 
-  teacher-ensemble: 4
+  teacher-ensemble: 2
   # path to a pretrained backward model (optional)
   backward-model: ""
 
   # limits per downloaded dataset
   mono-max-sentences-src: 100000000
   mono-max-sentences-trg: 20000000
-
   # split corpus to parallelize translation
   split-length: 2000000
+  # vocab training sample
+  spm-sample-size: 10000000
 
   best-model: chrf
 
@@ -44,6 +47,30 @@ experiment:
       mtdata_WikiMatrix_v1: 0.7
       mtdata_wiki_titles_v2: 0.7
       mtdata_wmt13_commoncrawl: 0.7
+      # 0 = skip filtering
+      opus_ParaCrawl/v8: 0
+
+
+marian-args:
+# these configs override pipeline/train/configs
+  training-backward:
+    # change based on available training data
+    after: 10e
+  training-teacher-all:
+    # remove for low resource languages or if training without augmentation
+    after: 2e
+# these configs override pipeline/translate/decoder.yml
+  decoding-backward:
+    # 12 Gb GPU, s2s model
+    mini-batch-words: 2000
+    # 2080ti or newer
+    precision: float16
+  decoding-teacher:
+    # 12 Gb GPU, ensemble of 2 teachers
+    mini-batch-words: 1000
+    # 2080ti or newer
+    precision: float16
+
 
 datasets:
   # parallel training corpus

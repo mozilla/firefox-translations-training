@@ -7,7 +7,9 @@ root: ""
 cuda: ""
 deps: false
 gpus: ""
+numgpus: ""
 workspace: ""
+mariancmake: ""
 
 experiment:
   name: test
@@ -20,26 +22,33 @@ experiment:
   mono-max-sentences-src: 100000
   mono-max-sentences-trg: 200000
   split-length: 100000
+  spm-sample-size: 100000
 
   best-model: chrf
 
   bicleaner:
     default-threshold: 0.5
     dataset-thresholds:
+      opus_ada83/v1: 0
       mtdata_neulab_tedtalksv1_train: 0.6
 
-training:
-  backward:
+marian-args:
+  training-backward:
     after: 1000u
-  teacher-all:
+  training-teacher-all:
+    after: 1000u
+  training-teacher-parallel:
     after: 2000u
-  teacher-parallel:
+  training-student:
     after: 1000u
-  student:
+  training-student-finetune:
     after: 1000u
-  student-finetune:
-    after: 1000u
-
+  decoding-backward:
+    mini-batch-words: 2000
+    precision: float16
+  decoding-teacher:
+    mini-batch-words: 1000
+    precision: float16
 
 datasets:
   train:
@@ -52,7 +61,6 @@ datasets:
   test:
     - flores_devtest
     - sacrebleu_wmt20
-    - sacrebleu_wmt18
   mono-src:
     - news-crawl_news.2020
   mono-trg:

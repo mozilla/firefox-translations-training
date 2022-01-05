@@ -56,17 +56,18 @@ It is also possible to deploy Slurm cluster in the cloud. Fore example, using [S
 git clone https://github.com/mozilla/firefox-translations-training.git
 cd firefox-translations-training
 ```
-1. Adjust settings in the `Makefile` 
+1. Adjust environment settings in the `Makefile` 
     - Configure paths to a data storage `SHARED_ROOT` and CUDA libraries `CUDA_DIR`
-    - Adjust `GPUS` - number of GPUs per task that requires GPU and `WORKSPACE` - GPU memory pre-allocation for Marian
+    - Adjust `NUM_GPUS` - number of GPUs per task that requires GPU and `WORKSPACE` - GPU memory pre-allocation for Marian
+    - (Optional) Set `GPUS` to select specific GPUs for local mode 
     - Choose a config file to use (`configs/config.test.yml` is useful for testing)
     - (Cluster mode) Adjust `CLUSTER_CORES` - total number of CPU cores to use on a cluster simultaneously
 2. Configure experiment and datasets in the chosen application config (for example `configs/config.prod.yml`)
 3. Change source code if needed for the experiment
-4. (Cluster mode) Adjust Snakemake and cluster settings in the cluster profile.
+4. **(Cluster mode)** Adjust Snakemake and cluster settings in the cluster profile.
    For Slurm: `profiles/slurm/config.yml` and `profiles/slurm/config.cluster.yml`
    You can also modify `profiles/slurm/submit.sh` or create a new Snakemake [profile](https://github.com/Snakemake-Profiles).
-5. (Cluster mode) It might require further tuning of requested resources in `Snakemake` file:
+5. **(Cluster mode)** It might require further tuning of requested resources in `Snakemake` file:
     - Use `threads` for a rule to adjust parallelism
     - Use `resources: mem_mb=<memory>` to adjust total memory requirements per task 
       (default is set in `profile/slurm/config.yaml`)
@@ -138,13 +139,11 @@ To test the whole pipeline end to end (it supposed to run quickly and does not t
 ```
 make test
 ```
-Or run
+
 #### With containerization
 ```
 make run-local-container
 ```
-
-
 
 ### Cluster mode
 
@@ -271,9 +270,11 @@ Custom mono | custom-mono | /tmp/test-mono | mono | Custom monolingual dataset t
 
 You can also use [find-corpus](pipeline/utils/find-corpus.py) tool to find all datasets for an importer and get them formatted to use in config.
 
-Example:
-
-`python ./pipeline/utils/find-corpus.py en ru opus`
+```
+conda env create -f envs/corpus.yml 
+conda activate corpus
+python utils/find-corpus.py en ru opus
+```
 
 ### Adding a new importer
 
@@ -290,14 +291,18 @@ Naming convention:
 
 ## Dataset cleaning
 Some parallel datasets require more aggressive filtering.
-Dataset specific Bicleaner thretholds can be set in config. Example:
+Dataset specific Bicleaner thresholds can be set in config. 
+`0` means skipping filtering entrirely (useful for Paracrawl).
 
-```angular2html
+Example:
+
+```
 experiment:
 ...
   bicleaner:
     default-threshold: 0.5
     dataset-thresholds:
+      opus_ParaCrawl/v8: 0
       mtdata_neulab_tedtalksv1_train: 0.6
 ```
 

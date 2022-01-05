@@ -1,1 +1,1 @@
-.. include:: {{ snakemake.output[0] }}/{{ snakemake.wildcards.name }}.metrics
+.. include:: {{ snakemake.output[0] }}

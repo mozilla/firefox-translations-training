@@ -38,6 +38,7 @@ echo "### Training ${model_dir}"
   --vocabs "${vocab}" "${vocab}" \
   -w "${WORKSPACE}" \
   --devices ${GPUS} \
+  --sharding local \
   --sync-sgd \
   --valid-metrics ce-mean-words bleu-detok chrf \
   --valid-sets "${valid_set_prefix}".{"${src}","${trg}"}.gz \

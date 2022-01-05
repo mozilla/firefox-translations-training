@@ -8,7 +8,7 @@ set -euo pipefail
 
 echo "###### Quantizing a model"
 
-test -v MARIAN
+test -v BMT_MARIAN
 test -v BIN
 test -v SRC
 test -v TRG
@@ -27,7 +27,7 @@ cp "${vocab}" "${output_dir}"
 
 echo "### Decoding a sample test set in order to get typical quantization values"
 test -s "${output_dir}/quantmults" ||
-  "${MARIAN}"/marian-decoder \
+  "${BMT_MARIAN}"/marian-decoder \
     -m "${model}" \
     -v "${vocab}" "${vocab}" \
     -c "decoder.yml" \
@@ -42,14 +42,14 @@ test -s "${output_dir}/quantmults" ||
 
 echo "### Quantizing"
 test -s "${output_dir}/model.alphas.npz" ||
-  "${MARIAN}"/../scripts/alphas/extract_stats.py \
+  "${BMT_MARIAN}"/../scripts/alphas/extract_stats.py \
     "${output_dir}/quantmults" \
     "${model}" \
     "${output_dir}/model.alphas.npz"
 
 echo "### Converting"
 test -s "${res_model}" ||
-  "${MARIAN}"/marian-conv \
+  "${BMT_MARIAN}"/marian-conv \
     -f "${output_dir}/model.alphas.npz" \
     -t "${res_model}" \
     --gemm-type intgemm8

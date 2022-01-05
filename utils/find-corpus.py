@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-Finds all opus datasets for a language pair
-and prints them to set in TRAIN_DATASETS, DEVTEST_DATASETS or TEST_DATASETS config settings.
+Finds all opus datasets for a language pair and prints them to set config settings.
 
 Usage:
     python find-corpus.py <src> <trg> <importer>

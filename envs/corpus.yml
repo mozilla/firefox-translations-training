@@ -1,0 +1,11 @@
+name: corpus
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - pip=21.2.2
+  - pip:
+    - sacrebleu==2.0.0
+    - mtdata==0.2.9
+    - requests==2.26.0
