@@ -91,7 +91,8 @@ align_dir = f"{data_dir}/alignment"
 
 # models
 models_dir = f"{data_root_dir}/models/{src}-{trg}/{experiment}"
-teacher_dir = f"{models_dir}/teacher"
+teacher_all_dir = f"{models_dir}/teacher-all"
+teacher_parallel_dir = f"{models_dir}/teacher-parallel"
 student_dir = f"{models_dir}/student"
 student_finetuned_dir = f"{models_dir}/student-finetuned"
 speed_dir = f"{models_dir}/speed"
@@ -119,7 +120,7 @@ results = [f'{exported_dir}/model.{src}{trg}.intgemm.alphas.bin.gz',
            f'{exported_dir}/lex.50.50.{src}{trg}.s2t.bin.gz',
            f'{exported_dir}/vocab.{src}{trg}.spm.gz',
            f'{experiment_dir}/config.yml',
-           *expand(f'{eval_res_dir}/teacher{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=eval_datasets),
+           *expand(f'{eval_res_dir}/teacher-all{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=eval_datasets),
            *expand(f'{eval_student_dir}/{{dataset}}.metrics', dataset=eval_datasets),
            *expand(f'{eval_student_finetuned_dir}/{{dataset}}.metrics', dataset=eval_datasets),
            *expand(f'{eval_speed_dir}/{{dataset}}.metrics', dataset=eval_datasets)
@@ -162,12 +163,11 @@ clean_corpus_trg = f'{clean_corpus_prefix}.{trg}.gz'
 if mono_trg_datasets:
     teacher_corpus = f'{augmented}/corpus'
     augment_corpus = True
-    continue_teacher = True # continue training on parallel corpus
-    teacher_all_output = 'model.npz'
+    final_teacher_dir = teacher_parallel_dir
+    results.extend(expand(f'{eval_res_dir}/teacher-parallel{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=eval_datasets))
 else:
     augment_corpus = False
-    continue_teacher = False
-    teacher_all_output = best_model
+    final_teacher_dir = teacher_all_dir
 
 
 ### helper functions
@@ -467,35 +467,34 @@ rule teacher_all:
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
-    group: 'teacher{ens}'
     input:
         rules.merge_devset.output, train_src=f'{teacher_corpus}.{src}.gz',train_trg=f'{teacher_corpus}.{trg}.gz',
         bin=trainer, vocab=rules.train_vocab.output
-    output: model=f'{teacher_dir}{{ens}}/{teacher_all_output}'
-    params: prefix_train=teacher_corpus, prefix_test=f"{original}/devset", dir=directory(f'{teacher_dir}{{ens}}'),
+    output: model=f'{teacher_all_dir}{{ens}}/{best_model}'
+    params: prefix_train=teacher_corpus, prefix_test=f"{original}/devset", dir=directory(f'{teacher_all_dir}{{ens}}'),
             args=get_args("training-teacher-all")
     shell: '''bash pipeline/train/train.sh \
                 teacher train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
                 "{input.vocab}" {params.args} >> {log} 2>&1'''
 
-if continue_teacher:
+if augment_corpus:
     rule teacher_parallel:
         message: "Continue training teacher on parallel corpus"
         log: f"{log_dir}/train_teacher_parallel{{ens}}.log"
         conda: "envs/base.yml"
         threads: gpus_num * 2
         resources: gpu=gpus_num
-        group: 'teacher{ens}'
         input:
-            rules.merge_devset.output, model = f'{teacher_dir}{{ens}}/model.npz',
+            rules.merge_devset.output, model=f'{teacher_all_dir}{{ens}}/{best_model}',
             train_src=clean_corpus_src, train_trg=clean_corpus_trg,
             bin=trainer, vocab=rules.train_vocab.output
-        output: model=protected(f'{teacher_dir}{{ens}}/{best_model}')
-        params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset",dir=directory(f'{teacher_dir}{{ens}}'),
+        output: model=f'{teacher_parallel_dir}{{ens}}/{best_model}'
+        params: prefix_train=clean_corpus_prefix, prefix_test=f"{original}/devset",
+                dir=directory(f'{teacher_parallel_dir}{{ens}}'),
                 args=get_args("training-teacher-parallel")
         shell: '''bash pipeline/train/train.sh \
-                    teacher continue {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
-                    "{input.vocab}" {params.args} >> {log} 2>&1'''
+                    teacher train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
+                    "{input.vocab}" --pretrained-model "{input.model}" {params.args} >> {log} 2>&1'''
 
 ### translation with teacher
 
@@ -521,7 +520,7 @@ rule translate_corpus:
         decoder,
         file=f'{translated}/corpus/file.{{part}}',
         vocab=rules.train_vocab.output,
-        teacher_models=expand(f"{teacher_dir}{{ens}}/{best_model}",ens=ensemble)
+        teacher_models=expand(f"{final_teacher_dir}{{ens}}/{best_model}",ens=ensemble)
     output: f'{translated}/corpus/file.{{part}}.nbest'
     params: args=get_args('decoding-teacher')
     shell: '''bash pipeline/translate/translate-nbest.sh \
@@ -570,7 +569,7 @@ rule translate_mono_src:
     input:
         bin=decoder,
         file=f'{translated}/mono_src/file.{{part}}',vocab=rules.train_vocab.output,
-        teacher_models=expand(f"{teacher_dir}{{ens}}/{best_model}",ens=ensemble)
+        teacher_models=expand(f"{final_teacher_dir}{{ens}}/{best_model}",ens=ensemble)
     output: f'{translated}/mono_src/file.{{part}}.out'
     params: args=get_args('decoding-teacher')
     shell: '''bash pipeline/translate/translate.sh "{input.file}" "{input.vocab}" {input.teacher_models} \
@@ -690,7 +689,7 @@ rule finetune_student:
             args=get_args("training-student-finetune")
     shell: '''bash pipeline/train/train-student.sh \
                 "{input.alignments}" student finetune {src} {trg} "{params.prefix_train}" "{params.prefix_test}" \
-                "{student_finetuned_dir}" "{input.vocab}" {params.args} >> {log} 2>&1'''
+                "{student_finetuned_dir}" "{input.vocab}" --pretrained-model "{input.student_model}" {params.args} >> {log} 2>&1'''
 
 rule quantize:
     message: "Quantization"
@@ -739,7 +738,7 @@ rule evaluate:
         data=multiext(f'{eval_data_dir}/{{dataset}}',f".{src}.gz",f".{trg}.gz"),
         models=lambda wildcards: f'{models_dir}/{wildcards.model}/{best_model}'
                                     if wildcards.model != 'teacher-ensemble'
-                                    else [f'{teacher_dir}{ens}/{best_model}' for ens in ensemble]
+                                    else [f'{final_teacher_dir}{ens}/{best_model}' for ens in ensemble]
     output:
         report(f'{eval_res_dir}/{{model}}/{{dataset}}.metrics',
             category='evaluation', subcategory='{model}', caption='reports/evaluation.rst')
@@ -750,7 +749,7 @@ rule evaluate:
         trg_lng=lambda wildcards: trg if wildcards.model != 'backward' else src,
         decoder_config=lambda wildcards: f'{models_dir}/{wildcards.model}/{best_model}.decoder.yml'
                             if wildcards.model != 'teacher-ensemble'
-                            else f'{teacher_dir}0/{best_model}.decoder.yml'
+                            else f'{final_teacher_dir}0/{best_model}.decoder.yml'
     shell: '''bash pipeline/eval/eval-gpu.sh "{params.res_prefix}" "{params.dataset_prefix}" \
              {params.src_lng} {params.trg_lng} "{params.decoder_config}" {input.models} >> {log} 2>&1'''
 
