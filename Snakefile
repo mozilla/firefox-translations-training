@@ -33,6 +33,7 @@ mono_max_sent_trg = config['experiment']['mono-max-sentences-trg']
 bicl_default_threshold = config['experiment']['bicleaner']['default-threshold']
 bicl_dataset_thresholds = config['experiment']['bicleaner']['dataset-thresholds']
 backward_pretrained = config['experiment']['backward-model']
+vocab_pretrained = config['experiment']['vocab']
 
 experiment_dir=f"{data_root_dir}/experiments/{src}-{trg}/{experiment}"
 
@@ -100,6 +101,7 @@ exported_dir = f"{models_dir}/exported"
 best_model = f"model.npz.best-{config['experiment']['best-model']}.npz"
 backward_dir = f'{models_dir}/backward'
 spm_sample_size=config['experiment']['spm-sample-size']
+vocab_path=vocab_pretrained or f"{models_dir}/vocab/vocab.spm"
 
 #evaluation
 eval_data_dir = f"{original}/eval"
@@ -381,16 +383,17 @@ rule merge_mono:
 
 # augmentation and teacher training
 
-rule train_vocab:
-    message: "Training spm vocab"
-    log: f"{log_dir}/train_vocab.log"
-    conda: "envs/base.yml"
-    threads: 2
-    input: bin=spm_trainer, corpus_src=clean_corpus_src, corpus_trg=clean_corpus_trg
-    output: f"{models_dir}/vocab/vocab.spm"
-    params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset"
-    shell: '''bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" {spm_sample_size} \
-                >> {log} 2>&1'''
+if not vocab_pretrained:
+    rule train_vocab:
+        message: "Training spm vocab"
+        log: f"{log_dir}/train_vocab.log"
+        conda: "envs/base.yml"
+        threads: 2
+        input: bin=spm_trainer, corpus_src=clean_corpus_src, corpus_trg=clean_corpus_trg
+        output: vocab_path
+        params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset"
+        shell: '''bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" {spm_sample_size} \
+                    >> {log} 2>&1'''
 
 if do_train_backward:
     rule train_backward:
@@ -402,7 +405,7 @@ if do_train_backward:
         group: 'backward'
         input:
             rules.merge_devset.output, train_src=clean_corpus_src,train_trg=clean_corpus_trg,
-            bin=trainer, vocab=rules.train_vocab.output,
+            bin=trainer, vocab=vocab_path,
         output:  model=f'{backward_dir}/{best_model}'
         params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset",
                 args=get_args("training-backward")
@@ -428,7 +431,7 @@ if augment_corpus:
         resources: gpu=gpus_num
         input:
             bin=decoder, file=f'{translated}/mono_trg/file.{{part}}',
-            vocab=rules.train_vocab.output, model=f'{backward_dir}/{best_model}'
+            vocab=vocab_path, model=f'{backward_dir}/{best_model}'
         output: f'{translated}/mono_trg/file.{{part}}.out'
         params: args = get_args("decoding-backward")
         shell: '''bash pipeline/translate/translate.sh "{input.file}" "{input.vocab}" {input.model} {params.args} \
@@ -469,7 +472,7 @@ rule teacher_all:
     resources: gpu=gpus_num
     input:
         rules.merge_devset.output, train_src=f'{teacher_corpus}.{src}.gz',train_trg=f'{teacher_corpus}.{trg}.gz',
-        bin=trainer, vocab=rules.train_vocab.output
+        bin=trainer, vocab=vocab_path
     output: model=f'{teacher_all_dir}{{ens}}/{best_model}'
     params: prefix_train=teacher_corpus, prefix_test=f"{original}/devset", dir=directory(f'{teacher_all_dir}{{ens}}'),
             args=get_args("training-teacher-all")
@@ -487,7 +490,7 @@ if augment_corpus:
         input:
             rules.merge_devset.output, model=f'{teacher_all_dir}{{ens}}/{best_model}',
             train_src=clean_corpus_src, train_trg=clean_corpus_trg,
-            bin=trainer, vocab=rules.train_vocab.output
+            bin=trainer, vocab=vocab_path
         output: model=f'{teacher_parallel_dir}{{ens}}/{best_model}'
         params: prefix_train=clean_corpus_prefix, prefix_test=f"{original}/devset",
                 dir=directory(f'{teacher_parallel_dir}{{ens}}'),
@@ -519,7 +522,7 @@ rule translate_corpus:
     input:
         decoder,
         file=f'{translated}/corpus/file.{{part}}',
-        vocab=rules.train_vocab.output,
+        vocab=vocab_path,
         teacher_models=expand(f"{final_teacher_dir}{{ens}}/{best_model}",ens=ensemble)
     output: f'{translated}/corpus/file.{{part}}.nbest'
     params: args=get_args('decoding-teacher')
@@ -568,7 +571,7 @@ rule translate_mono_src:
     resources: gpu=gpus_num
     input:
         bin=decoder,
-        file=f'{translated}/mono_src/file.{{part}}',vocab=rules.train_vocab.output,
+        file=f'{translated}/mono_src/file.{{part}}',vocab=vocab_path,
         teacher_models=expand(f"{final_teacher_dir}{{ens}}/{best_model}",ens=ensemble)
     output: f'{translated}/mono_src/file.{{part}}.out'
     params: args=get_args('decoding-teacher')
@@ -614,7 +617,7 @@ rule score:
     resources: gpu=gpus_num
     input:
         scorer,
-        model=f'{backward_dir}/{best_model}', vocab=rules.train_vocab.output,
+        model=f'{backward_dir}/{best_model}', vocab=vocab_path,
         src_corpus=rules.merge_translated.output.res_src, trg_corpus=rules.merge_translated.output.res_trg
     output: f"{filtered}/scores.txt"
     params: input_prefix=f'{merged}/corpus'
@@ -643,7 +646,7 @@ rule alignments:
     input:
         spm_encoder, spm_exporter,
         src_corpus=rules.ce_filter.output.src_corpus,trg_corpus=rules.ce_filter.output.trg_corpus,
-        vocab=rules.train_vocab.output,
+        vocab=vocab_path,
         fast_align=rules.fast_align.output.fast_align, atools=rules.fast_align.output.atools,
         extract_lex=rules.extract_lex.output
     output: alignment=f'{align_dir}/corpus.aln.gz',shortlist=f'{align_dir}/lex.s2t.pruned.gz'
@@ -662,7 +665,7 @@ rule student:
         rules.merge_devset.output, trainer,
         train_src=rules.ce_filter.output.src_corpus, train_trg=rules.ce_filter.output.trg_corpus,
         alignments=rules.alignments.output.alignment,
-        vocab=rules.train_vocab.output
+        vocab=vocab_path
     output: model=f'{student_dir}/{best_model}'
     params: prefix_train=rules.ce_filter.params.output_prefix,prefix_test=f"{original}/devset",
             args=get_args("training-student")
@@ -683,7 +686,7 @@ rule finetune_student:
         rules.merge_devset.output, trainer,
         train_src=rules.ce_filter.output.src_corpus, train_trg=rules.ce_filter.output.trg_corpus,
         alignments=rules.alignments.output.alignment, student_model=rules.student.output.model,
-        vocab=rules.train_vocab.output
+        vocab=vocab_path
     output: model=f'{student_finetuned_dir}/{best_model}'
     params: prefix_train=rules.ce_filter.params.output_prefix,prefix_test=f"{original}/devset",
             args=get_args("training-student-finetune")
@@ -699,7 +702,7 @@ rule quantize:
     input:
         bmt_decoder, bmt_converter,
         shortlist=rules.alignments.output.shortlist, model=rules.finetune_student.output.model,
-        vocab=rules.train_vocab.output, devset=f"{original}/devset.{src}.gz"
+        vocab=vocab_path, devset=f"{original}/devset.{src}.gz"
     output: model=f'{speed_dir}/model.intgemm.alphas.bin'
     shell: '''bash pipeline/quantize/quantize.sh \
                 "{input.model}" "{input.vocab}" "{input.shortlist}" "{input.devset}" "{speed_dir}" >> {log} 2>&1'''
@@ -712,7 +715,7 @@ rule export:
     threads: 1
     input:
         model=rules.quantize.output.model,shortlist=rules.alignments.output.shortlist,
-        vocab=rules.train_vocab.output,marian=bmt_converter
+        vocab=vocab_path,marian=bmt_converter
     output:
         model=f'{exported_dir}/model.{src}{trg}.intgemm.alphas.bin.gz',
         shortlist=f'{exported_dir}/lex.50.50.{src}{trg}.s2t.bin.gz',
@@ -765,7 +768,7 @@ rule eval_quantized:
         data=multiext(f'{eval_data_dir}/{{dataset}}',f".{src}.gz",f".{trg}.gz"),
         model=rules.quantize.output.model,
         shortlist=rules.alignments.output.shortlist,
-        vocab=rules.train_vocab.output
+        vocab=vocab_path
     output:
         report(f'{eval_speed_dir}/{{dataset}}.metrics', category='evaluation',
             subcategory='quantized', caption='reports/evaluation.rst')

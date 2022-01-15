@@ -24,6 +24,8 @@ experiment:
   teacher-ensemble: 2
   # path to a pretrained backward model (optional)
   backward-model: ""
+  # path to a pretrained vocabulary (optional)
+  vocab: ""
 
   # limits per downloaded dataset
   mono-max-sentences-src: 100000000

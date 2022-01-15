@@ -18,6 +18,7 @@ experiment:
 
   teacher-ensemble: 2
   backward-model: ""
+  vocab: ""
 
   mono-max-sentences-src: 100000
   mono-max-sentences-trg: 200000
