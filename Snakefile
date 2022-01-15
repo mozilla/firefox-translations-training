@@ -614,7 +614,7 @@ rule score:
     resources: gpu=gpus_num
     input:
         scorer,
-        model=rules.train_backward.output.model, vocab=rules.train_vocab.output,
+        model=f'{backward_dir}/{best_model}', vocab=rules.train_vocab.output,
         src_corpus=rules.merge_translated.output.res_src, trg_corpus=rules.merge_translated.output.res_trg
     output: f"{filtered}/scores.txt"
     params: input_prefix=f'{merged}/corpus'
