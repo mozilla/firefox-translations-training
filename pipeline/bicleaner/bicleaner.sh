@@ -40,7 +40,7 @@ else
   echo "### Classifying and filtering"
   test -s "${output_prefix}.best.gz" ||
     paste <(pigz -dc "${corpus_prefix}.${SRC}.gz") <(pigz -dc "${corpus_prefix}.${TRG}.gz") |
-    ${cmd} --scol 1 --tcol 1 --processes "${threads}"  - - "${pack_dir}"/*.yaml |
+    ${cmd} --scol 1 --tcol 2 --processes "${threads}"  - - "${pack_dir}"/*.yaml |
     awk -v threshold=${bicleaner_threshold} '{if ($3>threshold) {print $0}}' |
     pigz >"${output_prefix}.best.gz"
 
