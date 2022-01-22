@@ -36,9 +36,9 @@ experiment:
 marian-args:
   training-backward:
     after: 1000u
-  training-teacher-all:
+  training-teacher:
     after: 1000u
-  training-teacher-parallel:
+  training-teacher-finetune:
     after: 2000u
   training-student:
     after: 1000u

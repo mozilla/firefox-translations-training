@@ -92,8 +92,8 @@ align_dir = f"{data_dir}/alignment"
 
 # models
 models_dir = f"{data_root_dir}/models/{src}-{trg}/{experiment}"
-teacher_all_dir = f"{models_dir}/teacher-all"
-teacher_parallel_dir = f"{models_dir}/teacher-parallel"
+teacher_all_dir = f"{models_dir}/teacher"
+teacher_parallel_dir = f"{models_dir}/teacher-finetuned"
 student_dir = f"{models_dir}/student"
 student_finetuned_dir = f"{models_dir}/student-finetuned"
 speed_dir = f"{models_dir}/speed"
@@ -122,7 +122,7 @@ results = [f'{exported_dir}/model.{src}{trg}.intgemm.alphas.bin.gz',
            f'{exported_dir}/lex.50.50.{src}{trg}.s2t.bin.gz',
            f'{exported_dir}/vocab.{src}{trg}.spm.gz',
            f'{experiment_dir}/config.yml',
-           *expand(f'{eval_res_dir}/teacher-all{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=eval_datasets),
+           *expand(f'{eval_res_dir}/teacher{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=eval_datasets),
            *expand(f'{eval_student_dir}/{{dataset}}.metrics', dataset=eval_datasets),
            *expand(f'{eval_student_finetuned_dir}/{{dataset}}.metrics', dataset=eval_datasets),
            *expand(f'{eval_speed_dir}/{{dataset}}.metrics', dataset=eval_datasets)
@@ -166,7 +166,7 @@ if mono_trg_datasets:
     teacher_corpus = f'{augmented}/corpus'
     augment_corpus = True
     final_teacher_dir = teacher_parallel_dir
-    results.extend(expand(f'{eval_res_dir}/teacher-parallel{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=eval_datasets))
+    results.extend(expand(f'{eval_res_dir}/teacher-finetuned{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=eval_datasets))
 else:
     augment_corpus = False
     final_teacher_dir = teacher_all_dir
@@ -475,7 +475,7 @@ rule teacher_all:
         bin=trainer, vocab=vocab_path
     output: model=f'{teacher_all_dir}{{ens}}/{best_model}'
     params: prefix_train=teacher_corpus, prefix_test=f"{original}/devset", dir=directory(f'{teacher_all_dir}{{ens}}'),
-            args=get_args("training-teacher-all")
+            args=get_args("training-teacher")
     shell: '''bash pipeline/train/train.sh \
                 teacher train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
                 "{input.vocab}" {params.args} >> {log} 2>&1'''
@@ -494,7 +494,7 @@ if augment_corpus:
         output: model=f'{teacher_parallel_dir}{{ens}}/{best_model}'
         params: prefix_train=clean_corpus_prefix, prefix_test=f"{original}/devset",
                 dir=directory(f'{teacher_parallel_dir}{{ens}}'),
-                args=get_args("training-teacher-parallel")
+                args=get_args("training-teacher-finetune")
         shell: '''bash pipeline/train/train.sh \
                     teacher train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
                     "{input.vocab}" --pretrained-model "{input.model}" {params.args} >> {log} 2>&1'''

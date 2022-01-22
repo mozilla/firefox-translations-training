@@ -58,7 +58,7 @@ marian-args:
   training-backward:
     # change based on available training data
     after: 10e
-  training-teacher-all:
+  training-teacher:
     # remove for low resource languages or if training without augmentation
     after: 2e
 # these configs override pipeline/translate/decoder.yml
