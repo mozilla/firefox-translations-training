@@ -92,8 +92,8 @@ align_dir = f"{data_dir}/alignment"
 
 # models
 models_dir = f"{data_root_dir}/models/{src}-{trg}/{experiment}"
-teacher_all_dir = f"{models_dir}/teacher"
-teacher_parallel_dir = f"{models_dir}/teacher-finetuned"
+teacher_base_dir = f"{models_dir}/teacher-base"
+teacher_finetuned_dir = f"{models_dir}/teacher-finetuned"
 student_dir = f"{models_dir}/student"
 student_finetuned_dir = f"{models_dir}/student-finetuned"
 speed_dir = f"{models_dir}/speed"
@@ -122,7 +122,7 @@ results = [f'{exported_dir}/model.{src}{trg}.intgemm.alphas.bin.gz',
            f'{exported_dir}/lex.50.50.{src}{trg}.s2t.bin.gz',
            f'{exported_dir}/vocab.{src}{trg}.spm.gz',
            f'{experiment_dir}/config.yml',
-           *expand(f'{eval_res_dir}/teacher{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=eval_datasets),
+           *expand(f'{eval_res_dir}/teacher-base{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=eval_datasets),
            *expand(f'{eval_student_dir}/{{dataset}}.metrics', dataset=eval_datasets),
            *expand(f'{eval_student_finetuned_dir}/{{dataset}}.metrics', dataset=eval_datasets),
            *expand(f'{eval_speed_dir}/{{dataset}}.metrics', dataset=eval_datasets)
@@ -165,11 +165,11 @@ clean_corpus_trg = f'{clean_corpus_prefix}.{trg}.gz'
 if mono_trg_datasets:
     teacher_corpus = f'{augmented}/corpus'
     augment_corpus = True
-    final_teacher_dir = teacher_parallel_dir
+    final_teacher_dir = teacher_finetuned_dir
     results.extend(expand(f'{eval_res_dir}/teacher-finetuned{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=eval_datasets))
 else:
     augment_corpus = False
-    final_teacher_dir = teacher_all_dir
+    final_teacher_dir = teacher_base_dir
 
 
 ### helper functions
@@ -464,37 +464,37 @@ if augment_corpus:
                     "{input.src1}" "{input.src2}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
                       >> {log} 2>&1'''
 
-rule teacher_all:
+rule train_teacher:
     message: "Training teacher on all data"
-    log: f"{log_dir}/train_teacher_all{{ens}}.log"
+    log: f"{log_dir}/train_teacher{{ens}}.log"
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
     input:
         rules.merge_devset.output, train_src=f'{teacher_corpus}.{src}.gz',train_trg=f'{teacher_corpus}.{trg}.gz',
         bin=trainer, vocab=vocab_path
-    output: model=f'{teacher_all_dir}{{ens}}/{best_model}'
-    params: prefix_train=teacher_corpus, prefix_test=f"{original}/devset", dir=directory(f'{teacher_all_dir}{{ens}}'),
-            args=get_args("training-teacher")
+    output: model=f'{teacher_base_dir}{{ens}}/{best_model}'
+    params: prefix_train=teacher_corpus, prefix_test=f"{original}/devset", dir=directory(f'{teacher_base_dir}{{ens}}'),
+            args=get_args("training-teacher-base")
     shell: '''bash pipeline/train/train.sh \
                 teacher train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
                 "{input.vocab}" {params.args} >> {log} 2>&1'''
 
 if augment_corpus:
-    rule teacher_parallel:
-        message: "Continue training teacher on parallel corpus"
-        log: f"{log_dir}/train_teacher_parallel{{ens}}.log"
+    rule finetune_teacher:
+        message: "Finetune teacher on parallel corpus"
+        log: f"{log_dir}/finetune_teacher{{ens}}.log"
         conda: "envs/base.yml"
         threads: gpus_num * 2
         resources: gpu=gpus_num
         input:
-            rules.merge_devset.output, model=f'{teacher_all_dir}{{ens}}/{best_model}',
+            rules.merge_devset.output, model=f'{teacher_base_dir}{{ens}}/{best_model}',
             train_src=clean_corpus_src, train_trg=clean_corpus_trg,
             bin=trainer, vocab=vocab_path
-        output: model=f'{teacher_parallel_dir}{{ens}}/{best_model}'
+        output: model=f'{teacher_finetuned_dir}{{ens}}/{best_model}'
         params: prefix_train=clean_corpus_prefix, prefix_test=f"{original}/devset",
-                dir=directory(f'{teacher_parallel_dir}{{ens}}'),
-                args=get_args("training-teacher-finetune")
+                dir=directory(f'{teacher_finetuned_dir}{{ens}}'),
+                args=get_args("training-teacher-finetuned")
         shell: '''bash pipeline/train/train.sh \
                     teacher train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
                     "{input.vocab}" --pretrained-model "{input.model}" {params.args} >> {log} 2>&1'''
@@ -654,7 +654,7 @@ rule alignments:
     shell: '''bash pipeline/alignment/generate-alignment-and-shortlist.sh \
                 "{params.input_prefix}" "{input.vocab}" "{align_dir}" {threads} >> {log} 2>&1'''
 
-rule student:
+rule train_student:
     message: "Training student"
     log: f"{log_dir}/train_student.log"
     conda: "envs/base.yml"
@@ -685,11 +685,11 @@ rule finetune_student:
     input:
         rules.merge_devset.output, trainer,
         train_src=rules.ce_filter.output.src_corpus, train_trg=rules.ce_filter.output.trg_corpus,
-        alignments=rules.alignments.output.alignment, student_model=rules.student.output.model,
+        alignments=rules.alignments.output.alignment, student_model=rules.train_student.output.model,
         vocab=vocab_path
     output: model=f'{student_finetuned_dir}/{best_model}'
     params: prefix_train=rules.ce_filter.params.output_prefix,prefix_test=f"{original}/devset",
-            args=get_args("training-student-finetune")
+            args=get_args("training-student-finetuned")
     shell: '''bash pipeline/train/train-student.sh \
                 "{input.alignments}" student finetune {src} {trg} "{params.prefix_train}" "{params.prefix_test}" \
                 "{student_finetuned_dir}" "{input.vocab}" --pretrained-model "{input.student_model}" {params.args} >> {log} 2>&1'''
