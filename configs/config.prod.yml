@@ -42,7 +42,7 @@ experiment:
     dataset-thresholds:
       opus_CCAligned/v1: 0.7
       opus_WikiMatrix/v1: 0.7
-      opus_OpenSubtitles/v2018: 0.9
+      opus_OpenSubtitles/v2018: 0.8
       opus_bible-uedin/v1: 0.7
       mtdata_cc_aligned: 0.7
       mtdata_wiki_titles_v1: 0.7
