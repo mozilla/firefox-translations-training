@@ -220,7 +220,7 @@ rule marian:
     log: f"{log_dir}/compile-{{marian_type}}.log"
     conda: "envs/base.yml"
     threads: 4
-    group: 'setup'
+ #   group: 'setup'
     output:
         trainer=protected(f"{third_party_dir}/{{marian_type}}/build/marian"),
         decoder=protected(f"{third_party_dir}/{{marian_type}}/build/marian-decoder"),
@@ -237,7 +237,7 @@ rule fast_align:
     log: f"{log_dir}/compile-fast-align.log"
     conda: "envs/base.yml"
     threads: 4
-    group: 'setup'
+#    group: 'setup'
     output: fast_align=protected(f"{bin}/fast_align"), atools=protected(f"{bin}/atools")
     shell: 'bash pipeline/setup/compile-fast-align.sh {fast_align_build} {threads}  >> {log} 2>&1'
 
@@ -246,7 +246,7 @@ rule extract_lex:
     log: f"{log_dir}/compile-extract-lex.log"
     conda: "envs/base.yml"
     threads: 4
-    group: 'setup'
+#    group: 'setup'
     output: protected(f"{bin}/extract_lex")
     shell: 'bash pipeline/setup/compile-extract-lex.sh {extract_lex_build} {threads} >> {log} 2>&1'
 
@@ -257,7 +257,7 @@ rule download_corpus:
     log: f"{log_dir}/download_corpus/{{kind}}/{{dataset}}.log"
     conda: "envs/base.yml"
     threads: 1
-    group: 'data'
+#    group: 'data'
     cache: False # caching is broken in snakemake
     wildcard_constraints: kind="corpus|devset|eval"
     output: multiext(f"{original}/{{kind}}/{{dataset}}", f".{src}.gz", f".{trg}.gz")
@@ -269,7 +269,7 @@ rule download_mono:
     log: f"{log_dir}/download_mono/{{dataset}}.{{lang}}.log"
     conda: "envs/base.yml"
     threads: 1
-    group: 'data'
+#    group: 'data'
     cache: False # caching is broken in snakemake
     wildcard_constraints: lang=f"{src}|{trg}"
     output: f'{original}/mono/{{dataset}}.{{lang}}.gz'
@@ -283,7 +283,7 @@ rule clean_corpus:
     message: "Cleaning dataset"
     log: f"{log_dir}/clean_corpus/{{dataset}}.log"
     conda: "envs/base.yml"
-    group: "clean_corpus"
+#    group: "clean_corpus"
     threads: workflow.cores
     input: multiext(f"{original}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
     output: multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
@@ -297,7 +297,7 @@ rule clean_mono:
     log: f"{log_dir}/clean_mono/{{dataset}}.{{lang}}.log"
     conda: "envs/base.yml"
     threads: workflow.cores
-    group: "clean_mono{lang}"
+#    group: "clean_mono{lang}"
     cache: False
     wildcard_constraints: lang=f"{src}|{trg}"
     input: f'{original}/mono/{{dataset}}.{{lang}}.gz'
@@ -313,7 +313,7 @@ if use_bicleaner:
         log: f"{log_dir}/kenlm.log"
         conda: bicleaner_env
         threads: 4
-        group: 'setup'
+#        group: 'setup'
         output: directory(f"{bin}/kenlm")
         shell: 'bash pipeline/setup/install-kenlm.sh {kenlm} {threads}  >> {log} 2>&1'
 
@@ -321,7 +321,7 @@ if use_bicleaner:
         message: f"Downloading language pack for bicleaner"
         log: f"{log_dir}/bicleaner_pack.log"
         conda: bicleaner_env
-        group: "clean_corpus"
+#        group: "clean_corpus"
         threads: 1
         input: rules.kenlm.output
         output: directory(f"{biclean}/pack")
@@ -332,7 +332,7 @@ if use_bicleaner:
         log: f"{log_dir}/bicleaner/{{dataset}}.log"
         conda: bicleaner_env
         # todo: check what to do about grouping in cluster mode if bicleaner-ai is used
-        group: "clean_corpus"
+#        group: "clean_corpus"
         threads: gpus_num*2
         # todo: check gpu utilizaiton
         resources: gpu=gpus_num if bicleaner_type == "bicleaner-ai" else 0
@@ -351,7 +351,7 @@ rule merge_corpus:
     log: f"{log_dir}/merge_corpus.log"
     conda: "envs/base.yml"
     threads: workflow.cores
-    group: "clean_corpus"
+    #group "clean_corpus"
     input:  expand(f"{clean_corpus_prefix}/{{dataset}}.{{lang}}.gz", dataset=train_datasets, lang=[src, trg])
     output: src=clean_corpus_src,trg=clean_corpus_trg
     params: prefix_output=clean_corpus_prefix, prefixes=expand(f"{clean_corpus_prefix}/{{dataset}}", dataset=train_datasets)
@@ -362,7 +362,7 @@ rule merge_devset:
     log: f"{log_dir}/merge_devset.log"
     conda: "envs/base.yml"
     threads: workflow.cores
-    group: "clean_corpus"
+    #group "clean_corpus"
     input:  expand(f"{original}/devset/{{dataset}}.{{lang}}.gz", dataset=valid_datasets, lang=[src, trg])
     output: multiext(f"{original}/devset", f".{src}.gz", f".{trg}.gz")
     params: prefix_output=f"{original}/devset", prefixes=expand(f"{original}/devset/{{dataset}}", dataset=valid_datasets)
@@ -373,7 +373,7 @@ rule merge_mono:
     log: f"{log_dir}/merge_mono_{{lang}}.log"
     conda: "envs/base.yml"
     threads: workflow.cores
-    group: "clean_mono{lang}"
+    #group "clean_mono{lang}"
     input:
         lambda wildcards: expand(f"{clean}/mono/{{dataset}}.{{lang}}.gz",
             dataset=mono_datasets[wildcards.lang], lang=wildcards.lang)
@@ -402,7 +402,7 @@ if do_train_backward:
         conda: "envs/base.yml"
         threads: gpus_num * 2
         resources: gpu=gpus_num
-        group: 'backward'
+        #group 'backward'
         input:
             rules.merge_devset.output, train_src=clean_corpus_src,train_trg=clean_corpus_trg,
             bin=trainer, vocab=vocab_path,
@@ -442,7 +442,7 @@ if augment_corpus:
         log: f"{log_dir}/collect_mono_trg.log"
         conda: "envs/base.yml"
         threads: 4
-        group: 'mono_trg'
+        #group 'mono_trg'
         input:
             lambda wildcards: expand(f"{translated}/mono_trg/file.{{part}}.out",
                 part=find_parts(wildcards, checkpoints.split_mono_trg))
@@ -455,7 +455,7 @@ if augment_corpus:
         log: f"{log_dir}/merge_augmented.log"
         conda: "envs/base.yml"
         threads: 4
-        group: 'mono_trg'
+        #group 'mono_trg'
         input:
             src1=clean_corpus_src,src2=rules.collect_mono_trg.output,
             trg1=clean_corpus_trg,trg2=rules.split_mono_trg.input
@@ -534,7 +534,7 @@ rule extract_best:
     log: f"{log_dir}/extract_best/{{part}}.log"
     conda: "envs/base.yml"
     threads: 1
-    group: 'translate_corpus'
+    #group 'translate_corpus'
     input: nbest=f"{translated}/corpus/file.{{part}}.nbest", ref=f"{translated}/corpus/file.{{part}}.ref"
     output: f"{translated}/corpus/file.{{part}}.nbest.out"
     shell: 'python pipeline/translate/bestbleu.py -i {input.nbest} -r {input.ref} -m bleu -o {output} >> {log} 2>&1'
@@ -544,7 +544,7 @@ rule collect_corpus:
     log: f"{log_dir}/collect_corpus.log"
     conda: "envs/base.yml"
     threads: 4
-    group: 'translate_corpus'
+    #group 'translate_corpus'
     input:
         lambda wildcards: expand(f"{translated}/corpus/file.{{part}}.nbest.out",
             part=find_parts(wildcards, checkpoints.split_corpus))
@@ -583,7 +583,7 @@ rule collect_mono_src:
     log: f"{log_dir}/collect_mono_src.log"
     conda: "envs/base.yml"
     threads: 4
-    group: 'mono_src'
+    #group 'mono_src'
     input:
        lambda wildcards: expand(f"{translated}/mono_src/file.{{part}}.out",
            part=find_parts(wildcards, checkpoints.split_mono_src))
@@ -598,7 +598,7 @@ rule merge_translated:
     log: f"{log_dir}/merge_translated.log"
     conda: "envs/base.yml"
     threads: 4
-    group: 'mono_src'
+    #group 'mono_src'
     input:
         src1=clean_corpus_src,src2=f"{clean}/mono.{src}.gz",
         trg1=rules.collect_corpus.output,trg2=rules.collect_mono_src.output
@@ -660,7 +660,7 @@ rule train_student:
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
-    group: 'student'
+    #group 'student'
     input:
         rules.merge_devset.output, trainer,
         train_src=rules.ce_filter.output.src_corpus, train_trg=rules.ce_filter.output.trg_corpus,
@@ -681,7 +681,7 @@ rule finetune_student:
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
-    group: 'student-finetuned'
+    #group 'student-finetuned'
     input:
         rules.merge_devset.output, trainer,
         train_src=rules.ce_filter.output.src_corpus, train_trg=rules.ce_filter.output.trg_corpus,
@@ -711,7 +711,7 @@ rule export:
     message: "Exporting models"
     log: f"{log_dir}/export.log"
     conda: "envs/base.yml"
-    group: 'export'
+    #group 'export'
     threads: 1
     input:
         model=rules.quantize.output.model,shortlist=rules.alignments.output.shortlist,
@@ -732,7 +732,7 @@ rule evaluate:
     conda: "envs/base.yml"
     threads: gpus_num * 2
     resources: gpu=gpus_num
-    group: '{model}'
+    #group '{model}'
     priority: 50
     wildcard_constraints:
         model="[\w-]+"
@@ -760,7 +760,7 @@ rule eval_quantized:
     message: "Evaluating qunatized student model"
     log: f"{log_dir}/eval_quantized_{{dataset}}.log"
     conda: "envs/base.yml"
-    group: 'export'
+    #group 'export'
     threads: 1
     priority: 50
     input:
