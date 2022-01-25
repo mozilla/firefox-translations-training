@@ -14,10 +14,12 @@ CLUSTER_CORES=16
 CONFIG=configs/config.prod.yml
 CONDA_PATH=$(SHARED_ROOT)/mambaforge
 SNAKEMAKE_OUTPUT_CACHE=$(SHARED_ROOT)/cache
+SLURM_PROFILE=slurm-moz
 # for CSD3 cluster
 # MARIAN_CMAKE=-DBUILD_ARCH=core-avx2
 MARIAN_CMAKE=
 TARGET=
+
 ###
 
 CONDA_ACTIVATE=source $(CONDA_PATH)/etc/profile.d/conda.sh ; conda activate ; conda activate
@@ -108,13 +110,13 @@ run-slurm:
 	  --cache \
 	  --configfile $(CONFIG) \
 	  --config $(CONFIG_OPTIONS) \
-	  --profile=profiles/slurm \
+	  --profile=profiles/$(SLURM_PROFILE) \
 	  $(TARGET)
 
 run-slurm-container:
 	$(CONDA_ACTIVATE) snakemake
 	chmod +x profiles/slurm/*
-	module load singularity
+#	module load singularity
 	$(SNAKEMAKE) \
 	  --use-conda \
 	  --use-singularity \
@@ -124,7 +126,7 @@ run-slurm-container:
 	  --cache \
 	  --configfile $(CONFIG) \
 	  --config $(CONFIG_OPTIONS) \
-	  --profile=profiles/slurm \
+	  --profile=profiles/$(SLURM_PROFILE) \
 	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR),/tmp --nv --containall" \
 	  $(TARGET)
 # if CPU nodes don't have access to cuda dirs, use
