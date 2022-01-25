@@ -24,6 +24,8 @@ experiment:
   teacher-ensemble: 2
   # path to a pretrained backward model (optional)
   backward-model: ""
+  # path to a pretrained vocabulary (optional)
+  vocab: ""
 
   # limits per downloaded dataset
   mono-max-sentences-src: 100000000
@@ -40,7 +42,7 @@ experiment:
     dataset-thresholds:
       opus_CCAligned/v1: 0.7
       opus_WikiMatrix/v1: 0.7
-      opus_OpenSubtitles/v2018: 0.9
+      opus_OpenSubtitles/v2018: 0.8
       opus_bible-uedin/v1: 0.7
       mtdata_cc_aligned: 0.7
       mtdata_wiki_titles_v1: 0.7
@@ -56,7 +58,7 @@ marian-args:
   training-backward:
     # change based on available training data
     after: 10e
-  training-teacher-all:
+  training-teacher-base:
     # remove for low resource languages or if training without augmentation
     after: 2e
 # these configs override pipeline/translate/decoder.yml

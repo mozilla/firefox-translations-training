@@ -18,6 +18,7 @@ experiment:
 
   teacher-ensemble: 2
   backward-model: ""
+  vocab: ""
 
   mono-max-sentences-src: 100000
   mono-max-sentences-trg: 200000
@@ -35,13 +36,13 @@ experiment:
 marian-args:
   training-backward:
     after: 1000u
-  training-teacher-all:
+  training-teacher-base:
     after: 1000u
-  training-teacher-parallel:
+  training-teacher-finetuned:
     after: 2000u
   training-student:
     after: 1000u
-  training-student-finetune:
+  training-student-finetuned:
     after: 1000u
   decoding-backward:
     mini-batch-words: 2000

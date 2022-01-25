@@ -37,20 +37,32 @@ else
     exit 1
   fi
 
-  echo "### Classifying and filtering"
-  test -s "${output_prefix}.best.gz" ||
-    paste <(pigz -dc "${corpus_prefix}.${SRC}.gz") <(pigz -dc "${corpus_prefix}.${TRG}.gz") |
-    ${cmd} --scol 1 --tcol 1 --processes "${threads}"  - - "${pack_dir}"/*.yaml |
-    awk -v threshold=${bicleaner_threshold} '{if ($3>threshold) {print $0}}' |
+  scol=1
+  tcol=2
+  if [ -d "${pack_dir}/${TRG}-${SRC}" ]; then
+    scol=2
+    tcol=1
+  fi
+
+  echo "### Classifying"
+  paste <(pigz -dc "${corpus_prefix}.${SRC}.gz") <(pigz -dc "${corpus_prefix}.${TRG}.gz") |
+    ${cmd} --scol ${scol} --tcol ${tcol} --processes "${threads}"  - - "${pack_dir}"/*.yaml |
+    pigz >"${output_prefix}.scored.gz"
+
+  echo "### Filtering"
+  pigz -dc "${output_prefix}.scored.gz" |
+    awk -v threshold=${bicleaner_threshold} -F"\t" '{if ($3>threshold) {print $0}}' |
     pigz >"${output_prefix}.best.gz"
+
+  echo "Lines before filtering: $(pigz -dc "${output_prefix}.scored.gz" | wc -l)"
+  echo "Lines after filtering: $(pigz -dc "${output_prefix}.best.gz" | wc -l)"
 
   echo "### Writing output corpus"
   pigz -dc "${output_prefix}.best.gz" |
     tee >(cut -f1 | pigz >"${output_prefix}.${SRC}.gz") |
     cut -f2 | pigz >"${output_prefix}.${TRG}.gz"
 
-  echo "### Cleaning files"
-  rm "${output_prefix}.best.gz"
+  # do not delete intermediate files to inspect them and tune the threshold
 fi
 
 echo "###### Done: Bicleaner filtering"
