@@ -60,6 +60,7 @@ dry-run:
 	  --use-conda \
 	  --cores all \
 	  --cache \
+	  --verbose \
 	  --reason \
 	  --configfile $(CONFIG) \
 	  --config $(CONFIG_OPTIONS) deps=true  \
@@ -102,7 +103,7 @@ run-local-container:
 
 run-slurm:
 	$(CONDA_ACTIVATE) snakemake
-	chmod +x profiles/slurm/*
+	chmod +x profiles/$(SLURM_PROFILE)/*
 	$(SNAKEMAKE) \
 	  --use-conda \
 	  --reason \
@@ -115,7 +116,7 @@ run-slurm:
 
 run-slurm-container:
 	$(CONDA_ACTIVATE) snakemake
-	chmod +x profiles/slurm/*
+	chmod +x profiles/$(SLURM_PROFILE)/*
 #	module load singularity
 	$(SNAKEMAKE) \
 	  --use-conda \
