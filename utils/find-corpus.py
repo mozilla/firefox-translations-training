@@ -32,11 +32,14 @@ elif type == 'sacrebleu':
     names = [f'sacrebleu_{name}' for name, meta in sacrebleu.DATASETS.items()
              if f'{source}-{target}' in meta or f'{target}-{source}' in meta]
 elif type == 'mtdata':
-    from mtdata.main import LangPair
-    from mtdata.data import get_entries
+    from mtdata.entry import LangPair, lang_pair
+    from mtdata.index import get_entries
+    from mtdata.iso import iso3_code
+    source_tricode = iso3_code(source, fail_error=True)
+    target_tricode = iso3_code(target, fail_error=True)
     exclude += ['opus', 'newstest', 'UNv1']
-    entries = get_entries(LangPair(f'{source}-{target}'), None, None)
-    names = [f'mtdata_{entry.name}' for entry in entries]
+    entries = get_entries(lang_pair(source_tricode + '-' + target_tricode), None, None, True)
+    names = [f'mtdata_{entry.did.group}-{entry.did.name}-{entry.did.version}-{entry.did.lang_str}' for entry in entries]
 else:
     print(f'Importer type {type} is unsupported. Supported importers: opus, mtdata, sacrebleu')
 
