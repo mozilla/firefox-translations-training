@@ -122,7 +122,6 @@ run-slurm-container:
 	  --use-conda \
 	  --use-singularity \
 	  --reason \
-	  --verbose \
 	  --cores $(CLUSTER_CORES) \
 	  --cache \
 	  --configfile $(CONFIG) \

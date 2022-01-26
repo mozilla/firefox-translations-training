@@ -2,7 +2,7 @@ cluster: "submit.py"
 cluster-status: "status.py"
 jobscript: "jobscript.sh"
 jobs: 100
-restart-times: 2
+restart-times: 0
 immediate-submit: false
 verbose: false
 max-jobs-per-second: 1
