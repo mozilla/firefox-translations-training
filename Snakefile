@@ -219,7 +219,8 @@ rule marian:
     message: "Compiling marian"
     log: f"{log_dir}/compile-{{marian_type}}.log"
     conda: "envs/base.yml"
-    threads: 4
+    threads: 16
+    resources: gpu=1
  #   group: 'setup'
     output:
         trainer=protected(f"{third_party_dir}/{{marian_type}}/build/marian"),
@@ -333,9 +334,9 @@ if use_bicleaner:
         conda: bicleaner_env
         # todo: check what to do about grouping in cluster mode if bicleaner-ai is used
 #        group: "clean_corpus"
-        threads: gpus_num*2
+        threads: 2 if bicleaner_type == "bicleaner-ai" else 16
         # todo: check gpu utilizaiton
-        resources: gpu=gpus_num if bicleaner_type == "bicleaner-ai" else 0
+        resources: gpu=1 if bicleaner_type == "bicleaner-ai" else 0
         input: rules.kenlm.output, multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz"),
                 pack_dir=rules.bicleaner_pack.output
         output: multiext(f"{biclean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
