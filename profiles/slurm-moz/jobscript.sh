@@ -10,4 +10,6 @@ export HTTPS_PROXY="http://192.168.1.1:3128/"
 export FTP_PROXY="http://192.168.1.1:3128/"
 export NO_PROXY="localhost,127.0.0.1,::1,.mlc,192.168.1.1,10.2.224.243"
 
+export SINGULARITYENV_CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES
+
 {exec_job}

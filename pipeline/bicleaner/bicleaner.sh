@@ -10,6 +10,9 @@ echo "###### Bicleaner filtering"
 
 test -v SRC
 test -v TRG
+test -v CUDA_DIR
+
+export LD_LIBRARY_PATH=${CUDA_DIR}/lib64:${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH}
 
 corpus_prefix=$1
 output_prefix=$2
