@@ -7,5 +7,5 @@ dependencies:
   - pip=21.2.2
   - pip:
     - sacrebleu==2.0.0
-    - mtdata==0.2.9
+    - mtdata==0.3.2
     - requests==2.26.0
