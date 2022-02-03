@@ -203,6 +203,9 @@ rule experiment:
         with open(f'{experiment_dir}/config.yml', 'w') as f:
             yaml.dump(config, f)
 
+# todo: fix jobs grouping in cluster mode
+
+
 # setup
 
 if install_deps:
@@ -211,7 +214,7 @@ if install_deps:
         log: f"{log_dir}/install-deps.log"
         conda: "envs/base.yml"
         priority: 99
-        group: 'setup'
+        # group: 'setup'
         output: touch("/tmp/flags/setup.done")  # specific to local machine
         shell: 'bash pipeline/setup/install-deps.sh >> {log} 2>&1'
 
