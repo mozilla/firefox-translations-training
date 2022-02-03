@@ -41,14 +41,12 @@ experiment:
     default-threshold: 0.5
     dataset-thresholds:
       opus_CCAligned/v1: 0.7
-      opus_WikiMatrix/v1: 0.7
       opus_OpenSubtitles/v2018: 0.8
       opus_bible-uedin/v1: 0.7
-      mtdata_cc_aligned: 0.7
-      mtdata_wiki_titles_v1: 0.7
-      mtdata_WikiMatrix_v1: 0.7
-      mtdata_wiki_titles_v2: 0.7
-      mtdata_wmt13_commoncrawl: 0.7
+      mtdata_Statmt-wiki_titles-1-rus-eng: 0.7
+      mtdata_Facebook-wikimatrix-1-eng-rus: 0.7
+      mtdata_Statmt-wiki_titles-2-rus-eng: 0.7
+      mtdata_Statmt-commoncrawl_wmt13-1-rus-eng: 0.7
       # 0 = skip filtering
       opus_ParaCrawl/v8: 0
 
@@ -101,34 +99,38 @@ datasets:
     - opus_ParaCrawl/v8
     - opus_Books/v1
     - opus_bible-uedin/v1
-    - opus_WikiMatrix/v1
     - opus_QED/v2.0a
     - opus_CCAligned/v1
     - opus_TED2020/v1
     - opus_News-Commentary/v16
     - opus_UNPC/v1.0
-    - mtdata_cc_aligned
-    - mtdata_airbaltic
-    - mtdata_neulab_tedtalksv1_train
-    - mtdata_neulab_tedtalksv1_dev
-    - mtdata_wmt13_commoncrawl
-    - mtdata_czechtourism
-    - mtdata_paracrawl_bonus
-    - mtdata_worldbank
-    - mtdata_wiki_titles_v1
-    - mtdata_WikiMatrix_v1
-    - mtdata_wmt18_news_commentary_v13
-    - mtdata_wiki_titles_v2
-    - mtdata_news_commentary_v14
-    - mtdata_neulab_tedtalksv1_test
-    - mtdata_JW300
+    - mtdata_Statmt-news_commentary-15-eng-rus
+    - mtdata_Neulab-tedtalks_train-1-eng-rus
+    - mtdata_ELRC-wikipedia_health-1-eng-rus
+    - mtdata_ParaCrawl-paracrawl-1_bonus-eng-rus
+    - mtdata_Statmt-news_commentary_wmt18-13-rus-eng
+    - mtdata_Tilde-worldbank-1-eng-rus
+    - mtdata_Statmt-news_commentary-16-eng-rus
+    - mtdata_UN-un_test-1-eng-rus
+    - mtdata_Statmt-wiki_titles-1-rus-eng
+    - mtdata_Statmt-paracrawl-8.wmt21-eng-rus
+    - mtdata_LinguaTools-wikititles-2014-eng-rus
+    - mtdata_Tilde-airbaltic-1-eng-rus
+    - mtdata_Statmt-wiki_titles-2-rus-eng
+    - mtdata_Neulab-tedtalks_dev-1-eng-rus
+    - mtdata_Statmt-news_commentary-14-eng-rus
+    - mtdata_Statmt-commoncrawl_wmt13-1-rus-eng
+    - mtdata_Tilde-czechtourism-1-eng-rus
+    - mtdata_Facebook-wikimatrix-1-eng-rus
+    - mtdata_Neulab-tedtalks_test-1-eng-rus
+    - mtdata_Statmt-wikititles-3-rus-eng
   # datasets to merge for validation while training
   devtest:
     - flores_dev
-    - mtdata_newstest2019_ruen
-    - mtdata_newstest2017_ruen
-    - mtdata_newstest2015_ruen
-    - mtdata_newstest2014_ruen
+    - sacrebleu_wmt19
+    - sacrebleu_wmt17
+    - sacrebleu_wmt15
+    - sacrebleu_wmt14
   # datasets for evaluation
   test:
     - flores_devtest
