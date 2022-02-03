@@ -1,5 +1,5 @@
 # Mozilla Berlin cluster
-single-gpu-partition: q6000,g2080,txp
+single-gpu-partition: g2080
 multi-gpu-partition: g2080
 cpu-partition: q6000,g2080,txp
 cpu-account: root
