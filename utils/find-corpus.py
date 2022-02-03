@@ -38,7 +38,7 @@ elif type == 'mtdata':
     source_tricode = iso3_code(source, fail_error=True)
     target_tricode = iso3_code(target, fail_error=True)
     exclude += ['opus', 'newstest', 'UNv1']
-    entries = get_entries(lang_pair(source_tricode + '-' + target_tricode), None, None, True)
+    entries = sorted(get_entries(lang_pair(source_tricode + '-' + target_tricode), None, None, True), key=lambda entry: entry.did.group)
     names = [f'mtdata_{entry.did.group}-{entry.did.name}-{entry.did.version}-{entry.did.lang_str}' for entry in entries]
 else:
     print(f'Importer type {type} is unsupported. Supported importers: opus, mtdata, sacrebleu')
