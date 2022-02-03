@@ -334,8 +334,7 @@ if use_bicleaner:
         conda: bicleaner_env
         # todo: check what to do about grouping in cluster mode if bicleaner-ai is used
 #        group: "clean_corpus"
-        threads: 2 if bicleaner_type == "bicleaner-ai" else 16
-        # todo: check gpu utilizaiton
+        threads: 2 if bicleaner_type == "bicleaner-ai" else workspace.cores
         resources: gpu=1 if bicleaner_type == "bicleaner-ai" else 0
         input: rules.kenlm.output, multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz"),
                 pack_dir=rules.bicleaner_pack.output
