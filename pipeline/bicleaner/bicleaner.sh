@@ -58,7 +58,7 @@ else
        biclean() {
                export CUDA_VISIBLE_ARRAY=($CUDA_VISIBLE_DEVICES)
                export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_ARRAY[$(($2-1))]}
-               bicleaner-ai-classify --scol 2 --tcol 1 - - $1
+               bicleaner-ai-classify --scol ${scol} --tcol ${tcol} - - $1
        }
        export -f biclean
        # {%} is a 1-indexed job slot number from GNU parallel.  We use that as the 1-indexed offset in CUDA_VISIBLE_ARRAY
