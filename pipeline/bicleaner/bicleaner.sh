@@ -48,7 +48,7 @@ else
   if [ ${#CUDA_VISIBLE_DEVICES} == 0 ]; then   export CUDA_VISIBLE_DEVICES=$(nvidia-smi --query-gpu=index --format=csv,noheader); fi
 
   echo "### Classifying"
-  if [ "${type}" == 'bicleaner-ai' && ${#CUDA_VISIBLE_DEVICES} > 1 ]; then # Use gnu-parallel'd bicleaner-ai if we have more than 1 GPU
+  if [[ "${type}" == 'bicleaner-ai' && ${#CUDA_VISIBLE_DEVICES} > 1 ]]; then # Use gnu-parallel'd bicleaner-ai if we have more than 1 GPU
        #Convert CUDA_VISIBLE_DEVICES to an array
        export CUDA_VISIBLE_ARRAY=($CUDA_VISIBLE_DEVICES)
        #Turn on tensorflow logging in bicleaner-ai
