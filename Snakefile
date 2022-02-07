@@ -76,7 +76,7 @@ bmt_converter = f'{bmt_marian_dir}/marian-conv'
 kenlm = f'{cwd}/3rd_party/kenlm'
 fast_align_build = f'{cwd}/3rd_party/fast_align/build'
 extract_lex_build = f'{cwd}/3rd_party/extract-lex/build'
-preprocess_build = f'{cwd}/3rd_party/preprocess/build'
+preprocess_build_dir=f'{third_party_dir}/preprocess/build'
 bin = f'{cwd}/bin'
 deduper = f'{cwd}/bin/dedupe'
 
@@ -250,8 +250,7 @@ rule compile_preprocess:
     threads: 4
     group: 'setup'
     output: deduper=f'{bin}/dedupe'
-    params: build_dir=f'{third_party_dir}/preprocess/build'
-    shell: 'bash pipeline/setup/compile-preprocess.sh {build_dir} {threads}  >> {log} 2>&1'
+    shell: 'bash pipeline/setup/compile-preprocess.sh {preprocess_build_dir} {threads}  >> {log} 2>&1'
 
 rule extract_lex:
     message: "Compiling fast align"
