@@ -586,7 +586,7 @@ rule translate_mono_src:
     resources: gpu=gpus_num
     input:
         file=f'{translated}/mono_src/file.{{part}}',vocab=vocab_path,
-        teacher_models=expand(f"{final_teacher_dir}{{ens}}/{best_model}",ens=ensemble)
+        teacher_models=expand(f"{final_teacher_dir}{{ens}}/{best_model}",ens=ensemble),
         bin=decoder
     output: f'{translated}/mono_src/file.{{part}}.out'
     params: args=get_args('decoding-teacher')
