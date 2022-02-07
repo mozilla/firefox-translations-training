@@ -37,11 +37,11 @@ else
     exit 1
   fi
 
-  scol=1
-  tcol=2
+  export scol=1
+  export tcol=2
   if [ -d "${pack_dir}/${TRG}-${SRC}" ]; then
-    scol=2
-    tcol=1
+    export scol=2
+    export tcol=1
   fi
 
   #Export cuda visible devices if not set
