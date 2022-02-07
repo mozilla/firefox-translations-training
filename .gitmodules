@@ -13,3 +13,6 @@
 [submodule "3rd_party/marian-dev"]
 	path = 3rd_party/marian-dev
 	url = https://github.com/marian-nmt/marian-dev
+[submodule "3rd_party/preprocess"]
+	path = 3rd_party/preprocess
+	url = https://github.com/kpu/preprocess.git

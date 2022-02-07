@@ -6,6 +6,8 @@
 set -x
 set -euo pipefail
 
+test -v BIN
+
 echo "###### Merging datasets"
 
 src1=$1
@@ -21,9 +23,9 @@ mkdir -p "${tmp_dir}"
 cat <(pigz -dc "${src1}") <(pigz -dc "${src2}") | pigz >"${tmp_dir}/original.src.gz"
 cat <(pigz -dc "${trg1}") <(pigz -dc "${trg2}") | pigz >"${tmp_dir}/original.trg.gz"
 
-echo "#### Shuffling"
+echo "#### Deduplicating"
 paste <(pigz -dc "${tmp_dir}/original.src.gz") <(pigz -dc "${tmp_dir}/original.trg.gz") |
-  shuf |
+  ${BIN}/dedupe |
   pigz > "${tmp_dir}/all.gz"
 
 pigz -dc "${tmp_dir}/all.gz" | cut -f1 | pigz > "${res_src}"
