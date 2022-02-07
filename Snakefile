@@ -78,7 +78,7 @@ fast_align_build = f'{cwd}/3rd_party/fast_align/build'
 extract_lex_build = f'{cwd}/3rd_party/extract-lex/build'
 preprocess_build = f'{cwd}/3rd_party/preprocess/build'
 bin = f'{cwd}/bin'
-deduper = f'{cwd}/bin'/dedupe'
+deduper = f'{cwd}/bin/dedupe'
 
 # data
 data_dir = f"{data_root_dir}/data/{src}-{trg}/{experiment}"
