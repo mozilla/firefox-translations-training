@@ -393,7 +393,7 @@ rule merge_mono:
             bin=deduper
     output: f"{clean}/mono.{{lang}}.gz"
     params: max_sent=lambda wildcards: mono_max_sent[wildcards.lang]
-    shell: '''bash pipeline/clean/merge-mono.sh "{output}" {params.max_sent} {input[:-1]} >> {log} 2>&1'''
+    shell: '''bash pipeline/clean/merge-mono.sh "{output}" {params.max_sent} {input} >> {log} 2>&1'''
 
 # augmentation and teacher training
 
