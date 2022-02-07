@@ -433,9 +433,9 @@ if augment_corpus:
         log: f"{log_dir}/split_mono_trg.log"
         conda: "envs/base.yml"
         threads: 1
-        input: f"{clean}/mono.{trg}.gz", bin=deduper
+        input: corpora=f"{clean}/mono.{trg}.gz", bin=deduper
         output: directory(f'{translated}/mono_trg')
-        shell: 'bash pipeline/translate/split-mono.sh {input} {output} {split_length} >> {log} 2>&1'
+        shell: 'bash pipeline/translate/split-mono.sh {input.corpora} {output} {split_length} >> {log} 2>&1'
 
     rule translate_mono_trg:
         message: "Translating monolingual trg dataset with backward model"
@@ -574,9 +574,9 @@ checkpoint split_mono_src:
     log: f"{log_dir}/split_mono_src.log"
     conda: "envs/base.yml"
     threads: 1
-    input: f"{clean}/mono.{src}.gz", bin=deduper
+    input: corpora=f"{clean}/mono.{src}.gz", bin=deduper
     output: directory(f'{translated}/mono_src')
-    shell: 'bash pipeline/translate/split-mono.sh {input} {output} {split_length} >> {log} 2>&1'
+    shell: 'bash pipeline/translate/split-mono.sh {input.corpora} {output} {split_length} >> {log} 2>&1'
 
 rule translate_mono_src:
     message: "Translating monolingual src dataset with teacher"
