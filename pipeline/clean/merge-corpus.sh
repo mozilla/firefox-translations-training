@@ -10,6 +10,7 @@ echo "###### Merging parallel datasets"
 
 test -v SRC
 test -v TRG
+test -v BIN
 
 output_prefix=$1
 input_prefixes=( "${@:2}" )
@@ -23,8 +24,7 @@ cat "${input_prefixes[@]/%/.${TRG}.gz}" >"${tmp}/corpus.${TRG}.dup.gz"
 
 echo "### Deduplication"
 paste <(pigz -dc "${tmp}/corpus.${SRC}.dup.gz") <(pigz -dc "${tmp}/corpus.${TRG}.dup.gz") |
-LC_ALL=C sort -S 10G -T "${tmp}" |
-uniq |
+${BIN}/dedupe |
 pigz >"${tmp}.${SRC}${TRG}.gz"
 
 pigz -dc "${tmp}.${SRC}${TRG}.gz" | cut -f1 | pigz > "${output_prefix}.${SRC}.gz"

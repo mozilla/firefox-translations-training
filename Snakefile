@@ -366,7 +366,7 @@ rule merge_corpus:
     threads: workflow.cores
     group: "clean_corpus"
     input:  expand(f"{clean_corpus_prefix}/{{dataset}}.{{lang}}.gz", dataset=train_datasets, lang=[src, trg])
-    output: src=clean_corpus_src,trg=clean_corpus_trg
+    output: src=clean_corpus_src,trg=clean_corpus_trg, bin=deduper
     params: prefix_output=clean_corpus_prefix, prefixes=expand(f"{clean_corpus_prefix}/{{dataset}}", dataset=train_datasets)
     shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
 
@@ -376,7 +376,7 @@ rule merge_devset:
     conda: "envs/base.yml"
     threads: workflow.cores
     group: "clean_corpus"
-    input:  expand(f"{original}/devset/{{dataset}}.{{lang}}.gz", dataset=valid_datasets, lang=[src, trg])
+    input:  expand(f"{original}/devset/{{dataset}}.{{lang}}.gz", dataset=valid_datasets, lang=[src, trg]), bin=deduper
     output: multiext(f"{original}/devset", f".{src}.gz", f".{trg}.gz")
     params: prefix_output=f"{original}/devset", prefixes=expand(f"{original}/devset/{{dataset}}", dataset=valid_datasets)
     shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
@@ -389,7 +389,8 @@ rule merge_mono:
     group: "clean_mono{lang}"
     input:
         lambda wildcards: expand(f"{clean}/mono/{{dataset}}.{{lang}}.gz",
-            dataset=mono_datasets[wildcards.lang], lang=wildcards.lang)
+            dataset=mono_datasets[wildcards.lang], lang=wildcards.lang),
+            bin=deduper
     output: f"{clean}/mono.{{lang}}.gz"
     params: max_sent=lambda wildcards: mono_max_sent[wildcards.lang]
     shell: '''bash pipeline/clean/merge-mono.sh "{output}" {params.max_sent} {input} >> {log} 2>&1'''
