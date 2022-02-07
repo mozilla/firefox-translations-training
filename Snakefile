@@ -433,7 +433,7 @@ if augment_corpus:
         log: f"{log_dir}/split_mono_trg.log"
         conda: "envs/base.yml"
         threads: 1
-        input: f"{clean}/mono.{trg}.gz"
+        input: f"{clean}/mono.{trg}.gz", bin=deduper
         output: directory(f'{translated}/mono_trg')
         shell: 'bash pipeline/translate/split-mono.sh {input} {output} {split_length} >> {log} 2>&1'
 
@@ -472,7 +472,8 @@ if augment_corpus:
         group: 'mono_trg'
         input:
             src1=clean_corpus_src,src2=rules.collect_mono_trg.output,
-            trg1=clean_corpus_trg,trg2=rules.split_mono_trg.input
+            trg1=clean_corpus_trg,trg2=rules.split_mono_trg.input,
+            bin=deduper
         output: res_src=f'{augmented}/corpus.{src}.gz',res_trg=f'{augmented}/corpus.{trg}.gz'
         shell: '''bash pipeline/translate/merge-corpus.sh \
                     "{input.src1}" "{input.src2}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
@@ -573,7 +574,7 @@ checkpoint split_mono_src:
     log: f"{log_dir}/split_mono_src.log"
     conda: "envs/base.yml"
     threads: 1
-    input: bin=deduper, f"{clean}/mono.{src}.gz"
+    input: f"{clean}/mono.{src}.gz", bin=deduper
     output: directory(f'{translated}/mono_src')
     shell: 'bash pipeline/translate/split-mono.sh {input} {output} {split_length} >> {log} 2>&1'
 
@@ -584,9 +585,9 @@ rule translate_mono_src:
     threads: gpus_num*2
     resources: gpu=gpus_num
     input:
-        bin=decoder,
         file=f'{translated}/mono_src/file.{{part}}',vocab=vocab_path,
         teacher_models=expand(f"{final_teacher_dir}{{ens}}/{best_model}",ens=ensemble)
+        bin=decoder
     output: f'{translated}/mono_src/file.{{part}}.out'
     params: args=get_args('decoding-teacher')
     shell: '''bash pipeline/translate/translate.sh "{input.file}" "{input.vocab}" {input.teacher_models} \
