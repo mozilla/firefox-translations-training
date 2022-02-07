@@ -573,7 +573,7 @@ checkpoint split_mono_src:
     log: f"{log_dir}/split_mono_src.log"
     conda: "envs/base.yml"
     threads: 1
-    input: f"{clean}/mono.{src}.gz"
+    input: bin=deduper, f"{clean}/mono.{src}.gz"
     output: directory(f'{translated}/mono_src')
     shell: 'bash pipeline/translate/split-mono.sh {input} {output} {split_length} >> {log} 2>&1'
 
@@ -615,7 +615,8 @@ rule merge_translated:
     group: 'mono_src'
     input:
         src1=clean_corpus_src,src2=f"{clean}/mono.{src}.gz",
-        trg1=rules.collect_corpus.output,trg2=rules.collect_mono_src.output
+        trg1=rules.collect_corpus.output,trg2=rules.collect_mono_src.output,
+        bin=deduper
     output: res_src=f'{merged}/corpus.{src}.gz',res_trg=f'{merged}/corpus.{trg}.gz'
     shell: '''bash pipeline/translate/merge-corpus.sh \
                 "{input.src1}" "{input.src2}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
