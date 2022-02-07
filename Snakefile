@@ -365,8 +365,8 @@ rule merge_corpus:
     conda: "envs/base.yml"
     threads: workflow.cores
     group: "clean_corpus"
-    input:  expand(f"{clean_corpus_prefix}/{{dataset}}.{{lang}}.gz", dataset=train_datasets, lang=[src, trg])
-    output: src=clean_corpus_src,trg=clean_corpus_trg, bin=deduper
+    input:  expand(f"{clean_corpus_prefix}/{{dataset}}.{{lang}}.gz", dataset=train_datasets, lang=[src, trg]), bin=deduper
+    output: src=clean_corpus_src,trg=clean_corpus_trg
     params: prefix_output=clean_corpus_prefix, prefixes=expand(f"{clean_corpus_prefix}/{{dataset}}", dataset=train_datasets)
     shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
 
