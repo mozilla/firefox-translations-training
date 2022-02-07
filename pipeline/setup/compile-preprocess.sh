@@ -17,6 +17,6 @@ mkdir -p "${build_dir}"
 cd "${build_dir}"
 cmake .. -DBUILD_TYPE=Release
 make -j "${threads}"
-cp dedupe "${BIN}"
+cp bin/dedupe "${BIN}"
 
 echo "###### Done: Compiling preprocess"
