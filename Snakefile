@@ -388,12 +388,12 @@ rule merge_mono:
     threads: workflow.cores
     group: "clean_mono{lang}"
     input:
-        lambda wildcards: expand(f"{clean}/mono/{{dataset}}.{{lang}}.gz",
+        corpora=lambda wildcards: expand(f"{clean}/mono/{{dataset}}.{{lang}}.gz",
             dataset=mono_datasets[wildcards.lang], lang=wildcards.lang),
             bin=deduper
     output: f"{clean}/mono.{{lang}}.gz"
     params: max_sent=lambda wildcards: mono_max_sent[wildcards.lang]
-    shell: '''bash pipeline/clean/merge-mono.sh "{output}" {params.max_sent} {input} >> {log} 2>&1'''
+    shell: '''bash pipeline/clean/merge-mono.sh "{output}" {params.max_sent} {input.corpora} >> {log} 2>&1'''
 
 # augmentation and teacher training
 
