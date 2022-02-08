@@ -8,6 +8,16 @@ set -euo pipefail
 
 test -v BIN
 
+# https://stackoverflow.com/questions/41962359/shuffling-numbers-in-bash-using-seed
+# Deterministic shuffling
+get_seeded_random()
+{
+  seed="$1"
+  openssl enc -aes-256-ctr -pass pass:"$seed" -nosalt \
+    </dev/zero 2>/dev/null
+}
+
+
 echo "###### Merging datasets"
 
 src1=$1
@@ -25,6 +35,7 @@ cat <(pigz -dc "${trg1}") <(pigz -dc "${trg2}") | pigz >"${tmp_dir}/original.trg
 
 echo "#### Deduplicating"
 paste <(pigz -dc "${tmp_dir}/original.src.gz") <(pigz -dc "${tmp_dir}/original.trg.gz") |
+  shuf --random-source=<(get_seeded_random 42) |
   ${BIN}/dedupe |
   pigz > "${tmp_dir}/all.gz"
 
