@@ -5,6 +5,7 @@
 
 root: ""
 cuda: ""
+cudnn: ""
 deps: false
 gpus: ""
 numgpus: ""

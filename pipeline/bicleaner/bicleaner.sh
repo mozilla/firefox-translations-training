@@ -11,8 +11,10 @@ echo "###### Bicleaner filtering"
 test -v SRC
 test -v TRG
 test -v CUDA_DIR
+test -v CUDNN_DIR
 
-export LD_LIBRARY_PATH=${CUDA_DIR}/lib64:${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH}
+# cuda and cudnn libs
+export LD_LIBRARY_PATH=${CUDA_DIR}/lib64:${CUDNN_DIR}:${LD_LIBRARY_PATH}
 
 corpus_prefix=$1
 output_prefix=$2
@@ -48,7 +50,9 @@ else
   fi
 
   #Export cuda visible devices if not set
-  if [ ${#CUDA_VISIBLE_DEVICES} == 0 ]; then   export CUDA_VISIBLE_DEVICES=$(nvidia-smi --query-gpu=index --format=csv,noheader); fi
+  if [ ${#CUDA_VISIBLE_DEVICES} == 0 ]; then
+    export CUDA_VISIBLE_DEVICES=$(nvidia-smi --query-gpu=index --format=csv,noheader);
+  fi
 
   echo "### Classifying"
   if [[ "${type}" == 'bicleaner-ai' && ${#CUDA_VISIBLE_DEVICES} > 1 ]]; then # Use gnu-parallel'd bicleaner-ai if we have more than 1 GPU

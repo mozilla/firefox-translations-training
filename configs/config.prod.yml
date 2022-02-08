@@ -9,6 +9,7 @@
 # They are set in the Makefile
 root: ""
 cuda: ""
+cudnn: ""
 deps: false
 gpus: ""
 numgpus: ""
