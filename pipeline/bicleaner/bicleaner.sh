@@ -57,13 +57,13 @@ else
   echo "### Classifying"
   if [[ "${type}" == 'bicleaner-ai' && ${#CUDA_VISIBLE_DEVICES} > 1 ]]; then # Use gnu-parallel'd bicleaner-ai if we have more than 1 GPU
        #Convert CUDA_VISIBLE_DEVICES to an array
-       export CUDA_VISIBLE_ARRAY=($CUDA_VISIBLE_DEVICES)
+       export CUDA_VISIBLE_ARRAY=(${CUDA_VISIBLE_DEVICES//,/ })
        #Turn on tensorflow logging in bicleaner-ai
        export TF_CPP_MIN_LOG_LEVEL=0
        #This function expects a bicleaner yaml and a 1-based index into the CUDA_VISIBLE_ARRAY
        #Example: /mnt/nanna0/nbogoych/data/data/fr-en/fr-en-prod/biclean/pack/metadata.yaml index_in_CUDA_VISIBLE_ARRAY+1
        biclean() {
-               export CUDA_VISIBLE_ARRAY=($CUDA_VISIBLE_DEVICES)
+               export CUDA_VISIBLE_ARRAY=(${CUDA_VISIBLE_DEVICES//,/ })
                export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_ARRAY[$(($2-1))]}
                bicleaner-ai-classify --scol ${scol} --tcol ${tcol} - - $1
        }
