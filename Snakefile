@@ -20,7 +20,8 @@ data_root_dir = config['root']
 cuda_dir = config['cuda']
 cudnn_dir = config['cudnn']
 gpus_num = config['numgpus']
-gpus = config['gpus'] if config['gpus'] else ' '.join([str(n) for n in range(int(gpus_num))])
+# marian occupies all GPUs on a machine if `gpus` are not specified
+gpus = config['gpus'] if config['gpus'] == '' else ' '.join([str(n) for n in range(int(gpus_num))])
 workspace = config['workspace']
 marian_cmake = config['mariancmake']
 
@@ -115,7 +116,11 @@ eval_teacher_ens_dir = f'{eval_res_dir}/teacher-ensemble'
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" BMT_MARIAN="{bmt_marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
-BIN="{bin}" CUDA_DIR="{cuda_dir}" CUDNN_DIR="{cudnn_dir}"'''
+BIN="{bin}" CUDA_DIR="{cuda_dir}" CUDNN_DIR="{cudnn_dir}" '''
+# CUDA_VISIBLE_DEVICES is used by bicleaner ai. slurm sets this variable
+# it can be overriden manually by 'gpus' config setting to split GPUs in local mode
+if config['gpus'] != '':
+    envs += f' CUDA_VISIBLE_DEVICES="{gpus}" '
 
 ### workflow options
 
