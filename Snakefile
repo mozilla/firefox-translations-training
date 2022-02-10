@@ -341,10 +341,8 @@ if use_bicleaner:
         message: f"Cleaning corpus using {bicleaner_type}"
         log: f"{log_dir}/bicleaner/{{dataset}}.log"
         conda: bicleaner_env
-        # todo: check what to do about grouping in cluster mode if bicleaner-ai is used
-#       group: "clean_corpus"
+#       group: "bicleaner"
         threads: gpus_num * 2 if bicleaner_type == "bicleaner-ai" else workflow.cores
-        # todo: check gpu utilizaiton
         resources: gpu=gpus_num if bicleaner_type == "bicleaner-ai" else 0
         input: rules.kenlm.output, multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz"),
                 pack_dir=rules.bicleaner_pack.output
@@ -354,7 +352,6 @@ if use_bicleaner:
             threshold=lambda wildcards: bicl_dataset_thresholds[wildcards.dataset]
                                             if wildcards.dataset in bicl_dataset_thresholds
                                             else bicl_default_threshold
-        # todo: it will reserve extra memory on a local machine without explicit cuda_visible_devices
         shell: '''bash pipeline/bicleaner/bicleaner.sh \
                     "{params.prefix_input}" "{params.prefix_output}" {params.threshold} {bicleaner_type} {threads} \
                     "{input.pack_dir}" >> {log} 2>&1'''
