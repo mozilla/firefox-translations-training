@@ -42,13 +42,13 @@ It was tested on:
   All the required modules (for example `parallel`) should be preinstalled and loaded in ~/.bashrc
 
 It was tested on and Mozilla Slurm cluster using Singularity containers.
-The pipeline can aslo be launched on [CSD3 HPC](https://docs.hpc.cam.ac.uk/hpc/index.html) but the main issue is time limits for long runnign jobs. 
+The pipeline can also be launched on [CSD3 HPC](https://docs.hpc.cam.ac.uk/hpc/index.html) but the main issue is time limits for long-running jobs. 
 Increasing retries can help.
 
 ### Cloud mode
 
 Snakemake workflows can work on Kubernetes, Google Cloud Life Sciences and other cloud platforms. 
-The pipeline was not tested in this mode and might require modificaiton.
+The pipeline was not tested in this mode and might require modification.
 
 Please refer to [Cloud execution](https://snakemake.readthedocs.io/en/stable/executing/cloud.html) section of Snakemake documentation.
 
