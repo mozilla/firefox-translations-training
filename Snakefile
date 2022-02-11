@@ -344,7 +344,7 @@ if use_bicleaner:
 #       group: "bicleaner"
         threads: gpus_num * 2 if bicleaner_type == "bicleaner-ai" else workflow.cores
         resources: gpu=gpus_num if bicleaner_type == "bicleaner-ai" else 0
-        input: rules.kenlm.output, multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz"),
+        input: ancient(rules.kenlm.output), multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz"),
                 pack_dir=rules.bicleaner_pack.output
         output: multiext(f"{biclean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
         params:
@@ -399,7 +399,7 @@ if not vocab_pretrained:
         log: f"{log_dir}/train_vocab.log"
         conda: "envs/base.yml"
         threads: 2
-        input: bin=spm_trainer, corpus_src=clean_corpus_src, corpus_trg=clean_corpus_trg
+        input: bin=ancient(spm_trainer), corpus_src=clean_corpus_src, corpus_trg=clean_corpus_trg
         output: vocab_path
         params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset"
         shell: '''bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" {spm_sample_size} \
@@ -415,7 +415,7 @@ if do_train_backward:
         #group 'backward'
         input:
             rules.merge_devset.output, train_src=clean_corpus_src,train_trg=clean_corpus_trg,
-            bin=trainer, vocab=vocab_path,
+            bin=ancient(trainer), vocab=vocab_path,
         output:  model=f'{backward_dir}/{best_model}'
         params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset",
                 args=get_args("training-backward")
@@ -440,7 +440,7 @@ if augment_corpus:
         threads: gpus_num * 2
         resources: gpu=gpus_num
         input:
-            bin=decoder, file=f'{translated}/mono_trg/file.{{part}}',
+            bin=ancient(decoder), file=f'{translated}/mono_trg/file.{{part}}',
             vocab=vocab_path, model=f'{backward_dir}/{best_model}'
         output: f'{translated}/mono_trg/file.{{part}}.out'
         params: args = get_args("decoding-backward")
@@ -482,7 +482,7 @@ rule train_teacher:
     resources: gpu=gpus_num
     input:
         rules.merge_devset.output, train_src=f'{teacher_corpus}.{src}.gz',train_trg=f'{teacher_corpus}.{trg}.gz',
-        bin=trainer, vocab=vocab_path
+        bin=ancient(trainer), vocab=vocab_path
     output: model=f'{teacher_base_dir}{{ens}}/{best_model}'
     params: prefix_train=teacher_corpus, prefix_test=f"{original}/devset", dir=directory(f'{teacher_base_dir}{{ens}}'),
             args=get_args("training-teacher-base")
@@ -500,7 +500,7 @@ if augment_corpus:
         input:
             rules.merge_devset.output, model=f'{teacher_base_dir}{{ens}}/{best_model}',
             train_src=clean_corpus_src, train_trg=clean_corpus_trg,
-            bin=trainer, vocab=vocab_path
+            bin=ancient(trainer), vocab=vocab_path
         output: model=f'{teacher_finetuned_dir}{{ens}}/{best_model}'
         params: prefix_train=clean_corpus_prefix, prefix_test=f"{original}/devset",
                 dir=directory(f'{teacher_finetuned_dir}{{ens}}'),
@@ -530,7 +530,7 @@ rule translate_corpus:
     threads: gpus_num*2
     resources: gpu=gpus_num
     input:
-        decoder,
+        ancient(decoder),
         file=f'{translated}/corpus/file.{{part}}',
         vocab=vocab_path,
         teacher_models=expand(f"{final_teacher_dir}{{ens}}/{best_model}",ens=ensemble)
@@ -580,7 +580,7 @@ rule translate_mono_src:
     threads: gpus_num*2
     resources: gpu=gpus_num
     input:
-        bin=decoder,
+        bin=ancient(decoder),
         file=f'{translated}/mono_src/file.{{part}}',vocab=vocab_path,
         teacher_models=expand(f"{final_teacher_dir}{{ens}}/{best_model}",ens=ensemble)
     output: f'{translated}/mono_src/file.{{part}}.out'
@@ -626,7 +626,7 @@ rule score:
     threads: gpus_num*2
     resources: gpu=gpus_num
     input:
-        scorer,
+        ancient(scorer),
         model=f'{backward_dir}/{best_model}', vocab=vocab_path,
         src_corpus=rules.merge_translated.output.res_src, trg_corpus=rules.merge_translated.output.res_trg
     output: f"{filtered}/scores.txt"
@@ -654,11 +654,11 @@ rule alignments:
     conda: "envs/base.yml"
     threads: workflow.cores
     input:
-        spm_encoder, spm_exporter,
+        ancient(spm_encoder), ancient(spm_exporter),
         src_corpus=rules.ce_filter.output.src_corpus,trg_corpus=rules.ce_filter.output.trg_corpus,
         vocab=vocab_path,
-        fast_align=rules.fast_align.output.fast_align, atools=rules.fast_align.output.atools,
-        extract_lex=rules.extract_lex.output
+        fast_align=ancient(rules.fast_align.output.fast_align), atools=ancient(rules.fast_align.output.atools),
+        extract_lex=ancient(rules.extract_lex.output)
     output: alignment=f'{align_dir}/corpus.aln.gz',shortlist=f'{align_dir}/lex.s2t.pruned.gz'
     params: input_prefix=f'{filtered}/corpus'
     shell: '''bash pipeline/alignment/generate-alignment-and-shortlist.sh \
@@ -672,7 +672,7 @@ rule train_student:
     resources: gpu=gpus_num
     #group 'student'
     input:
-        rules.merge_devset.output, trainer,
+        rules.merge_devset.output, ancient(trainer),
         train_src=rules.ce_filter.output.src_corpus, train_trg=rules.ce_filter.output.trg_corpus,
         alignments=rules.alignments.output.alignment,
         vocab=vocab_path
@@ -693,7 +693,7 @@ rule finetune_student:
     resources: gpu=gpus_num
     #group 'student-finetuned'
     input:
-        rules.merge_devset.output, trainer,
+        rules.merge_devset.output, ancient(trainer),
         train_src=rules.ce_filter.output.src_corpus, train_trg=rules.ce_filter.output.trg_corpus,
         alignments=rules.alignments.output.alignment, student_model=rules.train_student.output.model,
         vocab=vocab_path
@@ -710,7 +710,7 @@ rule quantize:
     conda: "envs/base.yml"
     threads: 1
     input:
-        bmt_decoder, bmt_converter,
+        ancient(bmt_decoder), ancient(bmt_converter),
         shortlist=rules.alignments.output.shortlist, model=rules.finetune_student.output.model,
         vocab=vocab_path, devset=f"{original}/devset.{src}.gz"
     output: model=f'{speed_dir}/model.intgemm.alphas.bin'
@@ -747,7 +747,7 @@ rule evaluate:
     wildcard_constraints:
         model="[\w-]+"
     input:
-        decoder,
+        ancient(decoder),
         data=multiext(f'{eval_data_dir}/{{dataset}}',f".{src}.gz",f".{trg}.gz"),
         models=lambda wildcards: f'{models_dir}/{wildcards.model}/{best_model}'
                                     if wildcards.model != 'teacher-ensemble'
@@ -774,7 +774,7 @@ rule eval_quantized:
     threads: 1
     priority: 50
     input:
-        bmt_decoder,
+        ancient(bmt_decoder),
         data=multiext(f'{eval_data_dir}/{{dataset}}',f".{src}.gz",f".{trg}.gz"),
         model=rules.quantize.output.model,
         shortlist=rules.alignments.output.shortlist,
