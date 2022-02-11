@@ -119,7 +119,7 @@ envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" BMT_MARIAN="{bmt_marian_dir
 BIN="{bin}" CUDA_DIR="{cuda_dir}" CUDNN_DIR="{cudnn_dir}" '''
 # CUDA_VISIBLE_DEVICES is used by bicleaner ai. slurm sets this variable
 # it can be overriden manually by 'gpus' config setting to split GPUs in local mode
-if config['gpus'] != '':
+if config['gpus']:
     envs += f' CUDA_VISIBLE_DEVICES="{gpus}" '
 
 ### workflow options
