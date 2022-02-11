@@ -21,7 +21,7 @@ cuda_dir = config['cuda']
 cudnn_dir = config['cudnn']
 gpus_num = config['numgpus']
 # marian occupies all GPUs on a machine if `gpus` are not specified
-gpus = config['gpus'] if config['gpus'] == '' else ' '.join([str(n) for n in range(int(gpus_num))])
+gpus = config['gpus'] if config['gpus'] else ' '.join([str(n) for n in range(int(gpus_num))])
 workspace = config['workspace']
 marian_cmake = config['mariancmake']
 
