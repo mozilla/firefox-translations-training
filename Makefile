@@ -25,7 +25,7 @@ TARGET=
 
 CONDA_ACTIVATE=source $(CONDA_PATH)/etc/profile.d/conda.sh ; conda activate ; conda activate
 SNAKEMAKE=export SNAKEMAKE_OUTPUT_CACHE=$(SNAKEMAKE_OUTPUT_CACHE);  snakemake
-CONFIG_OPTIONS=root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" cudnn="$(CUDNN_DIR)" workspace=$(WORKSPACE) numgpus=$(NUM_GPUS) $(if $(MARIAN_CMAKE),mariancmake="$(MARIAN_CMAKE)",) $(if $(GPUS),gpus="$(GPUS)",)
+CONFIG_OPTIONS=root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" cudnn=/cudnn workspace=$(WORKSPACE) numgpus=$(NUM_GPUS) $(if $(MARIAN_CMAKE),mariancmake="$(MARIAN_CMAKE)",) $(if $(GPUS),gpus="$(GPUS)",)
 
 ### 2. setup
 
@@ -56,7 +56,7 @@ pull:
 # . $(CONDA_PATH)/etc/profile.d/conda.sh && conda activate snakemake
 
 dry-run:
-	$(CONDA_ACTIVATE) snakemake
+	#$(CONDA_ACTIVATE) snakemake
 	$(SNAKEMAKE) \
 	  --use-conda \
 	  --cores all \
@@ -99,7 +99,7 @@ run-local-container:
 	  --resources gpu=$(NUM_GPUS) \
 	  --configfile $(CONFIG) \
 	  --config $(CONFIG_OPTIONS) \
-	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR),$(CUDNN_DIR) --nv" \
+	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR),$(CUDNN_DIR):/cudnn --nv" \
 	  $(TARGET)
 
 run-slurm:
@@ -128,7 +128,7 @@ run-slurm-container:
 	  --configfile $(CONFIG) \
 	  --config $(CONFIG_OPTIONS) \
 	  --profile=profiles/$(SLURM_PROFILE) \
-	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR),$(CUDNN_DIR),/tmp --nv --containall" \
+	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR),$(CUDNN_DIR):/cudnn,/tmp --nv --containall" \
 	  $(TARGET)
 # if CPU nodes don't have access to cuda dirs, use
 # export CUDA_DIR=$(CUDA_DIR); $(SNAKEMAKE) \
