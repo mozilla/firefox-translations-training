@@ -73,10 +73,12 @@ spm_exporter = f'{marian_dir}/spm_export_vocab'
 bmt_decoder = f'{bmt_marian_dir}/marian-decoder'
 bmt_converter = f'{bmt_marian_dir}/marian-conv'
 
-kenlm = f'{cwd}/3rd_party/kenlm'
-fast_align_build = f'{cwd}/3rd_party/fast_align/build'
-extract_lex_build = f'{cwd}/3rd_party/extract-lex/build'
+kenlm = f'{third_party_dir}/kenlm'
+fast_align_build = f'{third_party_dir}/fast_align/build'
+extract_lex_build = f'{third_party_dir}/extract-lex/build'
+preprocess_build_dir=f'{third_party_dir}/preprocess/build'
 bin = f'{cwd}/bin'
+deduper = f'{cwd}/bin/dedupe'
 
 # data
 data_dir = f"{data_root_dir}/data/{src}-{trg}/{experiment}"
@@ -241,6 +243,15 @@ rule fast_align:
     output: fast_align=protected(f"{bin}/fast_align"), atools=protected(f"{bin}/atools")
     shell: 'bash pipeline/setup/compile-fast-align.sh {fast_align_build} {threads}  >> {log} 2>&1'
 
+rule compile_preprocess:
+    message: "Compiling preprocess"
+    log: f"{log_dir}/compile-preprocess.log"
+    conda: "envs/base.yml"
+    threads: 4
+    group: 'setup'
+    output: deduper=f'{bin}/dedupe'
+    shell: 'bash pipeline/setup/compile-preprocess.sh {preprocess_build_dir} {threads}  >> {log} 2>&1'
+
 rule extract_lex:
     message: "Compiling fast align"
     log: f"{log_dir}/compile-extract-lex.log"
@@ -354,7 +365,7 @@ rule merge_corpus:
     conda: "envs/base.yml"
     threads: workflow.cores
     group: "clean_corpus"
-    input:  expand(f"{clean_corpus_prefix}/{{dataset}}.{{lang}}.gz", dataset=train_datasets, lang=[src, trg])
+    input:  expand(f"{clean_corpus_prefix}/{{dataset}}.{{lang}}.gz", dataset=train_datasets, lang=[src, trg]), bin=deduper
     output: src=clean_corpus_src,trg=clean_corpus_trg
     params: prefix_output=clean_corpus_prefix, prefixes=expand(f"{clean_corpus_prefix}/{{dataset}}", dataset=train_datasets)
     shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
@@ -365,7 +376,7 @@ rule merge_devset:
     conda: "envs/base.yml"
     threads: workflow.cores
     group: "clean_corpus"
-    input:  expand(f"{original}/devset/{{dataset}}.{{lang}}.gz", dataset=valid_datasets, lang=[src, trg])
+    input:  expand(f"{original}/devset/{{dataset}}.{{lang}}.gz", dataset=valid_datasets, lang=[src, trg]), bin=deduper
     output: multiext(f"{original}/devset", f".{src}.gz", f".{trg}.gz")
     params: prefix_output=f"{original}/devset", prefixes=expand(f"{original}/devset/{{dataset}}", dataset=valid_datasets)
     shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
@@ -377,11 +388,12 @@ rule merge_mono:
     threads: workflow.cores
     group: "clean_mono{lang}"
     input:
-        lambda wildcards: expand(f"{clean}/mono/{{dataset}}.{{lang}}.gz",
-            dataset=mono_datasets[wildcards.lang], lang=wildcards.lang)
+        corpora=lambda wildcards: expand(f"{clean}/mono/{{dataset}}.{{lang}}.gz",
+            dataset=mono_datasets[wildcards.lang], lang=wildcards.lang),
+            bin=deduper
     output: f"{clean}/mono.{{lang}}.gz"
     params: max_sent=lambda wildcards: mono_max_sent[wildcards.lang]
-    shell: '''bash pipeline/clean/merge-mono.sh "{output}" {params.max_sent} {input} >> {log} 2>&1'''
+    shell: '''bash pipeline/clean/merge-mono.sh "{output}" {params.max_sent} {input.corpora} >> {log} 2>&1'''
 
 # augmentation and teacher training
 
@@ -421,9 +433,9 @@ if augment_corpus:
         log: f"{log_dir}/split_mono_trg.log"
         conda: "envs/base.yml"
         threads: 1
-        input: f"{clean}/mono.{trg}.gz"
+        input: corpora=f"{clean}/mono.{trg}.gz", bin=deduper
         output: directory(f'{translated}/mono_trg')
-        shell: 'bash pipeline/translate/split-mono.sh {input} {output} {split_length} >> {log} 2>&1'
+        shell: 'bash pipeline/translate/split-mono.sh {input.corpora} {output} {split_length} >> {log} 2>&1'
 
     rule translate_mono_trg:
         message: "Translating monolingual trg dataset with backward model"
@@ -460,7 +472,8 @@ if augment_corpus:
         group: 'mono_trg'
         input:
             src1=clean_corpus_src,src2=rules.collect_mono_trg.output,
-            trg1=clean_corpus_trg,trg2=rules.split_mono_trg.input
+            trg1=clean_corpus_trg,trg2=rules.split_mono_trg.input,
+            bin=deduper
         output: res_src=f'{augmented}/corpus.{src}.gz',res_trg=f'{augmented}/corpus.{trg}.gz'
         shell: '''bash pipeline/translate/merge-corpus.sh \
                     "{input.src1}" "{input.src2}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
@@ -561,9 +574,9 @@ checkpoint split_mono_src:
     log: f"{log_dir}/split_mono_src.log"
     conda: "envs/base.yml"
     threads: 1
-    input: f"{clean}/mono.{src}.gz"
+    input: corpora=f"{clean}/mono.{src}.gz", bin=deduper
     output: directory(f'{translated}/mono_src')
-    shell: 'bash pipeline/translate/split-mono.sh {input} {output} {split_length} >> {log} 2>&1'
+    shell: 'bash pipeline/translate/split-mono.sh {input.corpora} {output} {split_length} >> {log} 2>&1'
 
 rule translate_mono_src:
     message: "Translating monolingual src dataset with teacher"
@@ -572,9 +585,9 @@ rule translate_mono_src:
     threads: gpus_num*2
     resources: gpu=gpus_num
     input:
-        bin=decoder,
         file=f'{translated}/mono_src/file.{{part}}',vocab=vocab_path,
-        teacher_models=expand(f"{final_teacher_dir}{{ens}}/{best_model}",ens=ensemble)
+        teacher_models=expand(f"{final_teacher_dir}{{ens}}/{best_model}",ens=ensemble),
+        bin=decoder
     output: f'{translated}/mono_src/file.{{part}}.out'
     params: args=get_args('decoding-teacher')
     shell: '''bash pipeline/translate/translate.sh "{input.file}" "{input.vocab}" {input.teacher_models} \
@@ -603,7 +616,8 @@ rule merge_translated:
     group: 'mono_src'
     input:
         src1=clean_corpus_src,src2=f"{clean}/mono.{src}.gz",
-        trg1=rules.collect_corpus.output,trg2=rules.collect_mono_src.output
+        trg1=rules.collect_corpus.output,trg2=rules.collect_mono_src.output,
+        bin=deduper
     output: res_src=f'{merged}/corpus.{src}.gz',res_trg=f'{merged}/corpus.{trg}.gz'
     shell: '''bash pipeline/translate/merge-corpus.sh \
                 "{input.src1}" "{input.src2}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
