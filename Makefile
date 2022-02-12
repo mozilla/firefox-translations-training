@@ -56,7 +56,7 @@ pull:
 # . $(CONDA_PATH)/etc/profile.d/conda.sh && conda activate snakemake
 
 dry-run:
-	#$(CONDA_ACTIVATE) snakemake
+	$(CONDA_ACTIVATE) snakemake
 	$(SNAKEMAKE) \
 	  --use-conda \
 	  --cores all \
