@@ -6,3 +6,4 @@ save-freq: 5000
 valid-freq: 3000
 valid-max-length: 300
 valid-mini-batch: 8
+early-stopping: 20
