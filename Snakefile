@@ -18,7 +18,9 @@ container: 'Singularity.sif'
 install_deps = config['deps'] == 'true'
 data_root_dir = config['root']
 cuda_dir = config['cuda']
+cudnn_dir = config['cudnn']
 gpus_num = config['numgpus']
+# marian occupies all GPUs on a machine if `gpus` are not specified
 gpus = config['gpus'] if config['gpus'] else ' '.join([str(n) for n in range(int(gpus_num))])
 workspace = config['workspace']
 marian_cmake = config['mariancmake']
@@ -116,7 +118,11 @@ eval_teacher_ens_dir = f'{eval_res_dir}/teacher-ensemble'
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" BMT_MARIAN="{bmt_marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
-BIN="{bin}" CUDA_DIR="{cuda_dir}"'''
+BIN="{bin}" CUDA_DIR="{cuda_dir}" CUDNN_DIR="{cudnn_dir}" '''
+# CUDA_VISIBLE_DEVICES is used by bicleaner ai. slurm sets this variable
+# it can be overriden manually by 'gpus' config setting to split GPUs in local mode
+if config['gpus']:
+    envs += f' CUDA_VISIBLE_DEVICES="{gpus}" '
 
 ### workflow options
 
@@ -205,6 +211,9 @@ rule experiment:
         with open(f'{experiment_dir}/config.yml', 'w') as f:
             yaml.dump(config, f)
 
+# todo: fix jobs grouping in cluster mode
+
+
 # setup
 
 if install_deps:
@@ -213,7 +222,7 @@ if install_deps:
         log: f"{log_dir}/install-deps.log"
         conda: "envs/base.yml"
         priority: 99
-        group: 'setup'
+        # group: 'setup'
         output: touch("/tmp/flags/setup.done")  # specific to local machine
         shell: 'bash pipeline/setup/install-deps.sh >> {log} 2>&1'
 
@@ -221,8 +230,9 @@ rule marian:
     message: "Compiling marian"
     log: f"{log_dir}/compile-{{marian_type}}.log"
     conda: "envs/base.yml"
-    threads: 4
-    group: 'setup'
+    threads: 16
+    resources: gpu=1
+ #   group: 'setup'
     output:
         trainer=protected(f"{third_party_dir}/{{marian_type}}/build/marian"),
         decoder=protected(f"{third_party_dir}/{{marian_type}}/build/marian-decoder"),
@@ -239,7 +249,7 @@ rule fast_align:
     log: f"{log_dir}/compile-fast-align.log"
     conda: "envs/base.yml"
     threads: 4
-    group: 'setup'
+#    group: 'setup'
     output: fast_align=protected(f"{bin}/fast_align"), atools=protected(f"{bin}/atools")
     shell: 'bash pipeline/setup/compile-fast-align.sh {fast_align_build} {threads}  >> {log} 2>&1'
 
@@ -248,7 +258,7 @@ rule compile_preprocess:
     log: f"{log_dir}/compile-preprocess.log"
     conda: "envs/base.yml"
     threads: 4
-    group: 'setup'
+    # group: 'setup'
     output: deduper=f'{bin}/dedupe'
     shell: 'bash pipeline/setup/compile-preprocess.sh {preprocess_build_dir} {threads}  >> {log} 2>&1'
 
@@ -257,7 +267,7 @@ rule extract_lex:
     log: f"{log_dir}/compile-extract-lex.log"
     conda: "envs/base.yml"
     threads: 4
-    group: 'setup'
+#    group: 'setup'
     output: protected(f"{bin}/extract_lex")
     shell: 'bash pipeline/setup/compile-extract-lex.sh {extract_lex_build} {threads} >> {log} 2>&1'
 
@@ -268,7 +278,7 @@ rule download_corpus:
     log: f"{log_dir}/download_corpus/{{kind}}/{{dataset}}.log"
     conda: "envs/base.yml"
     threads: 1
-    group: 'data'
+#    group: 'data'
     cache: False # caching is broken in snakemake
     wildcard_constraints: kind="corpus|devset|eval"
     output: multiext(f"{original}/{{kind}}/{{dataset}}", f".{src}.gz", f".{trg}.gz")
@@ -280,7 +290,7 @@ rule download_mono:
     log: f"{log_dir}/download_mono/{{dataset}}.{{lang}}.log"
     conda: "envs/base.yml"
     threads: 1
-    group: 'data'
+#    group: 'data'
     cache: False # caching is broken in snakemake
     wildcard_constraints: lang=f"{src}|{trg}"
     output: f'{original}/mono/{{dataset}}.{{lang}}.gz'
@@ -294,7 +304,7 @@ rule clean_corpus:
     message: "Cleaning dataset"
     log: f"{log_dir}/clean_corpus/{{dataset}}.log"
     conda: "envs/base.yml"
-    group: "clean_corpus"
+#    group: "clean_corpus"
     threads: workflow.cores
     input: multiext(f"{original}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
     output: multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
@@ -308,7 +318,7 @@ rule clean_mono:
     log: f"{log_dir}/clean_mono/{{dataset}}.{{lang}}.log"
     conda: "envs/base.yml"
     threads: workflow.cores
-    group: "clean_mono{lang}"
+#    group: "clean_mono{lang}"
     cache: False
     wildcard_constraints: lang=f"{src}|{trg}"
     input: f'{original}/mono/{{dataset}}.{{lang}}.gz'
@@ -324,7 +334,7 @@ if use_bicleaner:
         log: f"{log_dir}/kenlm.log"
         conda: bicleaner_env
         threads: 4
-        group: 'setup'
+#        group: 'setup'
         output: directory(f"{bin}/kenlm")
         shell: 'bash pipeline/setup/install-kenlm.sh {kenlm} {threads}  >> {log} 2>&1'
 
@@ -332,7 +342,7 @@ if use_bicleaner:
         message: f"Downloading language pack for bicleaner"
         log: f"{log_dir}/bicleaner_pack.log"
         conda: bicleaner_env
-        group: "clean_corpus"
+#        group: "clean_corpus"
         threads: 1
         input: rules.kenlm.output
         output: directory(f"{biclean}/pack")
@@ -342,12 +352,10 @@ if use_bicleaner:
         message: f"Cleaning corpus using {bicleaner_type}"
         log: f"{log_dir}/bicleaner/{{dataset}}.log"
         conda: bicleaner_env
-        # todo: check what to do about grouping in cluster mode if bicleaner-ai is used
-        group: "clean_corpus"
+#       group: "bicleaner"
         threads: gpus_num * 2 if bicleaner_type == "bicleaner-ai" else workflow.cores
-        # todo: check gpu utilizaiton
         resources: gpu=gpus_num if bicleaner_type == "bicleaner-ai" else 0
-        input: rules.kenlm.output, multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz"),
+        input: ancient(rules.kenlm.output), multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz"),
                 pack_dir=rules.bicleaner_pack.output
         output: multiext(f"{biclean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
         params:
@@ -355,7 +363,7 @@ if use_bicleaner:
             threshold=lambda wildcards: bicl_dataset_thresholds[wildcards.dataset]
                                             if wildcards.dataset in bicl_dataset_thresholds
                                             else bicl_default_threshold
-        shell: '''CUDA_VISIBLE_DEVICES="{gpus}" bash pipeline/bicleaner/bicleaner.sh \
+        shell: '''bash pipeline/bicleaner/bicleaner.sh \
                     "{params.prefix_input}" "{params.prefix_output}" {params.threshold} {bicleaner_type} {threads} \
                     "{input.pack_dir}" >> {log} 2>&1'''
 
@@ -364,8 +372,9 @@ rule merge_corpus:
     log: f"{log_dir}/merge_corpus.log"
     conda: "envs/base.yml"
     threads: workflow.cores
-    group: "clean_corpus"
-    input:  expand(f"{clean_corpus_prefix}/{{dataset}}.{{lang}}.gz", dataset=train_datasets, lang=[src, trg]), bin=deduper
+    # group: "clean_corpus"
+    input:  expand(f"{clean_corpus_prefix}/{{dataset}}.{{lang}}.gz", dataset=train_datasets, lang=[src, trg]),
+            bin=ancient(deduper)
     output: src=clean_corpus_src,trg=clean_corpus_trg
     params: prefix_output=clean_corpus_prefix, prefixes=expand(f"{clean_corpus_prefix}/{{dataset}}", dataset=train_datasets)
     shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
@@ -375,8 +384,9 @@ rule merge_devset:
     log: f"{log_dir}/merge_devset.log"
     conda: "envs/base.yml"
     threads: workflow.cores
-    group: "clean_corpus"
-    input:  expand(f"{original}/devset/{{dataset}}.{{lang}}.gz", dataset=valid_datasets, lang=[src, trg]), bin=deduper
+    # group: "clean_corpus"
+    input:  expand(f"{original}/devset/{{dataset}}.{{lang}}.gz", dataset=valid_datasets, lang=[src, trg]),
+            bin=ancient(deduper)
     output: multiext(f"{original}/devset", f".{src}.gz", f".{trg}.gz")
     params: prefix_output=f"{original}/devset", prefixes=expand(f"{original}/devset/{{dataset}}", dataset=valid_datasets)
     shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
@@ -386,11 +396,11 @@ rule merge_mono:
     log: f"{log_dir}/merge_mono_{{lang}}.log"
     conda: "envs/base.yml"
     threads: workflow.cores
-    group: "clean_mono{lang}"
+    #group "clean_mono{lang}"
     input:
         corpora=lambda wildcards: expand(f"{clean}/mono/{{dataset}}.{{lang}}.gz",
             dataset=mono_datasets[wildcards.lang], lang=wildcards.lang),
-            bin=deduper
+            bin=ancient(deduper)
     output: f"{clean}/mono.{{lang}}.gz"
     params: max_sent=lambda wildcards: mono_max_sent[wildcards.lang]
     shell: '''bash pipeline/clean/merge-mono.sh "{output}" {params.max_sent} {input.corpora} >> {log} 2>&1'''
@@ -403,7 +413,7 @@ if not vocab_pretrained:
         log: f"{log_dir}/train_vocab.log"
         conda: "envs/base.yml"
         threads: 2
-        input: bin=spm_trainer, corpus_src=clean_corpus_src, corpus_trg=clean_corpus_trg
+        input: bin=ancient(spm_trainer), corpus_src=clean_corpus_src, corpus_trg=clean_corpus_trg
         output: vocab_path
         params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset"
         shell: '''bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" {spm_sample_size} \
@@ -416,10 +426,10 @@ if do_train_backward:
         conda: "envs/base.yml"
         threads: gpus_num * 2
         resources: gpu=gpus_num
-        group: 'backward'
+        #group 'backward'
         input:
             rules.merge_devset.output, train_src=clean_corpus_src,train_trg=clean_corpus_trg,
-            bin=trainer, vocab=vocab_path,
+            bin=ancient(trainer), vocab=vocab_path,
         output:  model=f'{backward_dir}/{best_model}'
         params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset",
                 args=get_args("training-backward")
@@ -433,7 +443,7 @@ if augment_corpus:
         log: f"{log_dir}/split_mono_trg.log"
         conda: "envs/base.yml"
         threads: 1
-        input: corpora=f"{clean}/mono.{trg}.gz", bin=deduper
+        input: corpora=f"{clean}/mono.{trg}.gz", bin=ancient(deduper)
         output: directory(f'{translated}/mono_trg')
         shell: 'bash pipeline/translate/split-mono.sh {input.corpora} {output} {split_length} >> {log} 2>&1'
 
@@ -444,7 +454,7 @@ if augment_corpus:
         threads: gpus_num * 2
         resources: gpu=gpus_num
         input:
-            bin=decoder, file=f'{translated}/mono_trg/file.{{part}}',
+            bin=ancient(decoder), file=f'{translated}/mono_trg/file.{{part}}',
             vocab=vocab_path, model=f'{backward_dir}/{best_model}'
         output: f'{translated}/mono_trg/file.{{part}}.out'
         params: args = get_args("decoding-backward")
@@ -456,7 +466,7 @@ if augment_corpus:
         log: f"{log_dir}/collect_mono_trg.log"
         conda: "envs/base.yml"
         threads: 4
-        group: 'mono_trg'
+        #group 'mono_trg'
         input:
             lambda wildcards: expand(f"{translated}/mono_trg/file.{{part}}.out",
                 part=find_parts(wildcards, checkpoints.split_mono_trg))
@@ -469,11 +479,11 @@ if augment_corpus:
         log: f"{log_dir}/merge_augmented.log"
         conda: "envs/base.yml"
         threads: 4
-        group: 'mono_trg'
+        #group 'mono_trg'
         input:
             src1=clean_corpus_src,src2=rules.collect_mono_trg.output,
             trg1=clean_corpus_trg,trg2=rules.split_mono_trg.input,
-            bin=deduper
+            bin=ancient(deduper)
         output: res_src=f'{augmented}/corpus.{src}.gz',res_trg=f'{augmented}/corpus.{trg}.gz'
         shell: '''bash pipeline/translate/merge-corpus.sh \
                     "{input.src1}" "{input.src2}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
@@ -487,7 +497,7 @@ rule train_teacher:
     resources: gpu=gpus_num
     input:
         rules.merge_devset.output, train_src=f'{teacher_corpus}.{src}.gz',train_trg=f'{teacher_corpus}.{trg}.gz',
-        bin=trainer, vocab=vocab_path
+        bin=ancient(trainer), vocab=vocab_path
     output: model=f'{teacher_base_dir}{{ens}}/{best_model}'
     params: prefix_train=teacher_corpus, prefix_test=f"{original}/devset", dir=directory(f'{teacher_base_dir}{{ens}}'),
             args=get_args("training-teacher-base")
@@ -505,7 +515,7 @@ if augment_corpus:
         input:
             rules.merge_devset.output, model=f'{teacher_base_dir}{{ens}}/{best_model}',
             train_src=clean_corpus_src, train_trg=clean_corpus_trg,
-            bin=trainer, vocab=vocab_path
+            bin=ancient(trainer), vocab=vocab_path
         output: model=f'{teacher_finetuned_dir}{{ens}}/{best_model}'
         params: prefix_train=clean_corpus_prefix, prefix_test=f"{original}/devset",
                 dir=directory(f'{teacher_finetuned_dir}{{ens}}'),
@@ -535,7 +545,7 @@ rule translate_corpus:
     threads: gpus_num*2
     resources: gpu=gpus_num
     input:
-        decoder,
+        ancient(decoder),
         file=f'{translated}/corpus/file.{{part}}',
         vocab=vocab_path,
         teacher_models=expand(f"{final_teacher_dir}{{ens}}/{best_model}",ens=ensemble)
@@ -549,7 +559,7 @@ rule extract_best:
     log: f"{log_dir}/extract_best/{{part}}.log"
     conda: "envs/base.yml"
     threads: 1
-    group: 'translate_corpus'
+    #group 'translate_corpus'
     input: nbest=f"{translated}/corpus/file.{{part}}.nbest", ref=f"{translated}/corpus/file.{{part}}.ref"
     output: f"{translated}/corpus/file.{{part}}.nbest.out"
     shell: 'python pipeline/translate/bestbleu.py -i {input.nbest} -r {input.ref} -m bleu -o {output} >> {log} 2>&1'
@@ -559,7 +569,7 @@ rule collect_corpus:
     log: f"{log_dir}/collect_corpus.log"
     conda: "envs/base.yml"
     threads: 4
-    group: 'translate_corpus'
+    #group 'translate_corpus'
     input:
         lambda wildcards: expand(f"{translated}/corpus/file.{{part}}.nbest.out",
             part=find_parts(wildcards, checkpoints.split_corpus))
@@ -574,7 +584,7 @@ checkpoint split_mono_src:
     log: f"{log_dir}/split_mono_src.log"
     conda: "envs/base.yml"
     threads: 1
-    input: corpora=f"{clean}/mono.{src}.gz", bin=deduper
+    input: corpora=f"{clean}/mono.{src}.gz", bin=ancient(deduper)
     output: directory(f'{translated}/mono_src')
     shell: 'bash pipeline/translate/split-mono.sh {input.corpora} {output} {split_length} >> {log} 2>&1'
 
@@ -587,7 +597,7 @@ rule translate_mono_src:
     input:
         file=f'{translated}/mono_src/file.{{part}}',vocab=vocab_path,
         teacher_models=expand(f"{final_teacher_dir}{{ens}}/{best_model}",ens=ensemble),
-        bin=decoder
+        bin=ancient(decoder)
     output: f'{translated}/mono_src/file.{{part}}.out'
     params: args=get_args('decoding-teacher')
     shell: '''bash pipeline/translate/translate.sh "{input.file}" "{input.vocab}" {input.teacher_models} \
@@ -598,7 +608,7 @@ rule collect_mono_src:
     log: f"{log_dir}/collect_mono_src.log"
     conda: "envs/base.yml"
     threads: 4
-    group: 'mono_src'
+    #group 'mono_src'
     input:
        lambda wildcards: expand(f"{translated}/mono_src/file.{{part}}.out",
            part=find_parts(wildcards, checkpoints.split_mono_src))
@@ -613,11 +623,11 @@ rule merge_translated:
     log: f"{log_dir}/merge_translated.log"
     conda: "envs/base.yml"
     threads: 4
-    group: 'mono_src'
+    #group 'mono_src'
     input:
         src1=clean_corpus_src,src2=f"{clean}/mono.{src}.gz",
         trg1=rules.collect_corpus.output,trg2=rules.collect_mono_src.output,
-        bin=deduper
+        bin=ancient(deduper)
     output: res_src=f'{merged}/corpus.{src}.gz',res_trg=f'{merged}/corpus.{trg}.gz'
     shell: '''bash pipeline/translate/merge-corpus.sh \
                 "{input.src1}" "{input.src2}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
@@ -632,7 +642,7 @@ rule score:
     threads: gpus_num*2
     resources: gpu=gpus_num
     input:
-        scorer,
+        ancient(scorer),
         model=f'{backward_dir}/{best_model}', vocab=vocab_path,
         src_corpus=rules.merge_translated.output.res_src, trg_corpus=rules.merge_translated.output.res_trg
     output: f"{filtered}/scores.txt"
@@ -660,11 +670,11 @@ rule alignments:
     conda: "envs/base.yml"
     threads: workflow.cores
     input:
-        spm_encoder, spm_exporter,
+        ancient(spm_encoder), ancient(spm_exporter),
         src_corpus=rules.ce_filter.output.src_corpus,trg_corpus=rules.ce_filter.output.trg_corpus,
         vocab=vocab_path,
-        fast_align=rules.fast_align.output.fast_align, atools=rules.fast_align.output.atools,
-        extract_lex=rules.extract_lex.output
+        fast_align=ancient(rules.fast_align.output.fast_align), atools=ancient(rules.fast_align.output.atools),
+        extract_lex=ancient(rules.extract_lex.output)
     output: alignment=f'{align_dir}/corpus.aln.gz',shortlist=f'{align_dir}/lex.s2t.pruned.gz'
     params: input_prefix=f'{filtered}/corpus'
     shell: '''bash pipeline/alignment/generate-alignment-and-shortlist.sh \
@@ -676,9 +686,9 @@ rule train_student:
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
-    group: 'student'
+    #group 'student'
     input:
-        rules.merge_devset.output, trainer,
+        rules.merge_devset.output, ancient(trainer),
         train_src=rules.ce_filter.output.src_corpus, train_trg=rules.ce_filter.output.trg_corpus,
         alignments=rules.alignments.output.alignment,
         vocab=vocab_path
@@ -697,9 +707,9 @@ rule finetune_student:
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
-    group: 'student-finetuned'
+    #group 'student-finetuned'
     input:
-        rules.merge_devset.output, trainer,
+        rules.merge_devset.output, ancient(trainer),
         train_src=rules.ce_filter.output.src_corpus, train_trg=rules.ce_filter.output.trg_corpus,
         alignments=rules.alignments.output.alignment, student_model=rules.train_student.output.model,
         vocab=vocab_path
@@ -716,7 +726,7 @@ rule quantize:
     conda: "envs/base.yml"
     threads: 1
     input:
-        bmt_decoder, bmt_converter,
+        ancient(bmt_decoder), ancient(bmt_converter),
         shortlist=rules.alignments.output.shortlist, model=rules.finetune_student.output.model,
         vocab=vocab_path, devset=f"{original}/devset.{src}.gz"
     output: model=f'{speed_dir}/model.intgemm.alphas.bin'
@@ -727,7 +737,7 @@ rule export:
     message: "Exporting models"
     log: f"{log_dir}/export.log"
     conda: "envs/base.yml"
-    group: 'export'
+    #group 'export'
     threads: 1
     input:
         model=rules.quantize.output.model,shortlist=rules.alignments.output.shortlist,
@@ -748,12 +758,12 @@ rule evaluate:
     conda: "envs/base.yml"
     threads: gpus_num * 2
     resources: gpu=gpus_num
-    group: '{model}'
+    #group '{model}'
     priority: 50
     wildcard_constraints:
         model="[\w-]+"
     input:
-        decoder,
+        ancient(decoder),
         data=multiext(f'{eval_data_dir}/{{dataset}}',f".{src}.gz",f".{trg}.gz"),
         models=lambda wildcards: f'{models_dir}/{wildcards.model}/{best_model}'
                                     if wildcards.model != 'teacher-ensemble'
@@ -776,11 +786,11 @@ rule eval_quantized:
     message: "Evaluating qunatized student model"
     log: f"{log_dir}/eval_quantized_{{dataset}}.log"
     conda: "envs/base.yml"
-    group: 'export'
+    #group 'export'
     threads: 1
     priority: 50
     input:
-        bmt_decoder,
+        ancient(bmt_decoder),
         data=multiext(f'{eval_data_dir}/{{dataset}}',f".{src}.gz",f".{trg}.gz"),
         model=rules.quantize.output.model,
         shortlist=rules.alignments.output.shortlist,

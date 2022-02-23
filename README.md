@@ -17,6 +17,7 @@ and [Snakemake](https://snakemake.github.io/) framework for workflow management 
 
 - Ubuntu 18.04 (it can work on other Linux distributions, but might require `setup` scripts fixes; see more details in [marian installation instructions](https://marian-nmt.github.io/quickstart/)).
 - One or several Nvidia GPUs with CUDA drivers installed and at least 8 GB of memory.
+- CUDNN installed
 - At least 16 CPU cores ( some steps of the pipeline utilize multiple cores pretty well, so the more the better).
 - 64 GB RAM (128 GB+ might be required for bigger datasets)
 - 200+ GB of disk space ( mostly for datasets and transformations ). 
@@ -33,17 +34,21 @@ It was tested on:
 
 ### Cluster mode
 
-- Slurm cluster with CPU and Nvidia GPU nodes with CUDA
+- Slurm cluster with CPU and Nvidia GPU nodes
+- CUDA 11.2 ( it was also tested on 11.5)
+- CUDNN library installed
 - Singularity module if running with containerization (recommended)
 - If running without containerization, there is no procedure to configure environment automatically.
   All the required modules (for example `parallel`) should be preinstalled and loaded in ~/.bashrc
 
-It was tested on [CSD3 HPC](https://docs.hpc.cam.ac.uk/hpc/index.html) using Singularity containers.
+It was tested on Mozilla Slurm cluster using Singularity containers.
+The pipeline can also be launched on [CSD3 HPC](https://docs.hpc.cam.ac.uk/hpc/index.html) but the main issue is time limits for long-running jobs. 
+Increasing retries can help.
 
 ### Cloud mode
 
 Snakemake workflows can work on Kubernetes, Google Cloud Life Sciences and other cloud platforms. 
-The pipeline was not tested in this mode and might require modificaiton.
+The pipeline was not tested in this mode and might require modification.
 
 Please refer to [Cloud execution](https://snakemake.readthedocs.io/en/stable/executing/cloud.html) section of Snakemake documentation.
 
@@ -59,18 +64,19 @@ cd firefox-translations-training
 1. Adjust environment settings in the `Makefile` 
     - Configure paths to a data storage `SHARED_ROOT` and CUDA libraries `CUDA_DIR`
     - Adjust `NUM_GPUS` - number of GPUs per task that requires GPU and `WORKSPACE` - GPU memory pre-allocation for Marian
-    - (Optional) Set `GPUS` to select specific GPUs for local mode 
-    - Choose a config file to use (`configs/config.test.yml` is useful for testing)
-    - (Cluster mode) Adjust `CLUSTER_CORES` - total number of CPU cores to use on a cluster simultaneously
-2. Configure experiment and datasets in the chosen application config (for example `configs/config.prod.yml`)
+    - (Optional) Set `GPUS` to select specific GPUs for local mode
+    - (Optional) Choose a config file to use (default is `configs/config.prod.yml`)
+    - (Cluster mode) Adjust `CLUSTER_CORES` - number of CPU cores on one cluster machine
+    - (Cluster mode) Use an appropriate `SLURM_PROFILE` from `profiles/`
+2. Configure experiment and datasets in `configs/config.prod.yml` (or `configs/config.prod.yml` for test run)
 3. Change source code if needed for the experiment
 4. **(Cluster mode)** Adjust Snakemake and cluster settings in the cluster profile.
-   For Slurm: `profiles/slurm/config.yml` and `profiles/slurm/config.cluster.yml`
-   You can also modify `profiles/slurm/submit.sh` or create a new Snakemake [profile](https://github.com/Snakemake-Profiles).
+   For `slurm-moz`: `profiles/slurm-moz/config.yml` and `profiles/slurm-moz/config.cluster.yml`
+   You can also modify `profiles/slurm-moz/submit.sh` or create a new Snakemake [profile](https://github.com/Snakemake-Profiles).
 5. **(Cluster mode)** It might require further tuning of requested resources in `Snakemake` file:
     - Use `threads` for a rule to adjust parallelism
     - Use `resources: mem_mb=<memory>` to adjust total memory requirements per task 
-      (default is set in `profile/slurm/config.yaml`)
+      (default is set in `profile/slurm-moz/config.yaml`)
 
 ## Installation
 
@@ -100,9 +106,11 @@ Local mode: See [Singularity installation](https://sylabs.io/guides/3.8/user-gui
 
 Cluster mode: 
 
+For example,
 ```
 module load singularity
 ```
+but the way to load Singularity depends on cluster installation
 
 5. (Optional) Prepare a container image if using Singularity
 
@@ -161,46 +169,27 @@ make run-slurm-container
 
 By default, all Snakemake rules are executed. To run the pipeline up to a specific rule use:
 ```
-make <run-command> TARGET=<non-wildcard-rule>
+make <run-command> TARGET=<non-wildcard-rule-or-path>
 ```
-
 For example, collect corpus first:
 ```
 make run-local TARGET=merge_corpus
 ```
 
-
-### Using Snakepit
-
-Snakepit is a Mozilla machine learning job scheduler.
-See [Snakepit installation](https://github.com/mozilla/snakepit-client).
-
-#### To run the pipeline interactively:
-
-1. Create an empty directory 
-2. Create a file `.compute` in the directory:
+You can also use full file path, for exampe:
 ```
-# install any development dependencies
-apt-get update
-apt-get install -y tmux htop nano
-curl -fsSL https://code-server.dev/install.sh | sh
-
-while true; do : ; sleep 1000; done
+make <run-command> TARGET=/models/ru-en/bicleaner/teacher-base0/model.npz.best-ce-mean-words.npz
 ```
-3. Run `pit run "<user-name>-interactive" "[8:g2080]"`
-4. Run `pit status` to check the job id
-4. Run `pit exec <job-id> -- bash`
-5. After attaching run `tmux`
-6. Follow configuration and installation procedures for the local mode without containerization
-7. Run `make run-local`
+### Rerunning
 
- 
-#### To download exported models:
-
+If you want to rerun a specific step or steps, you can delete the result files that are expected in Snakemake rule output.
+Snakemake might complain on missing file and suggest to run it with `--clean-metadata` flag. In this case run:
 ```
-pit pull home firefox-translations-training/models/ru-en/test/exported/model.ruen.intgemm.alphas.bin.gz .
-pit pull home firefox-translations-training/models/ru-en/test/exported/lex.50.50.ruen.s2t.bin.gz .
-pit pull home firefox-translations-training/models/ru-en/test/exported/vocab.ruen.spm.gz .
+make clean-meta TARGET=<missing-file-name>
+```
+and then as usual:
+```
+make <run-command>
 ```
 
 ### Reporting
@@ -220,6 +209,13 @@ The main directories inside `SHARED_ROOT` are:
 - `experiments/<lang_pair>/<experiment>` - saved experiment settings for future reference
 - `models/<lang_pair>/<experiment>` - all models produced by the pipeline. The final compressed models are in `exported` folder.
 
+#### Exported models example
+
+```
+/models/ru-en/test/exported/model.ruen.intgemm.alphas.bin.gz
+/models/ru-en/test/exported/lex.50.50.ruen.s2t.bin.gz
+/models/ru-en/test/exported/vocab.ruen.spm.gz
+```
 
 ## Pipeline steps
 
@@ -235,7 +231,7 @@ Merge and dedupe | Merges clean dataset and applies deduplicaiton | CPU, Disk |
 Training s2s | Trains a backward shallow s2s model, which is useful for back-translations and ce-filtering | GPU | Inspired by a [marian example](https://github.com/marian-nmt/marian-examples/tree/master/training-basics-sentencepiece).
 Augmentation with back-translations | Translates mono corpus combined from monolingual datasets in target language using shallow s2s model. | GPU | It is more useful for low-resource languages and can be skipped for others.
 Training teacher | Trains an ensemble of big transformer models on augmented dataset | GPU | You might want to adjust [early stopping](pipeline/train/configs/training/teacher.transformer.train.yml) or `after-epochs` parameters depending on datasets size.
-Continue training teacher | Continue training an ensemble of teachers on parallel data only | GPU | You might want to adjust [early stopping](pipeline/train/configs/training/teacher.transformer.train.yml) parameters depending on datasets size.
+Fine-tuning teacher | Continue training an ensemble of teachers on parallel data only | GPU | You might want to adjust [early stopping](pipeline/train/configs/training/teacher.transformer.train.yml) parameters depending on datasets size.
 Translation by teacher | Translates a corpus and monolingual data combined from `MONO_DATASETS_SRC` using the teacher model (ensemble is not supported yet) | GPU | The slowest part of the pipeline. Can take days. It is possible to speed it up launching the same scripts ([corpus](pipeline/translate/translate-corpus.sh), [mono](pipeline/translate/translate-mono.sh)) in parallel from another machine with access to the same network directory.
 Cross-entropy filtering | Scores translated corpus with backward s2s model and removes a part of the corpus with the lowest scores to reduce noise | GPU, CPU, Disk | At this point we work with huge datasets, so it utilizes copying to a local disk to make things faster.
 Training alignments and shortlist | Trains alignments using [fast_align](https://github.com/clab/fast_align) and extracts lexical shortlist using [extract_lex](https://github.com/marian-nmt/extract-lex) tool | CPU, Disk | Some tools requires uncompressed datasets on disk and they are huge at this point. Data is copied to a local disk to make things faster. Might take 100+GB of local disk depending on a dataset size. Good CPU parallelization.
@@ -370,24 +366,27 @@ Then port forward 6006.
     │            ├ corpus.ru.gz
     │            └ corpus.en.gz
     ├ models
-    │   ├ ru-en
-    │   │   └ test
-    │   │      ├ teacher
-    │   │      ├ student
-    │   │      ├ student-finetuned
-    │   │      ├ speed
-    │   │      ├ evaluation
-    │   │      │  ├ backward
-    │   │      │  ├ teacher0
-    │   │      │  ├ teacher1
-    │   │      │  ├ teacher-ensemble
-    │   │      │  ├ student
-    │   │      │  ├ student-finetuned
-    │   │      │  └ speed
-    │   │      └ exported
-    │   ├ en-ru
-    │      └ test
-    │         └ backward
+    │   └ ru-en
+    │       └ test
+    │          ├ backward
+    │          ├ teacher-base0
+    │          ├ teacher-base1
+    │          ├ teacher-finetuned0
+    │          ├ teacher-finetuned1
+    │          ├ student
+    │          ├ student-finetuned
+    │          ├ speed
+    │          ├ evaluation
+    │          │  ├ backward
+    │          │  ├ teacher-base0
+    │          │  ├ teacher-base1
+    │          │  ├ teacher-finetuned0
+    │          │  ├ teacher-finetuned1
+    │          │  ├ teacher-ensemble
+    │          │  ├ student
+    │          │  ├ student-finetuned
+    │          │  └ speed
+    │          └ exported
     │
     ├ experiments
     │   └ ru-en

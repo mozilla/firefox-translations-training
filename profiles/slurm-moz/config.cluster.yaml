@@ -1,0 +1,7 @@
+# Mozilla Berlin cluster
+single-gpu-partition: g2080
+multi-gpu-partition: g2080
+cpu-partition: q6000,g2080,txp
+cpu-account: root
+gpu-account: root
+time-limit: "168:00:00"

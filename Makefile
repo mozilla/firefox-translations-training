@@ -6,6 +6,7 @@ SHELL=/bin/bash
 ### 1. change these settings
 SHARED_ROOT=/data/rw/group-maml
 CUDA_DIR=/usr/local/cuda
+CUDNN_DIR=/usr/lib/x86_64-linux-gnu
 NUM_GPUS=8
 # (optional) override available GPU ids, example GPUS=0 2 5 6
 GPUS=
@@ -14,15 +15,17 @@ CLUSTER_CORES=16
 CONFIG=configs/config.prod.yml
 CONDA_PATH=$(SHARED_ROOT)/mambaforge
 SNAKEMAKE_OUTPUT_CACHE=$(SHARED_ROOT)/cache
+SLURM_PROFILE=slurm-moz
 # for CSD3 cluster
 # MARIAN_CMAKE=-DBUILD_ARCH=core-avx2
 MARIAN_CMAKE=
 TARGET=
+
 ###
 
 CONDA_ACTIVATE=source $(CONDA_PATH)/etc/profile.d/conda.sh ; conda activate ; conda activate
 SNAKEMAKE=export SNAKEMAKE_OUTPUT_CACHE=$(SNAKEMAKE_OUTPUT_CACHE);  snakemake
-CONFIG_OPTIONS=root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" workspace=$(WORKSPACE) numgpus=$(NUM_GPUS) $(if $(MARIAN_CMAKE),mariancmake="$(MARIAN_CMAKE)",) $(if $(GPUS),gpus="$(GPUS)",)
+CONFIG_OPTIONS=root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" cudnn=/cudnn workspace=$(WORKSPACE) numgpus=$(NUM_GPUS) $(if $(MARIAN_CMAKE),mariancmake="$(MARIAN_CMAKE)",) $(if $(GPUS),gpus="$(GPUS)",)
 
 ### 2. setup
 
@@ -58,6 +61,7 @@ dry-run:
 	  --use-conda \
 	  --cores all \
 	  --cache \
+	  --verbose \
 	  --reason \
 	  --configfile $(CONFIG) \
 	  --config $(CONFIG_OPTIONS) deps=true  \
@@ -95,12 +99,12 @@ run-local-container:
 	  --resources gpu=$(NUM_GPUS) \
 	  --configfile $(CONFIG) \
 	  --config $(CONFIG_OPTIONS) \
-	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR) --nv" \
+	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR),$(CUDNN_DIR):/cudnn --nv" \
 	  $(TARGET)
 
 run-slurm:
 	$(CONDA_ACTIVATE) snakemake
-	chmod +x profiles/slurm/*
+	chmod +x profiles/$(SLURM_PROFILE)/*
 	$(SNAKEMAKE) \
 	  --use-conda \
 	  --reason \
@@ -108,24 +112,23 @@ run-slurm:
 	  --cache \
 	  --configfile $(CONFIG) \
 	  --config $(CONFIG_OPTIONS) \
-	  --profile=profiles/slurm \
+	  --profile=profiles/$(SLURM_PROFILE) \
 	  $(TARGET)
 
 run-slurm-container:
 	$(CONDA_ACTIVATE) snakemake
-	chmod +x profiles/slurm/*
-	module load singularity
+	chmod +x profiles/$(SLURM_PROFILE)/*
+#	module load singularity
 	$(SNAKEMAKE) \
 	  --use-conda \
 	  --use-singularity \
 	  --reason \
-	  --verbose \
 	  --cores $(CLUSTER_CORES) \
 	  --cache \
 	  --configfile $(CONFIG) \
 	  --config $(CONFIG_OPTIONS) \
-	  --profile=profiles/slurm \
-	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR),/tmp --nv --containall" \
+	  --profile=profiles/$(SLURM_PROFILE) \
+	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR),$(CUDNN_DIR):/cudnn,/tmp --nv --containall" \
 	  $(TARGET)
 # if CPU nodes don't have access to cuda dirs, use
 # export CUDA_DIR=$(CUDA_DIR); $(SNAKEMAKE) \
@@ -148,6 +151,15 @@ run-file-server:
 	python -m  http.server --directory $(SHARED_ROOT)/reports 8000
 
 ### extra
+
+clean-meta:
+	$(CONDA_ACTIVATE) snakemake
+	$(SNAKEMAKE) \
+	  --use-conda \
+	  --cores all \
+	  --configfile $(CONFIG) \
+	  --config $(CONFIG_OPTIONS) \
+	  --cleanup-metadata $(TARGET)
 
 dag: CONFIG=configs/config.test.yml
 dag:
