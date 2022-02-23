@@ -41,7 +41,7 @@ It was tested on:
 - If running without containerization, there is no procedure to configure environment automatically.
   All the required modules (for example `parallel`) should be preinstalled and loaded in ~/.bashrc
 
-It was tested on and Mozilla Slurm cluster using Singularity containers.
+It was tested on Mozilla Slurm cluster using Singularity containers.
 The pipeline can also be launched on [CSD3 HPC](https://docs.hpc.cam.ac.uk/hpc/index.html) but the main issue is time limits for long-running jobs. 
 Increasing retries can help.
 
@@ -64,11 +64,11 @@ cd firefox-translations-training
 1. Adjust environment settings in the `Makefile` 
     - Configure paths to a data storage `SHARED_ROOT` and CUDA libraries `CUDA_DIR`
     - Adjust `NUM_GPUS` - number of GPUs per task that requires GPU and `WORKSPACE` - GPU memory pre-allocation for Marian
-    - (Optional) Set `GPUS` to select specific GPUs for local mode 
-    - Choose a config file to use (`configs/config.test.yml` is useful for testing)
-    - (Cluster mode) Adjust `CLUSTER_CORES` - total number of CPU cores to use on a cluster simultaneously
-    - (Cluster mode) Use an appropriate `SLURM_PROFILE`
-2. Configure experiment and datasets in the chosen application config (for example `configs/config.prod.yml`)
+    - (Optional) Set `GPUS` to select specific GPUs for local mode
+    - (Optional) Choose a config file to use (default is `configs/config.prod.yml`)
+    - (Cluster mode) Adjust `CLUSTER_CORES` - number of CPU cores on one cluster machine
+    - (Cluster mode) Use an appropriate `SLURM_PROFILE` from `profiles/`
+2. Configure experiment and datasets in `configs/config.prod.yml` (or `configs/config.prod.yml` for test run)
 3. Change source code if needed for the experiment
 4. **(Cluster mode)** Adjust Snakemake and cluster settings in the cluster profile.
    For `slurm-moz`: `profiles/slurm-moz/config.yml` and `profiles/slurm-moz/config.cluster.yml`
@@ -169,12 +169,27 @@ make run-slurm-container
 
 By default, all Snakemake rules are executed. To run the pipeline up to a specific rule use:
 ```
-make <run-command> TARGET=<non-wildcard-rule>
+make <run-command> TARGET=<non-wildcard-rule-or-path>
 ```
-
 For example, collect corpus first:
 ```
 make run-local TARGET=merge_corpus
+```
+
+You can also use full file path, for exampe:
+```
+make <run-command> TARGET=/models/ru-en/bicleaner/teacher-base0/model.npz.best-ce-mean-words.npz
+```
+### Rerunning
+
+If you want to rerun a specific step or steps, you can delete the result files that are expected in Snakemake rule output.
+Snakemake might complain on missing file and suggest to run it with `--clean-metadata` flag. In this case run:
+```
+make clean-meta TARGET=<missing-file-name>
+```
+and then as usual:
+```
+make <run-command>
 ```
 
 ### Reporting
@@ -216,7 +231,7 @@ Merge and dedupe | Merges clean dataset and applies deduplicaiton | CPU, Disk |
 Training s2s | Trains a backward shallow s2s model, which is useful for back-translations and ce-filtering | GPU | Inspired by a [marian example](https://github.com/marian-nmt/marian-examples/tree/master/training-basics-sentencepiece).
 Augmentation with back-translations | Translates mono corpus combined from monolingual datasets in target language using shallow s2s model. | GPU | It is more useful for low-resource languages and can be skipped for others.
 Training teacher | Trains an ensemble of big transformer models on augmented dataset | GPU | You might want to adjust [early stopping](pipeline/train/configs/training/teacher.transformer.train.yml) or `after-epochs` parameters depending on datasets size.
-Continue training teacher | Continue training an ensemble of teachers on parallel data only | GPU | You might want to adjust [early stopping](pipeline/train/configs/training/teacher.transformer.train.yml) parameters depending on datasets size.
+Fine-tuning teacher | Continue training an ensemble of teachers on parallel data only | GPU | You might want to adjust [early stopping](pipeline/train/configs/training/teacher.transformer.train.yml) parameters depending on datasets size.
 Translation by teacher | Translates a corpus and monolingual data combined from `MONO_DATASETS_SRC` using the teacher model (ensemble is not supported yet) | GPU | The slowest part of the pipeline. Can take days. It is possible to speed it up launching the same scripts ([corpus](pipeline/translate/translate-corpus.sh), [mono](pipeline/translate/translate-mono.sh)) in parallel from another machine with access to the same network directory.
 Cross-entropy filtering | Scores translated corpus with backward s2s model and removes a part of the corpus with the lowest scores to reduce noise | GPU, CPU, Disk | At this point we work with huge datasets, so it utilizes copying to a local disk to make things faster.
 Training alignments and shortlist | Trains alignments using [fast_align](https://github.com/clab/fast_align) and extracts lexical shortlist using [extract_lex](https://github.com/marian-nmt/extract-lex) tool | CPU, Disk | Some tools requires uncompressed datasets on disk and they are huge at this point. Data is copied to a local disk to make things faster. Might take 100+GB of local disk depending on a dataset size. Good CPU parallelization.
