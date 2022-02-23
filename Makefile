@@ -152,6 +152,15 @@ run-file-server:
 
 ### extra
 
+clean-meta:
+	$(CONDA_ACTIVATE) snakemake
+	$(SNAKEMAKE) \
+	  --use-conda \
+	  --cores all \
+	  --configfile $(CONFIG) \
+	  --config $(CONFIG_OPTIONS) \
+	  --cleanup-metadata $(TARGET)
+
 dag: CONFIG=configs/config.test.yml
 dag:
 	snakemake \
