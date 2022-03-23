@@ -17,8 +17,7 @@ mkdir -p "${tmp}"
 
 echo "### Deduplicating ${input_prefix}"
 paste <(pigz -dc "${input_prefix}.${SRC}.gz") <(pigz -dc "${input_prefix}.${TRG}.gz") |
-LC_ALL=C sort -S 10G -T "${tmp}" |
-uniq |
+${BIN}/dedupe |
 pigz >"${tmp}/dedup-corpus.${SRC}${TRG}.gz"
 
 pigz -dc "${tmp}/dedup-corpus.${SRC}${TRG}.gz" | cut -f1 | pigz > "${output_prefix}.${SRC}.gz"
