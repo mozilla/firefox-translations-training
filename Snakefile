@@ -737,6 +737,96 @@ rule collect_corpus:
     params: src_corpus=clean_corpus_src
     shell: 'bash pipeline/translate/collect.sh {translated}/corpus {output} {params.src_corpus} >> {log} 2>&1'
 
+# Translate with multiple domain teachers
+if fine_tune_to_corpus:
+    # ruleorder is to produce .nbest files by the translate_corpus_domains rule
+    # and .nbest.out files by the extract_best_domains rule,
+    # without it split_corpus_domains causes ambiguity
+    ruleorder: translate_corpus_domains > split_corpus_domains
+    ruleorder: extract_best_domains > split_corpus_domains
+
+    checkpoint split_corpus_domains:
+        message: "Splitting the corpus to translate (domains kept separate)"
+        log: f"{log_dir}/split_corpus_domains_{{dataset}}.log"
+        conda: "envs/base.yml"
+        threads: 1
+        input:
+            corpus_src=f'{held_out_corpus_prefix}/train/{{dataset}}.{src}.gz',
+            corpus_trg=f'{held_out_corpus_prefix}/train/{{dataset}}.{trg}.gz'
+        output:
+            directory(f"{translated_domains}/corpus/parts/{{dataset}}")
+        params:
+            output_dir=f"{translated_domains}/corpus/parts/{{dataset}}"
+        shell: '''bash pipeline/translate/split-corpus.sh \
+                    {input.corpus_src} {input.corpus_trg} {params.output_dir} {split_length} >> {log} 2>&1'''
+
+    rule translate_corpus_domains:
+        message: "Translating corpora with domain teachers"
+        log: f"{log_dir}/translate_corpus_domains/{{dataset}}_{{part}}.log"
+        conda: "envs/base.yml"
+        threads: gpus_num * 2
+        resources: gpu=gpus_num
+        input:
+            decoder,
+            file=f'{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}',
+            vocab=vocab_path,
+            # all_teacher_models=expand(f'{corpus_finetuned_teacher_dir}{{ens}}/{{dataset}}/{teacher_all_output}',
+            #                             ens=ensemble, allow_missing=True),
+            # teacher_models=rules.domain_teachers.output.model
+            teacher_models=expand(f'{corpus_finetuned_teacher_dir}{{ens}}/{{dataset}}/{best_model}',
+                                    ens=ensemble, allow_missing=True)
+            # file=lambda wildcards: f'{checkpoints.split_corpus_domains.get(dataset=wildcards.dataset).output[0]}/file.{{part}}'
+        output: f'{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}.nbest'
+        params: args=get_args('decoding-teacher')
+        wildcard_constraints: part="\d+"
+        shell: '''bash pipeline/translate/translate-nbest.sh \
+                    "{input.file}" "{input.vocab}" {input.teacher_models} {params.args} >> {log} 2>&1'''
+
+    rule extract_best_domains:
+        message: "Extracting best translations for the corpora (corpora kept separate)"
+        log: f"{log_dir}/extract_best_domains/{{dataset}}/{{part}}.log"
+        conda: "envs/base.yml"
+        threads: 1
+        group: 'translate_corpus'
+        input:
+            nbest=f"{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}.nbest",
+            ref=f"{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}.ref"
+        output: f"{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}.nbest.out"
+        shell: 'python pipeline/translate/bestbleu.py -i {input.nbest} -r {input.ref} -m bleu -o {output} >> {log} 2>&1'
+
+    rule collect_single_corpus_domains:
+        message: "Collecting translated corpora separately"
+        log: f"{log_dir}/collect_corpus_domains_{{dataset}}.log"
+        conda: "envs/base.yml"
+        threads: 4
+        group: 'translate_corpus'
+        input:
+            lambda wildcards: expand(f"{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}.nbest.out",
+                part=find_parts(wildcards,checkpoints.split_corpus_domains),
+                allow_missing=True)
+        output: f'{translated_domains}/corpus/collected/{{dataset}}.{trg}.gz'
+        params: src_corpus=f'{held_out_corpus_prefix}/train/{{dataset}}.{src}.gz'
+        shell: '''bash pipeline/translate/collect.sh \
+                 {translated_domains}/corpus/parts/{wildcards.dataset} \
+                 {output} {params.src_corpus} >> {log} 2>&1'''
+
+    rule collect_all_corpora_domains:
+        message: "Collecting translated corpora into one"
+        log: f"{log_dir}/collect_corpus_domains.log"
+        conda: "envs/base.yml"
+        threads: 4
+        group: 'translate_corpus'
+        input:
+            translations=expand(f'{translated_domains}/corpus/collected/{{dataset}}.{trg}.gz',
+                dataset=train_datasets),
+            src_corpus=clean_corpus_domain_ft_src
+        output: f'{translated_domains}/corpus.{trg}.gz'
+        params:
+            src_corpus=clean_corpus_domain_ft_src
+        shell: '''bash pipeline/translate/collect-corpora.sh \
+                         {output} {params.src_corpus} {input.translations} >> {log} 2>&1'''
+
+
 # mono
 
 checkpoint split_mono_src:
