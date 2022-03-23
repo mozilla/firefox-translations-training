@@ -37,9 +37,11 @@ bicl_dataset_thresholds = config['experiment']['bicleaner']['dataset-thresholds'
 backward_pretrained = config['experiment']['backward-model']
 vocab_pretrained = config['experiment']['vocab']
 
+fine_tune_to_corpus = config['experiment']['fine-tune-to-corpus']
+
 experiment_dir=f"{data_root_dir}/experiments/{src}-{trg}/{experiment}"
 
-# override marian cofings
+# override marian configs
 marian_args = {name: ' '.join([f'--{k} {v}' for k,v in conf.items() ])
                for name, conf in config['marian-args'].items()}
 
@@ -51,6 +53,11 @@ mono_src_datasets = config['datasets']['mono-src']
 mono_trg_datasets = config['datasets']['mono-trg']
 mono_datasets = {src: mono_src_datasets, trg: mono_trg_datasets}
 mono_max_sent = {src: mono_max_sent_src, trg: mono_max_sent_trg}
+
+held_out_dev_test = config['datasets']['held-out-dev-test']
+if held_out_dev_test:
+    held_out_dev_size = config['datasets']['held-out-dev-size']
+    held_out_test_size = config['datasets']['held-out-test-size']
 
 # parallelization
 
@@ -94,6 +101,11 @@ merged = f"{data_dir}/merged"
 filtered = f'{data_dir}/filtered'
 align_dir = f"{data_dir}/alignment"
 
+translated_domains = f"{data_dir}/translated-domains"
+merged_ft = f"{data_dir}/merged-ft"
+filtered_ft = f'{data_dir}/filtered-ft'
+align_dir_ft = f"{data_dir}/alignment-ft"
+
 # models
 models_dir = f"{data_root_dir}/models/{src}-{trg}/{experiment}"
 teacher_base_dir = f"{models_dir}/teacher-base"
@@ -107,6 +119,12 @@ backward_dir = f'{models_dir}/backward'
 spm_sample_size=config['experiment']['spm-sample-size']
 vocab_path=vocab_pretrained or f"{models_dir}/vocab/vocab.spm"
 
+domain_ft_teacher_dir = f"{models_dir}/teacher-domain-ft"
+student_dir_ft = f"{models_dir}/student-domain-ft"
+student_finetuned_dir_ft = f"{models_dir}/student-domain-ft-finetuned"
+speed_dir_ft = f"{models_dir}/speed-domain-ft"
+exported_dir_ft = f"{models_dir}/exported-domain-ft"
+
 #evaluation
 eval_data_dir = f"{original}/eval"
 eval_res_dir = f"{models_dir}/evaluation"
@@ -115,6 +133,12 @@ eval_student_dir = f'{eval_res_dir}/student'
 eval_student_finetuned_dir = f'{eval_res_dir}/student-finetuned'
 eval_speed_dir = f'{eval_res_dir}/speed'
 eval_teacher_ens_dir = f'{eval_res_dir}/teacher-ensemble'
+
+eval_student_dir_ft = f'{eval_res_dir}/student-domain-ft'
+eval_student_finetuned_dir_ft = f'{eval_res_dir}/student-domain-ft-finetuned'
+eval_speed_dir_ft = f'{eval_res_dir}/speed-domain-ft'
+eval_res_dir_ft_teachers = f"{models_dir}/evaluation-teacher-domain-ft"
+eval_teacher_ens_dir_ft = f'{eval_res_dir}/teacher-ensemble-domain-ft'
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" BMT_MARIAN="{bmt_marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
@@ -150,6 +174,20 @@ else:
     do_train_backward = False
     backward_dir = backward_pretrained
 
+if fine_tune_to_corpus:
+    # results.extend(expand(f"{domain_ft_teacher_dir}{{ens}}/{{dataset}}/{best_model}",
+    #                     ens=ensemble, dataset=train_datasets))
+    # results.append(f'{translated_domains}/corpus.{trg}.gz')
+    # results.append(f'{student_dir_ft}/{best_model}')
+    results.extend([f'{exported_dir_ft}/model.{src}{trg}.intgemm.alphas.bin.gz',
+                    f'{exported_dir_ft}/lex.50.50.{src}{trg}.s2t.bin.gz',
+                    f'{exported_dir_ft}/vocab.{src}{trg}.spm.gz'])
+    results.extend(expand(f'{eval_student_dir_ft}/{{dataset}}.metrics',dataset=eval_datasets))
+    results.extend(expand(f'{eval_student_finetuned_dir_ft}/{{dataset}}.metrics',dataset=eval_datasets))
+    results.extend(expand(f'{eval_speed_dir_ft}/{{dataset}}.metrics', dataset=eval_datasets))
+    # results.extend(expand(f'{eval_res_dir_ft_teachers}/domain-ft-teacher{{ens}}/{{dataset}}/{{eval_dataset}}.metrics',
+    #     ens=ensemble, eval_dataset=eval_datasets, dataset=train_datasets))
+
 # bicleaner
 
 bicleaner_type = packs.find(src, trg)
@@ -166,6 +204,16 @@ else:
 
 clean_corpus_src = f'{clean_corpus_prefix}.{src}.gz'
 clean_corpus_trg = f'{clean_corpus_prefix}.{trg}.gz'
+
+clean_corpus_domain_ft_prefix = f'{data_dir}/deduplicated/corpus'
+clean_corpus_domain_ft_src = f'{clean_corpus_domain_ft_prefix}.{src}.gz'
+clean_corpus_domain_ft_trg = f'{clean_corpus_domain_ft_prefix}.{trg}.gz'
+
+# if using held-out dev and test sets,
+# the clean corpus only contains the training set
+held_out_corpus_prefix = f'{data_dir}/held-out/corpus'
+held_out_corpus_src = f'{held_out_corpus_prefix}.{src}.gz'
+held_out_corpus_trg = f'{held_out_corpus_prefix}.{trg}.gz'
 
 
 # augmentation
@@ -367,17 +415,101 @@ if use_bicleaner:
                     "{params.prefix_input}" "{params.prefix_output}" {params.threshold} {bicleaner_type} {threads} \
                     "{input.pack_dir}" >> {log} 2>&1'''
 
-rule merge_corpus:
-    message: "Merging clean parallel datasets"
-    log: f"{log_dir}/merge_corpus.log"
-    conda: "envs/base.yml"
-    threads: workflow.cores
-    # group: "clean_corpus"
-    input:  expand(f"{clean_corpus_prefix}/{{dataset}}.{{lang}}.gz", dataset=train_datasets, lang=[src, trg]),
-            bin=ancient(deduper)
-    output: src=clean_corpus_src,trg=clean_corpus_trg
-    params: prefix_output=clean_corpus_prefix, prefixes=expand(f"{clean_corpus_prefix}/{{dataset}}", dataset=train_datasets)
-    shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
+# Create held-out dev and test sets if needed
+# (necessary for domain fine-tuning to evaluate fine-tuned models on relevant data)
+if held_out_dev_test:
+    rule deduplicate_individual_corpora:
+        message: "Deduplicating each corpus independently"
+        log: f"{log_dir}/deduplicate_individual_corpora_{{dataset}}.log"
+        conda: "envs/base.yml"
+        threads: workflow.cores
+        group: "clean_corpus"
+        input:
+            expand(f"{clean_corpus_prefix}/{{dataset}}.{{lang}}.gz", lang=[src, trg], allow_missing=True)
+        output:
+            src=f"{clean_corpus_domain_ft_prefix}/{{dataset}}.{src}.gz",
+            trg=f"{clean_corpus_domain_ft_prefix}/{{dataset}}.{trg}.gz"
+        params:
+            prefix_output=f"{clean_corpus_domain_ft_prefix}/{{dataset}}",
+            prefix_input=f"{clean_corpus_prefix}/{{dataset}}"
+        shell: '''bash pipeline/clean/tools/individual-deduplication.sh "{params.prefix_output}" \
+                    {params.prefix_input} >> {log} 2>&1'''
+
+    rule create_held_out_sets:
+        message: "Creating held-out dev and test sets for each corpus"
+        log: f"{log_dir}/create_held_out_sets_{{dataset}}.log"
+        conda: "envs/base.yml"
+        threads: workflow.cores
+        group: "clean_corpus"
+        wildcard_constraints: dataset="|".join(train_datasets)
+        input:
+            src=f"{clean_corpus_domain_ft_prefix}/{{dataset}}.{src}.gz",
+            trg=f"{clean_corpus_domain_ft_prefix}/{{dataset}}.{trg}.gz"
+        output:
+            src_train=f"{held_out_corpus_prefix}/train/{{dataset}}.{src}.gz",
+            trg_train=f"{held_out_corpus_prefix}/train/{{dataset}}.{trg}.gz",
+            src_dev=f"{held_out_corpus_prefix}/dev/{{dataset}}.{src}.gz",
+            trg_dev=f"{held_out_corpus_prefix}/dev/{{dataset}}.{trg}.gz",
+            src_test=f"{held_out_corpus_prefix}/test/{{dataset}}.{src}.gz",
+            trg_test=f"{held_out_corpus_prefix}/test/{{dataset}}.{trg}.gz",
+        params:
+            dev_size=held_out_dev_size,
+            test_size=held_out_test_size
+        shell: '''bash pipeline/data/held-out-dev-test.sh \
+                    "{input.src}" "{input.trg}" "{params.dev_size}" \
+                    "{params.test_size}" "{held_out_corpus_prefix}" "{wildcards.dataset}" >> {log} 2>&1'''
+
+    rule merge_held_out_train_sets:
+        message: "Merge held-out train sets"
+        log: f"{log_dir}/merge_held_out_train_sets.log"
+        conda: "envs/base.yml"
+        threads: workflow.cores
+        group: "clean_corpus"
+        input:
+            expand(f"{held_out_corpus_prefix}/train/{{dataset}}.{{lang}}.gz",
+                dataset=train_datasets,lang=[src, trg])
+        output:
+            src=clean_corpus_src,
+            trg=clean_corpus_trg
+        params:
+            prefix_output=clean_corpus_prefix,
+            prefixes=expand(f"{held_out_corpus_prefix}/train/{{dataset}}",dataset=train_datasets)
+        shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
+
+# If using held-out dev and test sets, the merged train sets will be used (created by rule merge_held_out_train_sets),
+# so that the model does not see dev and test data that will be used for fine-tuning teachers to corpora;
+# if no held-out sets, use the original merge_corpus rule
+if not held_out_dev_test:
+    rule merge_corpus:
+        message: "Merging clean parallel datasets"
+        log: f"{log_dir}/merge_corpus.log"
+        conda: "envs/base.yml"
+        threads: workflow.cores
+        # group: "clean_corpus"
+        input:  expand(f"{clean_corpus_prefix}/{{dataset}}.{{lang}}.gz", dataset=train_datasets, lang=[src, trg]),
+                bin=ancient(deduper)
+        output: src=clean_corpus_src,trg=clean_corpus_trg
+        params: prefix_output=clean_corpus_prefix, prefixes=expand(f"{clean_corpus_prefix}/{{dataset}}", dataset=train_datasets)
+        shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
+
+# Merge individually deduplicated training corpora (used to compare files after forward-translation)
+if fine_tune_to_corpus:
+    rule merge_corpus_for_forward_translation:
+        message: "Merging clean parallel datasets for domain fine-tuning (with individual deduplication)"
+        log: f"{log_dir}/merge_corpus_for_forward_translation.log"
+        conda: "envs/base.yml"
+        threads: workflow.cores
+        group: "clean_corpus"
+        input: expand(f"{held_out_corpus_prefix}/train/{{dataset}}.{{lang}}.gz",dataset=train_datasets,lang=[src, trg])
+        output:
+            src=clean_corpus_domain_ft_src,
+            trg=clean_corpus_domain_ft_trg
+        params:
+            prefix_output=clean_corpus_domain_ft_prefix,
+            prefixes=expand(f"{held_out_corpus_prefix}/train/{{dataset}}",
+            dataset=train_datasets)
+        shell: '''bash pipeline/clean/merge-corpus-without-deduplication.sh \
+                    "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
 
 rule merge_devset:
     message: "Merging devsets"
