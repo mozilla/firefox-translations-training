@@ -6,8 +6,6 @@
 set -x
 set -euo pipefail
 
-echo "###### Merging parallel datasets"
-
 test -v SRC
 test -v TRG
 
