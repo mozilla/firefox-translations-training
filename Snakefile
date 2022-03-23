@@ -119,7 +119,7 @@ backward_dir = f'{models_dir}/backward'
 spm_sample_size=config['experiment']['spm-sample-size']
 vocab_path=vocab_pretrained or f"{models_dir}/vocab/vocab.spm"
 
-domain_ft_teacher_dir = f"{models_dir}/teacher-domain-ft"
+corpus_finetuned_teacher_dir = f"{models_dir}/teacher-domain-ft"
 student_dir_ft = f"{models_dir}/student-domain-ft"
 student_finetuned_dir_ft = f"{models_dir}/student-domain-ft-finetuned"
 speed_dir_ft = f"{models_dir}/speed-domain-ft"
@@ -175,7 +175,7 @@ else:
     backward_dir = backward_pretrained
 
 if fine_tune_to_corpus:
-    # results.extend(expand(f"{domain_ft_teacher_dir}{{ens}}/{{dataset}}/{best_model}",
+    # results.extend(expand(f"{corpus_finetuned_teacher_dir}{{ens}}/{{dataset}}/{best_model}",
     #                     ens=ensemble, dataset=train_datasets))
     # results.append(f'{translated_domains}/corpus.{trg}.gz')
     # results.append(f'{student_dir_ft}/{best_model}')
@@ -655,6 +655,34 @@ if augment_corpus:
         shell: '''bash pipeline/train/train.sh \
                     teacher train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
                     "{input.vocab}" --pretrained-model "{input.model}" {params.args} >> {log} 2>&1'''
+
+if fine_tune_to_corpus:
+    ### fine-tune teacher to corpora
+    rule finetune_teacher_to_corpora:
+        message: "Fine-tune teacher on each corpus"
+        log: f"{log_dir}/finetune_teacher_to_corpora{{ens}}_{{dataset}}.log"
+        conda: "envs/base.yml"
+        threads: gpus_num * 2
+        resources: gpu=gpus_num
+        group: 'teacher{ens}'
+        input:
+            dev_src=rules.create_held_out_sets.output.src_dev,
+            dev_trg=rules.create_held_out_sets.output.trg_dev,
+            train_src=rules.create_held_out_sets.output.src_train,
+            train_trg=rules.create_held_out_sets.output.trg_train,
+            bin=ancient(trainer),vocab=vocab_path,
+            general_teacher=f'{final_teacher_dir}{{ens}}/{best_model}'
+        output:
+            model=f'{corpus_finetuned_teacher_dir}{{ens}}/{{dataset}}/{best_model}'
+        params:
+            prefix_train=f"{held_out_corpus_prefix}/train/{{dataset}}",
+            prefix_test=f"{held_out_corpus_prefix}/dev/{{dataset}}",
+            dir=directory(f'{corpus_finetuned_teacher_dir}{{ens}}/{{dataset}}'),
+            args=get_args("training-teacher-all")
+        wildcard_constraints: ens="\d+"
+        shell: '''bash pipeline/train/train.sh \
+                    teacher train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
+                    "{input.vocab}" --pretrained-model "{input.general_teacher}" {params.args} >> {log} 2>&1'''
 
 ### translation with teacher
 
