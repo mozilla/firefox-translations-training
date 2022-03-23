@@ -14,7 +14,7 @@ test -v CUDA_DIR
 test -v CUDNN_DIR
 
 # cuda and cudnn libs
-export LD_LIBRARY_PATH=${CUDA_DIR}/lib64:${CUDNN_DIR}:${LD_LIBRARY_PATH}
+export LD_LIBRARY_PATH=${CUDA_DIR}/lib64:${CUDNN_DIR}:${LD_LIBRARY_PATH:+LD_LIBRARY_PATH:}
 
 corpus_prefix=$1
 output_prefix=$2
