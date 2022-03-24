@@ -4,4 +4,4 @@ multi-gpu-partition: pascal
 cpu-partition: skylake
 cpu-account: T2-CS119-CPU
 gpu-account: T2-CS119-GPU
-time-limit: "24:00:00"
+time-limit: "36:00:00"
