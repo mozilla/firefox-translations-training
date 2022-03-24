@@ -46,9 +46,10 @@ if "resources" in job_properties:
         if cuda_dir:
             options += ['--export', f'ALL,SINGULARITY_BIND="{cuda_dir}"']
 
-    if 'mem_mb' in resources:
-        memory = str(resources['mem_mb'])
-        options += [f'--mem={memory}']
+    # we don't need explicit memory limiting for now
+    # if 'mem_mb' in resources:
+    #     memory = str(resources['mem_mb'])
+    #     options += [f'--mem={memory}']
 
 options += ['-p', partition]
 options += ['-A', account]
