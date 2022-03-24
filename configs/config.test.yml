@@ -39,27 +39,27 @@ marian-args:
     disp-freq: 10
     save-freq: 100
     valid-freq: 100
-    after: 1000u
+    after: 500u
   training-teacher-base:
     disp-freq: 10
     save-freq: 100
     valid-freq: 100
-    after: 1000u
+    after: 500u
   training-teacher-finetuned:
     disp-freq: 10
     save-freq: 100
     valid-freq: 100
-    after: 1000u
+    after: 500u
   training-student:
     disp-freq: 10
     save-freq: 100
     valid-freq: 100
-    after: 1000u
+    after: 500u
   training-student-finetuned:
     disp-freq: 10
     save-freq: 100
     valid-freq: 100
-    after: 1000u
+    after: 500u
   decoding-backward:
     mini-batch-words: 2000
   decoding-teacher:
