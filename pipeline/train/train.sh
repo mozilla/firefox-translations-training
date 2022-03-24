@@ -50,5 +50,8 @@ echo "### Training ${model_dir}"
   --valid-log "${model_dir}/valid.log" \
   "${extra_params[@]}"
 
+cp "${model_dir}/model.npz.best-chrf.npz" "${model_dir}/model.npz.best-chrf.npz.res"
+cp "${model_dir}/model.npz.best-chrf.npz.decoder.yml" "${model_dir}/model.npz.best-chrf.npz.res.decoder.yml"
+
 echo "### Model training is completed: ${model_dir}"
 echo "###### Done: Training a model"
