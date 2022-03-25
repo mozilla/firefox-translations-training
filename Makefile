@@ -163,6 +163,7 @@ clean-meta:
 
 dag: CONFIG=configs/config.test.yml
 dag:
+	$(CONDA_ACTIVATE) snakemake
 	snakemake \
 	  --dag \
 	  --configfile $(CONFIG) \
