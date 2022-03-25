@@ -49,8 +49,8 @@ else
     export tcol=1
   fi
 
-  #Export cuda visible devices if not set
-  if [ ${#CUDA_VISIBLE_DEVICES} == 0 ]; then
+  #Export cuda visible devices if empty or not set
+  if [ -z "${CUDA_VISIBLE_DEVICES:-}" ]; then
     export CUDA_VISIBLE_DEVICES=$(nvidia-smi --query-gpu=index --format=csv,noheader);
   fi
 
