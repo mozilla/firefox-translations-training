@@ -162,3 +162,4 @@ else
         scancel $SLURM_JOBID
     fi
 fi
+exit $marian_exit_status
