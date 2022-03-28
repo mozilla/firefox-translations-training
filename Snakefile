@@ -165,7 +165,7 @@ if len(ensemble) > 1:
 
 if install_deps:
     results.append("/tmp/flags/setup.done")
-
+#
 if not backward_pretrained:
     # don't evaluate pretrained model
     results.extend(expand(f'{eval_backward_dir}/{{dataset}}.metrics',dataset=eval_datasets))
@@ -175,10 +175,10 @@ else:
     backward_dir = backward_pretrained
 
 if fine_tune_to_corpus:
-    results.extend(expand(f"{corpus_finetuned_teacher_dir}{{ens}}/{{dataset}}/{best_model}",
-                        ens=ensemble, dataset=train_datasets))
+    # results.extend(expand(f"{corpus_finetuned_teacher_dir}{{ens}}/{{dataset}}/{best_model}",
+    #                     ens=ensemble, dataset=train_datasets))
     # results.append(f'{translated_domains}/corpus.{trg}.gz')
-    # results.append(f'{student_dir_ft}/{best_model}')
+    results.append(f'{student_dir_ft}/{best_model}')
     # results.extend([f'{exported_dir_ft}/model.{src}{trg}.intgemm.alphas.bin.gz',
     #                 f'{exported_dir_ft}/lex.50.50.{src}{trg}.s2t.bin.gz',
     #                 f'{exported_dir_ft}/vocab.{src}{trg}.spm.gz'])
@@ -191,6 +191,7 @@ if fine_tune_to_corpus:
 # bicleaner
 
 bicleaner_type = packs.find(src, trg)
+bicleaner_type = 'bicleaner'
 bicleaner_env = "envs/bicleaner-ai.yml" if bicleaner_type == 'bicleaner-ai' else 'envs/bicleaner.yml'
 
 if bicleaner_type:
@@ -737,94 +738,94 @@ rule collect_corpus:
     params: src_corpus=clean_corpus_src
     shell: 'bash pipeline/translate/collect.sh {translated}/corpus {output} {params.src_corpus} >> {log} 2>&1'
 
-# # Translate with multiple domain teachers
-# if fine_tune_to_corpus:
-#     # ruleorder is to produce .nbest files by the translate_corpus_domains rule
-#     # and .nbest.out files by the extract_best_domains rule,
-#     # without it split_corpus_domains causes ambiguity
-#     ruleorder: translate_corpus_domains > split_corpus_domains
-#     ruleorder: extract_best_domains > split_corpus_domains
-#
-#     checkpoint split_corpus_domains:
-#         message: "Splitting the corpus to translate (domains kept separate)"
-#         log: f"{log_dir}/split_corpus_domains_{{dataset}}.log"
-#         conda: "envs/base.yml"
-#         threads: 1
-#         input:
-#             corpus_src=f'{held_out_corpus_prefix}/train/{{dataset}}.{src}.gz',
-#             corpus_trg=f'{held_out_corpus_prefix}/train/{{dataset}}.{trg}.gz'
-#         output:
-#             directory(f"{translated_domains}/corpus/parts/{{dataset}}")
-#         params:
-#             output_dir=f"{translated_domains}/corpus/parts/{{dataset}}"
-#         shell: '''bash pipeline/translate/split-corpus.sh \
-#                     {input.corpus_src} {input.corpus_trg} {params.output_dir} {split_length} >> {log} 2>&1'''
-#
-#     rule translate_corpus_domains:
-#         message: "Translating corpora with domain teachers"
-#         log: f"{log_dir}/translate_corpus_domains/{{dataset}}_{{part}}.log"
-#         conda: "envs/base.yml"
-#         threads: gpus_num * 2
-#         resources: gpu=gpus_num
-#         input:
-#             decoder,
-#             file=f'{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}',
-#             vocab=vocab_path,
-#             # all_teacher_models=expand(f'{corpus_finetuned_teacher_dir}{{ens}}/{{dataset}}/{teacher_all_output}',
-#             #                             ens=ensemble, allow_missing=True),
-#             # teacher_models=rules.domain_teachers.output.model
-#             teacher_models=expand(f'{corpus_finetuned_teacher_dir}{{ens}}/{{dataset}}/{best_model}',
-#                                     ens=ensemble, allow_missing=True)
-#             # file=lambda wildcards: f'{checkpoints.split_corpus_domains.get(dataset=wildcards.dataset).output[0]}/file.{{part}}'
-#         output: f'{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}.nbest'
-#         params: args=get_args('decoding-teacher')
-#         wildcard_constraints: part="\d+"
-#         shell: '''bash pipeline/translate/translate-nbest.sh \
-#                     "{input.file}" "{input.vocab}" {input.teacher_models} {params.args} >> {log} 2>&1'''
-#
-#     rule extract_best_domains:
-#         message: "Extracting best translations for the corpora (corpora kept separate)"
-#         log: f"{log_dir}/extract_best_domains/{{dataset}}/{{part}}.log"
-#         conda: "envs/base.yml"
-#         threads: 1
-#         group: 'translate_corpus'
-#         input:
-#             nbest=f"{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}.nbest",
-#             ref=f"{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}.ref"
-#         output: f"{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}.nbest.out"
-#         shell: 'python pipeline/translate/bestbleu.py -i {input.nbest} -r {input.ref} -m bleu -o {output} >> {log} 2>&1'
-#
-#     rule collect_single_corpus_domains:
-#         message: "Collecting translated corpora separately"
-#         log: f"{log_dir}/collect_corpus_domains_{{dataset}}.log"
-#         conda: "envs/base.yml"
-#         threads: 4
-#         group: 'translate_corpus'
-#         input:
-#             lambda wildcards: expand(f"{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}.nbest.out",
-#                 part=find_parts(wildcards,checkpoints.split_corpus_domains),
-#                 allow_missing=True)
-#         output: f'{translated_domains}/corpus/collected/{{dataset}}.{trg}.gz'
-#         params: src_corpus=f'{held_out_corpus_prefix}/train/{{dataset}}.{src}.gz'
-#         shell: '''bash pipeline/translate/collect.sh \
-#                  {translated_domains}/corpus/parts/{wildcards.dataset} \
-#                  {output} {params.src_corpus} >> {log} 2>&1'''
-#
-#     rule collect_all_corpora_domains:
-#         message: "Collecting translated corpora into one"
-#         log: f"{log_dir}/collect_corpus_domains.log"
-#         conda: "envs/base.yml"
-#         threads: 4
-#         group: 'translate_corpus'
-#         input:
-#             translations=expand(f'{translated_domains}/corpus/collected/{{dataset}}.{trg}.gz',
-#                 dataset=train_datasets),
-#             src_corpus=clean_corpus_domain_ft_src
-#         output: f'{translated_domains}/corpus.{trg}.gz'
-#         params:
-#             src_corpus=clean_corpus_domain_ft_src
-#         shell: '''bash pipeline/translate/collect-corpora.sh \
-#                          {output} {params.src_corpus} {input.translations} >> {log} 2>&1'''
+# Translate with multiple domain teachers
+if fine_tune_to_corpus:
+    # ruleorder is to produce .nbest files by the translate_corpus_domains rule
+    # and .nbest.out files by the extract_best_domains rule,
+    # without it split_corpus_domains causes ambiguity
+    # ruleorder: translate_corpus_domains > split_corpus_domains
+    # ruleorder: extract_best_domains > split_corpus_domains
+
+    checkpoint split_corpus_domains:
+        message: "Splitting the corpus to translate (domains kept separate)"
+        log: f"{log_dir}/split_corpus_domains_{{dataset}}.log"
+        conda: "envs/base.yml"
+        threads: 1
+        input:
+            corpus_src=f'{held_out_corpus_prefix}/train/{{dataset}}.{src}.gz',
+            corpus_trg=f'{held_out_corpus_prefix}/train/{{dataset}}.{trg}.gz'
+        output:
+            directory(f"{translated_domains}/corpus/parts/{{dataset}}")
+        params:
+            output_dir=f"{translated_domains}/corpus/parts/{{dataset}}"
+        shell: '''bash pipeline/translate/split-corpus.sh \
+                    {input.corpus_src} {input.corpus_trg} {params.output_dir} {split_length} >> {log} 2>&1'''
+
+    rule translate_corpus_domains:
+        message: "Translating corpora with domain teachers"
+        log: f"{log_dir}/translate_corpus_domains/{{dataset}}_{{part}}.log"
+        conda: "envs/base.yml"
+        threads: gpus_num * 2
+        resources: gpu=gpus_num
+        input:
+            ancient(decoder),
+            file=f'{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}',
+            vocab=vocab_path,
+            # teacher_models=rules.finetune_teacher_to_corpora.output.model,
+            # all_teacher_models=expand(f'{corpus_finetuned_teacher_dir}{{ens}}/{{dataset}}/{teacher_all_output}',
+            #                             ens=ensemble, allow_missing=True),
+            teacher_models=expand(f'{corpus_finetuned_teacher_dir}{{ens}}/{{dataset}}/{best_model}',
+                                    ens=ensemble, allow_missing=True)
+            # file=lambda wildcards: f'{checkpoints.split_corpus_domains.get(dataset=wildcards.dataset).output[0]}/file.{{part}}'
+        output: f'{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}.nbest'
+        params: args=get_args('decoding-teacher')
+        wildcard_constraints: part="\d+"
+        shell: '''bash pipeline/translate/translate-nbest.sh \
+                    "{input.file}" "{input.vocab}" {input.teacher_models} {params.args} >> {log} 2>&1'''
+
+    rule extract_best_domains:
+        message: "Extracting best translations for the corpora (corpora kept separate)"
+        log: f"{log_dir}/extract_best_domains/{{dataset}}/{{part}}.log"
+        conda: "envs/base.yml"
+        threads: 1
+        # group: 'translate_corpus'
+        input:
+            nbest=f"{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}.nbest",
+            ref=f"{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}.ref"
+        output: f"{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}.nbest.out"
+        shell: 'python pipeline/translate/bestbleu.py -i {input.nbest} -r {input.ref} -m bleu -o {output} >> {log} 2>&1'
+
+    rule collect_single_corpus_domains:
+        message: "Collecting translated corpora separately"
+        log: f"{log_dir}/collect_corpus_domains_{{dataset}}.log"
+        conda: "envs/base.yml"
+        threads: 4
+        # group: 'translate_corpus'
+        input:
+            lambda wildcards: expand(f"{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}.nbest.out",
+                part=find_parts(wildcards,checkpoints.split_corpus_domains),
+                allow_missing=True)
+        output: f'{translated_domains}/corpus/collected/{{dataset}}.{trg}.gz'
+        params: src_corpus=f'{held_out_corpus_prefix}/train/{{dataset}}.{src}.gz'
+        shell: '''bash pipeline/translate/collect.sh \
+                 {translated_domains}/corpus/parts/{wildcards.dataset} \
+                 {output} {params.src_corpus} >> {log} 2>&1'''
+
+    rule collect_all_corpora_domains:
+        message: "Collecting translated corpora into one"
+        log: f"{log_dir}/collect_corpus_domains.log"
+        conda: "envs/base.yml"
+        threads: 4
+        #group: 'translate_corpus'
+        input:
+            translations=expand(f'{translated_domains}/corpus/collected/{{dataset}}.{trg}.gz',
+                dataset=train_datasets),
+            src_corpus=clean_corpus_domain_ft_src
+        output: f'{translated_domains}/corpus.{trg}.gz'
+        params:
+            src_corpus=clean_corpus_domain_ft_src
+        shell: '''bash pipeline/translate/collect-corpora.sh \
+                         {output} {params.src_corpus} {input.translations} >> {log} 2>&1'''
 
 
 # mono
@@ -882,6 +883,21 @@ rule merge_translated:
     shell: '''bash pipeline/translate/merge-corpus.sh \
                 "{input.src1}" "{input.src2}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
                   >> {log} 2>&1'''
+
+if fine_tune_to_corpus:
+    rule merge_translated_domain_ft:
+        message: "Merging translated datasets (with teacher models fine-tuned to individual corpora)"
+        log: f"{log_dir}/merge_translated_domain_ft.log"
+        conda: "envs/base.yml"
+        threads: 4
+        #group: 'mono_src'
+        input:
+            src1=clean_corpus_domain_ft_src,src2=f"{clean}/mono.{src}.gz",
+            trg1=rules.collect_all_corpora_domains.output,trg2=rules.collect_mono_src.output
+        output: res_src=f'{merged_ft}/corpus.{src}.gz',res_trg=f'{merged_ft}/corpus.{trg}.gz'
+        shell: '''bash pipeline/translate/merge-corpus.sh \
+                    "{input.src1}" "{input.src2}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
+                      >> {log} 2>&1'''
 
 # train student
 
@@ -948,6 +964,74 @@ rule train_student:
     shell: '''bash pipeline/train/train-student.sh \
                 "{input.alignments}" student train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" \
                 "{student_dir}" "{input.vocab}" {params.args} >> {log} 2>&1'''
+
+if fine_tune_to_corpus:
+    rule score_domain_ft:
+        message: "Scoring (fine-tuned to corpora)"
+        log: f"{log_dir}/score_domain_ft.log"
+        conda: "envs/base.yml"
+        threads: gpus_num * 2
+        resources: gpu=gpus_num
+        input:
+            ancient(scorer),
+            model=f'{backward_dir}/{best_model}',vocab=vocab_path,
+            src_corpus=rules.merge_translated_domain_ft.output.res_src,
+            trg_corpus=rules.merge_translated_domain_ft.output.res_trg
+        output: f"{filtered_ft}/scores.txt"
+        params: input_prefix=f'{merged_ft}/corpus'
+        shell: '''bash pipeline/cefilter/score.sh \
+                    "{input.model}" "{input.vocab}" "{params.input_prefix}" "{output}" >> {log} 2>&1'''
+
+    rule ce_filter_domain_ft:
+        message: "Cross entropy filtering (fine-tuned to corpora)"
+        log: f"{log_dir}/ce_filter_domain_ft.log"
+        conda: "envs/base.yml"
+        threads: workflow.cores
+        resources: mem_mb=workflow.cores * 5000
+        input:
+            src_corpus=rules.merge_translated_domain_ft.output.res_src,
+            trg_corpus=rules.merge_translated_domain_ft.output.res_trg,
+            scores=rules.score_domain_ft.output
+        output: src_corpus=f"{filtered_ft}/corpus.{src}.gz",trg_corpus=f"{filtered_ft}/corpus.{trg}.gz"
+        params: input_prefix=f'{merged_ft}/corpus',output_prefix=f'{filtered_ft}/corpus'
+        shell: '''bash pipeline/cefilter/ce-filter.sh \
+                    "{params.input_prefix}" "{params.output_prefix}" "{input.scores}" >> {log} 2>&1'''
+
+    rule alignments_domain_ft:
+        message: 'Training word alignment and lexical shortlists (fine-tuned to corpora)'
+        log: f"{log_dir}/alignments_domain_ft.log"
+        conda: "envs/base.yml"
+        threads: workflow.cores
+        input:
+            ancient(spm_encoder), ancient(spm_exporter),
+            src_corpus=rules.ce_filter_domain_ft.output.src_corpus,trg_corpus=rules.ce_filter_domain_ft.output.trg_corpus,
+            vocab=vocab_path,
+            fast_align=ancient(rules.fast_align.output.fast_align),atools=ancient(rules.fast_align.output.atools),
+            extract_lex=ancient(rules.extract_lex.output)
+        output: alignment=f'{align_dir_ft}/corpus.aln.gz',shortlist=f'{align_dir_ft}/lex.s2t.pruned.gz'
+        params: input_prefix=f'{filtered_ft}/corpus'
+        shell: '''bash pipeline/alignment/generate-alignment-and-shortlist.sh \
+                    "{params.input_prefix}" "{input.vocab}" "{align_dir_ft}" {threads} >> {log} 2>&1'''
+
+    rule train_student_domain_ft:
+        message: "Training student (fine-tuned to corpora)"
+        log: f"{log_dir}/train_student_domain_ft.log"
+        conda: "envs/base.yml"
+        threads: gpus_num * 2
+        resources: gpu=gpus_num
+        #group: 'student'
+        input:
+            rules.merge_devset.output, ancient(trainer),
+            train_src=rules.ce_filter_domain_ft.output.src_corpus,train_trg=rules.ce_filter_domain_ft.output.trg_corpus,
+            alignments=rules.alignments_domain_ft.output.alignment,
+            vocab=vocab_path
+        output: model=f'{student_dir_ft}/{best_model}'
+        params:
+            prefix_train=rules.ce_filter_domain_ft.params.output_prefix,prefix_test=f"{original}/devset",
+            args=get_args("training-student")
+        shell: '''bash pipeline/train/train-student.sh \
+                    "{input.alignments}" student train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" \
+                    "{student_dir_ft}" "{input.vocab}" {params.args} >> {log} 2>&1'''
 
 # quantize
 
