@@ -178,10 +178,10 @@ if fine_tune_to_corpus:
     # results.extend(expand(f"{corpus_finetuned_teacher_dir}{{ens}}/{{dataset}}/{best_model}",
     #                     ens=ensemble, dataset=train_datasets))
     # results.append(f'{translated_domains}/corpus.{trg}.gz')
-    results.append(f'{student_dir_ft}/{best_model}')
-    # results.extend([f'{exported_dir_ft}/model.{src}{trg}.intgemm.alphas.bin.gz',
-    #                 f'{exported_dir_ft}/lex.50.50.{src}{trg}.s2t.bin.gz',
-    #                 f'{exported_dir_ft}/vocab.{src}{trg}.spm.gz'])
+    # results.append(f'{student_dir_ft}/{best_model}')
+    results.extend([f'{exported_dir_ft}/model.{src}{trg}.intgemm.alphas.bin.gz',
+                    f'{exported_dir_ft}/lex.50.50.{src}{trg}.s2t.bin.gz',
+                    f'{exported_dir_ft}/vocab.{src}{trg}.spm.gz'])
     # results.extend(expand(f'{eval_student_dir_ft}/{{dataset}}.metrics',dataset=eval_datasets))
     # results.extend(expand(f'{eval_student_finetuned_dir_ft}/{{dataset}}.metrics',dataset=eval_datasets))
     # results.extend(expand(f'{eval_speed_dir_ft}/{{dataset}}.metrics', dataset=eval_datasets))
@@ -1082,6 +1082,56 @@ rule export:
         vocab=f'{exported_dir}/vocab.{src}{trg}.spm.gz'
     shell:
         'bash pipeline/quantize/export.sh "{speed_dir}" "{input.shortlist}" "{input.vocab}" "{exported_dir}" >> {log} 2>&1'
+
+if fine_tune_to_corpus:
+    rule finetune_student_domains:
+        message: "Fine-tuning domain student"
+        log: f"{log_dir}/finetune_student_domains.log"
+        conda: "envs/base.yml"
+        threads: gpus_num * 2
+        resources: gpu=gpus_num
+        # group: 'student-finetuned'
+        input:
+            rules.merge_devset.output, ancient(trainer),
+            train_src=rules.ce_filter_domain_ft.output.src_corpus,train_trg=rules.ce_filter_domain_ft.output.trg_corpus,
+            alignments=rules.alignments_domain_ft.output.alignment,student_model=rules.train_student_domain_ft.output.model,
+            vocab=vocab_path
+        output: model=f'{student_finetuned_dir_ft}/{best_model}'
+        params:
+            prefix_train=rules.ce_filter_domain_ft.params.output_prefix,prefix_test=f"{original}/devset",
+            args=get_args("training-student-finetuned")
+        shell: '''bash pipeline/train/train-student.sh \
+                    "{input.alignments}" student finetune {src} {trg} "{params.prefix_train}" "{params.prefix_test}" \
+                    "{student_finetuned_dir_ft}" "{input.vocab}" {params.args} >> {log} 2>&1'''
+
+    rule quantize_domains:
+        message: "Quantization (fine-tuned to corpora)"
+        log: f"{log_dir}/quantize_domains.log"
+        conda: "envs/base.yml"
+        threads: 1
+        input:
+            ancient(bmt_decoder), ancient(bmt_converter),
+            shortlist=rules.alignments_domain_ft.output.shortlist, model=rules.finetune_student_domains.output.model,
+            vocab=vocab_path, devset=f"{original}/devset.{src}.gz"
+        output: model=f'{speed_dir_ft}/model.intgemm.alphas.bin'
+        shell: '''bash pipeline/quantize/quantize.sh \
+                    "{input.model}" "{input.vocab}" "{input.shortlist}" "{input.devset}" "{speed_dir_ft}" >> {log} 2>&1'''
+
+    rule export_domains:
+        message: "Exporting models (fine-tuned to corpora)"
+        log: f"{log_dir}/export_domains.log"
+        conda: "envs/base.yml"
+        group: 'export'
+        threads: 1
+        input:
+            model=rules.quantize_domains.output.model, shortlist=rules.alignments_domain_ft.output.shortlist,
+            vocab=vocab_path,marian=bmt_converter
+        output:
+            model=f'{exported_dir_ft}/model.{src}{trg}.intgemm.alphas.bin.gz',
+            shortlist=f'{exported_dir_ft}/lex.50.50.{src}{trg}.s2t.bin.gz',
+            vocab=f'{exported_dir_ft}/vocab.{src}{trg}.spm.gz'
+        shell:
+            'bash pipeline/quantize/export.sh "{speed_dir_ft}" "{input.shortlist}" "{input.vocab}" "{exported_dir_ft}" >> {log} 2>&1'
 
 
 ### evaluation
