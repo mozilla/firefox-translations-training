@@ -120,7 +120,6 @@ spm_sample_size=config['experiment']['spm-sample-size']
 vocab_path=vocab_pretrained or f"{models_dir}/vocab/vocab.spm"
 
 corpus_finetuned_teacher_dir = f"{models_dir}/teacher-domain-ft"
-# corpus_finetuned_teacher_dir = f"{data_root_dir}/models-finetuned-to-corpora/teacher-domain-ft"
 student_dir_ft = f"{models_dir}/student-domain-ft"
 student_finetuned_dir_ft = f"{models_dir}/student-domain-ft-finetuned"
 speed_dir_ft = f"{models_dir}/speed-domain-ft"
@@ -138,8 +137,8 @@ eval_teacher_ens_dir = f'{eval_res_dir}/teacher-ensemble'
 eval_student_dir_ft = f'{eval_res_dir}/student-domain-ft'
 eval_student_finetuned_dir_ft = f'{eval_res_dir}/student-domain-ft-finetuned'
 eval_speed_dir_ft = f'{eval_res_dir}/speed-domain-ft'
-eval_res_dir_ft_teachers = f"{eval_res_dir}/teacher-domain-ft"
-# eval_teacher_ens_dir_ft = f'{eval_res_dir}/teacher-ensemble-domain-ft'
+eval_corpus_ft_teachers_dir = f"{models_dir}/evaluation-domain-ft"
+eval_corpus_ft_teacher_ens_dir = f"{eval_corpus_ft_teachers_dir}/teacher-domain-ft-ensemble"
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" BMT_MARIAN="{bmt_marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
@@ -176,23 +175,22 @@ else:
     backward_dir = backward_pretrained
 
 if fine_tune_to_corpus:
-    # results.extend(expand(f"{corpus_finetuned_teacher_dir}{{ens}}/{{dataset}}/{best_model}",
-    #                     ens=ensemble, dataset=train_datasets))
-    # results.append(f'{translated_domains}/corpus.{trg}.gz')
-    # results.append(f'{student_dir_ft}/{best_model}')
     results.extend([f'{exported_dir_ft}/model.{src}{trg}.intgemm.alphas.bin.gz',
                     f'{exported_dir_ft}/lex.50.50.{src}{trg}.s2t.bin.gz',
                     f'{exported_dir_ft}/vocab.{src}{trg}.spm.gz'])
     results.extend(expand(f'{eval_student_dir_ft}/{{dataset}}.metrics',dataset=eval_datasets))
     results.extend(expand(f'{eval_student_finetuned_dir_ft}/{{dataset}}.metrics',dataset=eval_datasets))
     results.extend(expand(f'{eval_speed_dir_ft}/{{dataset}}.metrics', dataset=eval_datasets))
-    results.extend(expand(f'{eval_res_dir_ft_teachers}{{ens}}/{{dataset}}/{{eval_dataset}}.metrics',
+    results.extend(expand(f'{eval_corpus_ft_teachers_dir}/teacher-domain-ft{{ens}}/{{dataset}}/{{eval_dataset}}.metrics',
         ens=ensemble, eval_dataset=eval_datasets, dataset=train_datasets))
+
+    if len(ensemble) > 1:
+        results.extend(expand(f'{eval_corpus_ft_teacher_ens_dir}/{{dataset}}/{{eval_dataset}}.metrics',
+            eval_dataset=eval_datasets, dataset=train_datasets))
 
 # bicleaner
 
 bicleaner_type = packs.find(src, trg)
-# bicleaner_type = 'bicleaner'
 bicleaner_env = "envs/bicleaner-ai.yml" if bicleaner_type == 'bicleaner-ai' else 'envs/bicleaner.yml'
 
 if bicleaner_type:
@@ -1199,27 +1197,25 @@ if fine_tune_to_corpus:
         resources: gpu=gpus_num
         #group '{model}'
         priority: 50
-        # wildcard_constraints:
-        #     model="[\w-]+"
+        wildcard_constraints:
+            model="[\w-]+"
         input:
             ancient(decoder),
             data=multiext(f'{eval_data_dir}/{{dataset}}',f".{src}.gz",f".{trg}.gz"),
-            models=f'{corpus_finetuned_teacher_dir}{{model}}/{{train_dataset}}/{best_model}'
-            # models=lambda wildcards: f'{models_dir}/{wildcards.model}/{best_model}'
-            #                             if wildcards.model != 'teacher-ensemble'
-            #                             else [f'{final_teacher_dir}{ens}/{best_model}' for ens in ensemble]
+            models=lambda wildcards: f'{models_dir}/{wildcards.model}/{wildcards.train_dataset}/{best_model}'
+                                        if wildcards.model != 'teacher-domain-ft-ensemble'
+                                        else [f'{corpus_finetuned_teacher_dir}{ens}/{wildcards.train_dataset}/{best_model}' for ens in ensemble]
         output:
-            report(f'{eval_res_dir_ft_teachers}{{model}}/{{train_dataset}}/{{dataset}}.metrics',
+            report(f'{eval_corpus_ft_teachers_dir}/{{model}}/{{train_dataset}}/{{dataset}}.metrics',
                 category='evaluation',subcategory='{model}',caption='reports/evaluation.rst')
         params:
             dataset_prefix=f'{eval_data_dir}/{{dataset}}',
-            res_prefix=f'{eval_res_dir_ft_teachers}{{model}}/{{train_dataset}}/{{dataset}}',
+            res_prefix=f'{eval_corpus_ft_teachers_dir}/{{model}}/{{train_dataset}}/{{dataset}}',
             src_lng=src,
             trg_lng=trg,
-            decoder_config=f'{corpus_finetuned_teacher_dir}{{model}}/{{train_dataset}}/{best_model}.decoder.yml'
-            # decoder_config=lambda wildcards: f'{models_dir}/{wildcards.model}/{best_model}.decoder.yml'
-            #                 if wildcards.model != 'teacher-ensemble'
-            #                 else f'{final_teacher_dir}0/{best_model}.decoder.yml'
+            decoder_config=lambda wildcards: f'{models_dir}/{wildcards.model}/{wildcards.train_dataset}/{best_model}.decoder.yml'
+                            if wildcards.model != 'teacher-domain-ft-ensemble'
+                            else f'{corpus_finetuned_teacher_dir}0/{wildcards.train_dataset}/{best_model}.decoder.yml'
         shell: '''bash pipeline/eval/eval-gpu.sh "{params.res_prefix}" "{params.dataset_prefix}" \
                  {params.src_lng} {params.trg_lng} "{params.decoder_config}" {input.models} >> {log} 2>&1'''
 
