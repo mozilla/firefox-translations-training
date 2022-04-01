@@ -36,18 +36,32 @@ experiment:
 
 marian-args:
   training-backward:
-    after: 1000u
+    disp-freq: 10
+    save-freq: 100
+    valid-freq: 100
+    after: 500u
   training-teacher-base:
-    after: 1000u
+    disp-freq: 10
+    save-freq: 100
+    valid-freq: 100
+    after: 500u
   training-teacher-finetuned:
-    after: 2000u
+    disp-freq: 10
+    save-freq: 100
+    valid-freq: 100
+    after: 500u
   training-student:
-    after: 1000u
+    disp-freq: 10
+    save-freq: 100
+    valid-freq: 100
+    after: 500u
   training-student-finetuned:
-    after: 1000u
+    disp-freq: 10
+    save-freq: 100
+    valid-freq: 100
+    after: 500u
   decoding-backward:
     mini-batch-words: 2000
-    precision: float16
   decoding-teacher:
     mini-batch-words: 1000
     precision: float16
