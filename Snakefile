@@ -59,6 +59,9 @@ if held_out_dev_test:
     held_out_dev_size = config['datasets']['held-out-dev-size']
     held_out_test_size = config['datasets']['held-out-test-size']
 
+all_eval_datasets = eval_datasets if not held_out_dev_test else eval_datasets + ['held_out_'+dataset
+                                                                                 for dataset in train_datasets]
+
 # parallelization
 
 ensemble = list(range(config['experiment']['teacher-ensemble']))
@@ -154,21 +157,21 @@ results = [f'{exported_dir}/model.{src}{trg}.intgemm.alphas.bin.gz',
            f'{exported_dir}/lex.50.50.{src}{trg}.s2t.bin.gz',
            f'{exported_dir}/vocab.{src}{trg}.spm.gz',
            f'{experiment_dir}/config.yml',
-           *expand(f'{eval_res_dir}/teacher-base{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=eval_datasets),
-           *expand(f'{eval_student_dir}/{{dataset}}.metrics', dataset=eval_datasets),
-           *expand(f'{eval_student_finetuned_dir}/{{dataset}}.metrics', dataset=eval_datasets),
-           *expand(f'{eval_speed_dir}/{{dataset}}.metrics', dataset=eval_datasets)
+           *expand(f'{eval_res_dir}/teacher-base{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=all_eval_datasets),
+           *expand(f'{eval_student_dir}/{{dataset}}.metrics', dataset=all_eval_datasets),
+           *expand(f'{eval_student_finetuned_dir}/{{dataset}}.metrics', dataset=all_eval_datasets),
+           *expand(f'{eval_speed_dir}/{{dataset}}.metrics', dataset=all_eval_datasets)
            ]
 
 if len(ensemble) > 1:
-    results.extend(expand(f'{eval_teacher_ens_dir}/{{dataset}}.metrics', dataset=eval_datasets))
+    results.extend(expand(f'{eval_teacher_ens_dir}/{{dataset}}.metrics', dataset=all_eval_datasets))
 
 if install_deps:
     results.append("/tmp/flags/setup.done")
 #
 if not backward_pretrained:
     # don't evaluate pretrained model
-    results.extend(expand(f'{eval_backward_dir}/{{dataset}}.metrics',dataset=eval_datasets))
+    results.extend(expand(f'{eval_backward_dir}/{{dataset}}.metrics',dataset=all_eval_datasets))
     do_train_backward=True
 else:
     do_train_backward = False
@@ -178,19 +181,20 @@ if fine_tune_to_corpus:
     results.extend([f'{exported_dir_ft}/model.{src}{trg}.intgemm.alphas.bin.gz',
                     f'{exported_dir_ft}/lex.50.50.{src}{trg}.s2t.bin.gz',
                     f'{exported_dir_ft}/vocab.{src}{trg}.spm.gz'])
-    results.extend(expand(f'{eval_student_dir_ft}/{{dataset}}.metrics',dataset=eval_datasets))
-    results.extend(expand(f'{eval_student_finetuned_dir_ft}/{{dataset}}.metrics',dataset=eval_datasets))
-    results.extend(expand(f'{eval_speed_dir_ft}/{{dataset}}.metrics', dataset=eval_datasets))
+    results.extend(expand(f'{eval_student_dir_ft}/{{dataset}}.metrics',dataset=all_eval_datasets))
+    results.extend(expand(f'{eval_student_finetuned_dir_ft}/{{dataset}}.metrics',dataset=all_eval_datasets))
+    results.extend(expand(f'{eval_speed_dir_ft}/{{dataset}}.metrics', dataset=all_eval_datasets))
     results.extend(expand(f'{eval_corpus_ft_teachers_dir}/teacher-domain-ft{{ens}}/{{dataset}}/{{eval_dataset}}.metrics',
-        ens=ensemble, eval_dataset=eval_datasets, dataset=train_datasets))
+        ens=ensemble, eval_dataset=all_eval_datasets, dataset=train_datasets))
 
     if len(ensemble) > 1:
         results.extend(expand(f'{eval_corpus_ft_teacher_ens_dir}/{{dataset}}/{{eval_dataset}}.metrics',
-            eval_dataset=eval_datasets, dataset=train_datasets))
+            eval_dataset=all_eval_datasets, dataset=train_datasets))
 
 # bicleaner
 
 bicleaner_type = packs.find(src, trg)
+# bicleaner_type = 'bicleaner'
 bicleaner_env = "envs/bicleaner-ai.yml" if bicleaner_type == 'bicleaner-ai' else 'envs/bicleaner.yml'
 
 if bicleaner_type:
@@ -328,7 +332,9 @@ rule download_corpus:
     threads: 1
 #    group: 'data'
     cache: False # caching is broken in snakemake
-    wildcard_constraints: kind="corpus|devset|eval"
+    wildcard_constraints:
+        kind="corpus|devset|eval",
+        dataset="(?!held_out_).+"
     output: multiext(f"{original}/{{kind}}/{{dataset}}", f".{src}.gz", f".{trg}.gz")
     params: prefix=f"{original}/{{kind}}/{{dataset}}", dataset="{dataset}"
     shell: 'bash pipeline/data/download-corpus.sh "{params.dataset}" "{params.prefix}"  >> {log} 2>&1'
@@ -423,7 +429,7 @@ if held_out_dev_test:
         log: f"{log_dir}/deduplicate_individual_corpora_{{dataset}}.log"
         conda: "envs/base.yml"
         threads: workflow.cores
-        group: "clean_corpus"
+        #group: "clean_corpus"
         input:
             expand(f"{clean_corpus_prefix}/{{dataset}}.{{lang}}.gz", lang=[src, trg], allow_missing=True)
         output:
@@ -440,7 +446,7 @@ if held_out_dev_test:
         log: f"{log_dir}/create_held_out_sets_{{dataset}}.log"
         conda: "envs/base.yml"
         threads: workflow.cores
-        group: "clean_corpus"
+        #group: "clean_corpus"
         wildcard_constraints: dataset="|".join(train_datasets)
         input:
             src=f"{clean_corpus_domain_ft_prefix}/{{dataset}}.{src}.gz",
@@ -464,7 +470,7 @@ if held_out_dev_test:
         log: f"{log_dir}/merge_held_out_train_sets.log"
         conda: "envs/base.yml"
         threads: workflow.cores
-        group: "clean_corpus"
+        #group: "clean_corpus"
         input:
             expand(f"{held_out_corpus_prefix}/train/{{dataset}}.{{lang}}.gz",
                 dataset=train_datasets,lang=[src, trg])
@@ -475,6 +481,21 @@ if held_out_dev_test:
             prefix_output=clean_corpus_prefix,
             prefixes=expand(f"{held_out_corpus_prefix}/train/{{dataset}}",dataset=train_datasets)
         shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
+
+    rule copy_held_out_test_sets:
+        message: "Copy held-out test sets to eval directory"
+        log: f"{log_dir}/copy_held_out_test_sets_{{dataset}}.log"
+        conda: "envs/base.yml"
+        threads: workflow.cores
+        #group: "clean_corpus"
+        input:
+            input_src=f"{held_out_corpus_prefix}/test/{{dataset}}.{src}.gz",
+            input_trg=f"{held_out_corpus_prefix}/test/{{dataset}}.{trg}.gz"
+        output:
+            src=f"{eval_data_dir}/held_out_{{dataset}}.{src}.gz",
+            trg=f"{eval_data_dir}/held_out_{{dataset}}.{trg}.gz"
+        shell: '''cp {input.input_src} {output.src} >> {log} 2>&1
+                  cp {input.input_trg} {output.trg} >> {log} 2>&1'''
 
 # If using held-out dev and test sets, the merged train sets will be used (created by rule merge_held_out_train_sets),
 # so that the model does not see dev and test data that will be used for fine-tuning teachers to corpora;
@@ -679,7 +700,7 @@ if fine_tune_to_corpus:
             prefix_test=f"{held_out_corpus_prefix}/dev/{{dataset}}",
             dir=directory(f'{corpus_finetuned_teacher_dir}{{ens}}/{{dataset}}'),
             args=get_args("training-teacher-finetuned")
-        wildcard_constraints: ens="\d+"
+        wildcard_constraints: ens="\d+", dataset="|".join(train_datasets)
         shell: '''bash pipeline/train/train.sh \
                     teacher train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
                     "{input.vocab}" --pretrained-model "{input.general_teacher}" {params.args} >> {log} 2>&1'''
@@ -1198,7 +1219,8 @@ if fine_tune_to_corpus:
         #group '{model}'
         priority: 50
         wildcard_constraints:
-            model="[\w-]+"
+            model="[\w-]+",
+            dataset="|".join(all_eval_datasets)
         input:
             ancient(decoder),
             data=multiext(f'{eval_data_dir}/{{dataset}}',f".{src}.gz",f".{trg}.gz"),
