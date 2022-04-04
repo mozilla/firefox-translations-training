@@ -1,0 +1,94 @@
+####
+# Test config, it rus the pipeline quickly end to end
+###
+
+
+root: ""
+cuda: ""
+cudnn: ""
+deps: false
+gpus: ""
+numgpus: ""
+workspace: ""
+mariancmake: ""
+
+experiment:
+  name: test-eten-cft-1
+  src: et
+  trg: en
+
+  fine-tune-to-corpus: true
+
+  teacher-ensemble: 2
+  backward-model: ""
+  vocab: "/raid/lisa_k/pipeline-testing-upd/eten-cached-vocab/vocab.spm"
+
+  mono-max-sentences-src: 1000
+  mono-max-sentences-trg: 2000
+  split-length: 100
+  spm-sample-size: 100000
+
+  best-model: chrf
+
+  bicleaner:
+    default-threshold: 0.5
+    dataset-thresholds:
+      opus_ada83/v1: 0
+      mtdata_Neulab-tedtalks_train-1-eng-rus: 0.6
+
+marian-args:
+  training-backward:
+    disp-freq: 10
+    save-freq: 100
+    valid-freq: 250
+    after: 500u
+  training-teacher-base:
+    disp-freq: 10
+    save-freq: 100
+    valid-freq: 250
+    after: 500u
+  training-teacher-finetuned:
+    disp-freq: 10
+    save-freq: 100
+    valid-freq: 250
+    after: 500u
+  training-student:
+    disp-freq: 10
+    save-freq: 100
+    valid-freq: 250
+    after: 500u
+  training-student-finetuned:
+    disp-freq: 10
+    save-freq: 100
+    valid-freq: 250
+    after: 500u
+  decoding-backward:
+    mini-batch-words: 2000
+  decoding-teacher:
+    mini-batch-words: 1000
+    precision: float16
+
+datasets:
+  train:
+    - opus_ELRC_2922/v1
+    - opus_ELRC_2923/v1
+#    - opus_TED2020/v1
+#    - opus_bible-uedin/v1
+#    - opus_Europarl/v8
+#    - opus_GNOME/v1
+#    - mtdata_Neulab-tedtalks_train-1-eng-rus
+  devtest:
+    - flores_dev
+#    - sacrebleu_wmt19
+  test:
+#    - flores_devtest
+    - sacrebleu_wmt18
+  mono-src:
+    - news-crawl_news.2020
+  mono-trg:
+    - news-crawl_news.2020
+  held-out-dev-test: true
+  held-out-dev-size: 20
+  held-out-test-size: 20
+
+
