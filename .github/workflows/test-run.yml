@@ -13,8 +13,8 @@ jobs:
 
       - name: Edit Makefile
         run: |
-          sed -i 's/NUM_GPUS=8/NUM_GPUS=0/' Makefile
-          sed -i 's/SHARED_ROOT.*/SHARED_ROOT=\/tmp/' Makefile
+          sed -i 's/^NUM_GPUS=8/NUM_GPUS=0/' Makefile
+          sed -i 's/^SHARED_ROOT.*/SHARED_ROOT=\/tmp/' Makefile
 
       - name: Install necessary dependencies
         run: |
