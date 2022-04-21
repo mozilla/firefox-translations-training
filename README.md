@@ -68,7 +68,7 @@ cd firefox-translations-training
     - (Optional) Choose a config file to use (default is `configs/config.prod.yml`)
     - (Cluster mode) Adjust `CLUSTER_CORES` - number of CPU cores on one cluster machine
     - (Cluster mode) Use an appropriate `SLURM_PROFILE` from `profiles/`
-2. Configure experiment and datasets in `configs/config.prod.yml` (or `configs/config.prod.yml` for test run)
+2. Configure experiment and datasets in `configs/config.prod.yml` (or `configs/config.test.yml` for test run)
 3. Change source code if needed for the experiment
 4. **(Cluster mode)** Adjust Snakemake and cluster settings in the cluster profile.
    For `slurm-moz`: `profiles/slurm-moz/config.yml` and `profiles/slurm-moz/config.cluster.yml`
