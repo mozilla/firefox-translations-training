@@ -1,0 +1,29 @@
+name: Test Run
+
+on: push
+
+
+jobs:
+  test-run:
+    runs-on: ubuntu-18.04
+
+    steps:
+      - name: Checkout repository files
+        uses: actions/checkout@v2
+
+      - name: Edit Makefile
+        run: |
+          sed -i 's/NUM_GPUS=8/NUM_GPUS=0/' Makefile
+          sed -i 's/SHARED_ROOT.*/SHARED_ROOT=\/tmp/' Makefile
+
+      - name: Install necessary dependencies
+        run: |
+          make conda
+          make snakemake
+          make git-modules
+
+      - name: Dry run
+        run: make dry-run
+
+      - name: Test run
+        run: make test
