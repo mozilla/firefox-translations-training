@@ -230,6 +230,7 @@ Bicleaner | Filters noisy sentence pairs in a parallel corpus using [bicleaner](
 Merge and dedupe | Merges clean dataset and applies deduplicaiton | CPU, Disk | 
 Training s2s | Trains a backward shallow s2s model, which is useful for back-translations and ce-filtering | GPU | Inspired by a [marian example](https://github.com/marian-nmt/marian-examples/tree/master/training-basics-sentencepiece).
 Augmentation with back-translations | Translates mono corpus combined from monolingual datasets in target language using shallow s2s model. | GPU | It is more useful for low-resource languages and can be skipped for others.
+Training vocabulary | Trains [SentencePiece](https://github.com/google/sentencepiece) vocabulary/tokenizer model on parallel corpus. | CPU |
 Training teacher | Trains an ensemble of big transformer models on augmented dataset | GPU | You might want to adjust [early stopping](pipeline/train/configs/training/teacher.transformer.train.yml) or `after-epochs` parameters depending on datasets size.
 Fine-tuning teacher | Continue training an ensemble of teachers on parallel data only | GPU | You might want to adjust [early stopping](pipeline/train/configs/training/teacher.transformer.train.yml) parameters depending on datasets size.
 Translation by teacher | Translates a corpus and monolingual data combined from configurable `dataset.mono-src` using the ensemble of teacher models | GPU | The slowest part of the pipeline. Can take days. It is possible to speed it up by using multiple nodes in cluster mode.
