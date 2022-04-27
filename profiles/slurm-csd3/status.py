@@ -19,6 +19,20 @@ for i in range(STATUS_ATTEMPTS):
             x.split("|")[0]: x.split("|")[1]
             for x in sacct_res.decode().strip().split("\n")
         }
+        # regular execution
+        if jobid in res:
+            status = res[jobid]
+        # job array
+        else:
+            all_steps = sorted([(k, v) for k, v in res.items() if not k.endswith('batch') and '[' not in k],
+                               key=lambda x: x[0])
+            statuses = {v for _, v in all_steps}
+            if "COMPLETED" in statuses:
+                status = "COMPLETED"
+            elif "FAILED" in statuses:
+                status = "FAILED"
+            else:
+                status = all_steps[-1][1]
         break
     except sp.CalledProcessError as e:
         logger.error("sacct process error")
@@ -31,8 +45,14 @@ for i in range(STATUS_ATTEMPTS):
         sctrl_res = sp.check_output(
             shlex.split(f"scontrol -o show job {jobid}")
         )
-        m = re.search(r"JobState=(\w+)", sctrl_res.decode())
-        res = {jobid: m.group(1)}
+        statuses = [re.search(r"JobState=(\w+)", line).group(1)
+                    for line in sctrl_res.decode().split('\n') if line != ""]
+        if "COMPLETED" in statuses:
+            status = "COMPLETED"
+        elif "FAILED" in statuses:
+            status = "FAILED"
+        else:
+            status = statuses[0]
         break
     except sp.CalledProcessError as e:
         logger.error("scontrol process error")
@@ -43,7 +63,6 @@ for i in range(STATUS_ATTEMPTS):
         else:
             time.sleep(1)
 
-status = res[jobid]
 
 if status == "BOOT_FAIL":
     print("failed")

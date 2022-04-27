@@ -5,3 +5,5 @@ cpu-partition: skylake
 cpu-account: T2-CS119-CPU
 gpu-account: T2-CS119-GPU
 time-limit: "36:00:00"
+# todo: change after testing
+training-time-limit: "00:05:00"
