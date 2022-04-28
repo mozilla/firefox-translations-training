@@ -18,6 +18,7 @@ if [ ! -z "$SLURM_ARRAY_JOB_ID" ]; then
     # Now we interpret the exit status.
     if [ "$exit_status" == 143 ]; then # 143 = 128 + 15 => SIGTERM
         echo "Not done, continue in the next slot"
+        exit 0
     else
         if [ "$exit_status" == 0 ]; then
             echo "Completed"
@@ -28,9 +29,8 @@ if [ ! -z "$SLURM_ARRAY_JOB_ID" ]; then
         # investigate; there's no point in continuing training here.
         echo "Cancelling job array"
         scancel --state=PENDING $SLURM_ARRAY_JOB_ID
+        exit $exit_status
     fi
-
-    exit $exit_status
 else
     {exec_job}
 fi
