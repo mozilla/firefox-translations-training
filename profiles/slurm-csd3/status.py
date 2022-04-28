@@ -23,9 +23,14 @@ for i in range(STATUS_ATTEMPTS):
         if jobid in res:
             status = res[jobid]
         # job array
+        # example:
+        # 2379_1|COMPLETED|0:0
+        # 2379_1.batch|COMPLETED|0:0
+        # 2379_2|RUNNING|0:0
+        # 2379_2.batch|RUNNING|0:0
+        # 2379_[3-7%1]|PENDING|0:0
         else:
-            all_steps = sorted([(k, v) for k, v in res.items() if not k.endswith('batch') and '[' not in k],
-                               key=lambda x: x[0])
+            all_steps = sorted([(k, v) for k, v in res.items() if not k.endswith('batch')], key=lambda x: x[0])
             statuses = {v for _, v in all_steps}
             if "COMPLETED" in statuses:
                 status = "COMPLETED"
