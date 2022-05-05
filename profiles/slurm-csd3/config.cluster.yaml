@@ -4,6 +4,6 @@ multi-gpu-partition: ampere
 cpu-partition: icelake
 cpu-account: t2-cs119-sl4-cpu
 gpu-account: t2-cs119-sl4-gpu
-# todo: change time limits after testing
+# change if using other accounts
 time-limit: "11:00:00"
-training-time-limit: "00:05:00"
+training-time-limit: "11:00:00"

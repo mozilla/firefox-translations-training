@@ -16,7 +16,7 @@ CONFIG=configs/config.prod.yml
 CONDA_PATH=$(SHARED_ROOT)/mambaforge
 SNAKEMAKE_OUTPUT_CACHE=$(SHARED_ROOT)/cache
 SLURM_PROFILE=slurm-moz
-# for CSD3 cluster
+# for CSD3 cluster if compiling on CPU
 # MARIAN_CMAKE=-DBUILD_ARCH=core-avx2
 MARIAN_CMAKE=
 TARGET=
