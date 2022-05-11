@@ -14,10 +14,8 @@ mono_path=$2
 
 inputs=( "${@:3}" )
 
+echo "### Collecting translations"
 cat "${inputs[@]}" >"${output_path}"
-
-#echo "### Collecting translations"
-#pigz -dc "${dir}"/*.gz | pigz >"${output_path}"
 
 echo "### Comparing number of sentences in source and artificial target files"
 src_len=$(pigz -dc "${mono_path}" | wc -l)
