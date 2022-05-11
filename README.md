@@ -30,7 +30,7 @@ It was tested on:
 - x8 NVIDIA RTX 2080 GPUs with 12 GB of memory
 - CUDA 11.2
 - 100 GB of local disk space
-- Many terabytes of sshfs mounted storage
+- Many terabytes of NFS mounted storage
 
 ### Cluster mode
 
@@ -38,7 +38,7 @@ It was tested on:
 - CUDA 11.2 ( it was also tested on 11.5)
 - CUDNN library installed
 - Singularity module if running with containerization (recommended)
-- If running without containerization, there is no procedure to configure environment automatically.
+- If running without containerization, there is no procedure to configure the environment automatically.
   All the required modules (for example `parallel`) should be preinstalled and loaded in ~/.bashrc
 
 It was tested on Mozilla Slurm cluster using Singularity containers.
@@ -52,7 +52,7 @@ The pipeline was not tested in this mode and might require modification.
 
 Please refer to [Cloud execution](https://snakemake.readthedocs.io/en/stable/executing/cloud.html) section of Snakemake documentation.
 
-It is also possible to deploy Slurm cluster in the cloud. Fore example, using [Slurm on Google Cloud Platform](https://github.com/SchedMD/slurm-gcp).
+It is also possible to deploy Slurm cluster in the cloud. For example, using [Slurm on Google Cloud Platform](https://github.com/SchedMD/slurm-gcp).
 
 ## Configuration
 
@@ -68,7 +68,7 @@ cd firefox-translations-training
     - (Optional) Choose a config file to use (default is `configs/config.prod.yml`)
     - (Cluster mode) Adjust `CLUSTER_CORES` - number of CPU cores on one cluster machine
     - (Cluster mode) Use an appropriate `SLURM_PROFILE` from `profiles/`
-2. Configure experiment and datasets in `configs/config.prod.yml` (or `configs/config.prod.yml` for test run)
+2. Configure experiment and datasets in `configs/config.prod.yml` (or `configs/config.test.yml` for test run)
 3. Change source code if needed for the experiment
 4. **(Cluster mode)** Adjust Snakemake and cluster settings in the cluster profile.
    For `slurm-moz`: `profiles/slurm-moz/config.yml` and `profiles/slurm-moz/config.cluster.yml`
@@ -142,7 +142,7 @@ make dry-run
 ```
 make run-local
 ```
-To test the whole pipeline end to end (it supposed to run quickly and does not train anything useful):
+To test the whole pipeline end to end (it is supposed to run quickly and does not train anything useful):
 
 ```
 make test
@@ -176,14 +176,14 @@ For example, collect corpus first:
 make run-local TARGET=merge_corpus
 ```
 
-You can also use full file path, for exampe:
+You can also use the full file path, for example:
 ```
 make <run-command> TARGET=/models/ru-en/bicleaner/teacher-base0/model.npz.best-ce-mean-words.npz
 ```
 ### Rerunning
 
-If you want to rerun a specific step or steps, you can delete the result files that are expected in Snakemake rule output.
-Snakemake might complain on missing file and suggest to run it with `--clean-metadata` flag. In this case run:
+If you want to rerun a specific step or steps, you can delete the result files that are expected in the Snakemake rule output.
+Snakemake might complain about a missing file and suggest to run it with `--clean-metadata` flag. In this case run:
 ```
 make clean-meta TARGET=<missing-file-name>
 ```
@@ -201,7 +201,7 @@ make report
 
 ### Results
 
-See `Snakefile` file for directory structure documentation.
+See [Directory Structure](#directory-structure) section.
 
 The main directories inside `SHARED_ROOT` are:
 - `data/<lang_pair>/<experiment>` - data produced by the pipeline jobs
@@ -228,22 +228,23 @@ Data downloading | Downloads datasets, samples sentences | Network, Disk | Time 
 Data cleaning | Basic preprocessing, dataset specific, language specific, rule based and other attempts to clean noisy data in parallel and mono datasets | CPU | Good parallelization across CPU cores. To make cleaning of a new language more efficient add it to [clean_parallel.py](/pipeline/clean/tools/clean_parallel.py).
 Bicleaner | Filters noisy sentence pairs in a parallel corpus using [bicleaner](https://github.com/bitextor/bicleaner) or [bicleaner-ai](https://github.com/bitextor/bicleaner-ai) depending on available language packs. | CPU, GPU | If there are no pretrained language packs for bicleaner-ai, it uses bicleaner. If there are no ones for bicleaner either, this step is skipped. Cleaning thresholds are configurable per dataset, see [Dataset cleaning](##Dataset cleaning).
 Merge and dedupe | Merges clean dataset and applies deduplicaiton | CPU, Disk | 
+Training vocabulary | Trains [SentencePiece](https://github.com/google/sentencepiece) vocabulary/tokenizer model on parallel corpus. | CPU |
 Training s2s | Trains a backward shallow s2s model, which is useful for back-translations and ce-filtering | GPU | Inspired by a [marian example](https://github.com/marian-nmt/marian-examples/tree/master/training-basics-sentencepiece).
 Augmentation with back-translations | Translates mono corpus combined from monolingual datasets in target language using shallow s2s model. | GPU | It is more useful for low-resource languages and can be skipped for others.
 Training teacher | Trains an ensemble of big transformer models on augmented dataset | GPU | You might want to adjust [early stopping](pipeline/train/configs/training/teacher.transformer.train.yml) or `after-epochs` parameters depending on datasets size.
 Fine-tuning teacher | Continue training an ensemble of teachers on parallel data only | GPU | You might want to adjust [early stopping](pipeline/train/configs/training/teacher.transformer.train.yml) parameters depending on datasets size.
-Translation by teacher | Translates a corpus and monolingual data combined from `MONO_DATASETS_SRC` using the teacher model (ensemble is not supported yet) | GPU | The slowest part of the pipeline. Can take days. It is possible to speed it up launching the same scripts ([corpus](pipeline/translate/translate-corpus.sh), [mono](pipeline/translate/translate-mono.sh)) in parallel from another machine with access to the same network directory.
-Cross-entropy filtering | Scores translated corpus with backward s2s model and removes a part of the corpus with the lowest scores to reduce noise | GPU, CPU, Disk | At this point we work with huge datasets, so it utilizes copying to a local disk to make things faster.
-Training alignments and shortlist | Trains alignments using [fast_align](https://github.com/clab/fast_align) and extracts lexical shortlist using [extract_lex](https://github.com/marian-nmt/extract-lex) tool | CPU, Disk | Some tools requires uncompressed datasets on disk and they are huge at this point. Data is copied to a local disk to make things faster. Might take 100+GB of local disk depending on a dataset size. Good CPU parallelization.
-Training student | Trains a small transformer student model on filtered data and using alignments | GPU |
+Translation by teacher | Translates a corpus and monolingual data combined from configurable `dataset.mono-src` using the ensemble of teacher models | GPU | The slowest part of the pipeline. Can take days. It is possible to speed it up by using multiple nodes in cluster mode.
+Cross-entropy filtering | Scores translated corpus with backward s2s model and removes a part of the corpus with the lowest scores to reduce noise | GPU, CPU, Disk | At this point we work with huge datasets. Very disk intensive.
+Training alignments and shortlist | Trains alignments using [fast_align](https://github.com/clab/fast_align) and extracts lexical shortlist using [extract_lex](https://github.com/marian-nmt/extract-lex) tool | CPU, Disk | Some tools require uncompressed datasets on disk and they are huge at this point. Good CPU parallelization.
+Training student | Trains a small transformer student model on filtered data and using alignments. Shuffling in RAM might fail if dataset is huge and there's not enough RAM on the machine, so it's recommended to remove it and use `shuffle: batches` marian settings (see [issue](https://github.com/mozilla/firefox-translations-training/issues/21)).  | GPU |
 Fine-tuning student | Finetunes the student model by emulating 8bit GEMM during training | GPU | Converges very quickly and then degrades. It's quick but you might want to reduce early stopping threshold.
-Quantizaiton |  Applies 8 bit quantization to the fined-tuned student model and evaluates on CPU | CPU | CPU threads must be set to 1 for this step.
+Quantizaiton |  Applies 8 bit quantization to the fined-tuned student model and runs evaluation on CPU | CPU | CPU threads must be set to 1 for this step.
 Evaluation |  Calculates metrics for all models (BLEU, chrf) using [SacreBLEU](https://github.com/mjpost/sacrebleu) | GPU | Uses `datasets.test` configuration section.
 Export | Exports trained model and shortlist to (bergamot-translator)(https://github.com/mozilla/bergamot-translator) format | |
 
 ## Dataset importers
 
-Dataset importers can be used in `datasets` sections of experiment config.
+Dataset importers can be used in `datasets` sections of the config.
 
 Example:
 ```
@@ -256,7 +257,7 @@ Data source | Prefix | Name examples | Type | Comments
 --- | --- | --- | ---| ---
 [MTData](https://github.com/thammegowda/mtdata) | mtdata | newstest2017_ruen | corpus | Supports many datasets. Run `mtdata list -l ru-en` to see datasets for a specific language pair.
 [OPUS](opus.nlpl.eu/) | opus | ParaCrawl/v7.1 | corpus | Many open source datasets. Go to the website, choose a language pair, check links under Moses column to see what names and version is used in a link.
-[SacreBLEU](https://github.com/mjpost/sacrebleu) | sacrebleu | wmt20 | corpus | Official evaluation datasets available in SacreBLEU tool. Recommended to use in `TEST_DATASETS`. Look up supported datasets and language pairs in `sacrebleu.dataset` python module.
+[SacreBLEU](https://github.com/mjpost/sacrebleu) | sacrebleu | wmt20 | corpus | Official evaluation datasets available in SacreBLEU tool. Recommended to use in `datasets:test` config section. Look up supported datasets and language pairs in `sacrebleu.dataset` python module.
 [Flores](https://github.com/facebookresearch/flores) | flores | dev, devtest | corpus | Evaluation dataset from Facebook that supports 100 languages.
 Custom parallel | custom-corpus | /tmp/test-corpus | corpus | Custom parallel dataset that is already downloaded to a local disk. The dataset name is an absolute path prefix without ".lang.gz"
 [Paracrawl](https://paracrawl.eu/) | paracrawl-mono | paracrawl8 | mono | Datasets that are crawled from the web. Only [mono datasets](https://paracrawl.eu/index.php/moredata) are used in this importer. Parallel corpus is available using opus importer.
@@ -270,16 +271,19 @@ You can also use [find-corpus](pipeline/utils/find-corpus.py) tool to find all d
 conda env create -f envs/corpus.yml 
 conda activate corpus
 python utils/find-corpus.py en ru opus
+python utils/find-corpus.py en ru mtdata
+python utils/find-corpus.py en ru sacrebleu
 ```
+Make sure to check licenses of the datasets before using them.
 
 ### Adding a new importer
 
-Just add a shell script to [corpus](pipeline/data/importers/corpus) or [mono]() which is named as `<prefix>.sh` 
+Just add a shell script to [corpus](pipeline/data/importers/corpus) or [mono](pipeline/data/importers/mono) which is named as `<prefix>.sh` 
 and accepts the same parameters as the other scripts from the same folder.
 
 ## Dataset fixing
 
-Some datasets require fixes like detokenization. Dataset and language specific fixes are implemented in [pipeline/clean/fixes]([pipeline/clean/fixes]).
+Some datasets require fixes like detokenization. Dataset and language specific fixes are implemented in [pipeline/clean/fixes](pipeline/clean/fixes).
 Naming convention: 
 - `<dataset_name>.sh` for parallel dataset cleaning
 - `<dataset_name>.<lang>.sh` for language specific cleaning of parallel or monolingual dataset
@@ -288,7 +292,7 @@ Naming convention:
 ## Dataset cleaning
 Some parallel datasets require more aggressive filtering.
 Dataset specific Bicleaner thresholds can be set in config. 
-`0` means skipping filtering entrirely (useful for Paracrawl).
+`0` means skipping filtering entirely (useful for Paracrawl).
 
 Example:
 
@@ -403,13 +407,13 @@ Then port forward 6006.
 
 All steps are independent and contain scripts that accept arguments, read input files from disk and output the results to disk.
 It allows writing the steps in any language (currently it's historically mostly bash and Python) and 
-represent the pipeline as directed acyclic graph (DAG).
+represent the pipeline as a directed acyclic graph (DAG).
 
-Snakemake workflow manager infers the DAG implicitly from the specified inputs and outputs of the steps. The workflow manager checks which files are missing and runs the corresponding jobs either locally or on a cluster depending on configuration. 
+Snakemake workflow manager infers the DAG implicitly from the specified inputs and outputs of the steps. The workflow manager checks which files are missing and runs the corresponding jobs either locally or on a cluster depending on the configuration. 
 
-Snakemake parallelizes steps that can be executed simultniously. It is especially usefull for teacher ensemble training and translation.
+Snakemake parallelizes steps that can be executed simultaneously. It is especially useful for teacher ensemble training and translation.
 
-The main snakemkae process (scheduler) should be launched interactively. It runs job processes on the worker nodes in cluster mode or on a local machine in local mode.
+The main Snakemake process (scheduler) should be launched interactively. It runs job processes on the worker nodes in cluster mode or on a local machine in local mode.
 
 ### Conventions
   
@@ -420,7 +424,7 @@ The main snakemkae process (scheduler) should be launched interactively. It runs
 
 - If a script step fails, it can be safely retried.
 
-- Ideally every script should start from the last unfinished step, 
+- Ideally, every script should start from the last unfinished step, 
   checking presence of intermediate results of previous steps.
 
 - A script fails as early as possible.
@@ -429,19 +433,21 @@ The main snakemkae process (scheduler) should be launched interactively. It runs
 
 - Input data is always read only.
 
-- Output data is placed to a new folder for script results.
+- Output data is placed in a new folder for script results.
   
 - It is expected that the specified output folder might not exist and should be created by the script.
 
 - A script creates a folder for intermediate files and cleans it in the end 
   unless intermediate files are useful for retries.
     
-- Global variables are upper case, local variable are lower case.
+- Global variables are upper case, local variables are lower case.
 
 - Scripts should utilize resources provided by Snakemake (number of threads, memory).
   
 
 ## References
+
+Here is a list of selected publications on which the training pipeline is based. You can find more relevant publications on [Bergamot project web-site](https://browser.mt/publications).
 
 1. V. M. Sánchez-Cartagena, M. Bañón, S. Ortiz-Rojas and G. Ramírez-Sánchez, 
 "[Prompsit's submission to WMT 2018 Parallel Corpus Filtering shared task](http://www.statmt.org/wmt18/pdf/WMT116.pdf)",
@@ -453,4 +459,22 @@ Brussels, Belgium: Association for Computational Linguistics, October 2018
 in *Proceedings of the 22nd Annual Conference of the European Association for Machine Translation*.
 Lisboa, Portugal: European Association for Machine Translation, November 2020
    
-3. Mölder, F., Jablonski, K.P., Letcher, B., Hall, M.B., Tomkins-Tinch, C.H., Sochat, V., Forster, J., Lee, S., Twardziok, S.O., Kanitz, A., Wilm, A., Holtgrewe, M., Rahmann, S., Nahnsen, S., Köster, J., 2021. Sustainable data analysis with Snakemake. F1000Res 10, 33.
+3. Mölder F, Jablonski KP, Letcher B, et al. [Sustainable data analysis with Snakemake](https://pubmed.ncbi.nlm.nih.gov/34035898/). F1000Res. 2021;10:33. Published 2021 Jan 18. doi:10.12688/f1000research.29032.2
+
+
+4. [Edinburgh’s Submissions to the 2020 Machine Translation Efficiency Task](https://aclanthology.org/2020.ngt-1.26) (Bogoychev et al., NGT 2020)
+
+5. [From Research to Production and Back: Ludicrously Fast Neural Machine Translation](https://aclanthology.org/D19-5632) (Kim et al., EMNLP 2019)
+
+6. [The University of Edinburgh’s Submissions to the WMT19 News Translation Task](https://aclanthology.org/W19-5304) (Bawden et al., 2019)
+
+7. Jörg Tiedemann, 2012, [Parallel Data, Tools and Interfaces in OPUS](http://www.lrec-conf.org/proceedings/lrec2012/pdf/463_Paper.pdf). In Proceedings of the 8th International Conference on Language Resources and Evaluation (LREC'2012)
+8. [The University of Edinburgh’s Neural MT Systems for WMT17](https://arxiv.org/abs/1708.00726), Rico Sennrich, Alexandra Birch, Anna Currey, Ulrich Germann, Barry Haddow, Kenneth Heafield, Antonio Valerio Miceli Barone, and Philip Williams. In Proceedings of the EMNLP 2017 Second Conference on Machine Translation (WMT17), 2017.
+9. [Marian: Fast Neural Machine Translation in C++](https://arxiv.org/abs/1804.00344), Marcin Junczys-Dowmunt, Roman Grundkiewicz, Tomasz Dwojak, Hieu Hoang, Kenneth Heafield, Tom Neckermann, Frank Seide, Ulrich Germann, Alham Fikri Aji, Nikolay Bogoychev, Andre ́ F. T. Martins, and Alexandra Birch.
+10. [Improving Neural Machine Translation Models with Monolingual Data](https://arxiv.org/abs/1511.06709), Rico Sennrich,Barry Haddow,Alexandra Birch, Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), 2016.
+11. [A Call for Clarity in Reporting BLEU Scores](https://aclanthology.org/W18-6319) (Post, 2018)
+12. [The FLORES-101 Evaluation Benchmark for Low-Resource and Multilingual Machine Translation](https://ai.facebook.com/research/publications/the-flores-101-evaluation-benchmark-for-low-resource-and-multilingual-machine-translation), Facebook
+13. [Many-to-English Machine Translation Tools, Data, and Pretrained Models](https://aclanthology.org/2021.acl-demo.37) (Gowda et al., ACL 2021)
+14. Chris Dyer, Victor Chahuneau, and Noah A. Smith. (2013). [A Simple, Fast, and Effective Reparameterization of IBM Model 2](http://www.ark.cs.cmu.edu/cdyer/fast_valign.pdf). In Proc. of NAACL.
+15. [Neural Machine Translation of Rare Words with Subword Units](https://aclanthology.org/P16-1162) (Sennrich et al., ACL 2016)
+16. [Subword Regularization: Improving Neural Network Translation Models with Multiple Subword Candidates](https://arxiv.org/abs/1804.10959) (Taku Kudo, 2018)
