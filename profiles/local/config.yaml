@@ -1,0 +1,16 @@
+verbose: false
+use-conda: true
+resources: gpu=8
+cores: all
+cache: false
+reason: true
+config:
+  - deps=true
+  - root=/data
+  - cuda=/usr/local/cuda
+  - cudnn=/cudnn
+  - workspace=12000
+  - numgpus=8
+  - mariancmake=""
+  # (optional) override available GPU ids, example gpus=0 2 5 6
+  - gpus=""

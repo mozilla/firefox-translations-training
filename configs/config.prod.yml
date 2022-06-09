@@ -5,18 +5,6 @@
 ###
 
 
-# These settings depend on execution environment
-# They are set in the Makefile
-root: ""
-cuda: ""
-cudnn: ""
-deps: false
-gpus: ""
-numgpus: ""
-workspace: ""
-mariancmake: ""
-
-
 experiment:
   name: prod
   src: ru

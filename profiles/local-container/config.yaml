@@ -1,0 +1,18 @@
+verbose: false
+use-conda: true
+resources: gpu=8
+cores: all
+cache: false
+reason: true
+use-singularity: true
+singularity-args: "--bind /data,/usr/local/cuda,/usr/lib/x86_64-linux-gnu:/cudnn --nv"
+config:
+  - deps=true
+  - root=/data
+  - cuda=/usr/local/cuda
+  - cudnn=/cudnn
+  - workspace=12000
+  - numgpus=8
+  - mariancmake=""
+  # (optional) override available GPU ids, example gpus=0 2 5 6
+  - gpus=""
