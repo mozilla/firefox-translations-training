@@ -54,7 +54,12 @@ if "resources" in job_properties:
 options += ['-p', partition]
 options += ['-A', account]
 options += ['--nodes=1']
-options += ['-t', str(cluster_config['time-limit'])]
+
+if name.startswith('train') or name.startswith('finetune'):
+    options += ['--array', '1-20%1']
+    options += ['-t', str(cluster_config['training-time-limit'])]
+else:
+    options += ['-t', str(cluster_config['time-limit'])]
 
 if "threads" in job_properties:
     options += ["--cpus-per-task", str(job_properties["threads"])]
