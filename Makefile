@@ -5,14 +5,14 @@ SHELL=/bin/bash
 
 ### 1. change these settings or override with env variables
 CONFIG=configs/config.prod.yml
-CONDA_PATH=mambaforge
-SNAKEMAKE_OUTPUT_CACHE=cache
+CONDA_PATH=../mambaforge
+SNAKEMAKE_OUTPUT_CACHE=../cache
 PROFILE=local
 # execution rule or path to rule output, default is all
 TARGET=
-REPORTS=/data/reports
+REPORTS=../reports
 # for tensorboard
-MODELS=/data/models
+MODELS=../models
 
 ###
 
@@ -98,7 +98,7 @@ clean-meta:
 dag: CONFIG=configs/config.test.yml
 dag:
 	$(CONDA_ACTIVATE) snakemake
-	snakemake \
+	$(SNAKEMAKE) \
 	  --profile=profiles/$(PROFILE) \
 	  --configfile $(CONFIG) \
 	  --dag \
