@@ -41,7 +41,7 @@ build:
 pull:
 	singularity pull Singularity.sif library://evgenypavlov/default/bergamot2:latest
 
-### 3. run
+### 3. dry run
 
 # if you need to activate conda environment for direct snakemake commands, use
 # . $(CONDA_PATH)/etc/profile.d/conda.sh && conda activate snakemake
@@ -58,6 +58,8 @@ dry-run:
 test-dry-run: CONFIG=configs/config.test.yml
 test-dry-run: dry-run
 
+### 4. run
+
 run:
 	echo "Running with config $(CONFIG) and profile $(PROFILE)"
 	$(CONDA_ACTIVATE) snakemake
@@ -71,7 +73,7 @@ test: CONFIG=configs/config.test.yml
 test: run
 
 
-### 4. create a report
+### 5. create a report
 
 report:
 	$(CONDA_ACTIVATE) snakemake

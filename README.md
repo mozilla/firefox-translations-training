@@ -42,8 +42,7 @@ It was tested on:
   All the required modules (for example `parallel`) should be preinstalled and loaded in ~/.bashrc
 
 It was tested on Mozilla Slurm cluster using Singularity containers.
-The pipeline can also be launched on [CSD3 HPC](https://docs.hpc.cam.ac.uk/hpc/index.html) but the main issue is time limits for long-running jobs. 
-Increasing retries can help.
+The pipeline can also be launched on [CSD3 HPC](https://docs.hpc.cam.ac.uk/hpc/index.html) but it was not fully tested.
 
 ### Cloud mode
 
@@ -61,19 +60,15 @@ It is also possible to deploy Slurm cluster in the cloud. For example, using [Sl
 git clone https://github.com/mozilla/firefox-translations-training.git
 cd firefox-translations-training
 ```
-1. Adjust environment settings in the `Makefile` 
-    - Configure paths to a data storage `SHARED_ROOT` and CUDA libraries `CUDA_DIR`
-    - Adjust `NUM_GPUS` - number of GPUs per task that requires GPU and `WORKSPACE` - GPU memory pre-allocation for Marian
-    - (Optional) Set `GPUS` to select specific GPUs for local mode
-    - (Optional) Choose a config file to use (default is `configs/config.prod.yml`)
-    - (Cluster mode) Adjust `CLUSTER_CORES` - number of CPU cores on one cluster machine
-    - (Cluster mode) Use an appropriate `SLURM_PROFILE` from `profiles/`
-2. Configure experiment and datasets in `configs/config.prod.yml` (or `configs/config.test.yml` for test run)
-3. Change source code if needed for the experiment
-4. **(Cluster mode)** Adjust Snakemake and cluster settings in the cluster profile.
-   For `slurm-moz`: `profiles/slurm-moz/config.yml` and `profiles/slurm-moz/config.cluster.yml`
+1. Choose a [Snakemake profile](https://github.com/Snakemake-Profiles) from `profiles/` or create a new one 
+2. Adjust paths in the `Makefile` if needed and set `PROFILE` variable to the name of your profile
+3. Adjust Snakemake and workflow settings in the `profiles/<profile>/config.yaml`, see [Snakemake CLI reference](https://snakemake.readthedocs.io/en/stable/executing/cli.html) for details
+4. Configure experiment and datasets in `configs/config.prod.yml` (or `configs/config.test.yml` for test run)
+5. Change source code if needed for the experiment
+6. **(Cluster mode)** Adjust cluster settings in the cluster profile.
+   For `slurm-moz`: `profiles/slurm-moz/config.cluster.yml`
    You can also modify `profiles/slurm-moz/submit.sh` or create a new Snakemake [profile](https://github.com/Snakemake-Profiles).
-5. **(Cluster mode)** It might require further tuning of requested resources in `Snakemake` file:
+7. **(Cluster mode)** It might require further tuning of requested resources in `Snakemake` file:
     - Use `threads` for a rule to adjust parallelism
     - Use `resources: mem_mb=<memory>` to adjust total memory requirements per task 
       (default is set in `profile/slurm-moz/config.yaml`)
@@ -135,50 +130,35 @@ Dry run first to check that everything was installed correctly:
 make dry-run
 ```
 
-### Local mode
-
-#### Without containerization
-
+To run the pipeline:
 ```
-make run-local
+make run
 ```
-To test the whole pipeline end to end (it is supposed to run quickly and does not train anything useful):
+
+To test the whole pipeline end to end (it is supposed to run relatively quickly and does not train anything useful):
 
 ```
 make test
 ```
+You can also run a speicific profile or config by overriding variables from Makefile
+```
+make run PROFILE=slurm-moz CONFIG=configs/config.test.yml
+```
 
-#### With containerization
-```
-make run-local-container
-```
-
-### Cluster mode
-
-To run on Slurm
-
-without containerization:
-```
-make run-slurm
-```
-with containerization (recommended):
-```
-make run-slurm-container
-```
 ### Specific target
 
 By default, all Snakemake rules are executed. To run the pipeline up to a specific rule use:
 ```
-make <run-command> TARGET=<non-wildcard-rule-or-path>
+make run TARGET=<non-wildcard-rule-or-path>
 ```
 For example, collect corpus first:
 ```
-make run-local TARGET=merge_corpus
+make run TARGET=merge_corpus
 ```
 
 You can also use the full file path, for example:
 ```
-make <run-command> TARGET=/models/ru-en/bicleaner/teacher-base0/model.npz.best-ce-mean-words.npz
+make run TARGET=/models/ru-en/bicleaner/teacher-base0/model.npz.best-ce-mean-words.npz
 ```
 ### Rerunning
 
@@ -189,7 +169,7 @@ make clean-meta TARGET=<missing-file-name>
 ```
 and then as usual:
 ```
-make <run-command>
+make run
 ```
 
 ### Reporting
