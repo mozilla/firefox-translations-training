@@ -12,3 +12,22 @@ latency-wait: 60
 rerun-incomplete: true  # recomended for cluster submissions
 keep-going: false
 default-resources: "mem_mb=5980"
+use-singularity: true
+use-conda: true
+resources: gpu=8
+cores: 48
+cache: false
+reason: true
+# if CPU nodes don't have access to cuda dirs, use
+# export CUDA_DIR=$(CUDA_DIR); $(SNAKEMAKE) ...
+# singularity-args: "--bind $(SHARED_ROOT),/tmp --nv --containall"
+singularity-args: "--bind /data/rw/evgeny,/usr/local/cuda-11.5,/usr/lib/x86_64-linux-gnu:/cudnn,/tmp --nv --containall"
+config:
+  - deps=false
+  - root=/data/rw/evgeny
+  - cuda=/usr/local/cuda-11.5
+  - cudnn=/cudnn
+  - workspace=8000
+  - numgpus=8
+  - mariancmake=""
+  - gpus=""
