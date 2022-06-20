@@ -2,16 +2,6 @@
 # Test config, it runs the pipeline quickly end to end
 ###
 
-
-root: ""
-cuda: ""
-cudnn: ""
-deps: false
-gpus: ""
-numgpus: ""
-workspace: ""
-mariancmake: ""
-
 experiment:
   name: test
   src: ru

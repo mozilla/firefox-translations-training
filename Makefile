@@ -3,29 +3,21 @@
 .ONESHELL:
 SHELL=/bin/bash
 
-### 1. change these settings
-SHARED_ROOT=/data/rw/group-maml
-CUDA_DIR=/usr/local/cuda
-CUDNN_DIR=/usr/lib/x86_64-linux-gnu
-NUM_GPUS=8
-# (optional) override available GPU ids, example GPUS=0 2 5 6
-GPUS=
-WORKSPACE=12000
-CLUSTER_CORES=16
+### 1. change these settings or override with env variables
 CONFIG=configs/config.prod.yml
-CONDA_PATH=$(SHARED_ROOT)/mambaforge
-SNAKEMAKE_OUTPUT_CACHE=$(SHARED_ROOT)/cache
-SLURM_PROFILE=slurm-moz
-# for CSD3 cluster
-# MARIAN_CMAKE=-DBUILD_ARCH=core-avx2
-MARIAN_CMAKE=
+CONDA_PATH=../mambaforge
+SNAKEMAKE_OUTPUT_CACHE=../cache
+PROFILE=local
+# execution rule or path to rule output, default is all
 TARGET=
+REPORTS=../reports
+# for tensorboard
+MODELS=../models
 
 ###
 
 CONDA_ACTIVATE=source $(CONDA_PATH)/etc/profile.d/conda.sh ; conda activate ; conda activate
-SNAKEMAKE=export SNAKEMAKE_OUTPUT_CACHE=$(SNAKEMAKE_OUTPUT_CACHE);  snakemake
-CONFIG_OPTIONS=root="$(SHARED_ROOT)" cuda="$(CUDA_DIR)" cudnn=/cudnn workspace=$(WORKSPACE) numgpus=$(NUM_GPUS) $(if $(MARIAN_CMAKE),mariancmake="$(MARIAN_CMAKE)",) $(if $(GPUS),gpus="$(GPUS)",)
+SNAKEMAKE=export SNAKEMAKE_OUTPUT_CACHE=$(SNAKEMAKE_OUTPUT_CACHE); snakemake
 
 ### 2. setup
 
@@ -49,125 +41,69 @@ build:
 pull:
 	singularity pull Singularity.sif library://evgenypavlov/default/bergamot2:latest
 
-
-### 3. run
+### 3. dry run
 
 # if you need to activate conda environment for direct snakemake commands, use
 # . $(CONDA_PATH)/etc/profile.d/conda.sh && conda activate snakemake
 
 dry-run:
+	echo "Dry run with config $(CONFIG) and profile $(PROFILE)"
 	$(CONDA_ACTIVATE) snakemake
 	$(SNAKEMAKE) \
-	  --use-conda \
-	  --cores all \
-	  --cache \
-	  --verbose \
-	  --reason \
+	  --profile=profiles/$(PROFILE) \
 	  --configfile $(CONFIG) \
-	  --config $(CONFIG_OPTIONS) deps=true  \
 	  -n \
 	  $(TARGET)
 
 test-dry-run: CONFIG=configs/config.test.yml
 test-dry-run: dry-run
 
-run-local:
-	echo "Running with config $(CONFIG)"
+### 4. run
+
+run:
+	echo "Running with config $(CONFIG) and profile $(PROFILE)"
 	$(CONDA_ACTIVATE) snakemake
+	chmod +x profiles/$(PROFILE)/*
 	$(SNAKEMAKE) \
-	  --use-conda \
-	  --resources gpu=$(NUM_GPUS) \
+	  --profile=profiles/$(PROFILE) \
 	  --configfile $(CONFIG) \
-	  --config $(CONFIG_OPTIONS) deps=true \
-	  --cores all \
-	  --cache \
-	  --reason \
 	  $(TARGET)
 
 test: CONFIG=configs/config.test.yml
-test: run-local
-
-run-local-container:
-	$(CONDA_ACTIVATE) snakemake
-	module load singularity
-	$(SNAKEMAKE) \
-	  --use-conda \
-	  --use-singularity \
-	  --reason \
-	  --cores all \
-	  --cache \
-	  --resources gpu=$(NUM_GPUS) \
-	  --configfile $(CONFIG) \
-	  --config $(CONFIG_OPTIONS) \
-	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR),$(CUDNN_DIR):/cudnn --nv" \
-	  $(TARGET)
-
-run-slurm:
-	$(CONDA_ACTIVATE) snakemake
-	chmod +x profiles/$(SLURM_PROFILE)/*
-	$(SNAKEMAKE) \
-	  --use-conda \
-	  --reason \
-	  --cores $(CLUSTER_CORES) \
-	  --cache \
-	  --configfile $(CONFIG) \
-	  --config $(CONFIG_OPTIONS) \
-	  --profile=profiles/$(SLURM_PROFILE) \
-	  $(TARGET)
-
-run-slurm-container:
-	$(CONDA_ACTIVATE) snakemake
-	chmod +x profiles/$(SLURM_PROFILE)/*
-#	module load singularity
-	$(SNAKEMAKE) \
-	  --use-conda \
-	  --use-singularity \
-	  --reason \
-	  --cores $(CLUSTER_CORES) \
-	  --cache \
-	  --configfile $(CONFIG) \
-	  --config $(CONFIG_OPTIONS) \
-	  --profile=profiles/$(SLURM_PROFILE) \
-	  --singularity-args="--bind $(SHARED_ROOT),$(CUDA_DIR),$(CUDNN_DIR):/cudnn,/tmp --nv --containall" \
-	  $(TARGET)
-# if CPU nodes don't have access to cuda dirs, use
-# export CUDA_DIR=$(CUDA_DIR); $(SNAKEMAKE) \
-# --singularity-args="--bind $(SHARED_ROOT),/tmp --nv --containall"
+test: run
 
 
-### 4. create a report
+### 5. create a report
 
 report:
 	$(CONDA_ACTIVATE) snakemake
-	REPORTS=$(SHARED_ROOT)/reports DT=$$(date '+%Y-%m-%d_%H-%M'); \
-	mkdir -p $$REPORTS && \
+    DT=$$(date '+%Y-%m-%d_%H-%M'); \
+	mkdir -p $(REPORTS) && \
 	snakemake \
-		--report $${REPORTS}/$${DT}_report.html \
+		--profile=profiles/$(PROFILE) \
 		--configfile $(CONFIG) \
-		--config $(CONFIG_OPTIONS)
+		--report $(REPORTS)/$${DT}_report.html
 
 run-file-server:
 	$(CONDA_ACTIVATE) snakemake
-	python -m  http.server --directory $(SHARED_ROOT)/reports 8000
+	python -m  http.server --directory $(REPORTS) 8000
 
 ### extra
 
 clean-meta:
 	$(CONDA_ACTIVATE) snakemake
 	$(SNAKEMAKE) \
-	  --use-conda \
-	  --cores all \
+	  --profile=profiles/$(PROFILE) \
 	  --configfile $(CONFIG) \
-	  --config $(CONFIG_OPTIONS) \
 	  --cleanup-metadata $(TARGET)
 
 dag: CONFIG=configs/config.test.yml
 dag:
 	$(CONDA_ACTIVATE) snakemake
-	snakemake \
-	  --dag \
+	$(SNAKEMAKE) \
+	  --profile=profiles/$(PROFILE) \
 	  --configfile $(CONFIG) \
-	  --config $(CONFIG_OPTIONS) \
+	  --dag \
 	  | dot -Tpdf > DAG.pdf
 
 install-tensorboard:
@@ -176,6 +112,6 @@ install-tensorboard:
 
 tensorboard:
 	$(CONDA_ACTIVATE) tensorboard
-	ls -d $(SHARED_ROOT)/models/*/*/* > tb-monitored-jobs; \
-	tensorboard --logdir=$$MODELS --host=0.0.0.0 &; \
+	ls -d $(MODELS)/*/*/* > tb-monitored-jobs
+	tensorboard --logdir=$(MODELS) --host=0.0.0.0 &
 	python utils/tb_log_parser.py --prefix=

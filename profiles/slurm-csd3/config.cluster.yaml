@@ -1,7 +1,9 @@
 # CSD3
-single-gpu-partition: pascal
-multi-gpu-partition: pascal
-cpu-partition: skylake
-cpu-account: T2-CS119-CPU
-gpu-account: T2-CS119-GPU
-time-limit: "36:00:00"
+single-gpu-partition: ampere
+multi-gpu-partition: ampere
+cpu-partition: icelake
+cpu-account: t2-cs119-sl4-cpu
+gpu-account: t2-cs119-sl4-gpu
+# change if using other accounts
+time-limit: "11:00:00"
+training-time-limit: "11:00:00"
