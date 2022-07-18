@@ -11,6 +11,8 @@ Some settings, especially low resource languages might require extra tuning.
 It uses fast translation engine [Marian](https://marian-nmt.github.io) 
 and [Snakemake](https://snakemake.github.io/) framework for workflow management and parallelization.
 
+High level overview [post on Mozilla Hacks](https://hacks.mozilla.org/2022/06/training-efficient-neural-network-models-for-firefox-translations/).
+
 Check out [Model training guide](https://github.com/mozilla/firefox-translations-training/wiki/Model-training-guide) in the wiki for practical advice how to train models using the pipeline.
 
 ## System requirements
