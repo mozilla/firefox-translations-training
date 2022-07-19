@@ -37,9 +37,14 @@ bicl_dataset_thresholds = config['experiment']['bicleaner']['dataset-thresholds'
 backward_pretrained = config['experiment']['backward-model']
 vocab_pretrained = config['experiment']['vocab']
 
+try:
+    fine_tune_to_corpus = config['experiment']['fine-tune-to-corpus']
+except KeyError:
+    fine_tune_to_corpus = False
+
 experiment_dir=f"{data_root_dir}/experiments/{src}-{trg}/{experiment}"
 
-# override marian cofings
+# override marian configs
 marian_args = {name: ' '.join([f'--{k} {v}' for k,v in conf.items() ])
                for name, conf in config['marian-args'].items()}
 
@@ -51,6 +56,17 @@ mono_src_datasets = config['datasets']['mono-src']
 mono_trg_datasets = config['datasets']['mono-trg']
 mono_datasets = {src: mono_src_datasets, trg: mono_trg_datasets}
 mono_max_sent = {src: mono_max_sent_src, trg: mono_max_sent_trg}
+
+try:
+    held_out_dev_test = config['datasets']['held-out-dev-test']
+except KeyError:
+    held_out_dev_test = False
+if held_out_dev_test:
+    held_out_dev_size = config['datasets']['held-out-dev-size']
+    held_out_test_size = config['datasets']['held-out-test-size']
+
+all_eval_datasets = eval_datasets if not held_out_dev_test else eval_datasets + ['held_out_'+dataset
+                                                                                 for dataset in train_datasets]
 
 # parallelization
 
@@ -94,6 +110,11 @@ merged = f"{data_dir}/merged"
 filtered = f'{data_dir}/filtered'
 align_dir = f"{data_dir}/alignment"
 
+translated_domains = f"{data_dir}/translated-domains"
+merged_ft = f"{data_dir}/merged-ft"
+filtered_ft = f'{data_dir}/filtered-ft'
+align_dir_ft = f"{data_dir}/alignment-ft"
+
 # models
 models_dir = f"{data_root_dir}/models/{src}-{trg}/{experiment}"
 teacher_base_dir = f"{models_dir}/teacher-base"
@@ -107,6 +128,12 @@ backward_dir = f'{models_dir}/backward'
 spm_sample_size=config['experiment']['spm-sample-size']
 vocab_path=vocab_pretrained or f"{models_dir}/vocab/vocab.spm"
 
+corpus_finetuned_teacher_dir = f"{models_dir}/teacher-domain-ft"
+student_dir_ft = f"{models_dir}/student-domain-ft"
+student_finetuned_dir_ft = f"{models_dir}/student-domain-ft-finetuned"
+speed_dir_ft = f"{models_dir}/speed-domain-ft"
+exported_dir_ft = f"{models_dir}/exported-domain-ft"
+
 #evaluation
 eval_data_dir = f"{original}/eval"
 eval_res_dir = f"{models_dir}/evaluation"
@@ -115,6 +142,12 @@ eval_student_dir = f'{eval_res_dir}/student'
 eval_student_finetuned_dir = f'{eval_res_dir}/student-finetuned'
 eval_speed_dir = f'{eval_res_dir}/speed'
 eval_teacher_ens_dir = f'{eval_res_dir}/teacher-ensemble'
+
+eval_student_dir_ft = f'{eval_res_dir}/student-domain-ft'
+eval_student_finetuned_dir_ft = f'{eval_res_dir}/student-domain-ft-finetuned'
+eval_speed_dir_ft = f'{eval_res_dir}/speed-domain-ft'
+eval_corpus_ft_teachers_dir = f"{models_dir}/evaluation-domain-ft"
+eval_corpus_ft_teacher_ens_dir = f"{eval_corpus_ft_teachers_dir}/teacher-domain-ft-ensemble"
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" BMT_MARIAN="{bmt_marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
@@ -130,25 +163,33 @@ results = [f'{exported_dir}/model.{src}{trg}.intgemm.alphas.bin.gz',
            f'{exported_dir}/lex.50.50.{src}{trg}.s2t.bin.gz',
            f'{exported_dir}/vocab.{src}{trg}.spm.gz',
            f'{experiment_dir}/config.yml',
-           *expand(f'{eval_res_dir}/teacher-base{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=eval_datasets),
-           *expand(f'{eval_student_dir}/{{dataset}}.metrics', dataset=eval_datasets),
-           *expand(f'{eval_student_finetuned_dir}/{{dataset}}.metrics', dataset=eval_datasets),
-           *expand(f'{eval_speed_dir}/{{dataset}}.metrics', dataset=eval_datasets)
+           *expand(f'{eval_res_dir}/teacher-base{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=all_eval_datasets),
+           *expand(f'{eval_student_dir}/{{dataset}}.metrics', dataset=all_eval_datasets),
+           *expand(f'{eval_student_finetuned_dir}/{{dataset}}.metrics', dataset=all_eval_datasets),
+           *expand(f'{eval_speed_dir}/{{dataset}}.metrics', dataset=all_eval_datasets)
            ]
 
 if len(ensemble) > 1:
-    results.extend(expand(f'{eval_teacher_ens_dir}/{{dataset}}.metrics', dataset=eval_datasets))
+    results.extend(expand(f'{eval_teacher_ens_dir}/{{dataset}}.metrics', dataset=all_eval_datasets))
 
 if install_deps:
     results.append("/tmp/flags/setup.done")
-
+#
 if not backward_pretrained:
     # don't evaluate pretrained model
-    results.extend(expand(f'{eval_backward_dir}/{{dataset}}.metrics',dataset=eval_datasets))
+    results.extend(expand(f'{eval_backward_dir}/{{dataset}}.metrics',dataset=all_eval_datasets))
     do_train_backward=True
 else:
     do_train_backward = False
     backward_dir = backward_pretrained
+
+if fine_tune_to_corpus:
+    results.extend(expand(f'{eval_corpus_ft_teachers_dir}/teacher-domain-ft{{ens}}/{{dataset}}/{{eval_dataset}}.metrics',
+        ens=ensemble, eval_dataset=all_eval_datasets, dataset=train_datasets))
+
+    if len(ensemble) > 1:
+        results.extend(expand(f'{eval_corpus_ft_teacher_ens_dir}/{{dataset}}/{{eval_dataset}}.metrics',
+            eval_dataset=all_eval_datasets, dataset=train_datasets))
 
 # bicleaner
 
@@ -166,6 +207,16 @@ else:
 
 clean_corpus_src = f'{clean_corpus_prefix}.{src}.gz'
 clean_corpus_trg = f'{clean_corpus_prefix}.{trg}.gz'
+
+clean_corpus_domain_ft_prefix = f'{data_dir}/deduplicated/corpus'
+clean_corpus_domain_ft_src = f'{clean_corpus_domain_ft_prefix}.{src}.gz'
+clean_corpus_domain_ft_trg = f'{clean_corpus_domain_ft_prefix}.{trg}.gz'
+
+# if using held-out dev and test sets,
+# the clean corpus only contains the training set
+held_out_corpus_prefix = f'{data_dir}/held-out/corpus'
+held_out_corpus_src = f'{held_out_corpus_prefix}.{src}.gz'
+held_out_corpus_trg = f'{held_out_corpus_prefix}.{trg}.gz'
 
 
 # augmentation
@@ -280,7 +331,9 @@ rule download_corpus:
     threads: 1
 #    group: 'data'
     cache: False # caching is broken in snakemake
-    wildcard_constraints: kind="corpus|devset|eval"
+    wildcard_constraints:
+        kind="corpus|devset|eval",
+        dataset="(?!held_out_).+"
     output: multiext(f"{original}/{{kind}}/{{dataset}}", f".{src}.gz", f".{trg}.gz")
     params: prefix=f"{original}/{{kind}}/{{dataset}}", dataset="{dataset}"
     shell: 'bash pipeline/data/download-corpus.sh "{params.dataset}" "{params.prefix}"  >> {log} 2>&1'
@@ -367,17 +420,116 @@ if use_bicleaner:
                     "{params.prefix_input}" "{params.prefix_output}" {params.threshold} {bicleaner_type} {threads} \
                     "{input.pack_dir}" >> {log} 2>&1'''
 
-rule merge_corpus:
-    message: "Merging clean parallel datasets"
-    log: f"{log_dir}/merge_corpus.log"
-    conda: "envs/base.yml"
-    threads: workflow.cores
-    # group: "clean_corpus"
-    input:  expand(f"{clean_corpus_prefix}/{{dataset}}.{{lang}}.gz", dataset=train_datasets, lang=[src, trg]),
-            bin=ancient(deduper)
-    output: src=clean_corpus_src,trg=clean_corpus_trg
-    params: prefix_output=clean_corpus_prefix, prefixes=expand(f"{clean_corpus_prefix}/{{dataset}}", dataset=train_datasets)
-    shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
+# Create held-out dev and test sets if needed
+# (necessary for domain fine-tuning to evaluate fine-tuned models on relevant data)
+if held_out_dev_test:
+    rule deduplicate_individual_corpora:
+        message: "Deduplicating each corpus independently"
+        log: f"{log_dir}/deduplicate_individual_corpora_{{dataset}}.log"
+        conda: "envs/base.yml"
+        threads: workflow.cores
+        #group: "clean_corpus"
+        input:
+            expand(f"{clean_corpus_prefix}/{{dataset}}.{{lang}}.gz", lang=[src, trg], allow_missing=True)
+        output:
+            src=f"{clean_corpus_domain_ft_prefix}/{{dataset}}.{src}.gz",
+            trg=f"{clean_corpus_domain_ft_prefix}/{{dataset}}.{trg}.gz"
+        params:
+            prefix_output=f"{clean_corpus_domain_ft_prefix}/{{dataset}}",
+            prefix_input=f"{clean_corpus_prefix}/{{dataset}}"
+        shell: '''bash pipeline/clean/tools/individual-deduplication.sh "{params.prefix_output}" \
+                    {params.prefix_input} >> {log} 2>&1'''
+
+    rule create_held_out_sets:
+        message: "Creating held-out dev and test sets for each corpus"
+        log: f"{log_dir}/create_held_out_sets_{{dataset}}.log"
+        conda: "envs/base.yml"
+        threads: workflow.cores
+        #group: "clean_corpus"
+        wildcard_constraints: dataset="|".join(train_datasets)
+        input:
+            src=f"{clean_corpus_domain_ft_prefix}/{{dataset}}.{src}.gz",
+            trg=f"{clean_corpus_domain_ft_prefix}/{{dataset}}.{trg}.gz"
+        output:
+            src_train=f"{held_out_corpus_prefix}/train/{{dataset}}.{src}.gz",
+            trg_train=f"{held_out_corpus_prefix}/train/{{dataset}}.{trg}.gz",
+            src_dev=f"{held_out_corpus_prefix}/dev/{{dataset}}.{src}.gz",
+            trg_dev=f"{held_out_corpus_prefix}/dev/{{dataset}}.{trg}.gz",
+            src_test=f"{held_out_corpus_prefix}/test/{{dataset}}.{src}.gz",
+            trg_test=f"{held_out_corpus_prefix}/test/{{dataset}}.{trg}.gz",
+        params:
+            dev_size=held_out_dev_size,
+            test_size=held_out_test_size
+        shell: '''bash pipeline/data/held-out-dev-test.sh \
+                    "{input.src}" "{input.trg}" "{params.dev_size}" "{params.test_size}" \
+                    "{held_out_corpus_prefix}" "{wildcards.dataset}" >> {log} 2>&1'''
+
+    rule merge_held_out_train_sets:
+        message: "Merge held-out train sets"
+        log: f"{log_dir}/merge_held_out_train_sets.log"
+        conda: "envs/base.yml"
+        threads: workflow.cores
+        #group: "clean_corpus"
+        input:
+            expand(f"{held_out_corpus_prefix}/train/{{dataset}}.{{lang}}.gz",
+                dataset=train_datasets,lang=[src, trg])
+        output:
+            src=clean_corpus_src,
+            trg=clean_corpus_trg
+        params:
+            prefix_output=clean_corpus_prefix,
+            prefixes=expand(f"{held_out_corpus_prefix}/train/{{dataset}}",dataset=train_datasets)
+        shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
+
+    rule copy_held_out_test_sets:
+        message: "Copy held-out test sets to eval directory"
+        log: f"{log_dir}/copy_held_out_test_sets_{{dataset}}.log"
+        conda: "envs/base.yml"
+        threads: workflow.cores
+        #group: "clean_corpus"
+        input:
+            input_src=f"{held_out_corpus_prefix}/test/{{dataset}}.{src}.gz",
+            input_trg=f"{held_out_corpus_prefix}/test/{{dataset}}.{trg}.gz"
+        output:
+            src=f"{eval_data_dir}/held_out_{{dataset}}.{src}.gz",
+            trg=f"{eval_data_dir}/held_out_{{dataset}}.{trg}.gz"
+        shell: '''cp {input.input_src} {output.src} >> {log} 2>&1
+                  cp {input.input_trg} {output.trg} >> {log} 2>&1'''
+
+# If using held-out dev and test sets, the merged train sets will be used (created by rule merge_held_out_train_sets),
+# so that the model does not see dev and test data that will be used for fine-tuning teachers to corpora;
+# if no held-out sets, use the original merge_corpus rule
+if not held_out_dev_test:
+    rule merge_corpus:
+        message: "Merging clean parallel datasets"
+        log: f"{log_dir}/merge_corpus.log"
+        conda: "envs/base.yml"
+        threads: workflow.cores
+        # group: "clean_corpus"
+        input:  expand(f"{clean_corpus_prefix}/{{dataset}}.{{lang}}.gz", dataset=train_datasets, lang=[src, trg]),
+                bin=ancient(deduper)
+        output: src=clean_corpus_src,trg=clean_corpus_trg
+        params: prefix_output=clean_corpus_prefix, prefixes=expand(f"{clean_corpus_prefix}/{{dataset}}", dataset=train_datasets)
+        shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
+
+# Merge individually deduplicated training corpora (used to compare files after forward-translation)
+if fine_tune_to_corpus:
+    rule merge_corpus_for_forward_translation:
+        message: "Merging clean parallel datasets for domain fine-tuning (with individual deduplication)"
+        log: f"{log_dir}/merge_corpus_for_forward_translation.log"
+        conda: "envs/base.yml"
+        threads: workflow.cores
+        group: "clean_corpus"
+        input: expand(f"{held_out_corpus_prefix}/train/{{dataset}}.{{lang}}.gz",dataset=train_datasets,lang=[src, trg])
+        output:
+            src=clean_corpus_domain_ft_src,
+            trg=clean_corpus_domain_ft_trg
+        params:
+            prefix_output=clean_corpus_domain_ft_prefix,
+            prefixes=expand(f"{held_out_corpus_prefix}/train/{{dataset}}",
+            dataset=train_datasets)
+        shell: '''bash pipeline/clean/merge-corpus-without-deduplication.sh \
+                    "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
 
 rule merge_devset:
     message: "Merging devsets"
@@ -524,58 +676,170 @@ if augment_corpus:
                     teacher train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
                     "{input.vocab}" --pretrained-model "{input.model}" {params.args} >> {log} 2>&1'''
 
+if fine_tune_to_corpus:
+    ### fine-tune teacher to corpora
+    rule finetune_teacher_to_corpora:
+        message: "Fine-tune teacher on each corpus"
+        log: f"{log_dir}/finetune_teacher_to_corpora{{ens}}_{{dataset}}.log"
+        conda: "envs/base.yml"
+        threads: gpus_num * 2
+        resources: gpu=gpus_num
+        group: 'teacher{ens}'
+        input:
+            dev_src=rules.create_held_out_sets.output.src_dev,
+            dev_trg=rules.create_held_out_sets.output.trg_dev,
+            train_src=rules.create_held_out_sets.output.src_train,
+            train_trg=rules.create_held_out_sets.output.trg_train,
+            bin=ancient(trainer),vocab=vocab_path,
+            general_teacher=f'{final_teacher_dir}{{ens}}/{best_model}'
+        output:
+            model=f'{corpus_finetuned_teacher_dir}{{ens}}/{{dataset}}/{best_model}'
+        params:
+            prefix_train=f"{held_out_corpus_prefix}/train/{{dataset}}",
+            prefix_test=f"{held_out_corpus_prefix}/dev/{{dataset}}",
+            dir=directory(f'{corpus_finetuned_teacher_dir}{{ens}}/{{dataset}}'),
+            args=get_args("training-teacher-finetuned")
+        wildcard_constraints: ens="\d+", dataset="|".join(train_datasets)
+        shell: '''bash pipeline/train/train.sh \
+                    teacher train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
+                    "{input.vocab}" --pretrained-model "{input.general_teacher}" {params.args} >> {log} 2>&1'''
+
 ### translation with teacher
 
 # corpus
 
-checkpoint split_corpus:
-    message: "Splitting the corpus to translate"
-    log: f"{log_dir}/split_corpus.log"
-    conda: "envs/base.yml"
-    threads: 1
-    input: corpus_src=clean_corpus_src,corpus_trg=clean_corpus_trg
-    output: directory(f"{translated}/corpus")
-    shell: '''bash pipeline/translate/split-corpus.sh \
-                {input.corpus_src} {input.corpus_trg} {output} {split_length} >> {log} 2>&1'''
+# Workflow without fine-tuning teacher models to parallel corpora
+# Forward-translate with general teacher
+if not fine_tune_to_corpus:
+    checkpoint split_corpus:
+        message: "Splitting the corpus to translate"
+        log: f"{log_dir}/split_corpus.log"
+        conda: "envs/base.yml"
+        threads: 1
+        input: corpus_src=clean_corpus_src,corpus_trg=clean_corpus_trg
+        output: directory(f"{translated}/corpus")
+        shell: '''bash pipeline/translate/split-corpus.sh \
+                    {input.corpus_src} {input.corpus_trg} {output} {split_length} >> {log} 2>&1'''
 
-rule translate_corpus:
-    message: "Translating corpus with teacher"
-    log: f"{log_dir}/translate_corpus/{{part}}.log"
-    conda: "envs/base.yml"
-    threads: gpus_num*2
-    resources: gpu=gpus_num
-    input:
-        ancient(decoder),
-        file=f'{translated}/corpus/file.{{part}}',
-        vocab=vocab_path,
-        teacher_models=expand(f"{final_teacher_dir}{{ens}}/{best_model}",ens=ensemble)
-    output: f'{translated}/corpus/file.{{part}}.nbest'
-    params: args=get_args('decoding-teacher')
-    shell: '''bash pipeline/translate/translate-nbest.sh \
-                "{input.file}" "{input.vocab}" {input.teacher_models} {params.args} >> {log} 2>&1'''
+    rule translate_corpus:
+        message: "Translating corpus with teacher"
+        log: f"{log_dir}/translate_corpus/{{part}}.log"
+        conda: "envs/base.yml"
+        threads: gpus_num*2
+        resources: gpu=gpus_num
+        input:
+            ancient(decoder),
+            file=f'{translated}/corpus/file.{{part}}',
+            vocab=vocab_path,
+            teacher_models=expand(f"{final_teacher_dir}{{ens}}/{best_model}",ens=ensemble)
+        output: f'{translated}/corpus/file.{{part}}.nbest'
+        params: args=get_args('decoding-teacher')
+        shell: '''bash pipeline/translate/translate-nbest.sh \
+                    "{input.file}" "{input.vocab}" {input.teacher_models} {params.args} >> {log} 2>&1'''
 
-rule extract_best:
-    message: "Extracting best translations for the corpus"
-    log: f"{log_dir}/extract_best/{{part}}.log"
-    conda: "envs/base.yml"
-    threads: 1
-    #group 'translate_corpus'
-    input: nbest=f"{translated}/corpus/file.{{part}}.nbest", ref=f"{translated}/corpus/file.{{part}}.ref"
-    output: f"{translated}/corpus/file.{{part}}.nbest.out"
-    shell: 'python pipeline/translate/bestbleu.py -i {input.nbest} -r {input.ref} -m bleu -o {output} >> {log} 2>&1'
+    rule extract_best:
+        message: "Extracting best translations for the corpus"
+        log: f"{log_dir}/extract_best/{{part}}.log"
+        conda: "envs/base.yml"
+        threads: 1
+        #group 'translate_corpus'
+        input: nbest=f"{translated}/corpus/file.{{part}}.nbest", ref=f"{translated}/corpus/file.{{part}}.ref"
+        output: f"{translated}/corpus/file.{{part}}.nbest.out"
+        shell: 'python pipeline/translate/bestbleu.py -i {input.nbest} -r {input.ref} -m bleu -o {output} >> {log} 2>&1'
 
-rule collect_corpus:
-    message: "Collecting translated corpus"
-    log: f"{log_dir}/collect_corpus.log"
-    conda: "envs/base.yml"
-    threads: 4
-    #group 'translate_corpus'
-    input:
-        lambda wildcards: expand(f"{translated}/corpus/file.{{part}}.nbest.out",
-            part=find_parts(wildcards, checkpoints.split_corpus))
-    output: f'{translated}/corpus.{trg}.gz'
-    params: src_corpus=clean_corpus_src
-    shell: 'bash pipeline/translate/collect.sh {translated}/corpus {output} {params.src_corpus} >> {log} 2>&1'
+    rule collect_corpus:
+        message: "Collecting translated corpus"
+        log: f"{log_dir}/collect_corpus.log"
+        conda: "envs/base.yml"
+        threads: 4
+        #group 'translate_corpus'
+        input:
+            lambda wildcards: expand(f"{translated}/corpus/file.{{part}}.nbest.out",
+                part=find_parts(wildcards, checkpoints.split_corpus))
+        output: f'{translated}/corpus.{trg}.gz'
+        params: src_corpus=clean_corpus_src
+        shell: 'bash pipeline/translate/collect.sh {translated}/corpus {output} {params.src_corpus} >> {log} 2>&1'
+
+# Workflow with fine-tuning teachers to multiple parallel corpora
+# Translate with multiple domain teachers
+if fine_tune_to_corpus:
+    checkpoint split_corpus_domains:
+        message: "Splitting the corpus to translate (domains kept separate)"
+        log: f"{log_dir}/split_corpus_domains_{{dataset}}.log"
+        conda: "envs/base.yml"
+        threads: 1
+        input:
+            corpus_src=f'{held_out_corpus_prefix}/train/{{dataset}}.{src}.gz',
+            corpus_trg=f'{held_out_corpus_prefix}/train/{{dataset}}.{trg}.gz'
+        output:
+            directory(f"{translated_domains}/corpus/parts/{{dataset}}")
+        params:
+            output_dir=f"{translated_domains}/corpus/parts/{{dataset}}"
+        shell: '''bash pipeline/translate/split-corpus.sh \
+                    {input.corpus_src} {input.corpus_trg} {params.output_dir} {split_length} >> {log} 2>&1'''
+
+    rule translate_corpus_domains:
+        message: "Translating corpora with domain teachers"
+        log: f"{log_dir}/translate_corpus_domains/{{dataset}}_{{part}}.log"
+        conda: "envs/base.yml"
+        threads: gpus_num * 2
+        resources: gpu=gpus_num
+        input:
+            ancient(decoder),
+            file=f'{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}',
+            vocab=vocab_path,
+            teacher_models=expand(f'{corpus_finetuned_teacher_dir}{{ens}}/{{dataset}}/{best_model}',
+                                    ens=ensemble, allow_missing=True)
+        output: f'{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}.nbest'
+        params: args=get_args('decoding-teacher')
+        wildcard_constraints: part="\d+"
+        shell: '''bash pipeline/translate/translate-nbest.sh \
+                    "{input.file}" "{input.vocab}" {input.teacher_models} {params.args} >> {log} 2>&1'''
+
+    rule extract_best_domains:
+        message: "Extracting best translations for the corpora (corpora kept separate)"
+        log: f"{log_dir}/extract_best_domains/{{dataset}}/{{part}}.log"
+        conda: "envs/base.yml"
+        threads: 1
+        # group: 'translate_corpus'
+        input:
+            nbest=f"{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}.nbest",
+            ref=f"{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}.ref"
+        output: f"{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}.nbest.out"
+        shell: 'python pipeline/translate/bestbleu.py -i {input.nbest} -r {input.ref} -m bleu -o {output} >> {log} 2>&1'
+
+    rule collect_single_corpus_domains:
+        message: "Collecting translated corpora separately"
+        log: f"{log_dir}/collect_corpus_domains_{{dataset}}.log"
+        conda: "envs/base.yml"
+        threads: 4
+        # group: 'translate_corpus'
+        input:
+            lambda wildcards: expand(f"{translated_domains}/corpus/parts/{{dataset}}/file.{{part}}.nbest.out",
+                part=find_parts(wildcards,checkpoints.split_corpus_domains),
+                allow_missing=True)
+        output: f'{translated_domains}/corpus/collected/{{dataset}}.{trg}.gz'
+        params: src_corpus=f'{held_out_corpus_prefix}/train/{{dataset}}.{src}.gz'
+        shell: '''bash pipeline/translate/collect.sh \
+                 {translated_domains}/corpus/parts/{wildcards.dataset} \
+                 {output} {params.src_corpus} >> {log} 2>&1'''
+
+    rule collect_all_corpora_domains:
+        message: "Collecting translated corpora into one"
+        log: f"{log_dir}/collect_corpus_domains.log"
+        conda: "envs/base.yml"
+        threads: 4
+        #group: 'translate_corpus'
+        input:
+            translations=expand(f'{translated_domains}/corpus/collected/{{dataset}}.{trg}.gz',
+                dataset=train_datasets),
+            src_corpus=clean_corpus_domain_ft_src
+        output: f'{translated_domains}/corpus.{trg}.gz'
+        params:
+            src_corpus=clean_corpus_domain_ft_src
+        shell: '''bash pipeline/translate/collect-corpora.sh \
+                         {output} {params.src_corpus} {input.translations} >> {log} 2>&1'''
+
 
 # mono
 
@@ -625,8 +889,10 @@ rule merge_translated:
     threads: 4
     #group 'mono_src'
     input:
-        src1=clean_corpus_src,src2=f"{clean}/mono.{src}.gz",
-        trg1=rules.collect_corpus.output,trg2=rules.collect_mono_src.output,
+        src1=clean_corpus_src if not fine_tune_to_corpus else clean_corpus_domain_ft_src,
+        src2=f"{clean}/mono.{src}.gz",
+        trg1=rules.collect_corpus.output if not fine_tune_to_corpus else rules.collect_all_corpora_domains.output,
+        trg2=rules.collect_mono_src.output,
         bin=ancient(deduper)
     output: res_src=f'{merged}/corpus.{src}.gz',res_trg=f'{merged}/corpus.{trg}.gz'
     shell: '''bash pipeline/translate/merge-corpus.sh \
@@ -749,7 +1015,6 @@ rule export:
     shell:
         'bash pipeline/quantize/export.sh "{speed_dir}" "{input.shortlist}" "{input.vocab}" "{exported_dir}" >> {log} 2>&1'
 
-
 ### evaluation
 
 rule evaluate:
@@ -783,7 +1048,7 @@ rule evaluate:
              {params.src_lng} {params.trg_lng} "{params.decoder_config}" {input.models} >> {log} 2>&1'''
 
 rule eval_quantized:
-    message: "Evaluating qunatized student model"
+    message: "Evaluating quantized student model"
     log: f"{log_dir}/eval_quantized_{{dataset}}.log"
     conda: "envs/base.yml"
     #group 'export'
@@ -804,3 +1069,36 @@ rule eval_quantized:
         decoder_config='../quantize/decoder.yml'
     shell: '''bash pipeline/eval/eval-quantized.sh "{input.model}" "{input.shortlist}" "{params.dataset_prefix}" \
             "{input.vocab}" "{params.res_prefix}" "{params.decoder_config}" >> {log} 2>&1'''
+
+if fine_tune_to_corpus:
+    rule eval_teachers_finetuned_to_corpus:
+        message: "Evaluating a model"
+        log: f"{log_dir}/eval/eval_teachers_finetuned_to_corpus_{{model}}_{{train_dataset}}_{{dataset}}.log"
+        conda: "envs/base.yml"
+        threads: gpus_num * 2
+        resources: gpu=gpus_num
+        #group '{model}'
+        priority: 50
+        wildcard_constraints:
+            model="[\w-]+",
+            dataset="|".join(all_eval_datasets)
+        input:
+            ancient(decoder),
+            data=multiext(f'{eval_data_dir}/{{dataset}}',f".{src}.gz",f".{trg}.gz"),
+            models=lambda wildcards: f'{models_dir}/{wildcards.model}/{wildcards.train_dataset}/{best_model}'
+                                        if wildcards.model != 'teacher-domain-ft-ensemble'
+                                        else [f'{corpus_finetuned_teacher_dir}{ens}/{wildcards.train_dataset}/{best_model}'
+                                              for ens in ensemble]
+        output:
+            report(f'{eval_corpus_ft_teachers_dir}/{{model}}/{{train_dataset}}/{{dataset}}.metrics',
+                category='evaluation',subcategory='{model}',caption='reports/evaluation.rst')
+        params:
+            dataset_prefix=f'{eval_data_dir}/{{dataset}}',
+            res_prefix=f'{eval_corpus_ft_teachers_dir}/{{model}}/{{train_dataset}}/{{dataset}}',
+            src_lng=src,
+            trg_lng=trg,
+            decoder_config=lambda wildcards: f'{models_dir}/{wildcards.model}/{wildcards.train_dataset}/{best_model}.decoder.yml'
+                            if wildcards.model != 'teacher-domain-ft-ensemble'
+                            else f'{corpus_finetuned_teacher_dir}0/{wildcards.train_dataset}/{best_model}.decoder.yml'
+        shell: '''bash pipeline/eval/eval-gpu.sh "{params.res_prefix}" "{params.dataset_prefix}" \
+                 {params.src_lng} {params.trg_lng} "{params.decoder_config}" {input.models} >> {log} 2>&1'''
