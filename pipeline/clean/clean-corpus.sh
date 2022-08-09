@@ -30,7 +30,7 @@ echo "### Basic preprocessing"
 for lng in "${SRC}" "${TRG}"; do
   test -s "${output_prefix}.${lng}.nrm.gz" ||
     pigz -dc "${input_prefix}.${lng}.gz" |
-    parallel --no-notice --pipe -k -j "${threads}" --block 50M \
+    parallel --pipe -k -j "${threads}" --block 50M \
       "perl tools/deescape-special-chars.perl | perl tools/remove-non-printing-char.perl" |
     pigz >"${output_prefix}.${lng}.nrm.gz"
 done
