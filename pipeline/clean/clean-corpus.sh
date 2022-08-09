@@ -65,7 +65,7 @@ test -s "${output_prefix}.${SRC}${TRG}.fix.gz" ||
 echo "### Rule-based filtering"
 test -s "${output_prefix}.${SRC}${TRG}.rule-based.gz" ||
   pigz -dc "${output_prefix}.${SRC}${TRG}.fix.gz" |
-  parallel --no-notice --pipe -k -j "${threads}" --block 50M \
+  parallel --pipe -k -j "${threads}" --block 50M \
     "python3 tools/clean_parallel.py -l1 ${SRC} -l2 ${TRG} --debug" \
     2>"${output_prefix}.${SRC}${TRG}.clean.debug.txt" |
   pigz >"${output_prefix}.${SRC}${TRG}.rule-based.gz"
@@ -75,7 +75,7 @@ echo "### Language identification"
 test -s "${output_prefix}.${SRC}${TRG}.langid.gz" ||
   pigz -dc "${output_prefix}.${SRC}${TRG}.rule-based.gz" |
   # memory intensive
-  parallel --no-notice --pipe -k -j "$(echo "${threads}"/4 | bc)" --block 50M \
+  parallel --pipe -k -j "$(echo "${threads}"/4 | bc)" --block 50M \
     "python3 -Wi tools/langid_fasttext.py -f 1 | python3 -Wi tools/langid_fasttext.py -f 1" |
   grep -P "^${SRC}\t${TRG}\t" |
   cut -f3,4 |
