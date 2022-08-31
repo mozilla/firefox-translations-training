@@ -16,7 +16,8 @@ train_set_prefix=$5
 valid_set_prefix=$6
 model_dir=$7
 vocab=$8
-extra_params=( "${@:9}" )
+best_model_name=$9
+extra_params=( "${@:10}" )
 
 test -v GPUS
 test -v MARIAN
@@ -50,8 +51,8 @@ echo "### Training ${model_dir}"
   --valid-log "${model_dir}/valid.log" \
   "${extra_params[@]}"
 
-cp "${model_dir}/model.npz.best-chrf.npz" "${model_dir}/final.model.npz.best-chrf.npz"
-cp "${model_dir}/model.npz.best-chrf.npz.decoder.yml" "${model_dir}/final.model.npz.best-chrf.npz.decoder.yml"
+cp "${model_dir}/${best_model_name}" "${model_dir}/final.${best_model_name}"
+cp "${model_dir}/${best_model_name}.decoder.yml" "${model_dir}/final.${best_model_name}.decoder.yml"
 
 echo "### Model training is completed: ${model_dir}"
 echo "###### Done: Training a model"
