@@ -102,8 +102,8 @@ student_dir = f"{models_dir}/student"
 student_finetuned_dir = f"{models_dir}/student-finetuned"
 speed_dir = f"{models_dir}/speed"
 exported_dir = f"{models_dir}/exported"
-best_model_name = f"model.npz.best-{config['experiment']['best-model']}.npz"
-best_model = f"final.{best_model_name}"
+best_model_metric = config['experiment']['best-model']
+best_model = f"final.model.npz.best-{best_model_metric}.npz"
 backward_dir = f'{models_dir}/backward'
 spm_sample_size=config['experiment']['spm-sample-size']
 vocab_path=vocab_pretrained or f"{models_dir}/vocab/vocab.spm"
@@ -436,7 +436,7 @@ if do_train_backward:
                 args=get_args("training-backward")
         shell: '''bash pipeline/train/train.sh \
                     backward train {trg} {src} "{params.prefix_train}" "{params.prefix_test}" "{backward_dir}" \
-                    "{input.vocab}" "{best_model_name}" {params.args} >> {log} 2>&1'''
+                    "{input.vocab}" "{best_model_metric}" {params.args} >> {log} 2>&1'''
 
 if augment_corpus:
     checkpoint split_mono_trg:
@@ -504,7 +504,7 @@ rule train_teacher:
             args=get_args("training-teacher-base")
     shell: '''bash pipeline/train/train.sh \
                 teacher train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
-                "{input.vocab}" "{best_model_name}" {params.args} >> {log} 2>&1'''
+                "{input.vocab}" "{best_model_metric}" {params.args} >> {log} 2>&1'''
 
 if augment_corpus:
     rule finetune_teacher:
@@ -698,7 +698,7 @@ rule train_student:
             args=get_args("training-student")
     shell: '''bash pipeline/train/train-student.sh \
                 "{input.alignments}" student train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" \
-                "{student_dir}" "{input.vocab}" "{best_model_name}" {params.args} >> {log} 2>&1'''
+                "{student_dir}" "{input.vocab}" "{best_model_metric}" {params.args} >> {log} 2>&1'''
 
 # quantize
 
@@ -719,7 +719,7 @@ rule finetune_student:
             args=get_args("training-student-finetuned")
     shell: '''bash pipeline/train/train-student.sh \
                 "{input.alignments}" student finetune {src} {trg} "{params.prefix_train}" "{params.prefix_test}" \
-                "{student_finetuned_dir}" "{input.vocab}" "{best_model_name}" --pretrained-model "{input.student_model}" {params.args} >> {log} 2>&1'''
+                "{student_finetuned_dir}" "{input.vocab}" "{best_model_metric}" --pretrained-model "{input.student_model}" {params.args} >> {log} 2>&1'''
 
 rule quantize:
     message: "Quantization"
