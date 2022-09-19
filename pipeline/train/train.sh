@@ -16,7 +16,8 @@ train_set_prefix=$5
 valid_set_prefix=$6
 model_dir=$7
 vocab=$8
-extra_params=( "${@:9}" )
+best_model_metric=$9
+extra_params=( "${@:10}" )
 
 test -v GPUS
 test -v MARIAN
@@ -40,7 +41,7 @@ echo "### Training ${model_dir}"
   --devices ${GPUS} \
   --sharding local \
   --sync-sgd \
-  --valid-metrics chrf ce-mean-words bleu-detok \
+  --valid-metrics "${best_model_metric}" chrf ce-mean-words bleu-detok \
   --valid-sets "${valid_set_prefix}".{"${src}","${trg}"}.gz \
   --valid-translation-output "${model_dir}/devset.out" \
   --quiet-translation \
@@ -50,8 +51,8 @@ echo "### Training ${model_dir}"
   --valid-log "${model_dir}/valid.log" \
   "${extra_params[@]}"
 
-cp "${model_dir}/model.npz.best-chrf.npz" "${model_dir}/final.model.npz.best-chrf.npz"
-cp "${model_dir}/model.npz.best-chrf.npz.decoder.yml" "${model_dir}/final.model.npz.best-chrf.npz.decoder.yml"
+cp "${model_dir}/model.npz.best-${best_model_metric}.npz" "${model_dir}/final.model.npz.best-${best_model_metric}.npz"
+cp "${model_dir}/model.npz.best-${best_model_metric}.npz.decoder.yml" "${model_dir}/final.model.npz.best-${best_model_metric}.npz.decoder.yml"
 
 echo "### Model training is completed: ${model_dir}"
 echo "###### Done: Training a model"
