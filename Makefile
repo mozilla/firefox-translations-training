@@ -115,3 +115,4 @@ tensorboard:
 	ls -d $(MODELS)/*/*/* > tb-monitored-jobs
 	tensorboard --logdir=$(MODELS) --host=0.0.0.0 &
 	python utils/tb_log_parser.py --prefix=
+
