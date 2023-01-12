@@ -523,7 +523,7 @@ if augment_corpus:
                 args=get_args("training-teacher-finetuned")
         shell: '''bash pipeline/train/train.sh \
                     teacher train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
-                    "{input.vocab}" --pretrained-model "{input.model}" {params.args} >> {log} 2>&1'''
+                    "{input.vocab}" "{best_model_metric}" --pretrained-model "{input.model}" {params.args} >> {log} 2>&1'''
 
 ### translation with teacher
 
