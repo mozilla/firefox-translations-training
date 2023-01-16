@@ -28,7 +28,6 @@ mkdir -p "${model_dir}/tmp"
 
 all_model_metrics=(chrf ce-mean-words bleu-detok)
 
-
 echo "### Training ${model_dir}"
 
 # if doesn't fit in RAM, remove --shuffle-in-ram and add --shuffle batches
