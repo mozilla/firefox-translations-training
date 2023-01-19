@@ -26,6 +26,8 @@ test -v WORKSPACE
 cd "$(dirname "${0}")"
 mkdir -p "${model_dir}/tmp"
 
+all_model_metrics=(chrf ce-mean-words bleu-detok)
+
 echo "### Training ${model_dir}"
 
 # if doesn't fit in RAM, remove --shuffle-in-ram and add --shuffle batches
@@ -41,7 +43,7 @@ echo "### Training ${model_dir}"
   --devices ${GPUS} \
   --sharding local \
   --sync-sgd \
-  --valid-metrics "${best_model_metric}" chrf ce-mean-words bleu-detok \
+  --valid-metrics "${best_model_metric}" ${all_model_metrics[@]/$best_model_metric} \
   --valid-sets "${valid_set_prefix}".{"${src}","${trg}"}.gz \
   --valid-translation-output "${model_dir}/devset.out" \
   --quiet-translation \
