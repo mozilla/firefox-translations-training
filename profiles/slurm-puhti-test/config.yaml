@@ -27,7 +27,7 @@ config:
   - root=/scratch/project_2006944/pipeline_testing/data
   - cuda=/appl/spack/v018/install-tree/gcc-9.4.0/cuda-11.1.1-lfaa3j
   - cudnn=/appl/spack/v018/install-tree/gcc-9.4.0/cudnn-8.0.5.39-11.1-5cnrmz
-  - workspace=30000
+  - workspace=10000
   - numgpus=1
   - mariancmake=""
   - gpus="0"
