@@ -28,8 +28,9 @@ FTT uses software that is not included in the containerized conda environments, 
 6. Edit configs/config.opusmt.yml to select correct language codes and models.
 7. Create a data directory (e.g. in the parent dir of the repository or elsewhere in scratch) and create a temp dir in it.
 8. Edit profiles/slurm-puhti/config.yaml and change the first and last bindings in the singularity-args section to point to your data directory, and also enter the data directory path as the root value of the config section.
-9. Load cuda modules: module load gcc/9.4.0 cuda cudnn
-10. Run pipeline: make run PROFILE="slurm-puhti"
+9. Edit profiles/slurm-puhti/config.cluster.yaml to change the CSC account to one you have access to. 
+10. Load cuda modules: module load gcc/9.4.0 cuda cudnn
+11. Run pipeline: make run PROFILE="slurm-puhti"
 
 # Testing
 Since running the whole pipeline for a high-resource language pair will take a long time, there is a test config available for testing that everything works as it should. The test config is used by default, you can change into the full config by modifying the Makefile and changing config.opusmt-test.yml to config.opusmt.yml. You can also provide the config on the command line as the CONFIG parameter with make. Note that even the test config will take a long time if the training corpus is large (since translating the training data will take time). So to do a quick functionality check, pick a language pair with as little data as possible in Tatoeba-Challenge (while still having trained forward and backward models). The default epo-afr is good for quick checking (although note that bicleaner step will be skipped, as there are no bicleaner packs for those languages).
