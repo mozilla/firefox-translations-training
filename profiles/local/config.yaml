@@ -1,20 +1,20 @@
 verbose: false
 use-conda: true
-resources: gpu=8
-cores: all
+resources: gpu=0
+cores: 1
 cache: false
 reason: true
 config:
   # install dependencies on a local machine
   - deps=true
   # root path to a folder with data, models and logs
-  - root=/data
+  - root=/home/tommin/greennlp/data
   - cuda=/usr/local/cuda
   - cudnn=/cudnn
   # how much memory Marian reserves on a GPU
-  - workspace=12000
+  - workspace=2000
   # a number of GPUs you want to use
-  - numgpus=8
+  - numgpus=0
   - mariancmake=""
   # (optional) override available GPU ids, example gpus=0 2 5 6
   - gpus=""

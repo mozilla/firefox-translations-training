@@ -4,12 +4,13 @@
 SHELL=/bin/bash
 
 ### 1. change these settings or override with env variables
-CONFIG=configs/config.prod.yml
+CONFIG=configs/config.opusmt-test.yml
 CONDA_PATH=../mambaforge
 SNAKEMAKE_OUTPUT_CACHE=../cache
-PROFILE=local
+#PROFILE=local
 # execution rule or path to rule output, default is all
 TARGET=
+EXTRA=
 REPORTS=../reports
 # for tensorboard
 MODELS=../models
@@ -30,8 +31,23 @@ conda:
 
 snakemake:
 	$(CONDA_ACTIVATE) base
-	mamba create -c conda-forge -c bioconda -n snakemake snakemake==6.12.2 tabulate==0.8.10 --yes
+	mamba create -c conda-forge -c bioconda -n snakemake snakemake==7.19.1 tabulate==0.8.10 --yes
 	mkdir -p "$(SNAKEMAKE_OUTPUT_CACHE)"
+
+
+containerize:
+	$(CONDA_ACTIVATE) snakemake
+	$(SNAKEMAKE) \
+	  --profile=profiles/$(PROFILE) \
+	  --configfile $(CONFIG) \
+	  --containerize > Dockerfile
+	spython recipe Dockerfile Ftt.def
+	sed -i "s|%files|%files\npipeline/setup/install-deps.sh install-deps.sh|" Ftt.def
+	sed -i 's#%post#%post\ncat /etc/apt/sources.list | sed "s/archive.ubuntu.com/mirrors.nic.funet.fi/g" > temp \&\& mv temp /etc/apt/sources.list \
+		\napt-get update \&\& apt-get -y install gcc g++ \
+		\nexport DEBIAN_FRONTEND=noninteractive \
+		\nbash install-deps.sh#' Ftt.def
+	apptainer build Ftt.sif Ftt.def
 
 # build container image for cluster and run-local modes (preferred)
 build:
@@ -53,7 +69,8 @@ dry-run:
 	  --profile=profiles/$(PROFILE) \
 	  --configfile $(CONFIG) \
 	  -n \
-	  $(TARGET)
+	  $(TARGET) \
+	  $(EXTRA) \
 
 test-dry-run: CONFIG=configs/config.test.yml
 test-dry-run: dry-run
@@ -67,7 +84,8 @@ run:
 	$(SNAKEMAKE) \
 	  --profile=profiles/$(PROFILE) \
 	  --configfile $(CONFIG) \
-	  $(TARGET)
+	  $(TARGET) \
+	  $(EXTRA)
 
 test: CONFIG=configs/config.test.yml
 test: run

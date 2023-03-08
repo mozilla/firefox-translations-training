@@ -1,0 +1,7 @@
+# CSC Puhti
+single-gpu-partition: gputest
+multi-gpu-partition: gputest
+cpu-partition: test
+cpu-account: project_2006944
+gpu-account: project_2006944
+time-limit: "00:15:00"

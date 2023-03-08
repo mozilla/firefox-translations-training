@@ -21,7 +21,6 @@ URL = "https://dl.fbaipublicfiles.com/fasttext/supervised-models/{}".format(BIN)
 
 def main():
     args = parse_user_args()
-
     mpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), BIN)
     if not os.path.exists(mpath):
         sys.stderr.write("Downloading model {} ...\n".format(URL))
@@ -31,10 +30,13 @@ def main():
     model = fasttext.load_model(mpath)
 
     for line in sys.stdin:
+        #sys.stderr.write(line)
+        #sys.stderr.write(str(args.field)+"\n")
         fields = line.strip().split("\t")
         lid = model.predict(fields[args.field])
+        #sys.stderr.write(str(lid)+'\n')
+        #sys.stderr.write("{}\t{}".format(lid[0][0][-2:], line))
         sys.stdout.write("{}\t{}".format(lid[0][0][-2:], line))
-
 
 def parse_user_args():
     parser = argparse.ArgumentParser()

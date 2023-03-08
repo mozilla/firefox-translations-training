@@ -1,0 +1,71 @@
+Bootstrap: docker
+From: condaforge/mambaforge:latest
+Stage: spython-base
+
+%files
+pipeline/setup/install-deps.sh install-deps.sh
+envs/base.yml /conda-envs/61dfc4a21c8d8961ba5e212eb4da6217/environment.yaml
+envs/bicleaner.yml /conda-envs/a4f700aa6ff0256dcd9321b536a081ac/environment.yaml
+%labels
+io.github.snakemake.containerized="true"
+io.github.snakemake.conda_env_hash="402bfa55f7ee8d5ca8a6f560a58ae5089f05e325d596819f949edce1d0f27ac6"
+%post
+cat /etc/apt/sources.list | sed "s/archive.ubuntu.com/mirrors.nic.funet.fi/g" > temp && mv temp /etc/apt/sources.list 
+	
+apt-get update && apt-get -y install gcc g++ 
+	
+export DEBIAN_FRONTEND=noninteractive 
+	
+bash install-deps.sh
+
+# Step 1: Retrieve conda environments
+
+# Conda environment:
+#   source: envs/base.yml
+#   prefix: /conda-envs/61dfc4a21c8d8961ba5e212eb4da6217
+#   name: bergamot-training
+#   channels:
+#     - conda-forge
+#     - defaults
+#   dependencies:
+#     - python=3.9
+#     - cmake=3.21.1
+#     - pip=21.2.2
+#     - pip:
+#       - sacrebleu==2.0.0
+#       - mtdata==0.3.2
+#       - fasttext==0.9.2
+#       - regex==2019.8.19
+#       - sacremoses==0.0.43
+mkdir -p /conda-envs/61dfc4a21c8d8961ba5e212eb4da6217
+
+# Conda environment:
+#   source: envs/bicleaner.yml
+#   prefix: /conda-envs/a4f700aa6ff0256dcd9321b536a081ac
+#   name: bicleaner
+#   channels:
+#     - conda-forge
+#     - bitextor
+#     - defaults
+#   dependencies:
+#     - python=3.8
+#     - pip==23.0
+#     - cmake=3.21.1
+#     - hunspell==1.7.0
+#     - pip:
+#        - pypi-kenlm
+#        - bicleaner==0.16.1
+mkdir -p /conda-envs/a4f700aa6ff0256dcd9321b536a081ac
+
+# Step 2: Generate conda environments
+
+mamba env create --prefix /conda-envs/61dfc4a21c8d8961ba5e212eb4da6217 --file /conda-envs/61dfc4a21c8d8961ba5e212eb4da6217/environment.yaml && \
+mamba env create --prefix /conda-envs/a4f700aa6ff0256dcd9321b536a081ac --file /conda-envs/a4f700aa6ff0256dcd9321b536a081ac/environment.yaml && \
+mamba clean --all -y
+
+wget -O /conda-envs/a4f700aa6ff0256dcd9321b536a081ac/lib/python3.8/site-packages/fastspell/lid.176.bin https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
+
+%runscript
+exec /bin/bash "$@"
+%startscript
+exec /bin/bash "$@"

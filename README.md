@@ -1,3 +1,43 @@
+# OPUS-MT integration
+
+This fork makes it possible to use OPUS-MT models as teacher and backward models in the _firefox-translations-training_ pipeline (FTT). Other additions are profiles for running jobs on CSC supercomputers (*puhti* currently, *lumi* and possibly *mahti* to follow) and code for monitoring the power usage of jobs.
+
+# Workflow changes
+- Added download rule for Tatoeba-Challenge data.
+- Added download rule for OPUS-MT models (tested with Tatoeba-Challenge models, old models might need some changes)
+- Added config parameters for specifying OPUS-MT models as teacher and/or backward model.
+- Added subword segmentation and desegmentation rules.
+
+# Subword segmentation issues
+The biggest incompatibility with OPUS-MT models and FTT is in subword segmentation: default FTT trains models that use the in-built sentencepiece support in Marian, while OPUS-MT models expect data to be pre-segmented. To make it possible to use both the default FTT training and pre-built OPUS-MT models, segmentation and desegmentation steps have been added around marian-specific rules. This causes some clutter, but it's probably the best solution (instead of e.g. doing the segmentation/desegmentation inside the marian scripts), since it also makes it possible to easily implement other subword segmentation methods in the workflow. 
+
+# Snakemake and conda on HPC
+FTT is based on Snakemake, which has many benefits in terms of reproducibility and existing support. Among other things, Snakemake supports HPC environments and SLURM out of the box, which should make it ideal for CSC machines. However, Snakemake also makes heavy use of conda, which has been deprecated on CSC machines due to its unsuitability for HPC file systems (https://docs.csc.fi/computing/usage-policy/#conda-installations), and FTT specifically relies on several conda environments. Snakemake has a functionality for containerizing conda environments, so all the conda environments needed by FTT are provided in an Apptainer container (Ftt.sif).
+
+Containerization does not entirely solve the conda problem, since the Snakemake program itself requires conda to run. CSC provides a snakemake module, but problematically these modules are container-based, and since containers cannot be nested on CSC machines, it is not possible to use containerized conda environments with the CSC snakemake modules. I will submit a ticket about this to CSC, but in the meantime we still need to use conda with snakemake on CSC machines to get the pipeline working.
+
+# Non-containerized software
+FTT uses software that is not included in the containerized conda environments, including several marian installations and other NLP tools. These are automatically built as part of the pipeline. The Ftt.sif container includes the prerequisites for the software components. It's also possible to provide paths to separately built software installations. 
+
+# Getting started on puhti
+1. Clone the repository.
+2. Download the Ftt.sif container to the repository root.
+3. Install conda: make conda
+4. Install snakemake: make snakemake
+5. Update submodules: make git-modules
+6. Edit configs/config.opusmt.yml to select correct language codes and models.
+7. Create a data directory (e.g. in the parent dir of the repository or elsewhere in scratch) and create a temp dir in it.
+8. Edit profiles/slurm-puhti/config.yaml and change the first and last bindings in the singularity-args section to point to your data directory, and also enter the data directory path as the root value of the config section.
+9. Load cuda modules: module load gcc/9.4.0 cuda cudnn
+10. Run pipeline: make run PROFILE="slurm-puhti"
+
+# Testing
+Since running the whole pipeline for a high-resource language pair will take a long time, there is a test config available for testing that everything works as it should. The test config is used by default, you can change into the full config by modifying the Makefile and changing config.opusmt-test.yml to config.opusmt.yml. You can also provide the config on the command line as the CONFIG parameter with make. Note that even the test config will take a long time if the training corpus is large (since translating the training data will take time). So to do a quick functionality check, pick a language pair with as little data as possible in Tatoeba-Challenge (while still having trained forward and backward models). The default epo-afr is good for quick checking (although note that bicleaner step will be skipped, as there are no bicleaner packs for those languages).
+
+You can test the pipeline without running it by using make dry-run. If you want to build a specific file or rule, you can use the TARGET parameter with make. 
+
+# Original FTT instructions start from here. NOTE: some of the information below no longer applies.
+
 # Firefox Translations training
 Training pipelines for Firefox Translations machine translation models.
 The trained models are hosted in [firefox-translations-models](https://github.com/mozilla/firefox-translations-models/),
