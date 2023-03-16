@@ -49,6 +49,7 @@ marian_args = {name: ' '.join([f'--{k} {v}' for k,v in conf.items() ])
 
 opusmt_teacher = config['experiment']['opusmt-teacher']
 opusmt_backward = config['experiment']['opusmt-backward']
+target_language_token = config['experiment'].get('target-language-token')
 
 # datasets
 train_datasets = config['datasets']['train']
@@ -619,8 +620,12 @@ checkpoint split_corpus:
                 {input.corpus_src} {input.corpus_trg} {output} {split_length} >> {log} 2>&1'''
 
 if opusmt_teacher:
-    teacher_source_file = f'{translated}/corpus/file.{{part}}.opusmt'
-    teacher_mono_source_file = f'{translated}/mono-src/file.{{part}}.opusmt'
+    if target_language_token:
+        teacher_source_file = f'{translated}/corpus/file.{{part}}.opusmt.langtoken'
+        teacher_mono_source_file = f'{translated}/mono-src/file.{{part}}.opusmt.langtoken'
+    else:
+        teacher_source_file = f'{translated}/corpus/file.{{part}}.opusmt'
+        teacher_mono_source_file = f'{translated}/mono-src/file.{{part}}.opusmt'
     translated_mono_src_extension = "opusmt.out"
     deseg_nbest_file = f'{teacher_source_file}.nbest.deseg'
 else:    
@@ -644,6 +649,21 @@ rule opusmt_preprocess_corpus:
     output: f'{translated}/corpus/file.{{part}}.opusmt'
     shell: '''bash pipeline/translate/opusmt-preprocess.sh \
                 {input.file} {input.teacher_models} src "source.spm" >> {log} 2>&1'''
+
+
+#Multilingual OPUS-MT models with many languages on the target side require a target language identifier as the first token of
+#each sentence
+rule opusmt_add_targetlang_token:
+    message: "Adding target language token for target-side multilingual OPUS-MT model"
+    log: f"{log_dir}/opusmt_preprocess_corpus/{{part}}.langtoken.log"
+    threads: 1
+    input: 
+        file=f'{translated}/corpus/file.{{part}}.opusmt'
+    output: f'{translated}/corpus/file.{{part}}.opusmt.langtoken'
+    run: 
+        with open(input[0], "rt", encoding="utf8") as infile,open(output[0], "wt", encoding="utf8") as outfile:
+            for line in infile:
+                outfile.write(f">>{trg_three_letter}<< {line}")
      
 rule opusmt_deseg_nbest:
     message: "Desegmenting OPUS-MT model nbest list"
