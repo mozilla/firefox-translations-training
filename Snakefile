@@ -29,8 +29,8 @@ marian_cmake = config['mariancmake']
 # experiment
 src = config['experiment']['src']
 trg = config['experiment']['trg']
-src_three_letter = config['experiment']['src_three_letter']
-trg_three_letter = config['experiment']['trg_three_letter']
+src_three_letter = config['experiment'].get('src_three_letter')
+trg_three_letter = config['experiment'].get('trg_three_letter')
 experiment = config['experiment']['name']
 
 mono_max_sent_src = config['experiment']['mono-max-sentences-src']
@@ -39,7 +39,7 @@ mono_max_sent_trg = config['experiment']['mono-max-sentences-trg']
 backward_pretrained = config['experiment'].get('backward-model')
 backward_pretrained_vocab = config['experiment'].get('backward-vocab')
 vocab_pretrained = config['experiment'].get('vocab')
-
+forward_pretrained = config['experiment'].get('forward-model')
 
 experiment_dir=f"{data_root_dir}/experiments/{src}-{trg}/{experiment}"
 
@@ -47,8 +47,8 @@ experiment_dir=f"{data_root_dir}/experiments/{src}-{trg}/{experiment}"
 marian_args = {name: ' '.join([f'--{k} {v}' for k,v in conf.items() ])
                for name, conf in config.get('marian-args',{}).items()}
 
-opusmt_teacher = config['experiment']['opusmt-teacher']
-opusmt_backward = config['experiment']['opusmt-backward']
+opusmt_teacher = config['experiment'].get('opusmt-teacher')
+opusmt_backward = config['experiment'].get('opusmt-backward')
 target_language_token = config['experiment'].get('target-language-token')
 
 # datasets
@@ -116,6 +116,13 @@ best_model = f"final.model.npz.best-{best_model_metric}.npz"
 backward_dir = f'{models_dir}/backward'
 spm_sample_size=config['experiment'].get('spm-sample-size')
 
+#forward pretrained models are trained with sentencepiece integration, the value is a path to the directory
+if forward_pretrained:
+    teacher_base_dir = forward_pretrained
+    #this means that the when the model dirs are expanded, the result is only the teacher_base_dir
+    ensemble = [""] 
+
+
 #default vocab path used with base ftt
 vocab_path = vocab_pretrained or f"{models_dir}/vocab/vocab.spm"
 
@@ -159,9 +166,9 @@ results = [f'{exported_dir}/model.{src}{trg}.intgemm.alphas.bin.gz',
            *expand(f'{eval_speed_dir}/{{dataset}}.metrics', dataset=eval_datasets)
            ]
 
-#don't evaluate opus mt teachers (TODO: fix sp issues with opusmt teacher evaluation)
-if not opusmt_teacher:
-    results.append(*expand(f'{eval_res_dir}/teacher-base{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=eval_datasets))
+#don't evaluate opus mt teachers or pretrained teachers (TODO: fix sp issues with opusmt teacher evaluation)
+if not (opusmt_teacher or forward_pretrained):
+    results.extend(expand(f'{eval_res_dir}/teacher-base{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=eval_datasets))
 
 if len(ensemble) > 1:
     results.extend(expand(f'{eval_teacher_ens_dir}/{{dataset}}.metrics', dataset=eval_datasets))
@@ -215,7 +222,7 @@ clean_corpus_trg = f'{clean_corpus_prefix}.{trg}.gz'
 
 # augmentation
 
-if mono_trg_datasets:
+if mono_trg_datasets and not (opusmt_teacher or forward_pretrained):
     teacher_corpus = f'{augmented}/corpus'
     augment_corpus = True
     final_teacher_dir = teacher_finetuned_dir
@@ -558,6 +565,7 @@ if augment_corpus:
                     "{input.src1}" "{input.src2}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
                       >> {log} 2>&1'''
 
+# Three options for teacher: 1. download opus-mt model, 2. train teacher with pipeline, 3. path to pretrained teacher model
 if 'opusmt-teacher' in config['experiment']:
     rule download_teacher_model:
         message: "Downloading OPUS-MT teacher model"
@@ -568,7 +576,7 @@ if 'opusmt-teacher' in config['experiment']:
         params: teacher_dir=f'{teacher_base_dir}{{ens}}'
         shell: '''bash pipeline/opusmt/download-model.sh \
                     "{opusmt_teacher}" "{params.teacher_dir}" "{best_model}" >> {log} 2>&1'''
-else:
+elif not forward_pretrained:
     rule train_teacher:
         message: "Training teacher on all data"
         log: f"{log_dir}/train_teacher{{ens}}.log"
