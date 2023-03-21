@@ -27,6 +27,8 @@ flores_code() {
     flores_code="zho_simpl"
   elif [ "${code}" == "zh-Hant" ]; then
     flores_code="zho_trad"
+  elif [ "${code}" == "sw" ]; then
+    flores_code="swh"
   else
     flores_code=$(python -c "from mtdata.iso import iso3_code; print(iso3_code('${code}', fail_error=True))")
   fi
