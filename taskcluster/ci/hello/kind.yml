@@ -2,7 +2,7 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-  - firefox_translations_training_taskgraph.transforms.hello:transforms
+  - translations_taskgraph.transforms.hello:transforms
   - taskgraph.transforms.job:transforms
   - taskgraph.transforms.task:transforms
 
