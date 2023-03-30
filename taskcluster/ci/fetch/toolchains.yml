@@ -1,0 +1,42 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+marian:
+    description: Marian
+    fetch:
+        type: git
+        repo: https://github.com/marian-nmt/marian-dev
+        revision: e8a1a2530fb84cbff7383302ebca393e5875c441
+        path-prefix: marian-source
+        include-dot-git: true
+
+fast-align:
+    description: fast_align
+    fetch:
+        type: git
+        repo: https://github.com/clab/fast_align
+        revision: cab1e9aac8d3bb02ff5ae58218d8d225a039fa11
+
+preprocess:
+    description: preprocess
+    fetch:
+        type: git
+        repo: https://github.com/kpu/preprocess
+        revision: 64307314b4d5a9a0bd529b5c1036b0710d995eec
+
+extract-lex:
+    description: extract-lex
+    fetch:
+        type: git
+        repo: https://github.com/marian-nmt/extract-lex
+        revision: 42fa605b53f32eaf6c6e0b5677255c21c91b3d49
+
+cuda:
+    description: CUDA 12.1.0 Source
+    fetch:
+        type: static-url
+        url: https://developer.download.nvidia.com/compute/cuda/12.1.0/local_installers/cuda_12.1.0_530.30.02_linux.run  # yamllint disable-line rule:line-length
+        sha256: 68699036c12d71adb9ad2799dce2ff070270fab4488b90920b9756ab3f52c41c
+        size: 4245586997
+        artifact-name: cuda-source.run

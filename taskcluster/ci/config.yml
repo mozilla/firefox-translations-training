@@ -1,6 +1,11 @@
 ---
 trust-domain: "translations"
 task-priority: low
+treeherder:
+    group-names:
+        "I": "Docker images"
+        "Fetch": "Fetching tasks"
+        "TL": "Toolchain tasks"
 
 taskgraph:
     cached-task-prefix: "translations.v2.staging-firefox-translations-training"
