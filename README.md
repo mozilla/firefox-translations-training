@@ -21,7 +21,7 @@ FTT uses software that is not included in the containerized conda environments, 
 
 # Getting started on puhti
 1. Clone the repository.
-2. Download the Ftt.sif container to the repository root.
+2. Download the Ftt.sif container to the repository root (available in the Releases section of the repository).
 3. Install conda: make conda
 4. Install snakemake: make snakemake
 5. Update submodules: make git-modules
@@ -29,7 +29,7 @@ FTT uses software that is not included in the containerized conda environments, 
 7. Create a data directory (e.g. in the parent dir of the repository or elsewhere in scratch) and create a temp dir in it.
 8. Edit profiles/slurm-puhti/config.yaml and change the first and last bindings in the singularity-args section to point to your data directory, and also enter the data directory path as the root value of the config section.
 9. Edit profiles/slurm-puhti/config.cluster.yaml to change the CSC account to one you have access to. 
-10. Load cuda modules: module load gcc/9.4.0 cuda cudnn
+10. Load cuda modules: module load gcc/9.4.0 cuda cudnn (Note: when running mahti, use the following instead: module load cuda cudnn)
 11. Run pipeline: make run PROFILE="slurm-puhti"
 
 # Testing
