@@ -3,10 +3,10 @@ trust-domain: "translations"
 task-priority: low
 
 taskgraph:
-  cached-task-prefix: "translations.v2.firefox-translations-training"
+  cached-task-prefix: "translations.v2.staging-firefox-translations-training"
   repositories:
     firefox_translations_training:
-      name: "firefox-translations-training"
+      name: "staging-firefox-translations-training"
 
 workers:
   aliases:
