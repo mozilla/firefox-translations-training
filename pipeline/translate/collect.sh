@@ -10,12 +10,10 @@ set -euo pipefail
 dir=$1
 output_path=$2
 mono_path=$3
-
+model_index=$4
 
 echo "### Collecting translations"
-cat "${dir}"/*.out | pigz >"${output_path}"
-
-#TODO: duplicate the source set for each translated set
+cat "${dir}"/*${model_index}.nbest.out | pigz >"${output_path}"
 
 echo "### Comparing number of sentences in source and artificial target files"
 src_len=$(pigz -dc "${mono_path}" | wc -l)

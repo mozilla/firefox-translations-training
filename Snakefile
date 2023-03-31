@@ -713,14 +713,14 @@ rule extract_best:
 model_indices = list(range(len(opusmt_teacher)))
 rule collect_corpus:
     message: "Collecting translated corpus"
-    log: f"{log_dir}/collect_corpus.log"
+    log: f"{log_dir}/collect_corpus_{{model_index}}.log"
     conda: "envs/base.yml"
     threads: 4
     #group 'translate_corpus'
-    input: lambda wildcards: expand(f"{translated}/corpus/file.{{part}}.{{model_index}}.nbest.out", part=find_parts(wildcards, checkpoints.split_corpus),model_index=model_indices)
-    output: f'{translated}/corpus.{trg}.gz'
+    input: lambda wildcards: expand(f"{translated}/corpus/file.{{part}}.{wildcards.model_index}.nbest.out", part=find_parts(wildcards, checkpoints.split_corpus))
+    output: trg_corpus=f'{translated}/corpus.{{model_index}}.{trg}.gz'
     params: src_corpus=clean_corpus_src
-    shell: 'bash pipeline/translate/collect.sh {translated}/corpus {output} {params.src_corpus} >> {log} 2>&1'
+    shell: 'bash pipeline/translate/collect.sh {translated}/corpus {output} {params.src_corpus} {wildcards.model_index} >> {log} 2>&1'
 
 # mono
 
@@ -798,11 +798,13 @@ rule merge_translated:
     #group 'mono_src'
     input:
         src1=clean_corpus_src,src2=f"{clean}/mono.{src}.gz",
-        trg1=rules.collect_corpus.output,trg2=rules.collect_mono_src.output,
+	trg1=lambda wildcards: expand(f"{translated}/corpus.{{model_index}}.{trg}.gz",model_index=model_indices),
+	trg2=rules.collect_mono_src.output,
         bin=ancient(deduper)
     output: res_src=f'{merged}/corpus.{src}.gz',res_trg=f'{merged}/corpus.{trg}.gz'
+    params: trg1_template=f"{translated}/corpus.model_index.{trg}.gz"
     shell: '''bash pipeline/translate/merge-corpus.sh \
-                "{input.src1}" "{input.src2}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
+                "{input.src1}" "{input.src2}" "{params.trg1_template}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" {model_indices}  \
                   >> {log} 2>&1'''
 # train student 
 

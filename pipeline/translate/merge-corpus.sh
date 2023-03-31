@@ -22,16 +22,27 @@ echo "###### Merging datasets"
 
 src1=$1
 src2=$2
-trg1=$3
+trg1_template=$3
 trg2=$4
 res_src=$5
 res_trg=$6
+model_indices=("${@:7}")
 
 tmp_dir="$(dirname "${res_src}")/tmp"
 mkdir -p "${tmp_dir}"
 
-cat <(pigz -dc "${src1}") <(pigz -dc "${src2}") | pigz >"${tmp_dir}/original.src.gz"
-cat <(pigz -dc "${trg1}") <(pigz -dc "${trg2}") | pigz >"${tmp_dir}/original.trg.gz"
+# merge output from different teachers
+for model_index in "${model_indices[@]}"
+do
+  pigz -dc "${src1}" >> "${tmp_dir}/original.src.gz"
+  pigz -dc "${trg1_template/model_index/"$model_index"}" >> "${tmp_dir}/original.trg.gz"
+done
+
+# mono src might be empty
+if [ -s ${src2} ]; then
+  cat "${src2}" | pigz -dc >> "${tmp_dir}/original.src.gz"
+  cat "${trg2}" | pigz -dc >> "${tmp_dir}/original.trg.gz"
+fi
 
 echo "#### Deduplicating"
 paste <(pigz -dc "${tmp_dir}/original.src.gz") <(pigz -dc "${tmp_dir}/original.trg.gz") |
