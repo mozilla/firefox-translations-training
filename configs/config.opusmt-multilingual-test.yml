@@ -7,10 +7,10 @@
 
 experiment:
   name: opusmt
-  src: de
-  trg: fy
-  src_three_letter: deu
-  trg_three_letter: fry
+  src: en
+  trg: sw
+  src_three_letter: eng
+  trg_three_letter: swa
 
   #OPUS models are not ensembled, they have different vocabs anyway
   teacher-ensemble: 1

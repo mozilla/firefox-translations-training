@@ -15,6 +15,8 @@ mono_path=$3
 echo "### Collecting translations"
 cat "${dir}"/*.out | pigz >"${output_path}"
 
+#TODO: duplicate the source set for each translated set
+
 echo "### Comparing number of sentences in source and artificial target files"
 src_len=$(pigz -dc "${mono_path}" | wc -l)
 trg_len=$(pigz -dc "${output_path}" | wc -l)

@@ -72,6 +72,16 @@ dry-run:
 	  $(TARGET) \
 	  $(EXTRA) \
 
+dry-run-noconda:
+	echo "Dry run with config $(CONFIG) and profile $(PROFILE)"
+	#$(CONDA_ACTIVATE) snakemake
+	$(SNAKEMAKE) \
+	  --profile=profiles/$(PROFILE) \
+	  --configfile $(CONFIG) \
+	  -n \
+	  $(TARGET) \
+	  $(EXTRA) \
+
 test-dry-run: CONFIG=configs/config.test.yml
 test-dry-run: dry-run
 
@@ -87,6 +97,15 @@ run:
 	  $(TARGET) \
 	  $(EXTRA)
 
+run-noconda:
+	echo "Running with config $(CONFIG) and profile $(PROFILE)"
+	#$(CONDA_ACTIVATE) snakemake
+	chmod +x profiles/$(PROFILE)/*
+	$(SNAKEMAKE) \
+	  --profile=profiles/$(PROFILE) \
+	  --configfile $(CONFIG) \
+	  $(TARGET) \
+	  $(EXTRA)
 test: CONFIG=configs/config.test.yml
 test: run
 
