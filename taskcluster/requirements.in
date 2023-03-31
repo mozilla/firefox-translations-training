@@ -1,1 +1,1 @@
-taskcluster-taskgraph>=4.2.0
+git+https://github.com/bhearsum/taskgraph@fetch-multiple-artifacts
