@@ -6,12 +6,64 @@ treeherder:
         "I": "Docker images"
         "Fetch": "Fetching tasks"
         "TL": "Toolchain tasks"
+        "flores": "flores"
+        "sacrebleu": "sacrebleu"
+        "opus": "opus"
+        "mtdata": "mtdata"
+        "news-crawl": "news-crawl"
 
 taskgraph:
     cached-task-prefix: "translations.v2.staging-firefox-translations-training"
     repositories:
         firefox_translations_training:
             name: "staging-firefox-translations-training"
+
+# It's not exactly _ideal_ to have all of the locale pairs for each dataset
+# specified in this file, but it's very difficult (if not impossible) to
+# generate the right `dataset` tasks without it. We _could_ attempt to pull
+# the locale pair for all datasets listed here, but not all locales or pairs
+# exist for each dataset...which means we'll end up with failures that block
+# the rest of the graph.
+# There may be other ways to make this work, but in the short term this is
+# the most straightforward solution.
+datasets:
+    flores:
+        dev:
+            - src: en
+              trg: ru
+            - src: en
+              trg: fr
+        devtest:
+            - src: en
+              trg: ru
+            - src: en
+              trg: fr
+
+    sacrebleu:
+        wmt19:
+            - src: en
+              trg: ru
+        wmt20:
+            - src: en
+              trg: ru
+
+    opus:
+        ada83/v1:
+            - src: en
+              trg: ru
+        GNOME/v1:
+            - src: en
+              trg: ru
+
+    news-crawl:
+        news.2020:
+            - src: en
+              trg: ru
+
+    mtdata:
+        Neulab-tedtalks_train-1-eng-rus:
+            - src: en
+              trg: ru
 
 workers:
     aliases:

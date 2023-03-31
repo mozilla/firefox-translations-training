@@ -1,0 +1,106 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# This kind primarily exists because these dataset fetches break
+# some assumptions made the `job` transforms that treat the `fetch`
+# kind specially.
+---
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.dataset_substitutions:transforms
+    - taskgraph.transforms.job:transforms
+    - translations_taskgraph.transforms.cache:transforms
+    - taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+task-defaults:
+    worker-type: b-linux
+    attributes:
+        cache-type: dataset
+    substitution-fields:
+        - name
+        - label
+        - treeherder.symbol
+    worker:
+        docker-image: {in-tree: toolchain-build}
+        max-run-time: 1800
+        artifacts:
+            - name: public/build
+              path: /builds/worker/artifacts
+              type: directory
+
+    treeherder:
+        symbol: "{provider}({dataset_short}-{src_locale}-{trg_locale})"
+        platform: dataset/opt
+    run-on-tasks-for: []
+    run:
+        using: run-task
+
+tasks:
+    flores:
+        description: Fetch flores101 dataset
+        label: dataset-flores-{dataset}-{src_locale}-{trg_locale}
+        provider: flores
+        attributes:
+            cache-resources:
+                - pipeline/data/importers/corpus/flores.sh
+        run:
+            command:
+                - bash
+                - -c
+                - $VCS_PATH/pipeline/data/importers/corpus/flores.sh {src_locale} {trg_locale} /builds/worker/artifacts/{dataset} {dataset}
+
+    sacrebleu:
+        description: Fetch sacrebleu dataset
+        label: dataset-sacrebleu-{dataset}-{src_locale}-{trg_locale}
+        provider: sacrebleu
+        attributes:
+            cache-resources:
+                - pipeline/data/importers/corpus/sacrebleu.sh
+        run:
+            command:
+                - bash
+                - -c
+                - $VCS_PATH/pipeline/data/importers/corpus/sacrebleu.sh {src_locale} {trg_locale} /builds/worker/artifacts/{dataset} {dataset}
+
+    opus:
+        description: Fetch opus dataset
+        # No slashes version of dataset used here because slashes break caches
+        label: dataset-opus-{dataset_no_slashes}-{src_locale}-{trg_locale}
+        provider: opus
+        attributes:
+            cache-resources:
+                - pipeline/data/importers/corpus/opus.sh
+        run:
+            command:
+                - bash
+                - -c
+                - $VCS_PATH/pipeline/data/importers/corpus/opus.sh {src_locale} {trg_locale} /builds/worker/artifacts/{dataset_no_slashes} {dataset}
+
+    mtdata:
+        description: Fetch mtdata dataset
+        label: dataset-mtdata-{dataset}-{src_locale}-{trg_locale}
+        provider: mtdata
+        attributes:
+            cache-resources:
+                - pipeline/data/importers/corpus/mtdata.sh
+        run:
+            command:
+                - bash
+                - -c
+                - $VCS_PATH/pipeline/data/importers/corpus/mtdata.sh {src_locale} {trg_locale} /builds/worker/artifacts/{dataset} {dataset}
+
+    news-crawl:
+        description: Fetch news-crawl dataset
+        label: dataset-news-crawl-{dataset}-{src_locale}-{trg_locale}
+        provider: news-crawl
+        attributes:
+            cache-resources:
+                - pipeline/data/importers/mono/news-crawl.sh
+        run:
+            command:
+                - bash
+                - -c
+                - $VCS_PATH/pipeline/data/importers/mono/news-crawl.sh {src_locale} /builds/worker/artifacts/{dataset}.{src_locale} {dataset} && $VCS_PATH/pipeline/data/importers/mono/news-crawl.sh {trg_locale} /builds/worker/artifacts/{dataset}.{trg_locale} {dataset}

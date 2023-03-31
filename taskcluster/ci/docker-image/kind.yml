@@ -9,6 +9,9 @@ transforms:
 tasks:
     base:
         symbol: Base
+    train:
+        parent: base
+        symbol: Train
     toolchain-build:
         parent: base
         symbol: TL
