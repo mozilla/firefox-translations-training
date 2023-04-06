@@ -3,25 +3,30 @@ trust-domain: "translations"
 task-priority: low
 
 taskgraph:
-  cached-task-prefix: "translations.v2.staging-firefox-translations-training"
-  repositories:
-    firefox_translations_training:
-      name: "staging-firefox-translations-training"
+    cached-task-prefix: "translations.v2.staging-firefox-translations-training"
+    repositories:
+        firefox_translations_training:
+            name: "staging-firefox-translations-training"
 
 workers:
-  aliases:
-    b-linux:
-      provisioner: '{trust-domain}-{level}'
-      implementation: docker-worker
-      os: linux
-      worker-type: '{alias}-gcp'
-    images:
-      provisioner: '{trust-domain}-{level}'
-      implementation: docker-worker
-      os: linux
-      worker-type: '{alias}-gcp'
-    t-linux-large:
-      provisioner: '{trust-domain}-t'
-      implementation: docker-worker
-      os: linux
-      worker-type: '{alias}-gcp'
+    aliases:
+        b-linux:
+            provisioner: '{trust-domain}-{level}'
+            implementation: docker-worker
+            os: linux
+            worker-type: '{alias}-gcp'
+        b-linux-large:
+            provisioner: '{trust-domain}-{level}'
+            implementation: docker-worker
+            os: linux
+            worker-type: '{alias}-gcp'
+        images:
+            provisioner: '{trust-domain}-{level}'
+            implementation: docker-worker
+            os: linux
+            worker-type: '{alias}-gcp'
+        t-linux-large:
+            provisioner: '{trust-domain}-t'
+            implementation: docker-worker
+            os: linux
+            worker-type: '{alias}-gcp'
