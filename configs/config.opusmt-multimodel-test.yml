@@ -1,5 +1,5 @@
 ####
-# Example of a production config
+# Example of a multiteacher config
 # Change language pair, experiment name, datasets and other settings if needed
 # Training low resource languages might require more tuning of pipeline/training/configs
 ###
@@ -7,10 +7,10 @@
 
 experiment:
   name: opusmt-multimodel
-  src: eo
-  trg: af
-  src_three_letter: epo
-  trg_three_letter: afr
+  src: en
+  trg: sv
+  src_three_letter: eng
+  trg_three_letter: swe
 
   #OPUS models are not ensembled, they have different vocabs anyway
   teacher-ensemble: 1
@@ -19,22 +19,28 @@ experiment:
   opusmt-teacher:
     - "https://object.pouta.csc.fi/Tatoeba-MT-models/gmw-gmw/opus-2021-02-23.zip"
     - "https://object.pouta.csc.fi/Tatoeba-MT-models/gmw-gmw/opus-2020-07-27.zip"
-  #URL to the OPUS-MT model to use as the backward model
+
+  #You only need to specify this if any model is target-multilingual
+  target-language-token: "swe"
+    
+      #URL to the OPUS-MT model to use as the backward model
   #NOTE: this should probably be a different model from the teacher, teacher is used here just for testing
   opusmt-backward: "https://object.pouta.csc.fi/Tatoeba-MT-models/gmw-gmw/opus-2021-02-23.zip"
-  #Only specify this if model is target-multilingual
-  target-language-token: "afr"
+
+  #You only need to specify this if backward model is target-multilingual
+  source-language-token: "eng"
 
   # path to a pretrained backward model (optional)
   backward-model: ""
   
   # limits per downloaded dataset
-  mono-max-sentences-src: 100000000
-  mono-max-sentences-trg: 20000000
+  mono-max-sentences-src: 10000
+  mono-max-sentences-trg: 20000
 
   # parallel data limit (mainly used for downsizing testing runs, to make GPU steps quicker). 
   # Comment out or specify "inf" to use all parallel data
   parallel-max-sentences: 10000
+  
   # if using very small parallel corpus, also remember to set a low spm size, otherwise
   # spm-encode fails due to not having enough subwords
   spm-vocab-size: 1000
@@ -95,3 +101,5 @@ datasets:
   # datasets for evaluation
   test:
     - tc_Tatoeba-Challenge-v2021-08-07
+  mono-src:
+    - news-crawl_news.2020

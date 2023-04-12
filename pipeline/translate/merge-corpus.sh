@@ -23,7 +23,7 @@ echo "###### Merging datasets"
 src1=$1
 src2=$2
 trg1_template=$3
-trg2=$4
+trg2_template=$4
 res_src=$5
 res_trg=$6
 model_indices=("${@:7}")
@@ -34,18 +34,18 @@ mkdir -p "${tmp_dir}"
 # merge output from different teachers
 for model_index in "${model_indices[@]}"
 do
-  pigz -dc "${src1}" >> "${tmp_dir}/original.src.gz"
-  pigz -dc "${trg1_template/model_index/"$model_index"}" >> "${tmp_dir}/original.trg.gz"
+  pigz -dc "${src1}" >> "${tmp_dir}/original.src"
+  pigz -dc "${trg1_template/model_index/"$model_index"}" >> "${tmp_dir}/original.trg"
+  # mono src might be empty
+  if [ -s ${src2} ]; then
+    pigz -dc "${src2}" >> "${tmp_dir}/original.src"
+    pigz -dc "${trg2_template/model_index/"$model_index"}" >> "${tmp_dir}/original.trg"
+  fi
 done
 
-# mono src might be empty
-if [ -s ${src2} ]; then
-  cat "${src2}" | pigz -dc >> "${tmp_dir}/original.src.gz"
-  cat "${trg2}" | pigz -dc >> "${tmp_dir}/original.trg.gz"
-fi
 
 echo "#### Deduplicating"
-paste <(pigz -dc "${tmp_dir}/original.src.gz") <(pigz -dc "${tmp_dir}/original.trg.gz") |
+paste "${tmp_dir}/original.src" "${tmp_dir}/original.trg" |
   shuf --random-source=<(get_seeded_random 42) |
   ${BIN}/dedupe |
   pigz > "${tmp_dir}/all.gz"
