@@ -17,6 +17,12 @@ output_prefix=$2
 threads=$3
 dataset=$4
 
+COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
+ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
+
+if [ "$threads" = "auto" ]; then
+  threads=$(nproc)
+fi
 cd "$(dirname "${0}")"
 export PYTHONPATH="tools"
 
@@ -28,24 +34,24 @@ echo "### Cleaning ${input_prefix}"
 ######################################################################
 echo "### Basic preprocessing"
 for lng in "${SRC}" "${TRG}"; do
-  test -s "${output_prefix}.${lng}.nrm.gz" ||
-    pigz -dc "${input_prefix}.${lng}.gz" |
+  test -s "${output_prefix}.${lng}.nrm.${ARTIFACT_EXT}" ||
+    ${COMPRESSION_CMD} -dc "${input_prefix}.${lng}.${ARTIFACT_EXT}" |
     parallel --no-notice --pipe -k -j "${threads}" --block 50M \
       "perl tools/deescape-special-chars.perl | perl tools/remove-non-printing-char.perl" |
-    pigz >"${output_prefix}.${lng}.nrm.gz"
+    ${COMPRESSION_CMD} >"${output_prefix}.${lng}.nrm.${ARTIFACT_EXT}"
 done
 
 #####################################################################
 echo "### Apply monolingual fixes"
 for lng in $SRC $TRG; do
     if [[ ! -x fixes/${dataset}.${lng}.sh ]]; then
-      test -s "${output_prefix}.${lng}.monofix.gz" ||
-        cp "${output_prefix}.${lng}.nrm.gz" "${output_prefix}.${lng}.monofix.gz"
+      test -s "${output_prefix}.${lng}.monofix.${ARTIFACT_EXT}" ||
+        cp "${output_prefix}.${lng}.nrm.${ARTIFACT_EXT}" "${output_prefix}.${lng}.monofix.${ARTIFACT_EXT}"
     else
-        test -s "${output_prefix}.${lng}.monofix.gz" ||
-          pigz -dc "${output_prefix}.${lng}.nrm.gz" \
+        test -s "${output_prefix}.${lng}.monofix.${ARTIFACT_EXT}" ||
+          ${COMPRESSION_CMD} -dc "${output_prefix}.${lng}.nrm.${ARTIFACT_EXT}" \
               | fixes/"${dataset}"."${lng}".sh \
-              | pigz >"${output_prefix}.${lng}.monofix.gz"
+              | ${COMPRESSION_CMD} >"${output_prefix}.${lng}.monofix.${ARTIFACT_EXT}"
     fi
 done
 
@@ -56,52 +62,52 @@ if [[ -x fixes/${dataset}.sh ]]; then
 else
     FIX="cat"
 fi
-test -s "${output_prefix}.${SRC}${TRG}.fix.gz" ||
-  paste <(pigz -dc "${output_prefix}.${SRC}.monofix.gz") <(pigz -dc "${output_prefix}.${TRG}.monofix.gz") \
+test -s "${output_prefix}.${SRC}${TRG}.fix.${ARTIFACT_EXT}" ||
+  paste <(${COMPRESSION_CMD} -dc "${output_prefix}.${SRC}.monofix.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${output_prefix}.${TRG}.monofix.${ARTIFACT_EXT}") \
       | $FIX \
-      | pigz > "${output_prefix}.${SRC}${TRG}.fix.gz"
+      | ${COMPRESSION_CMD} > "${output_prefix}.${SRC}${TRG}.fix.${ARTIFACT_EXT}"
 
 ######################################################################
 echo "### Rule-based filtering"
-test -s "${output_prefix}.${SRC}${TRG}.rule-based.gz" ||
-  pigz -dc "${output_prefix}.${SRC}${TRG}.fix.gz" |
+test -s "${output_prefix}.${SRC}${TRG}.rule-based.${ARTIFACT_EXT}" ||
+  ${COMPRESSION_CMD} -dc "${output_prefix}.${SRC}${TRG}.fix.${ARTIFACT_EXT}" |
   parallel --no-notice --pipe -k -j "${threads}" --block 50M \
     "python3 tools/clean_parallel.py -l1 ${SRC} -l2 ${TRG} --debug" \
     2>"${output_prefix}.${SRC}${TRG}.clean.debug.txt" |
-  pigz >"${output_prefix}.${SRC}${TRG}.rule-based.gz"
+  ${COMPRESSION_CMD} >"${output_prefix}.${SRC}${TRG}.rule-based.${ARTIFACT_EXT}"
 
 ######################################################################
 echo "### Language identification"
-test -s "${output_prefix}.${SRC}${TRG}.langid.gz" ||
-  pigz -dc "${output_prefix}.${SRC}${TRG}.rule-based.gz" |
+test -s "${output_prefix}.${SRC}${TRG}.langid.${ARTIFACT_EXT}" ||
+  ${COMPRESSION_CMD} -dc "${output_prefix}.${SRC}${TRG}.rule-based.${ARTIFACT_EXT}" |
   # memory intensive
   parallel --no-notice --pipe -k -j "$(echo "${threads}"/4 | bc)" --block 50M \
     "python3 -Wi tools/langid_fasttext.py -f 1 | python3 -Wi tools/langid_fasttext.py -f 1" |
   grep -P "^${SRC}\t${TRG}\t" |
   cut -f3,4 |
-  pigz >"${output_prefix}.${SRC}${TRG}.langid.gz"
+  ${COMPRESSION_CMD} >"${output_prefix}.${SRC}${TRG}.langid.${ARTIFACT_EXT}"
 
 ######################################################################
 echo "### Removing leading and repetitive white spaces"
 
-pigz -dc "${output_prefix}.${SRC}${TRG}.langid.gz" |
+${COMPRESSION_CMD} -dc "${output_prefix}.${SRC}${TRG}.langid.${ARTIFACT_EXT}" |
 cut -f1 |
 sed -e 's/^[[:space:]]*//' |
 tr -s " " |
-pigz >"${output_prefix}.${SRC}.gz"
+${COMPRESSION_CMD} >"${output_prefix}.${SRC}.${ARTIFACT_EXT}"
 
-pigz -dc "${output_prefix}.${SRC}${TRG}.langid.gz" |
+${COMPRESSION_CMD} -dc "${output_prefix}.${SRC}${TRG}.langid.${ARTIFACT_EXT}" |
 cut -f2 |
 sed -e 's/^[[:space:]]*//' |
 tr -s " " |
-pigz >"${output_prefix}.${TRG}.gz"
+${COMPRESSION_CMD} >"${output_prefix}.${TRG}.${ARTIFACT_EXT}"
 
-test -s "${output_prefix}.${SRC}.gz" || exit 1
-test -s "${output_prefix}.${TRG}.gz" || exit 1
+test -s "${output_prefix}.${SRC}.${ARTIFACT_EXT}" || exit 1
+test -s "${output_prefix}.${TRG}.${ARTIFACT_EXT}" || exit 1
 
 echo "### Remove input_prefix from intermediate steps"
-rm -rf "${output_prefix}".*.nrm.gz "${output_prefix}".*.langid.gz \
-  "${output_prefix}".*.rule-based.gz "${output_prefix}".*.*fix.gz
+rm -rf "${output_prefix}".*.nrm.${ARTIFACT_EXT} "${output_prefix}".*.langid.${ARTIFACT_EXT} \
+  "${output_prefix}".*.rule-based.${ARTIFACT_EXT} "${output_prefix}".*.*fix.${ARTIFACT_EXT}
 
 echo "### Clean ${input_prefix} is written to  ${output_prefix}"
 

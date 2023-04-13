@@ -13,16 +13,21 @@ trg=$2
 output_prefix=$3
 dataset=$4
 
+COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
+ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
+
 tmp="$(dirname "${output_prefix}")/mtdata/${dataset}"
 mkdir -p "${tmp}"
 
-src_iso=$(python -c "from mtdata.iso import iso3_code; print(iso3_code('${src}', fail_error=True))")
-trg_iso=$(python -c "from mtdata.iso import iso3_code; print(iso3_code('${trg}', fail_error=True))")
+src_iso=$(python3 -c "from mtdata.iso import iso3_code; print(iso3_code('${src}', fail_error=True))")
+trg_iso=$(python3 -c "from mtdata.iso import iso3_code; print(iso3_code('${trg}', fail_error=True))")
 
-mtdata get -l "${src}-${trg}" -tr "${dataset}" -o "${tmp}" --compress
+mtdata get -l "${src}-${trg}" -tr "${dataset}" -o "${tmp}"
 
-mv "${tmp}/train-parts/${dataset}.${src_iso}.gz" "${output_prefix}.${src}.gz"
-mv "${tmp}/train-parts/${dataset}.${trg_iso}.gz" "${output_prefix}.${trg}.gz"
+find "${tmp}"
+
+cat "${tmp}/train-parts/${dataset}.${src_iso}" | ${COMPRESSION_CMD} -c > "${output_prefix}.${src}.${ARTIFACT_EXT}"
+cat "${tmp}/train-parts/${dataset}.${trg_iso}" | ${COMPRESSION_CMD} -c > "${output_prefix}.${trg}.${ARTIFACT_EXT}"
 
 rm -rf "${tmp}"
 
