@@ -13,6 +13,7 @@ treeherder:
         "news-crawl": "news-crawl"
 
 taskgraph:
+    register: translations_taskgraph:register
     cached-task-prefix: "translations.v2.staging-firefox-translations-training"
     repositories:
         firefox_translations_training:
