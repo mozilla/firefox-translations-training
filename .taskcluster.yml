@@ -121,6 +121,7 @@ tasks:
               routes:
                   $flatten:
                       - checks
+                      - tc-treeherder.v2.${project}.${head_sha}
                       - $switch:
                             'tasks_for == "github-push"':
                                 - "index.${trustDomain}.v2.${project}.latest.taskgraph.decision"
@@ -254,19 +255,35 @@ tasks:
                               # debugging, but they are not useful long-term.
                               expires: {$fromNow: '7 day'}
 
-                      extra:
+              extra:
+                  $merge:
+                      - treeherder:
                           $merge:
-                              - $if: 'tasks_for == "action"'
+                              - machine:
+                                  platform: gecko-decision
+                              - $if: 'tasks_for == "github-push" || isPullRequest'
                                 then:
-                                    parent: '${action.taskGroupId}'
-                                    action:
-                                        name: '${action.name}'
-                                        context:
-                                            taskGroupId: '${action.taskGroupId}'
-                                            taskId: {$eval: 'taskId'}
-                                            input: {$eval: 'input'}
-                                            clientId: {$eval: 'clientId'}
-                              - $if: 'tasks_for == "cron"'
-                                then:
-                                    cron: {$json: {$eval: 'cron'}}
-                              - tasks_for: '${tasks_for}'
+                                  symbol: D
+                                else:
+                                  $if: 'tasks_for == "action"'
+                                  then:
+                                      groupName: 'action-callback'
+                                      groupSymbol: AC
+                                      symbol: "${action.symbol}"
+                                  else:
+                                      groupSymbol: cron
+                                      symbol: "${cron.job_symbol}"
+                      - $if: 'tasks_for == "action"'
+                        then:
+                          parent: '${action.taskGroupId}'
+                          action:
+                              name: '${action.name}'
+                              context:
+                                  taskGroupId: '${action.taskGroupId}'
+                                  taskId: {$eval: 'taskId'}
+                                  input: {$eval: 'input'}
+                                  clientId: {$eval: 'clientId'}
+                      - $if: 'tasks_for == "cron"'
+                        then:
+                          cron: {$json: {$eval: 'cron'}}
+                      - tasks_for: '${tasks_for}'
