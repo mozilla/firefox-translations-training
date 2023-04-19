@@ -15,6 +15,7 @@ treeherder:
 taskgraph:
     register: translations_taskgraph:register
     cached-task-prefix: "translations.v2.staging-firefox-translations-training"
+    decision-parameters: "translations_taskgraph.parameters:get_decision_parameters"
     repositories:
         firefox_translations_training:
             name: "staging-firefox-translations-training"
@@ -78,6 +79,12 @@ workers:
             implementation: docker-worker
             os: linux
             worker-type: '{alias}-gcp'
+        # TODO: this should probably be b-linux...need to update ci-config
+        t-linux-v100-gpu:
+            provisioner: '{trust-domain}-{level}'
+            implementation: generic-worker
+            os: linux
+            worker-type: '{alias}'
         images:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker

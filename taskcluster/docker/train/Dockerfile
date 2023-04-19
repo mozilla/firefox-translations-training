@@ -7,6 +7,7 @@ RUN apt-get update -qq \
                           parallel \
                           zstd \
                           bc \
+                          libhunspell-1.7-0 \
     && apt-get clean
 
 # Required to download sacrebleu datasets

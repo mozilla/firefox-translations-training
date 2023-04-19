@@ -5,6 +5,7 @@ def register(graph_config):
     _import_modules(
         [
             "actions.train",
+            "parameters",
             "target_tasks",
         ]
     )
