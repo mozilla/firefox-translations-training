@@ -11,8 +11,15 @@ test -v MARIAN
 test -v WORKSPACE
 
 input=$1
-vocab=$2
 models=( "${@:3}" )
+modeldir=$(dirname ${models})
+#if the model is an OPUS-MT model, use the model vocab instead of the defined forward vocab
+opusvocab=$(ls ${modeldir}/opus*.vocab.yml)
+if [ -n ${opusvocab} ]; then
+    vocab=${opusvocab}
+else
+    vocab=$2
+fi
 
 #randomize mini batch size a bit to get benchmark data
 #mini_batch_size=$((2**$(shuf -i 4-9 -n 1)))

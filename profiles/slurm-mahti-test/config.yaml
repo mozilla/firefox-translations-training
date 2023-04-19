@@ -21,10 +21,10 @@ reason: true
 # if CPU nodes don't have access to cuda dirs, use
 # export CUDA_DIR=$(CUDA_DIR); $(SNAKEMAKE) ...
 # singularity-args: "--bind $(SHARED_ROOT),/tmp --nv --containall"
-singularity-args: "--bind /projappl/project_2007095/tommi/data,$CUDA_INSTALL_ROOT,$CUDNN_INSTALL_ROOT:/cudnn,/projappl/project_2007095/tommi/data/temp:/tmp --nv --containall"
+singularity-args: "--bind /scratch/project_2007095/tommi/data,$CUDA_INSTALL_ROOT,$CUDNN_INSTALL_ROOT:/cudnn,/scratch/project_2007095/tommi/data/temp:/tmp --nv --containall"
 config:
   - deps=false
-  - root=/projappl/project_2007095/tommi/data
+  - root=/scratch/project_2007095/tommi/data
   - cuda=/appl/spack/v017/install-tree/gcc-11.2.0/cuda-11.5.0-mg4ztb/
   - cudnn=/appl/spack/v017/install-tree/gcc-11.2.0/cudnn-8.3.3.40-11.5-crjjbv/
   - workspace=10000

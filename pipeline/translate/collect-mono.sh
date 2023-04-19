@@ -13,7 +13,7 @@ mono_path=$3
 model_index=$4
 
 echo "### Collecting translations"
-cat "${dir}"/*${model_index}.nbest.out | pigz >"${output_path}"
+cat "${dir}"/*${model_index}.out | pigz >"${output_path}"
 
 echo "### Comparing number of sentences in source and artificial target files"
 src_len=$(pigz -dc "${mono_path}" | wc -l)
