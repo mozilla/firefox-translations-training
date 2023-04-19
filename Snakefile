@@ -140,13 +140,6 @@ if forward_pretrained:
 #default vocab path used with base ftt
 vocab_path = vocab_pretrained or f"{models_dir}/vocab/vocab.spm"
 
-#if opus models are used as either teacher or backward models, use their vocabs
-#(vocab.yml soft link is created for the vocab when the opus-mt model is extracted)
-if opusmt_teacher:
-   forward_vocab = f"{teacher_base_dir}0-0/vocab.yml"
-else:
-   forward_vocab = vocab_path
-
 if opusmt_backward:
    backward_vocab = f"{backward_dir}/vocab.yml"
 else:
@@ -523,7 +516,7 @@ elif opusmt_backward:
         message: "Downloading OPUS-MT backward model"
         log: f"{log_dir}/download_backward.log"
         conda: "envs/base.yml"
-        output:  model=f'{backward_dir}/{best_model}',vocab=f'{backward_dir}/vocab.yml'
+        output:  model=f'{backward_dir}/{best_model}',vocab=f'{backward_dir}/vocab.yml', model_dir=directory({backward_dir})
         shell: '''bash pipeline/opusmt/download-model.sh \
                     "{opusmt_backward}" "{backward_dir}" "{best_model}" >> {log} 2>&1'''
      
@@ -592,7 +585,7 @@ if 'opusmt-teacher' in config['experiment']:
         log: f"{log_dir}/download_teacher{{model_index}}-{{ens}}.log"
         conda: "envs/base.yml"
         threads: 1
-        output: model=f'{teacher_base_dir}{{model_index}}-{{ens}}/{best_model}',vocab=f'{teacher_base_dir}{{model_index}}-{{ens}}/vocab.yml'
+        output: model=f'{teacher_base_dir}{{model_index}}-{{ens}}/{best_model}',vocab=f'{teacher_base_dir}{{model_index}}-{{ens}}/vocab.yml', model_dir=directory(f'{teacher_base_dir}{{model_index}}-{{ens}}')
         params: teacher_dir=f'{teacher_base_dir}{{model_index}}-{{ens}}',
                 teacher_url=lambda wildcards: opusmt_teacher[int(wildcards.model_index)] 
         shell: '''bash pipeline/opusmt/download-model.sh \
@@ -696,7 +689,7 @@ rule translate_corpus:
     input:
         ancient(decoder),
         file=teacher_source_file,
-        vocab=forward_vocab,
+        vocab=vocab_path,
         teacher_models=expand(f"{final_teacher_dir}{{{{model_index}}}}-{{ens}}/{best_model}",ens=ensemble)
     output: f'{teacher_source_file}.nbest'
     params: args=get_args('decoding-teacher')
@@ -757,7 +750,7 @@ rule translate_mono_src:
     threads: gpus_num*2
     resources: gpu=gpus_num
     input:
-        file=teacher_mono_source_file,vocab=forward_vocab,
+        file=teacher_mono_source_file,vocab=vocab_path,
  	teacher_models=expand(f"{final_teacher_dir}{{{{model_index}}}}-{{ens}}/{best_model}",ens=ensemble),
         bin=ancient(decoder)
     output: f"{teacher_mono_source_file}.out"

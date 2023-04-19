@@ -17,15 +17,15 @@ experiment:
 
   #URL to the OPUS-MT model to use as the teacher
   opusmt-teacher:
-    - "https://object.pouta.csc.fi/Tatoeba-MT-models/gmw-gmw/opus-2021-02-23.zip"
-    - "https://object.pouta.csc.fi/Tatoeba-MT-models/gmw-gmw/opus-2020-07-27.zip"
+    - "https://object.pouta.csc.fi/Tatoeba-MT-models/gem-gem/opus-2020-10-04.zip"
+    - "https://object.pouta.csc.fi/Tatoeba-MT-models/eng-swe/opus+bt-2021-04-14.zip"
 
   #You only need to specify this if any model is target-multilingual
   target-language-token: "swe"
     
       #URL to the OPUS-MT model to use as the backward model
   #NOTE: this should probably be a different model from the teacher, teacher is used here just for testing
-  opusmt-backward: "https://object.pouta.csc.fi/Tatoeba-MT-models/gmw-gmw/opus-2021-02-23.zip"
+  opusmt-backward: "https://object.pouta.csc.fi/Tatoeba-MT-models/gem-gem/opus-2020-10-04.zip"
 
   #You only need to specify this if backward model is target-multilingual
   source-language-token: "eng"

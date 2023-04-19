@@ -4,7 +4,7 @@
 SHELL=/bin/bash
 
 ### 1. change these settings or override with env variables
-CONFIG=configs/config.opusmt-test.yml
+CONFIG=configs/config.opusmt-multimodel-test.yml
 CONDA_PATH=../mambaforge
 SNAKEMAKE_OUTPUT_CACHE=../cache
 #PROFILE=local
