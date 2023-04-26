@@ -768,9 +768,18 @@ if mono_src_datasets is None:
         conda: "envs/base.yml"
         threads: 1
         #group 'mono_src'
-        params: src_mono=f"{clean}/mono.{src}.gz",dir=f'{translated}/mono_src'
-        output: trg_mono=f'{translated}/mono.{trg}.gz',src_mono=f"{clean}/mono.{src}.gz"
-        shell: 'touch {output.src_mono} && touch {output.trg_mono}  >> {log} 2>&1'
+        params: dir=f'{translated}/mono_src'
+        output: trg_mono=f'{translated}/mono.{{model_index}}.{trg}.gz'
+        shell: 'touch {output.trg_mono}  >> {log} 2>&1'
+    rule dummy_mono_src:
+        message: "Creating empty mono src dataset (dummy rule, used in case where no mono src datasets)"
+        log: f"{log_dir}/dummy_mono_src.log"
+        conda: "envs/base.yml"
+        threads: 1
+        #group 'mono_src'
+        params: src_mono=f"{clean}/mono.{src}.gz"
+        output: src_mono=f"{clean}/mono.{src}.gz"
+        shell: 'touch {output.src_mono} >> {log} 2>&1'
 else:
     rule collect_mono_src:
         message: "Collecting translated mono src dataset"
