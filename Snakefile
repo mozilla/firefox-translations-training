@@ -706,7 +706,7 @@ rule extract_best:
     output: f"{translated}/corpus/file.{{part}}.{{model_index}}.nbest.out"
     shell: 'python pipeline/translate/bestbleu.py -i {input.nbest} -r {input.ref} -m bleu -o {output} >> {log} 2>&1'
 
-model_indices = list(range(len(opusmt_teacher)))
+model_indices = [0] if not opusmt_teacher else list(range(len(opusmt_teacher)))
 rule collect_corpus:
     message: "Collecting translated corpus"
     log: f"{log_dir}/collect_corpus_{{model_index}}.log"
