@@ -1,0 +1,12 @@
+from os import listdir
+def get_envs(wildcards):
+   return [x.replace(".yml",".done") for x in os.listdir("envs") if x.endswith(".yml")] 
+
+rule all:
+    input: get_envs
+
+rule make_envs:
+    conda: 'envs/{env}.yml'
+    output: '{env}.done'
+    shell: f'touch {{output.done}}'
+
