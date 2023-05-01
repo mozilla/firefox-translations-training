@@ -126,7 +126,9 @@ tasks:
                   routes:
                       $flatten:
                           - checks
-                          - tc-treeherder.v2.${project}.${head_sha}
+                          - $if: 'level == "3"'
+                            then:
+                              - tc-treeherder.v2.${project}.${head_sha}
                           - $switch:
                                 'tasks_for == "github-push"':
                                     - "index.${trustDomain}.v2.${project}.latest.taskgraph.decision"
