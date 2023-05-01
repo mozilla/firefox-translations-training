@@ -14,7 +14,6 @@ treeherder:
 
 taskgraph:
     register: translations_taskgraph:register
-    cached-task-prefix: "translations.v2.firefox-translations-training"
     decision-parameters: "translations_taskgraph.parameters:get_decision_parameters"
     repositories:
         firefox_translations_training:
