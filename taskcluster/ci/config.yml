@@ -14,11 +14,11 @@ treeherder:
 
 taskgraph:
     register: translations_taskgraph:register
-    cached-task-prefix: "translations.v2.staging-firefox-translations-training"
+    cached-task-prefix: "translations.v2.firefox-translations-training"
     decision-parameters: "translations_taskgraph.parameters:get_decision_parameters"
     repositories:
         firefox_translations_training:
-            name: "staging-firefox-translations-training"
+            name: "firefox-translations-training"
 
 # It's not exactly _ideal_ to have all of the locale pairs for each dataset
 # specified in this file, but it's very difficult (if not impossible) to
