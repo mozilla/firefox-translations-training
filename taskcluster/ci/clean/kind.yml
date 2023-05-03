@@ -44,6 +44,8 @@ task-defaults:
         env:
             SRC: "{src_locale}"
             TRG: "{trg_locale}"
+            COMPRESSION_CMD: zstdmt
+            ARTIFACT_EXT: zst
 
     # Don't run unless explicitly scheduled
     run-on-tasks-for: []

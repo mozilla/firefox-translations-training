@@ -27,6 +27,9 @@ task-defaults:
     worker:
         docker-image: {in-tree: toolchain-build}
         max-run-time: 1800
+        env:
+            COMPRESSION_CMD: zstdmt
+            ARTIFACT_EXT: zst
         artifacts:
             - name: public/build
               path: /builds/worker/artifacts
