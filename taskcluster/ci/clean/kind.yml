@@ -18,13 +18,14 @@ kind-dependencies:
 task-defaults:
     description: Clean {provider} {dataset} dataset {src_locale}-{trg_locale}
     attributes:
-        cache-type: dataset
-        cache-resources:
-            - pipeline/clean/clean-corpus.sh
-            - pipeline/clean/tools/deescape-special-chars.perl
-            - pipeline/clean/tools/remove-non-printing-char.perl
-            - pipeline/clean/tools/clean_parallel.py
-            - pipeline/clean/tools/langid_fasttext.py
+        cache:
+            type: dataset
+            resources:
+                - pipeline/clean/clean-corpus.sh
+                - pipeline/clean/tools/deescape-special-chars.perl
+                - pipeline/clean/tools/remove-non-printing-char.perl
+                - pipeline/clean/tools/clean_parallel.py
+                - pipeline/clean/tools/langid_fasttext.py
     worker-type: b-linux
     substitution-fields:
         - description
@@ -78,18 +79,19 @@ tasks:
     mtdata-{dataset}-{src_locale}-{trg_locale}:
         provider: mtdata
         attributes:
-            cache-resources:
-                - pipeline/clean/fixes/mtdata_JW300.mt.sh
-                - pipeline/clean/fixes/mtdata_JW300.sh
-                - pipeline/clean/fixes/mtdata_neulab_tedtalksv1_train.ro.sh
-                - pipeline/clean/fixes/mtdata_neulab_tedtalksv1_train.sh
-                - pipeline/clean/fixes/mtdata_OPUS_DOGC_v2.ca.sh
-                - pipeline/clean/fixes/mtdata_OPUS_DOGC_v2.es.sh
-                - pipeline/clean/fixes/mtdata_OPUS_DOGC_v2.sh
-                - pipeline/clean/fixes/mtdata_OPUS_ECB_v1.sh
-                - pipeline/clean/fixes/mtdata_OPUS_SETIMES_v2.sh
-                - pipeline/clean/fixes/mtdata_OPUS_UNPC_v1_0.en.sh
-                - pipeline/clean/fixes/mtdata_OPUS_UNPC_v1_0.fr.sh
+            cache:
+                resources:
+                    - pipeline/clean/fixes/mtdata_JW300.mt.sh
+                    - pipeline/clean/fixes/mtdata_JW300.sh
+                    - pipeline/clean/fixes/mtdata_neulab_tedtalksv1_train.ro.sh
+                    - pipeline/clean/fixes/mtdata_neulab_tedtalksv1_train.sh
+                    - pipeline/clean/fixes/mtdata_OPUS_DOGC_v2.ca.sh
+                    - pipeline/clean/fixes/mtdata_OPUS_DOGC_v2.es.sh
+                    - pipeline/clean/fixes/mtdata_OPUS_DOGC_v2.sh
+                    - pipeline/clean/fixes/mtdata_OPUS_ECB_v1.sh
+                    - pipeline/clean/fixes/mtdata_OPUS_SETIMES_v2.sh
+                    - pipeline/clean/fixes/mtdata_OPUS_UNPC_v1_0.en.sh
+                    - pipeline/clean/fixes/mtdata_OPUS_UNPC_v1_0.fr.sh
 
     news-crawl-{dataset}-{src_locale}-{trg_locale}:
         provider: news-crawl

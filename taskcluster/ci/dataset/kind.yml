@@ -18,7 +18,8 @@ transforms:
 task-defaults:
     worker-type: b-linux
     attributes:
-        cache-type: dataset
+        cache:
+            type: dataset
     substitution-fields:
         - name
         - label
@@ -44,8 +45,9 @@ tasks:
         label: dataset-flores-{dataset}-{src_locale}-{trg_locale}
         provider: flores
         attributes:
-            cache-resources:
-                - pipeline/data/importers/corpus/flores.sh
+            cache:
+                resources:
+                    - pipeline/data/importers/corpus/flores.sh
         run:
             command:
                 - bash
@@ -57,8 +59,9 @@ tasks:
         label: dataset-sacrebleu-{dataset}-{src_locale}-{trg_locale}
         provider: sacrebleu
         attributes:
-            cache-resources:
-                - pipeline/data/importers/corpus/sacrebleu.sh
+            cache:
+                resources:
+                    - pipeline/data/importers/corpus/sacrebleu.sh
         run:
             command:
                 - bash
@@ -71,8 +74,9 @@ tasks:
         label: dataset-opus-{dataset_no_slashes}-{src_locale}-{trg_locale}
         provider: opus
         attributes:
-            cache-resources:
-                - pipeline/data/importers/corpus/opus.sh
+            cache:
+                resources:
+                    - pipeline/data/importers/corpus/opus.sh
         run:
             command:
                 - bash
@@ -84,8 +88,9 @@ tasks:
         label: dataset-mtdata-{dataset}-{src_locale}-{trg_locale}
         provider: mtdata
         attributes:
-            cache-resources:
-                - pipeline/data/importers/corpus/mtdata.sh
+            cache:
+                resources:
+                    - pipeline/data/importers/corpus/mtdata.sh
         run:
             command:
                 - bash
@@ -97,8 +102,9 @@ tasks:
         label: dataset-news-crawl-{dataset}-{src_locale}-{trg_locale}
         provider: news-crawl
         attributes:
-            cache-resources:
-                - pipeline/data/importers/mono/news-crawl.sh
+            cache:
+                resources:
+                    - pipeline/data/importers/mono/news-crawl.sh
         run:
             command:
                 - bash

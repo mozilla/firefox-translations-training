@@ -6,9 +6,10 @@ transforms = TransformSequence()
 @transforms.add
 def add_cache(config, jobs):
     for job in jobs:
-        cache_type = job["attributes"]["cache-type"]
-        cache_resources = job["attributes"]["cache-resources"]
-        cache_parameters = job["attributes"].get("cache-parameters", {})
+        cache = job["attributes"]["cache"]
+        cache_type = cache["type"]
+        cache_resources = cache["resources"]
+        cache_parameters = cache.get("parameters", {})
         digest_data = []
 
         if cache_resources:

@@ -23,10 +23,11 @@ kind-dependencies:
 
 task-defaults:
     attributes:
-        cache-resources:
-            - pipeline/bicleaner/bicleaner.sh
-        cache-parameters:
-            - bicleaner_threshold
+        cache:
+            resources:
+                - pipeline/bicleaner/bicleaner.sh
+            parameters:
+                - bicleaner_threshold
     substitution-fields:
         - description
         - name
@@ -104,9 +105,10 @@ tasks:
         treeherder:
             platform: bicleaner/opt
         attributes:
-            cache-type: bicleaner
-            cache-resources:
-                - pipeline/bicleaner/requirements/bicleaner.txt
+            cache:
+                type: bicleaner
+                resources:
+                    - pipeline/bicleaner/requirements/bicleaner.txt
         run:
             command-context:
                 bicleaner_type: bicleaner
@@ -120,9 +122,10 @@ tasks:
         treeherder:
             platform: bicleaner-ai/opt
         attributes:
-            cache-type: bicleaner-ai
-            cache-resources:
-                - pipeline/bicleaner/requirements/bicleaner-ai.txt
+            cache:
+                type: bicleaner-ai
+                resources:
+                    - pipeline/bicleaner/requirements/bicleaner-ai.txt
         run:
             command-context:
                 bicleaner_type: bicleaner-ai
