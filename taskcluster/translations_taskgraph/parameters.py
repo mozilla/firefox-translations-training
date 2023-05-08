@@ -19,5 +19,4 @@ extend_parameters_schema(
 
 def get_decision_parameters(graph_config, parameters):
     for k, v in get_defaults("").items():
-        if k not in parameters:
-            parameters[k] = v
+        parameters.setdefault(k, v)
