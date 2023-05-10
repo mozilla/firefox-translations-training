@@ -1,0 +1,273 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+bicleaner-ai-full-en-xx:
+    description: bicleaner-ai full en-xx pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-ai-data/releases/download/v2.0/full-en-xx.tgz
+        sha256: 6429bf2802224e7ae52493a4aef4c0c78fb2b86837f3ebf8a3613432e6227880
+        size: 952926795
+        artifact-name: bicleaner-full-en-xx.tar.zst
+
+bicleaner-en-bg:
+    description: bicleaner en-bg pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-bg.tar.gz
+        sha256: a0c2cdd27aeef2c12eb216357cbfb5a1b8920f88c469694e515e8ac61ed29d28
+        size: 397053400
+        artifact-name: bicleaner-en-bg.tar.zst
+
+bicleaner-en-ca:
+    description: bicleaner en-ca pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-ca.tar.gz
+        sha256: 84890e244bc8fd769a906c3ff4280873d73d83700394808655605c4acc39d5f7
+        size: 273582123
+        artifact-name: bicleaner-en-ca.tar.zst
+
+bicleaner-en-cs:
+    description: bicleaner en-cs pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-cs.tar.gz
+        sha256: 483520b5cf788aad393a06640e1259293018051445e435186ba66f8d8f0d7c3b
+        size: 359498838
+        artifact-name: bicleaner-en-cs.tar.zst
+
+bicleaner-en-da:
+    description: bicleaner en-da pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-da.tar.gz
+        sha256: 5ea4724af3c00581eede1927fe5467d3fa73ec723a9adebdc083c4f0ae29092e
+        size: 333511920
+        artifact-name: bicleaner-en-da.tar.zst
+
+bicleaner-en-de:
+    description: bicleaner en-de pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-de.tar.gz
+        sha256: c932449563ef0108757382d7d2de2dae2bdd97f78cf9dcee3fcf734a80c5b98d
+        size: 523179851
+        artifact-name: bicleaner-en-de.tar.zst
+
+bicleaner-en-el:
+    description: bicleaner en-el pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-el.tar.gz
+        sha256: c71c53407d8f29f0c0bc78c9c5cd5d9c266ca1414eda27affde86a4d792ca7c8
+        size: 415029223
+        artifact-name: bicleaner-en-el.tar.zst
+
+bicleaner-en-es:
+    description: bicleaner en-es pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-es.tar.gz
+        sha256: 96e5d16d8f30007d203b3c7e362a729f6e5fe60be56abdeccab66b14cc7783c3
+        size: 351612333
+        artifact-name: bicleaner-en-es.tar.zst
+
+bicleaner-en-et:
+    description: bicleaner en-et pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-et.tar.gz
+        sha256: 0c8c4acc4856d34f5a9d887a5d4eb6572217e757f32f7b6cdc4c2862ec34f443
+        size: 434084344
+        artifact-name: bicleaner-en-et.tar.zst
+
+bicleaner-en-fi:
+    description: bicleaner en-fi pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-fi.tar.gz
+        sha256: feb8390ec911a888678b86751d6eaeb56b1a916bbea5a0bbdc0ef76428398017
+        size: 503190781
+        artifact-name: bicleaner-en-fi.tar.zst
+
+bicleaner-en-fr:
+    description: bicleaner en-fr pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-fr.tar.gz
+        sha256: e32134c6e3563a2e2b86e03bc082dea29f99f16f06a1127ed8cda1d4be6ec284
+        size: 301237052
+        artifact-name: bicleaner-en-fr.tar.zst
+
+bicleaner-en-ga:
+    description: bicleaner en-ga pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-ga.tar.gz
+        sha256: 69f812bcbc1dcc44c16a4386545b33a41fb3e7ed76a3fc2fa7f63433d5088898
+        size: 429467347
+        artifact-name: bicleaner-en-ga.tar.zst
+
+bicleaner-en-hr:
+    description: bicleaner en-hr pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-hr.tar.gz
+        sha256: e866ab391aecb3f14e9c984f59dc69ab2884a66c2a0cc1c651e734728e499856
+        size: 396828015
+        artifact-name: bicleaner-en-hr.tar.zst
+
+bicleaner-en-hu:
+    description: bicleaner en-hu pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-hu.tar.gz
+        sha256: 366807757aa5381609b0bfc39ef26741ef8c1e957047c3330958b76e9b392237
+        size: 415085287
+        artifact-name: bicleaner-en-hu.tar.zst
+
+bicleaner-en-is:
+    description: bicleaner en-is pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-is.tar.gz
+        sha256: c3efb8676198fddab36052d7f606c010ce3c7c659e924f5bfac3753023167f55
+        size: 420381350
+        artifact-name: bicleaner-en-is.tar.zst
+
+bicleaner-en-it:
+    description: bicleaner en-it pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-it.tar.gz
+        sha256: 2aeb588cd0b931a468aa043ac8285fd89c8aa52cdd6a04d878ce873d1d472fb6
+        size: 282449727
+        artifact-name: bicleaner-en-it.tar.zst
+
+bicleaner-en-lt:
+    description: bicleaner en-lt pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-lt.tar.gz
+        sha256: 01c64b93362a8140811c66c3ca1be0a35c2deb8404bd63df3cb55ffefeb5858b
+        size: 433983794
+        artifact-name: bicleaner-en-lt.tar.zst
+
+bicleaner-en-lv:
+    description: bicleaner en-lv pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-lv.tar.gz
+        sha256: f92663d90bb12faaa1f8d9fc01c6546d09bacb9036442d112d5af6e57cec0bfd
+        size: 395646027
+        artifact-name: bicleaner-en-lv.tar.zst
+
+bicleaner-en-mt:
+    description: bicleaner en-mt pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-mt.tar.gz
+        sha256: f1f477cc76049a63ebb751ec01bafbe35cd2a7e3f1fa95d516001239fdfde3d2
+        size: 446888765
+        artifact-name: bicleaner-en-mt.tar.zst
+
+bicleaner-en-nb:
+    description: bicleaner en-nb pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-nb.tar.gz
+        sha256: 8289271d1b92cb78ccee0f90af648fd0e2b1e034bf7ce3555dee3cb9bb7b8561
+        size: 477583939
+        artifact-name: bicleaner-en-nb.tar.zst
+
+bicleaner-en-nl:
+    description: bicleaner en-nl pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-nl.tar.gz
+        sha256: 3f0885999c9bd4f9a9d1e4d79cc8e1cf5532cf88e46758e1a36ba3be84b8a5ca
+        size: 555802202
+        artifact-name: bicleaner-en-nl.tar.zst
+
+bicleaner-en-nn:
+    description: bicleaner en-nn pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-nn.tar.gz
+        sha256: 8c1ab49c94d9ed9fb093917dd7a80d8bedd047a18f88dbf8a7e81507fad0d73b
+        size: 324817842
+        artifact-name: bicleaner-en-nn.tar.zst
+
+bicleaner-en-pl:
+    description: bicleaner en-pl pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-pl.tar.gz
+        sha256: e2bc5d07cba8a5b59eb0f5583b0c4f1c9f4ead096bcd0186a6f22fdd631c8172
+        size: 380483224
+        artifact-name: bicleaner-en-pl.tar.zst
+
+bicleaner-en-pt:
+    description: bicleaner en-pt pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-pt.tar.gz
+        sha256: 5d48b074f955bbfa582c6c47bbadc90178b04a392b58af27178389677f1c135e
+        size: 431671623
+        artifact-name: bicleaner-en-pt.tar.zst
+
+bicleaner-en-ro:
+    description: bicleaner en-ro pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-ro.tar.gz
+        sha256: 25048eaf627c3f950e44898d7892b11b06321ee9c4bfe16dab1e1400f1336abc
+        size: 393528818
+        artifact-name: bicleaner-en-ro.tar.zst
+
+bicleaner-en-ru:
+    description: bicleaner en-ru pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-ru.tar.gz
+        sha256: ad445d317665bf81a895dca2c10c4466e76f9d7fbfb32d9a08770ddef34ea42e
+        size: 508534409
+        artifact-name: bicleaner-en-ru.tar.zst
+
+bicleaner-en-sk:
+    description: bicleaner en-sk pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-sk.tar.gz
+        sha256: e0b5cab1198b73ed67d8c72bd9622a6a0362427221d321aa2631c98e04de4e34
+        size: 336424929
+        artifact-name: bicleaner-en-sk.tar.zst
+
+bicleaner-en-sl:
+    description: bicleaner en-sl pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-sl.tar.gz
+        sha256: 9a365867cc2f10b0f58d18ee14834f1b42525fddf23402ce3ac54bfcf8bd9a5b
+        size: 400519843
+        artifact-name: bicleaner-en-sl.tar.zst
+
+bicleaner-en-sv:
+    description: bicleaner en-sv pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-sv.tar.gz
+        sha256: 773d0f2e32f8399c465966a32647a45289bbd85a53c7c4fafbac189ac3c028b6
+        size: 401161427
+        artifact-name: bicleaner-en-sv.tar.zst
+
+bicleaner-en-uk:
+    description: bicleaner en-uk pack
+    fetch:
+        type: static-url
+        url: https://github.com/bitextor/bicleaner-data/releases/download/v1.6/en-uk.tar.gz
+        sha256: ab7ef285c3ec5ab0878aa45e5a6b20b60c41dd9c25e695bcb9dca022e6cf2541
+        size: 336387092
+        artifact-name: bicleaner-en-uk.tar.zst

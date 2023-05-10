@@ -1,0 +1,137 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+# TODO: this may not be sude for all locale pairs? or not for all dataset types?
+# TODO: this this run on large instances? gpu?
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.split_by_provider:transforms
+    - translations_taskgraph.transforms.dataset_substitutions:transforms
+    - translations_taskgraph.transforms.command_context_from_params:transforms
+    - taskgraph.transforms.job:transforms
+    - translations_taskgraph.transforms.cache:transforms
+    - taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - clean
+    - fetch
+    - toolchain
+
+task-defaults:
+    attributes:
+        cache:
+            resources:
+                - pipeline/bicleaner/bicleaner.sh
+            parameters:
+                - bicleaner_threshold
+    substitution-fields:
+        - description
+        - name
+        - dependencies
+        - fetches
+        - treeherder.symbol
+        - worker.env
+    worker:
+        max-run-time: 3600
+        artifacts:
+            - name: public/build
+              path: /builds/worker/artifacts
+              type: directory
+        env:
+            SRC: "{src_locale}"
+            TRG: "{trg_locale}"
+            # It would be preferable to use $MOZ_FETCHES_DIR here, but these don't
+            # get interpreted.
+            CUDA_DIR: /builds/worker/fetches/cuda-toolkit
+            CUDNN_DIR: /builds/worker/fetches/cuda-toolkit
+            COMPRESSION_CMD: zstdmt
+            ARTIFACT_EXT: zst
+
+    # Don't run unless explicitly scheduled
+    run-on-tasks-for: []
+
+    treeherder:
+        symbol: "{provider}({dataset_short}-{src_locale}-{trg_locale})"
+    run:
+        using: run-task
+        command-context:
+            from-parameters:
+                - bicleaner_threshold
+        command:
+            - bash
+            - -c
+            # We can't inline comments for the args to `bicleaner.sh`, so they're explained
+            # here instead:
+            # 1) prefix for input data
+            # 2) prefix for output data
+            # 3) bicleaner threshold
+            # 4) bicleaner type
+            # 5) number of threads to use - auto means nproc
+            # 6) "pack dir" - which needs to be where the `bicleaner-src-trg` fetch was unpacked to
+            - >-
+                pip install $MOZ_FETCHES_DIR/hunspell-0.5.5-cp310-cp310-linux_x86_64.whl &&
+                pip install $MOZ_FETCHES_DIR/kenlm-0.0.0-cp310-cp310-linux_x86_64.whl &&
+                pip install -r {bicleaner_reqs} &&
+                $VCS_PATH/pipeline/bicleaner/bicleaner.sh
+                $MOZ_FETCHES_DIR/{dataset_no_slashes}
+                /builds/worker/artifacts/{dataset_no_slashes}
+                {bicleaner_threshold}
+                {bicleaner_type}
+                {bicleaner_threads}
+                $MOZ_FETCHES_DIR/{src_locale}-{trg_locale}
+    dependencies:
+        "{provider}": clean-{provider}-{dataset_no_slashes}-{src_locale}-{trg_locale}
+    fetches:
+        fetch:
+            - bicleaner-{src_locale}-{trg_locale}
+        toolchain:
+            - hunspell
+            - kenlm
+            - cuda-toolkit
+        "{provider}":
+            - artifact: "{dataset_no_slashes}.{src_locale}.zst"
+              extract: false
+            - artifact: "{dataset_no_slashes}.{trg_locale}.zst"
+              extract: false
+
+tasks:
+    "{provider}-{dataset}-{src_locale}-{trg_locale}":
+        description: bicleaner for {provider} {dataset} dataset {src_locale}-{trg_locale}
+        worker-type: b-linux
+        worker:
+            docker-image: {"in-tree": "train"}
+        treeherder:
+            platform: bicleaner/opt
+        attributes:
+            cache:
+                type: bicleaner
+                resources:
+                    - pipeline/bicleaner/requirements/bicleaner.txt
+        run:
+            command-context:
+                bicleaner_type: bicleaner
+                bicleaner_reqs: $VCS_PATH/pipeline/bicleaner/requirements/bicleaner.txt
+                # auto = use `nproc` value
+                bicleaner_threads: auto
+
+    ai-{provider}-{dataset}-{src_locale}-{trg_locale}:
+        description: bicleaner-ai for {provider} {dataset} dataset {src_locale}-{trg_locale}
+        worker-type: t-linux-v100-gpu
+        treeherder:
+            platform: bicleaner-ai/opt
+        attributes:
+            cache:
+                type: bicleaner-ai
+                resources:
+                    - pipeline/bicleaner/requirements/bicleaner-ai.txt
+        run:
+            command-context:
+                bicleaner_type: bicleaner-ai
+                bicleaner_reqs: $VCS_PATH/pipeline/bicleaner/requirements/bicleaner-ai.txt
+                # TODO: set this to a sensible value based on number of GPUs?
+                # or maybe it should also be `auto`?
+                bicleaner_threads: auto

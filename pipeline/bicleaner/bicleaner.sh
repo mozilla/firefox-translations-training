@@ -23,13 +23,20 @@ type=$4
 threads=$5
 pack_dir=$6
 
+COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
+ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
+
+if [ "$threads" = "auto" ]; then
+  threads=$(nproc)
+fi
+
 output_dir=$(dirname "${output_prefix}")
 mkdir -p "${output_dir}"
 
 if [ "${bicleaner_threshold}" == "0" ]; then
   echo "Threshold is 0, skipping filtering"
-  cp "${corpus_prefix}.${SRC}.gz" "${output_prefix}.${SRC}.gz"
-  cp "${corpus_prefix}.${TRG}.gz" "${output_prefix}.${TRG}.gz"
+  cp "${corpus_prefix}.${SRC}.${ARTIFACT_EXT}" "${output_prefix}.${SRC}.${ARTIFACT_EXT}"
+  cp "${corpus_prefix}.${TRG}.${ARTIFACT_EXT}" "${output_prefix}.${TRG}.${ARTIFACT_EXT}"
 else
   if [ "${type}" == 'bicleaner-ai' ]; then
     echo "### Using bicleaner-ai"
@@ -69,27 +76,27 @@ else
        }
        export -f biclean
        # {%} is a 1-indexed job slot number from GNU parallel.  We use that as the 1-indexed offset in CUDA_VISIBLE_ARRAY
-       paste <(pigz -dc "${corpus_prefix}.${SRC}.gz") <(pigz -dc "${corpus_prefix}.${TRG}.gz") |
+       paste <(${COMPRESSION_CMD} -dc "${corpus_prefix}.${SRC}.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${corpus_prefix}.${TRG}.${ARTIFACT_EXT}") |
        parallel -j ${#CUDA_VISIBLE_ARRAY[@]} --pipe -k --block 10M biclean "${pack_dir}"/*.yaml {%} |
-       pigz >"${output_prefix}.scored.gz"
+       ${COMPRESSION_CMD} >"${output_prefix}.scored.${ARTIFACT_EXT}"
   else
-   paste <(pigz -dc "${corpus_prefix}.${SRC}.gz") <(pigz -dc "${corpus_prefix}.${TRG}.gz") |
+   paste <(${COMPRESSION_CMD} -dc "${corpus_prefix}.${SRC}.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${corpus_prefix}.${TRG}.${ARTIFACT_EXT}") |
      ${cmd} --scol ${scol} --tcol ${tcol} --processes "${threads}"  - - "${pack_dir}"/*.yaml |
-     pigz >"${output_prefix}.scored.gz"
+     ${COMPRESSION_CMD} >"${output_prefix}.scored.${ARTIFACT_EXT}"
   fi
 
   echo "### Filtering"
-  pigz -dc "${output_prefix}.scored.gz" |
+  ${COMPRESSION_CMD} -dc "${output_prefix}.scored.${ARTIFACT_EXT}" |
     awk -v threshold=${bicleaner_threshold} -F"\t" '{if ($3>threshold) {print $0}}' |
-    pigz >"${output_prefix}.best.gz"
+    ${COMPRESSION_CMD} >"${output_prefix}.best.${ARTIFACT_EXT}"
 
-  echo "Lines before filtering: $(pigz -dc "${output_prefix}.scored.gz" | wc -l)"
-  echo "Lines after filtering: $(pigz -dc "${output_prefix}.best.gz" | wc -l)"
+  echo "Lines before filtering: $(${COMPRESSION_CMD} -dc "${output_prefix}.scored.${ARTIFACT_EXT}" | wc -l)"
+  echo "Lines after filtering: $(${COMPRESSION_CMD} -dc "${output_prefix}.best.${ARTIFACT_EXT}" | wc -l)"
 
   echo "### Writing output corpus"
-  pigz -dc "${output_prefix}.best.gz" |
-    tee >(cut -f1 | pigz >"${output_prefix}.${SRC}.gz") |
-    cut -f2 | pigz >"${output_prefix}.${TRG}.gz"
+  ${COMPRESSION_CMD} -dc "${output_prefix}.best.${ARTIFACT_EXT}" |
+    tee >(cut -f1 | ${COMPRESSION_CMD} >"${output_prefix}.${SRC}.${ARTIFACT_EXT}") |
+    cut -f2 | ${COMPRESSION_CMD} >"${output_prefix}.${TRG}.${ARTIFACT_EXT}"
 
   # do not delete intermediate files to inspect them and tune the threshold
 fi

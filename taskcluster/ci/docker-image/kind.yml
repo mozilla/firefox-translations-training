@@ -7,4 +7,11 @@ transforms:
     - taskgraph.transforms.task:transforms
 
 tasks:
-    linux: {}
+    base:
+        symbol: Base
+    train:
+        parent: base
+        symbol: Train
+    toolchain-build:
+        parent: base
+        symbol: TL
