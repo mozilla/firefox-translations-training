@@ -74,6 +74,7 @@ task-defaults:
                 pip install $MOZ_FETCHES_DIR/hunspell-0.5.5-cp310-cp310-linux_x86_64.whl &&
                 pip install $MOZ_FETCHES_DIR/kenlm-0.0.0-cp310-cp310-linux_x86_64.whl &&
                 pip install -r {bicleaner_reqs} &&
+                export PATH=$PATH:~/.local/bin &&
                 $VCS_PATH/pipeline/bicleaner/bicleaner.sh
                 $MOZ_FETCHES_DIR/{dataset_no_slashes}
                 artifacts/{dataset_no_slashes}
