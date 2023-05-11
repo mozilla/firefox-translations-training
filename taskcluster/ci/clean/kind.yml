@@ -6,7 +6,7 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.dataset_substitutions:transforms
+    - translations_taskgraph.transforms.from_datasets:transforms
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cache:transforms
     - taskgraph.transforms.cached_tasks:transforms
@@ -27,13 +27,14 @@ task-defaults:
                 - pipeline/clean/tools/clean_parallel.py
                 - pipeline/clean/tools/langid_fasttext.py
     worker-type: b-linux
-    substitution-fields:
-        - description
-        - name
-        - dependencies
-        - fetches
-        - treeherder.symbol
-        - worker.env
+    dataset-config:
+        substitution-fields:
+            - description
+            - name
+            - dependencies
+            - fetches
+            - treeherder.symbol
+            - worker.env
     worker:
         docker-image: {"in-tree": "train"}
         max-run-time: 3600
@@ -55,6 +56,8 @@ task-defaults:
         platform: clean/opt
     run:
         using: run-task
+        # Include this so `from_datasets` will add a number of other values to it.
+        command-context: {}
         command:
             - bash
             - -c
@@ -70,16 +73,24 @@ task-defaults:
 
 tasks:
     flores-{dataset}-{src_locale}-{trg_locale}:
-        provider: flores
+        dataset-config:
+            include-datasets:
+                flores: {}
 
     sacrebleu-{dataset}-{src_locale}-{trg_locale}:
-        provider: sacrebleu
+        dataset-config:
+            include-datasets:
+                sacrebleu: {}
 
     opus-{dataset_no_slashes}-{src_locale}-{trg_locale}:
-        provider: opus
+        dataset-config:
+            include-datasets:
+                opus: {}
 
     mtdata-{dataset}-{src_locale}-{trg_locale}:
-        provider: mtdata
+        dataset-config:
+            include-datasets:
+                mtdata: {}
         attributes:
             cache:
                 resources:
@@ -96,4 +107,6 @@ tasks:
                     - pipeline/clean/fixes/mtdata_OPUS_UNPC_v1_0.fr.sh
 
     news-crawl-{dataset}-{src_locale}-{trg_locale}:
-        provider: news-crawl
+        dataset-config:
+            include-datasets:
+                news-crawl: {}
