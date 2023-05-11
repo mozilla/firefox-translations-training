@@ -85,8 +85,6 @@ task-defaults:
     dependencies:
         "{provider}": clean-{provider}-{dataset_no_slashes}-{src_locale}-{trg_locale}
     fetches:
-        fetch:
-            - bicleaner-{src_locale}-{trg_locale}
         toolchain:
             - hunspell
             - kenlm
@@ -110,6 +108,9 @@ tasks:
                 type: bicleaner
                 resources:
                     - pipeline/bicleaner/requirements/bicleaner.txt
+        fetches:
+            fetch:
+                - bicleaner-{src_locale}-{trg_locale}
         run:
             command-context:
                 bicleaner_type: bicleaner
@@ -131,6 +132,9 @@ tasks:
                 type: bicleaner-ai
                 resources:
                     - pipeline/bicleaner/requirements/bicleaner-ai.txt
+        fetches:
+            fetch:
+                - bicleaner-ai-{src_locale}-{trg_locale}
         run:
             command-context:
                 bicleaner_type: bicleaner-ai
