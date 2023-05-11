@@ -37,15 +37,15 @@ task-defaults:
         max-run-time: 3600
         artifacts:
             - name: public/build
-              path: /builds/worker/artifacts
+              path: artifacts
               type: directory
         env:
             SRC: "{src_locale}"
             TRG: "{trg_locale}"
             # It would be preferable to use $MOZ_FETCHES_DIR here, but these don't
             # get interpreted.
-            CUDA_DIR: /builds/worker/fetches/cuda-toolkit
-            CUDNN_DIR: /builds/worker/fetches/cuda-toolkit
+            CUDA_DIR: fetches/cuda-toolkit
+            CUDNN_DIR: fetches/cuda-toolkit
             COMPRESSION_CMD: zstdmt
             ARTIFACT_EXT: zst
 
@@ -76,7 +76,7 @@ task-defaults:
                 pip install -r {bicleaner_reqs} &&
                 $VCS_PATH/pipeline/bicleaner/bicleaner.sh
                 $MOZ_FETCHES_DIR/{dataset_no_slashes}
-                /builds/worker/artifacts/{dataset_no_slashes}
+                artifacts/{dataset_no_slashes}
                 {bicleaner_threshold}
                 {bicleaner_type}
                 {bicleaner_threads}
