@@ -2,14 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 ---
-# TODO: this may not be sude for all locale pairs? or not for all dataset types?
-# TODO: this this run on large instances? gpu?
 
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.split_by_provider:transforms
-    - translations_taskgraph.transforms.dataset_substitutions:transforms
+    - translations_taskgraph.transforms.from_datasets:transforms
     - translations_taskgraph.transforms.command_context_from_params:transforms
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cache:transforms
@@ -28,13 +25,14 @@ task-defaults:
                 - pipeline/bicleaner/bicleaner.sh
             parameters:
                 - bicleaner_threshold
-    substitution-fields:
-        - description
-        - name
-        - dependencies
-        - fetches
-        - treeherder.symbol
-        - worker.env
+    dataset-config:
+        substitution-fields:
+            - description
+            - name
+            - dependencies
+            - fetches
+            - treeherder.symbol
+            - worker.env
     worker:
         max-run-time: 3600
         artifacts:
@@ -123,6 +121,10 @@ tasks:
         worker-type: t-linux-v100-gpu
         treeherder:
             platform: bicleaner-ai/opt
+        dataset-config:
+            exclude-locales:
+                - src: en
+                  trg: ru
         attributes:
             cache:
                 type: bicleaner-ai

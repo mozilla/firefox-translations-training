@@ -9,7 +9,7 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.dataset_substitutions:transforms
+    - translations_taskgraph.transforms.from_datasets:transforms
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cache:transforms
     - taskgraph.transforms.cached_tasks:transforms
@@ -20,10 +20,11 @@ task-defaults:
     attributes:
         cache:
             type: dataset
-    substitution-fields:
-        - name
-        - label
-        - treeherder.symbol
+    dataset-config:
+        substitution-fields:
+            - name
+            - label
+            - treeherder.symbol
     worker:
         docker-image: {in-tree: toolchain-build}
         max-run-time: 1800
@@ -41,12 +42,16 @@ task-defaults:
     run-on-tasks-for: []
     run:
         using: run-task
+        # Include this so `from_datasets` will add a number of other values to it.
+        command-context: {}
 
 tasks:
     flores:
         description: Fetch flores101 dataset
         label: dataset-flores-{dataset}-{src_locale}-{trg_locale}
-        provider: flores
+        dataset-config:
+            include-datasets:
+                flores: {}
         attributes:
             cache:
                 resources:
@@ -60,7 +65,9 @@ tasks:
     sacrebleu:
         description: Fetch sacrebleu dataset
         label: dataset-sacrebleu-{dataset}-{src_locale}-{trg_locale}
-        provider: sacrebleu
+        dataset-config:
+            include-datasets:
+                sacrebleu: {}
         attributes:
             cache:
                 resources:
@@ -75,7 +82,9 @@ tasks:
         description: Fetch opus dataset
         # No slashes version of dataset used here because slashes break caches
         label: dataset-opus-{dataset_no_slashes}-{src_locale}-{trg_locale}
-        provider: opus
+        dataset-config:
+            include-datasets:
+                opus: {}
         attributes:
             cache:
                 resources:
@@ -89,7 +98,9 @@ tasks:
     mtdata:
         description: Fetch mtdata dataset
         label: dataset-mtdata-{dataset}-{src_locale}-{trg_locale}
-        provider: mtdata
+        dataset-config:
+            include-datasets:
+                mtdata: {}
         attributes:
             cache:
                 resources:
@@ -103,7 +114,9 @@ tasks:
     news-crawl:
         description: Fetch news-crawl dataset
         label: dataset-news-crawl-{dataset}-{src_locale}-{trg_locale}
-        provider: news-crawl
+        dataset-config:
+            include-datasets:
+                news-crawl: {}
         attributes:
             cache:
                 resources:
