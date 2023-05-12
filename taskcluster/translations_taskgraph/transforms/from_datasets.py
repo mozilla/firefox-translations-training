@@ -68,8 +68,11 @@ SCHEMA = Schema(
     extra=ALLOW_EXTRA,
 )
 
-transforms = TransformSequence()
-transforms.add_validate(SCHEMA)
+per_dataset = TransformSequence()
+per_dataset.add_validate(SCHEMA)
+
+locales_only = TransformSequence()
+locales_only.add_validate(SCHEMA)
 
 
 def substitute(item, **subs):
@@ -100,7 +103,7 @@ def shorten_dataset_name(dataset):
         .replace("Neulab-tedtalks_train-1", "Ntt1")
     )
 
-@transforms.add
+@per_dataset.add
 def jobs_from_datasets(config, jobs):
     for job in jobs:
         dataset_config = job.pop("dataset-config", {})
@@ -152,4 +155,70 @@ def jobs_from_datasets(config, jobs):
                     if subjob.get("run", {}).get("command-context") is not None:
                         subjob["run"]["command-context"].update(subs)
 
+                    subjob.setdefault("attributes", {})
+                    subjob["attributes"]["provider"] = provider
+                    subjob["attributes"]["dataset"] = dataset
+                    subjob["attributes"]["src_locale"] = pair["src"]
+                    subjob["attributes"]["trg_locale"] = pair["trg"]
+
                     yield subjob
+
+
+@locales_only.add
+def jobs_from_locales(config, jobs):
+    for job in jobs:
+        dataset_config = job.pop("dataset-config", {})
+        include_datasets = dataset_config.get("include-datasets", {})
+        exclude_datasets = dataset_config.get("exclude-datasets", {})
+        exclude_locales = dataset_config.get("exclude-locales", [])
+        substitution_fields = dataset_config.get("substitution-fields", [])
+
+        all_pairs = set()
+
+        providers = include_datasets.keys()
+        if not providers:
+            providers = config.graph_config["datasets"].keys()
+
+        for provider in providers:
+            datasets = include_datasets.get(provider, {})
+            if not datasets:
+                datasets = config.graph_config["datasets"][provider]
+
+            for dataset, locale_pairs in datasets.items():
+                if dataset in exclude_datasets.get(provider, {}):
+                    continue
+
+                for pair in locale_pairs:
+                    if pair in exclude_datasets.get(provider, {}).get(dataset, []):
+                        continue
+
+                    if pair in exclude_locales:
+                        continue
+                    
+                    all_pairs.add((pair["src"], pair["trg"]))
+
+        # Now that we've got all of our distinct locale pairs, create jobs for them
+        for (src, trg) in all_pairs:
+            subjob = copy.deepcopy(job)
+            subs = {
+                "src_locale": src,
+                "trg_locale": trg,
+            }
+            for field in substitution_fields:
+                container, subfield = subjob, field
+                while "." in subfield:
+                    f, subfield = field.split(".", 1)
+                    container = container[f]
+
+                container[subfield] = substitute(container[subfield], **subs)
+
+            # If the job has command-context, add these values there
+            # as well. These helps to avoid needing two levels of
+            # substitution in a command.
+            if subjob.get("run", {}).get("command-context") is not None:
+                subjob["run"]["command-context"].update(subs)
+
+            subjob["attributes"]["src_locale"] = src
+            subjob["attributes"]["trg_locale"] = trg
+
+            yield subjob
