@@ -9,4 +9,6 @@ cd $build_dir
 cmake $PREPROCESS_DIR -DBUILD_TYPE=Release
 make -j$(nproc)
 
-cp $build_dir/bin/dedupe $UPLOAD_DIR
+cd $build_dir/bin
+chmod +x dedupe
+tar --zstd -cf $UPLOAD_DIR/dedupe.tar.zst dedupe
