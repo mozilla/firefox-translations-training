@@ -8,6 +8,7 @@ RUN apt-get update -qq \
                           zstd \
                           bc \
                           libhunspell-1.7-0 \
+                          libboost-program-options1.74.0 \
     && apt-get clean
 
 # Required to download sacrebleu datasets
