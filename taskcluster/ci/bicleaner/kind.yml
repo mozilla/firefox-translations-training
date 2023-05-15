@@ -37,15 +37,15 @@ task-defaults:
         max-run-time: 3600
         artifacts:
             - name: public/build
-              path: /builds/worker/artifacts
+              path: artifacts
               type: directory
         env:
             SRC: "{src_locale}"
             TRG: "{trg_locale}"
             # It would be preferable to use $MOZ_FETCHES_DIR here, but these don't
             # get interpreted.
-            CUDA_DIR: /builds/worker/fetches/cuda-toolkit
-            CUDNN_DIR: /builds/worker/fetches/cuda-toolkit
+            CUDA_DIR: fetches/cuda-toolkit
+            CUDNN_DIR: fetches/cuda-toolkit
             COMPRESSION_CMD: zstdmt
             ARTIFACT_EXT: zst
 
@@ -74,9 +74,10 @@ task-defaults:
                 pip install $MOZ_FETCHES_DIR/hunspell-0.5.5-cp310-cp310-linux_x86_64.whl &&
                 pip install $MOZ_FETCHES_DIR/kenlm-0.0.0-cp310-cp310-linux_x86_64.whl &&
                 pip install -r {bicleaner_reqs} &&
+                export PATH=$PATH:~/.local/bin &&
                 $VCS_PATH/pipeline/bicleaner/bicleaner.sh
                 $MOZ_FETCHES_DIR/{dataset_no_slashes}
-                /builds/worker/artifacts/{dataset_no_slashes}
+                artifacts/{dataset_no_slashes}
                 {bicleaner_threshold}
                 {bicleaner_type}
                 {bicleaner_threads}
@@ -84,8 +85,6 @@ task-defaults:
     dependencies:
         "{provider}": clean-{provider}-{dataset_no_slashes}-{src_locale}-{trg_locale}
     fetches:
-        fetch:
-            - bicleaner-{src_locale}-{trg_locale}
         toolchain:
             - hunspell
             - kenlm
@@ -109,6 +108,9 @@ tasks:
                 type: bicleaner
                 resources:
                     - pipeline/bicleaner/requirements/bicleaner.txt
+        fetches:
+            fetch:
+                - bicleaner-{src_locale}-{trg_locale}
         run:
             command-context:
                 bicleaner_type: bicleaner
@@ -130,6 +132,9 @@ tasks:
                 type: bicleaner-ai
                 resources:
                     - pipeline/bicleaner/requirements/bicleaner-ai.txt
+        fetches:
+            fetch:
+                - bicleaner-ai-{src_locale}-{trg_locale}
         run:
             command-context:
                 bicleaner_type: bicleaner-ai
