@@ -71,7 +71,7 @@ tasks:
       in:
           $if: >
               tasks_for in ["action", "cron"]
-              || (tasks_for == "github-push" && head_branch == "refs/heads/main")
+              || (tasks_for == "github-push" && (head_branch == "refs/heads/main" || head_branch[:15] == "refs/heads/dev-"))
               || (isPullRequest && pullRequestAction in ["opened", "reopened", "synchronize"])
           then:
               $let:
@@ -126,9 +126,7 @@ tasks:
                   routes:
                       $flatten:
                           - checks
-                          - $if: 'level == "3"'
-                            then:
-                              - tc-treeherder.v2.${project}.${head_sha}
+                          - tc-treeherder.v2.${project}.${head_sha}
                           - $switch:
                                 'tasks_for == "github-push"':
                                     - "index.${trustDomain}.v2.${project}.latest.taskgraph.decision"
