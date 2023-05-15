@@ -36,10 +36,6 @@ task-defaults:
             - worker.env
     worker:
         max-run-time: 3600
-        artifacts:
-            - name: public/build
-              path: artifacts
-              type: directory
         env:
             SRC: "{src_locale}"
             TRG: "{trg_locale}"
@@ -99,9 +95,13 @@ task-defaults:
 tasks:
     "{provider}-{dataset}-{src_locale}-{trg_locale}":
         description: bicleaner for {provider} {dataset} dataset {src_locale}-{trg_locale}
-        worker-type: b-linux
+        worker-type: b-linux-large
         worker:
             docker-image: {"in-tree": "train"}
+            artifacts:
+                - name: public/build
+                  path: /builds/worker/artifacts
+                  type: directory
         treeherder:
             platform: bicleaner/opt
         attributes:
@@ -123,6 +123,11 @@ tasks:
     ai-{provider}-{dataset}-{src_locale}-{trg_locale}:
         description: bicleaner-ai for {provider} {dataset} dataset {src_locale}-{trg_locale}
         worker-type: t-linux-v100-gpu
+        worker:
+            artifacts:
+                - name: public/build
+                  path: artifacts
+                  type: directory
         treeherder:
             platform: bicleaner-ai/opt
         dataset-config:
