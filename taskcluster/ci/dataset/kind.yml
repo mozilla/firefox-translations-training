@@ -18,6 +18,7 @@ transforms:
 task-defaults:
     worker-type: b-linux
     attributes:
+        dataset-category: train
         cache:
             type: dataset
     dataset-config:

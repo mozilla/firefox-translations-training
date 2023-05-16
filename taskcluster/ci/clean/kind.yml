@@ -19,6 +19,7 @@ task-defaults:
     description: Clean {provider} {dataset} dataset {src_locale}-{trg_locale}
     attributes:
         cleaning-type: clean
+        dataset-category: train
         cache:
             type: clean
             resources:

@@ -16,6 +16,11 @@ def can_train(parameters):
     return parameters["head_repository"] in TRAIN_ON_PROJECTS
 
 
+# Stages that only have locales in their task names (not providers/datasets).
+# Typically these are stages that "fan in" and a consume a number of upstream
+# tasks that are per-dataset.
+LOCALE_ONLY_STAGES = ["merge-corpus"]
+
 @register_callback_action(
     name="train",
     title="Train",
@@ -37,16 +42,69 @@ def can_train(parameters):
 (any stages this choice depends on will be automatically included).""",
                 "default": "",
                 # TODO: this should probably be specified in ci/config.yml
-                "enum": ["clean", "bicleaner", "bicleaner-ai"],
+                "enum": ["clean", "bicleaner", "bicleaner-ai", "merge-corpus"],
             },
             "datasets": {
-                "type": "array",
+                "type": "object",
                 "description": "The datasets to train with",
-                "default": [],
-                "items": {
-                    "type": "string",
-                    # TODO: pull this from ci/config.yml
-                    "enum": ["flores-dev"],
+                "default": {},
+                "properties": {
+                    "train": {
+                        "type": "array",
+                        "description": "Parallel training corpus",
+                        "default": [],
+                        "items": {
+                            "type": "string",
+                            # TODO
+                            # "enum": []
+                        },
+                    },
+                    "devtest": {
+                        "type": "array",
+                        "description": "datasets to merge for validation while training",
+                        "default": [],
+                        "items": {
+                            "type": "string",
+                            # TODO
+                            # "enum": []
+                        },
+                    },
+                    "test": {
+                        "type": "array",
+                        "description": "datasets for evaluation",
+                        "default": [],
+                        "items": {
+                            "type": "string",
+                            # TODO
+                            # "enum": []
+                        },
+                    },
+                    "mono-src": {
+                        "type": "array",
+                        "description": """
+monolingual datasets (ex. paracrawl-mono_paracrawl8, commoncrawl_wmt16, news-crawl_news.2020)
+to be translated by the teacher model
+""",
+                        "default": [],
+                        "items": {
+                            "type": "string",
+                            # TODO
+                            # "enum": []
+                        },
+                    },
+                    "mono-trg": {
+                        "type": "array",
+                        "description": """
+to be translated by the backward model to augment teacher corpus with back-translations
+leave empty to skip augmentation step (high resource languages)
+""",
+                        "default": [],
+                        "items": {
+                            "type": "string",
+                            # TODO
+                            # "enum": []
+                        },
+                    },
                 },
             },
             # TODO: should these be replaced with a single pair?
@@ -77,12 +135,6 @@ def can_train(parameters):
     },
 )
 def train_action(parameters, graph_config, input, task_group_id, task_id):
-    stage = input["stage"]
-    target_datasets = input["datasets"]
-    src_locale = input.get("src_locale")
-    trg_locale = input.get("trg_locale")
-    graph_config["datasets"]
-    locale_str = f"{src_locale}-{trg_locale}"
 
     # TODO: Add a whack load of verification here. Things such as:
     # - datasets all exist
@@ -93,15 +145,13 @@ def train_action(parameters, graph_config, input, task_group_id, task_id):
     parameters = dict(parameters)
 
     parameters["target_tasks_method"] = "train-target-tasks"
-
-    # When doing staging releases, we still want to re-use tasks from previous
-    # graphs.
     parameters["optimize_target_tasks"] = True
     parameters["tasks_for"] = "action"
-
-    # make parameters read-only
-    parameters["target_task_names"] = [f"{stage}-{d}-{locale_str}" for d in target_datasets]
+    parameters["stage"] = input["stage"]
+    parameters["datasets"] = input["datasets"]
+    parameters["src_locale"] = input["src_locale"]
+    parameters["trg_locale"] = input["trg_locale"]
     parameters["bicleaner_threshold"] = input["bicleaner_threshold"]
-    parameters = Parameters(**parameters)
 
+    parameters = Parameters(**parameters)
     taskgraph_decision({"root": graph_config.root_dir}, parameters=parameters)
