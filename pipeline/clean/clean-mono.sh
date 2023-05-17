@@ -42,21 +42,20 @@ else
         | pigz >"${output_prefix}.${lang}.monofix.gz"
 fi
 
-# disabled bue to errors in langid, need to debug sometime
 ######################################################################
-#echo "### Language identification"
-#test -s "${output_prefix}.${lang}.langid.gz" ||
-#  pigz -dc "${output_prefix}.${lang}.monofix.gz" |
+echo "### Language identification"
+test -s "${output_prefix}.${lang}.langid.gz" ||
+  pigz -dc "${output_prefix}.${lang}.monofix.gz" |
   # memory intensive
-#  parallel --no-notice --pipe -k -j "$(echo "${threads}"/4 | bc)" --block 50M "python tools/langid_fasttext.py" |
-#  grep -P "^${lang}\t" | cut -f2 |
-#  pigz >"${output_prefix}.${lang}.langid.gz"
+  parallel --no-notice --pipe -k -j "$(echo "${threads}"/4 | bc)" --block 50M "python tools/langid_fasttext.py" |
+  grep -P "^${lang}\t" | cut -f2 |
+  pigz >"${output_prefix}.${lang}.langid.gz"
 
 ######################################################################
+
 echo "### Rule-based filtering"
 
-# pigz -dc "${output_prefix}.${lang}.langid.gz" |
-pigz -dc "${output_prefix}.${lang}.monofix.gz" |
+pigz -dc "${output_prefix}.${lang}.langid.gz" |
 parallel --no-notice --pipe -k -j "${threads}" --block 50M \
   "python tools/clean_mono.py -l ${lang} --debug" \
   2>"${output_prefix}.${lang}.clean.debug.txt" |

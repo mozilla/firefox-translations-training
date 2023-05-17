@@ -71,24 +71,20 @@ test -s "${output_prefix}.${SRC}${TRG}.rule-based.gz" ||
   pigz >"${output_prefix}.${SRC}${TRG}.rule-based.gz"
 
 ######################################################################
-#Disabled language identification due to crashes, maybe due to small corpus, try with bigger one
-#echo "### Language identification"
-#test -s "${output_prefix}.${SRC}${TRG}.langid.gz" ||
-  #pigz -dc "${output_prefix}.${SRC}${TRG}.rule-based.gz" |
+echo "### Language identification"
+test -s "${output_prefix}.${SRC}${TRG}.langid.gz" ||
+  pigz -dc "${output_prefix}.${SRC}${TRG}.rule-based.gz" |
   # memory intensive
-  #parallel --no-notice --pipe -k -j "$(echo "${threads}"/4 | bc)" --block 50M \
-    #"python3 -Wi tools/langid_fasttext.py -f 1 | python3 -Wi tools/langid_fasttext.py -f 1" |
-#  zcat "${output_prefix}.${SRC}${TRG}.rule-based.gz" |
-#  python3 -Wi tools/langid_fasttext.py -f 1 | python3 -Wi tools/langid_fasttext.py -f 1 |
-#  grep -P "^${SRC}\t${TRG}\t" |
-#  cut -f3,4 |
-#  pigz >"${output_prefix}.${SRC}${TRG}.langid.gz"
+  parallel --no-notice --pipe -k -j "$(echo "${threads}"/4 | bc)" --block 50M \
+    "python3 -Wi tools/langid_fasttext.py -f 1 | python3 -Wi tools/langid_fasttext.py -f 1" |
+  grep -P "^${SRC}\t${TRG}\t" |
+  cut -f3,4 |
+  pigz >"${output_prefix}.${SRC}${TRG}.langid.gz"
 
 ######################################################################
 echo "### Removing leading and repetitive white spaces"
 
-#pigz -dc "${output_prefix}.${SRC}${TRG}.langid.gz" |
-pigz -dc "${output_prefix}.${SRC}${TRG}.rule-based.gz" |
+pigz -dc "${output_prefix}.${SRC}${TRG}.langid.gz" |
 cut -f1 |
 sed -e 's/^[[:space:]]*//' |
 tr -s " " |

@@ -7,18 +7,18 @@
 
 experiment:
   name: opusmt
-  src: eo
-  trg: af
-  src_three_letter: epo
-  trg_three_letter: afr
+  src: en
+  trg: fi
+  src_three_letter: eng
+  trg_three_letter: fin
 
   #OPUS models are not ensembled, they have different vocabs anyway
   teacher-ensemble: 1
 
   #URL to the OPUS-MT model to use as the teacher
-  opusmt-teacher: "https://object.pouta.csc.fi/Tatoeba-MT-models/epo-afr/opus-2021-02-18.zip"
+  opusmt-teacher: "best"
   #URL to the OPUS-MT model to use as the backward model
-  opusmt-backward: "https://object.pouta.csc.fi/Tatoeba-MT-models/afr-epo/opus-2021-02-19.zip" 
+  opusmt-backward: "best" 
 
   # path to a pretrained backward model (optional)
   backward-model: ""
@@ -27,6 +27,8 @@ experiment:
   mono-max-sentences-src: 100000000
   mono-max-sentences-trg: 20000000
 
+  parallel-max-sentences: 100000
+ 
   # split corpus to parallelize translation
   split-length: 2000000
   

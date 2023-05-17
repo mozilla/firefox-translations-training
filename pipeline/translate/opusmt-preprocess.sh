@@ -6,19 +6,19 @@
 set -x
 set -euo pipefail
 
-# add spm_encode to path
-export PATH=$(realpath 3rd_party/marian-dev/build/):$PATH
 
 source_file=$1
 opusmt_model=$2
 source_lang=$3
 spm_name=$4
+spm_encoder=$5
+export PATH=$PATH:$(dirname ${spm_encoder})
 model_dir=$(dirname $2)
 
 # When splits are preprocessed, different models need different preprocessing,
 # so model index is given. Check for unset parameter.
-if [ $# -ge 6 ]; then
-    model_index_suffix=".$6"
+if [ $# -ge 7 ]; then
+    model_index_suffix=".$7"
 else
     model_index_suffix=""
 fi
@@ -27,7 +27,7 @@ fi
 #target_lang_token needs to be provided for multilingual models
 #first check whether model is multilingual AND preprocessing isdone on source side (never language tags on target side)
 if grep -q ">>id<<" "${model_dir}/README.md" && [ ${spm_name} == "source.spm" ]; then
-    target_lang_token=$5
+    target_lang_token=$6
     if [ -n "${target_lang_token}" ]; then
         #add space after lang token
         target_lang_token=">>${target_lang_token}<< "
