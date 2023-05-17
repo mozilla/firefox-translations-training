@@ -115,7 +115,7 @@ tasks:
                   routes:
                       $flatten:
                           - checks
-                          - $if: 'tasks_for != "github-pull-request"'
+                          - $if: '!isPullRequest'
                             then:
                               - tc-treeherder.v2.${project}.${head_sha}
                           - $switch:
