@@ -42,7 +42,7 @@ LOCALE_ONLY_STAGES = ["merge-corpus"]
 (any stages this choice depends on will be automatically included).""",
                 "default": "",
                 # TODO: this should probably be specified in ci/config.yml
-                "enum": ["clean", "bicleaner", "bicleaner-ai", "merge-corpus"],
+                "enum": ["clean", "bicleaner", "bicleaner-ai", "merge-corpus", "train-vocab"],
             },
             "datasets": {
                 "type": "object",
@@ -125,6 +125,11 @@ leave empty to skip augmentation step (high resource languages)
                 "description": "bicleaner threshold",
                 "default": "1.0",
             },
+            "train_vocab_sample_size": {
+                "type": "string",
+                "description": "vocabularly training sample size",
+                "default": "10000",
+            },
         },
         "required": [
             "stage",
@@ -152,6 +157,7 @@ def train_action(parameters, graph_config, input, task_group_id, task_id):
     parameters["src_locale"] = input["src_locale"]
     parameters["trg_locale"] = input["trg_locale"]
     parameters["bicleaner_threshold"] = input["bicleaner_threshold"]
+    parameters["train_vocab_sample_size"] = input["train_vocab_sample_size"]
 
     parameters = Parameters(**parameters)
     taskgraph_decision({"root": graph_config.root_dir}, parameters=parameters)

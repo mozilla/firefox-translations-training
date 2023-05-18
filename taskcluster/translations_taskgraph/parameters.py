@@ -8,6 +8,7 @@ from voluptuous import Optional
 def get_defaults(repo_root):
     return {
         "bicleaner_threshold": "0.0",
+        "train_vocab_sample_size": "1000",
         # These will never be used in practice, but specifying them ensures
         # that we always generate at least one task for each kind, which helps
         # to avoid bustage that doesn't show up until we run the training action.
@@ -38,6 +39,7 @@ def get_defaults(repo_root):
 extend_parameters_schema(
     {
         Optional("bicleaner_threshold"): str,
+        Optional("train_vocab_sample_size"): str,
         Optional("datasets"): {
             str: [str],
         },
