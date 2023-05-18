@@ -28,8 +28,8 @@ tasks:
                 type: train-vocab
                 resources:
                     - pipeline/train/spm-vocab.sh
-                parameters:
-                    - train_vocab_sample_size
+                from-parameters:
+                    spm_sample_size: training_config.experiment.spm-sample-size
         dataset-config:
             substitution-fields:
                 - description
@@ -58,7 +58,7 @@ tasks:
             using: run-task
             command-context:
                 from-parameters:
-                    - train_vocab_sample_size
+                    spm_sample_size: training_config.experiment.spm-sample-size
             command:
                 - bash
                 - -c
@@ -74,7 +74,7 @@ tasks:
                     fetches/corpus.{src_locale}.zst
                     fetches/corpus.{trg_locale}.zst
                     artifacts/vocab.spm
-                    {train_vocab_sample_size}
+                    {spm_sample_size}
                     auto
 
         dependencies:

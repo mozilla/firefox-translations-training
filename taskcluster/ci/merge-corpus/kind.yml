@@ -52,8 +52,8 @@ tasks:
                         bicleaner: bicleaner
                         clean: clean
             upstream-artifacts:
-                - "{dataset_no_slashes}.{src_locale}.zst"
-                - "{dataset_no_slashes}.{trg_locale}.zst"
+                - "{dataset_sanitized}.{src_locale}.zst"
+                - "{dataset_sanitized}.{trg_locale}.zst"
         worker-type: b-linux-large
         worker:
             docker-image: {"in-tree": "train"}

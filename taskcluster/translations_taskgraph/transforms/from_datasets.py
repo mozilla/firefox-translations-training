@@ -137,14 +137,14 @@ def jobs_from_datasets(config, jobs):
                         "provider": provider,
                         "dataset": dataset,
                         "dataset_short": shorten_dataset_name(dataset),
-                        "dataset_no_slashes": dataset.replace("/", "."),
+                        "dataset_sanitized": dataset.replace("/", "_").replace(".", "_"),
                         "src_locale": pair["src"],
                         "trg_locale": pair["trg"],
                     }
                     for field in substitution_fields:
                         container, subfield = subjob, field
                         while "." in subfield:
-                            f, subfield = field.split(".", 1)
+                            f, subfield = subfield.split(".", 1)
                             container = container[f]
 
                         container[subfield] = substitute(container[subfield], **subs)

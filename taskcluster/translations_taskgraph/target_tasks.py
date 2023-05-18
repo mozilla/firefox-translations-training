@@ -3,15 +3,21 @@ from taskgraph.target_tasks import _target_task
 
 @_target_task("train-target-tasks")
 def train_target_tasks(full_task_graph, parameters, graph_config):
-    stage = parameters["stage"]
-    datasets = parameters["datasets"]
-    src_locale = parameters["src_locale"]
-    trg_locale = parameters["trg_locale"]
+    training_config = parameters["training_config"]
+    stage = training_config["target-stage"]
+    src = training_config["experiment"]["src"]
+    trg = training_config["experiment"]["trg"]
+    datasets = parameters["training_config"]["datasets"]
     def filter(task):
         # These attributes will be present on tasks from all stages
-        for attr in ("stage", "src_locale", "trg_locale"):
-            if task.attributes.get(attr) != parameters[attr]:
-                return False
+        if task.attributes.get("stage") != stage:
+            return False
+
+        if task.attributes.get("src_locale") != src:
+            return False
+
+        if task.attributes.get("trg_locale") != trg:
+            return False
 
         # Datasets are only applicable to dataset-specific tasks. If these
         # attribute isn't present on the task it can be assumed to be included
@@ -21,7 +27,7 @@ def train_target_tasks(full_task_graph, parameters, graph_config):
         # the task generation level, usually by the `find_upstreams` transform.)
         if "dataset" in task.attributes:
             dataset_category = task.attributes["dataset-category"]
-            for ds in parameters["datasets"][dataset_category]:
+            for ds in datasets[dataset_category]:
                 provider, dataset = ds.split("_", 1)
                 if task.attributes["provider"] != provider or task.attributes["dataset"] != dataset:
                     return False

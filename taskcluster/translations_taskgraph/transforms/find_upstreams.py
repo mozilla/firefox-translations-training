@@ -83,7 +83,7 @@ def resolve_keyed_by_fields(config, jobs):
 
 @by_locales.add
 def upstreams_for_locales(config, jobs):
-    datasets = config.params.get("datasets", {})
+    datasets = config.params.get("training_config", {}).get("datasets", {})
     for job in jobs:
         dataset_category = job["attributes"]["dataset-category"]
         target_datasets = datasets[dataset_category]
@@ -120,7 +120,7 @@ def upstreams_for_locales(config, jobs):
             subs = {
                 "src_locale": src,
                 "trg_locale": trg,
-                "dataset_no_slashes": dataset.replace("/", "."),
+                "dataset_sanitized": dataset.replace("/", "_").replace(".", "_"),
             }
 
             subjob["dependencies"][task.label] = task.label
