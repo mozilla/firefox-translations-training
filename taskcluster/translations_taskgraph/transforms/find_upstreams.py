@@ -59,7 +59,7 @@ def get_cleaning_type(src, trg, upstreams):
         if type_ in candidates:
             return type_
 
-    raise Exception(f"Unable to find cleaning type for {src_locale}-{trg_locale}!")
+    raise Exception(f"Unable to find cleaning type for {src}-{trg}!")
 
 
 @by_locales.add
