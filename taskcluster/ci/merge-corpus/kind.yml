@@ -81,12 +81,12 @@ tasks:
                 - bash
                 - -c
                 # Arguments are:
-                # 1) output directory
+                # 1) output prefix
                 # 2) input files
                 - >-
                     export BIN=$MOZ_FETCHES_DIR &&
                     $VCS_PATH/pipeline/clean/merge-corpus.sh
-                    artifacts
+                    artifacts/corpus
                     $MOZ_FETCHES_DIR/*.zst
 
         fetches:
