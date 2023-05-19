@@ -18,7 +18,7 @@ modeldir=$(dirname ${models})
 #if the model is an OPUS-MT model, use the model vocab instead of the defined forward vocab
 for opus_vocab in ${modeldir}/opus*.vocab.yml; do
     if [[ -f ${opus_vocab} ]]; then
-    	vocab=$opus
+    	vocab=${opus_vocab}
     else
 	vocab=$3
     fi
@@ -37,4 +37,4 @@ cd "$(dirname "${0}")"
   -d ${GPUS} \
   -w "${WORKSPACE}"
 
-test "$(wc -l <"${input}")" == "$(wc -l <"${input}.out")"
+test "$(wc -l <"${input}")" == "$(wc -l <"${output}")"

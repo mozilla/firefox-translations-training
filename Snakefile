@@ -641,7 +641,7 @@ if augment_corpus:
             bin=ancient(trainer), vocab=vocab_path
         output: model=f'{teacher_finetuned_dir}0-{{ens}}/{best_model}'
         params: prefix_train=clean_corpus_prefix, prefix_test=f"{original}/devset",
-                dir=directory(f'{teacher_finetuned_dir}{{ens}}'),
+                dir=directory(f'{teacher_finetuned_dir}0-{{ens}}'),
                 args=get_args("training-teacher-finetuned")
         shell: '''bash pipeline/train/train.sh \
                     teacher train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
@@ -661,45 +661,62 @@ checkpoint split_corpus:
 
 if opusmt_teacher:
     teacher_source_file = f'{translated}/corpus/file.{{part}}.{{model_index}}.opusmt'
+    teacher_target_file = f'{translated}/corpus/file.{{part}}.{{model_index}}.opusmt.nbest'
     teacher_mono_source_file = f'{translated}/mono_src/file.{{part}}.{{model_index}}.opusmt'
+    teacher_mono_target_file = f'{translated}/mono_src/file.{{part}}.{{model_index}}.opusmt.out'
     translated_mono_src_extension = "opusmt.out"
-    deseg_nbest_file = f'{teacher_source_file}.nbest.deseg'
-else:    
-    teacher_source_file = f'{translated}/corpus/file.{{part}}.{{model_index}}'
-    teacher_mono_source_file = f'{translated}/mono_src/file.{{part}}.{{model_index}}'
-    translated_mono_src_extension = ".out"
-    deseg_nbest_file = f'{teacher_source_file}.nbest'
+    deseg_nbest_file = f'{teacher_target_file}.deseg'
+    
+    rule opusmt_deseg_translation:
+        message: "Desegmenting OPUS-MT model translation"
+        log: f"{log_dir}/opusmt_deseg_mono_translation/{{part}}.{{model_index}}.log"
+        threads: 1
+        wildcard_constraints:
+            model_index="\d+"
+        input: f'{translated}/mono_src/file.{{part}}.{{model_index}}.opusmt.out'
+        output: f'{translated}/mono_src/file.{{part}}.{{model_index}}.out'
+        run: 
+            with open(input[0], "rt", encoding="utf8") as infile,open(output[0], "wt", encoding="utf8") as outfile:
+                for line in infile:
+                    deseg_line = line.replace(" ","").replace("▁"," ")
+                    outfile.write(deseg_line)
 
-#This is an optional rule that only applies when OPUS-MT model is used as teacher.
-#Required due to OPUS-MT models not using the integrated SentencePiece in Marian
-rule opusmt_preprocess_corpus:
-    message: "Preprocessing source file for OPUS-MT model"
-    log: f"{log_dir}/opusmt_preprocess_corpus/{{corpus}}.{{part}}.{{model_index}}.log"
-    conda: "envs/base.yml"
-    threads: 1
-    input: 
-        file=f'{translated}/{{corpus}}/file.{{part}}', 
-        teacher_model=f"{final_teacher_dir}{{model_index}}-0/{best_model}",
-        spm_encoder=ancient(spm_encoder)
-    output: f'{translated}/{{corpus}}/file.{{part}}.{{model_index}}.opusmt'
-    shell: '''bash pipeline/translate/opusmt-preprocess.sh \
-                {input.file} {input.teacher_model} src "source.spm" {input.spm_encoder} {target_language_token} {wildcards.model_index} >> {log} 2>&1'''
+    #This is an optional rule that only applies when OPUS-MT model is used as teacher.
+    #Required due to OPUS-MT models not using the integrated SentencePiece in Marian
+    rule opusmt_preprocess_corpus:
+        message: "Preprocessing source file for OPUS-MT model"
+        log: f"{log_dir}/opusmt_preprocess_corpus/{{corpus}}.{{part}}.{{model_index}}.log"
+        conda: "envs/base.yml"
+        threads: 1
+        input: 
+            file=f'{translated}/{{corpus}}/file.{{part}}', 
+            teacher_model=f"{final_teacher_dir}{{model_index}}-0/{best_model}",
+            spm_encoder=ancient(spm_encoder)
+        output: f'{translated}/{{corpus}}/file.{{part}}.{{model_index}}.opusmt'
+        shell: '''bash pipeline/translate/opusmt-preprocess.sh \
+                    {input.file} {input.teacher_model} src "source.spm" {input.spm_encoder} {target_language_token} {wildcards.model_index} >> {log} 2>&1'''
+    rule opusmt_deseg_nbest:
+        message: "Desegmenting OPUS-MT model nbest list"
+        log: f"{log_dir}/opusmt_deseg_nbest/{{part}}.{{model_index}}.log"
+        threads: 1
+        input: nbest=f"{teacher_source_file}.nbest"
+        output: temp(deseg_nbest_file)
+        run: 
+            with open(input[0], "rt", encoding="utf8") as infile,open(output[0], "wt", encoding="utf8") as outfile:
+                for line in infile:
+                    line_split = line.split(" ||| ")
+                    line_split[1] = line_split[1].replace(" ","").replace("▁"," ")
+                    outfile.write(" ||| ".join(line_split))
+else:    
+    teacher_source_file = f'{translated}/corpus/file.{{part}}'
+    teacher_target_file = f'{translated}/corpus/file.{{part}}.{{model_index}}.nbest'
+    teacher_mono_source_file = f'{translated}/mono_src/file.{{part}}'
+    teacher_mono_target_file = f'{translated}/mono_src/file.{{part}}.{{model_index}}.out'
+    translated_mono_src_extension = ".out"
+    deseg_nbest_file = teacher_target_file
+
 
      
-rule opusmt_deseg_nbest:
-    message: "Desegmenting OPUS-MT model nbest list"
-    log: f"{log_dir}/opusmt_deseg_nbest/{{part}}.{{model_index}}.log"
-    threads: 1
-    input: nbest=f"{teacher_source_file}.nbest"
-    output: temp(deseg_nbest_file)
-    run: 
-        with open(input[0], "rt", encoding="utf8") as infile,open(output[0], "wt", encoding="utf8") as outfile:
-            for line in infile:
-                line_split = line.split(" ||| ")
-                line_split[1] = line_split[1].replace(" ","").replace("▁"," ")
-                outfile.write(" ||| ".join(line_split))
-
-
 rule translate_corpus:
     message: "Translating corpus with teacher"
     log: f"{log_dir}/translate_corpus/{{part}}.{{model_index}}.log"
@@ -711,10 +728,10 @@ rule translate_corpus:
         file=teacher_source_file,
         vocab=vocab_path,
         teacher_models=expand(f"{final_teacher_dir}{{{{model_index}}}}-{{ens}}/{best_model}",ens=ensemble)
-    output: f'{teacher_source_file}.nbest'
+    output: file=teacher_target_file
     params: args=get_args('decoding-teacher')
     shell: '''bash pipeline/translate/translate-nbest.sh \
-                "{input.file}" "{input.vocab}" {input.teacher_models} {params.args} >> {log} 2>&1'''
+                "{input.file}" "{output.file}" "{input.vocab}" {input.teacher_models} {params.args} >> {log} 2>&1'''
 
 rule extract_best:
     message: "Extracting best translations for the corpus"
@@ -748,34 +765,22 @@ checkpoint split_mono_src:
     input: corpora=f"{clean}/mono.{src}.gz", bin=ancient(deduper)
     output: directory(f'{translated}/mono_src')
     shell: 'bash pipeline/translate/split-mono.sh {input.corpora} {output} {split_length} >> {log} 2>&1'
-
-rule opusmt_deseg_translation:
-    message: "Desegmenting OPUS-MT model translation"
-    log: f"{log_dir}/opusmt_deseg_mono_translation/{{part}}.{{model_index}}.log"
-    threads: 1
-    wildcard_constraints:
-        model_index="\d+"
-    input: f'{translated}/mono_src/file.{{part}}.{{model_index}}.opusmt.out'
-    output: f'{translated}/mono_src/file.{{part}}.{{model_index}}.out'
-    run: 
-        with open(input[0], "rt", encoding="utf8") as infile,open(output[0], "wt", encoding="utf8") as outfile:
-            for line in infile:
-                deseg_line = line.replace(" ","").replace("▁"," ")
-                outfile.write(deseg_line)
-
+    
 rule translate_mono_src:
     message: "Translating monolingual src dataset with teacher"
     log: f"{log_dir}/translate_mono_src/{{part}}.{{model_index}}.log"
     conda: "envs/base.yml"
     threads: gpus_num*2
+    wildcard_constraints:
+        model_index="\d+"
     resources: gpu=gpus_num
     input:
         file=teacher_mono_source_file,vocab=vocab_path,
- 	teacher_models=expand(f"{final_teacher_dir}{{{{model_index}}}}-{{ens}}/{best_model}",ens=ensemble),
+        teacher_models=expand(f"{final_teacher_dir}{{{{model_index}}}}-{{ens}}/{best_model}",ens=ensemble),
         bin=ancient(decoder)
-    output: file=f"{teacher_mono_source_file}.out"
+    output: file=teacher_mono_target_file
     params: args=get_args('decoding-teacher')
-    shell: '''bash pipeline/translate/translate.sh "{input.file}" "output.file" "{input.vocab}" {input.teacher_models} \
+    shell: '''bash pipeline/translate/translate.sh "{input.file}" "{output.file}" "{input.vocab}" {input.teacher_models} \
               {params.args} >> {log} 2>&1'''
 
 #If there are no mono src datasets, create dummy output files, since the merge step

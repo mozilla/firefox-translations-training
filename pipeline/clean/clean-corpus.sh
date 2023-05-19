@@ -90,8 +90,7 @@ sed -e 's/^[[:space:]]*//' |
 tr -s " " |
 pigz >"${output_prefix}.${SRC}.gz"
 
-#pigz -dc "${output_prefix}.${SRC}${TRG}.langid.gz" |
-pigz -dc "${output_prefix}.${SRC}${TRG}.rule-based.gz" |
+pigz -dc "${output_prefix}.${SRC}${TRG}.langid.gz" |
 cut -f2 |
 sed -e 's/^[[:space:]]*//' |
 tr -s " " |
