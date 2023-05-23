@@ -72,7 +72,7 @@ marian-args:
 #marian-args:
 #  decoding-teacher:
     # 2080ti or newer
-#    precision: float16
+    precision: float16
 
 #TODO: extract this info straight from the OPUS model yml info file
 datasets:

@@ -17,10 +17,10 @@ min_version("6.6.1")
 containerized: 'Ftt.sif'
 
 install_deps = config['deps'] == 'true'
-data_root_dir = config['root']
-cuda_dir = config.get('cuda')
-cudnn_dir = config.get('cudnn')
-rocm_dir = config.get('rocm')
+data_root_dir = config.get('root', srcdir("../data"))
+cuda_dir = config.get('cuda', os.environ.get("CUDA_INSTALL_ROOT")) 
+cudnn_dir = config.get('cudnn', os.environ.get("CUDNN_INSTALL_ROOT"))
+rocm_dir = config.get('rocm',os.environ.get("ROCM_PATH"))
 
 gpus_num = config['numgpus']
 # marian occupies all GPUs on a machine if `gpus` are not specified
@@ -172,14 +172,15 @@ if config['gpus']:
 
 ### workflow options
 
-results = [f'{exported_dir}/model.{src}{trg}.intgemm.alphas.bin.gz',
-           f'{exported_dir}/lex.50.50.{src}{trg}.s2t.bin.gz',
-           f'{exported_dir}/vocab.{src}{trg}.spm.gz',
-           f'{experiment_dir}/config.yml',
-           *expand(f'{eval_student_dir}/{{dataset}}.metrics', dataset=eval_datasets),
-           *expand(f'{eval_student_finetuned_dir}/{{dataset}}.metrics', dataset=eval_datasets),
-           *expand(f'{eval_speed_dir}/{{dataset}}.metrics', dataset=eval_datasets)
-           ]
+results = [
+    f'{exported_dir}/model.{src}{trg}.intgemm.alphas.bin.gz',
+    f'{exported_dir}/lex.50.50.{src}{trg}.s2t.bin.gz',
+    f'{exported_dir}/vocab.{src}{trg}.spm.gz',
+    f'{experiment_dir}/config.yml',
+    *expand(f'{eval_student_dir}/{{dataset}}.metrics',dataset=eval_datasets),
+    *expand(f'{eval_student_finetuned_dir}/{{dataset}}.metrics',dataset=eval_datasets),
+    *expand(f'{eval_speed_dir}/{{dataset}}.metrics',dataset=eval_datasets)
+    ]
 
 #don't evaluate opus mt teachers or pretrained teachers (TODO: fix sp issues with opusmt teacher evaluation)
 if not (opusmt_teacher or forward_pretrained):
@@ -842,7 +843,7 @@ rule merge_translated:
         trg2_template=f"{translated}/mono.model_index.{trg}.gz"
     shell: '''bash pipeline/translate/merge-corpus.sh \
                 "{input.src1}" "{input.src2}" "{params.trg1_template}" "{params.trg2_template}" \
-		"{output.res_src}" "{output.res_trg}" {model_indices} >> {log} 2>&1'''
+                "{output.res_src}" "{output.res_trg}" {model_indices} >> {log} 2>&1'''
 
 # train student 
 
