@@ -76,7 +76,7 @@ tasks:
             script: build-preprocess.sh
             resources:
                 - taskcluster/scripts/toolchain/build-preprocess.sh
-            toolchain-artifact: public/build/dedupe
+            toolchain-artifact: public/build/dedupe.tar.zst
         fetches:
             fetch:
                 - preprocess
@@ -89,7 +89,7 @@ tasks:
             script: build-extract-lex.sh
             resources:
                 - taskcluster/scripts/toolchain/build-extract-lex.sh
-            toolchain-artifact: public/build/extract_lex
+            toolchain-artifact: public/build/extract_lex.tar.zst
         fetches:
             fetch:
                 - extract-lex

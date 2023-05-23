@@ -6,7 +6,7 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.from_datasets:transforms
+    - translations_taskgraph.transforms.from_datasets:per_dataset
     - translations_taskgraph.transforms.command_context_from_params:transforms
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cache:transforms
@@ -20,6 +20,7 @@ kind-dependencies:
 
 task-defaults:
     attributes:
+        dataset-category: train
         cache:
             resources:
                 - pipeline/bicleaner/bicleaner.sh
@@ -35,10 +36,6 @@ task-defaults:
             - worker.env
     worker:
         max-run-time: 3600
-        artifacts:
-            - name: public/build
-              path: artifacts
-              type: directory
         env:
             SRC: "{src_locale}"
             TRG: "{trg_locale}"
@@ -98,12 +95,17 @@ task-defaults:
 tasks:
     "{provider}-{dataset}-{src_locale}-{trg_locale}":
         description: bicleaner for {provider} {dataset} dataset {src_locale}-{trg_locale}
-        worker-type: b-linux
+        worker-type: b-linux-large
         worker:
             docker-image: {"in-tree": "train"}
+            artifacts:
+                - name: public/build
+                  path: /builds/worker/artifacts
+                  type: directory
         treeherder:
             platform: bicleaner/opt
         attributes:
+            cleaning-type: bicleaner
             cache:
                 type: bicleaner
                 resources:
@@ -121,6 +123,11 @@ tasks:
     ai-{provider}-{dataset}-{src_locale}-{trg_locale}:
         description: bicleaner-ai for {provider} {dataset} dataset {src_locale}-{trg_locale}
         worker-type: t-linux-v100-gpu
+        worker:
+            artifacts:
+                - name: public/build
+                  path: artifacts
+                  type: directory
         treeherder:
             platform: bicleaner-ai/opt
         dataset-config:
@@ -128,6 +135,7 @@ tasks:
                 - src: en
                   trg: ru
         attributes:
+            cleaning-type: bicleaner-ai
             cache:
                 type: bicleaner-ai
                 resources:
