@@ -84,7 +84,7 @@ task-defaults:
                 {bicleaner_threshold}
                 {bicleaner_type}
                 {bicleaner_threads}
-                $MOZ_FETCHES_DIR/{src_locale}-{trg_locale}
+                $MOZ_FETCHES_DIR/pack
     dependencies:
         "{provider}": clean-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
     fetches:
@@ -140,6 +140,8 @@ tasks:
             exclude-locales:
                 - src: en
                   trg: ru
+                - src: ru
+                  trg: en
         attributes:
             cleaning-type: bicleaner-ai
             cache:
