@@ -1,0 +1,131 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.from_datasets:locales_only
+    - translations_taskgraph.transforms.find_upstreams:by_locales
+    - taskgraph.transforms.job:transforms
+    - translations_taskgraph.transforms.cache:transforms
+    - taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    # This kinds handles two different parts of the graph. The first is `merge-corpus`, which
+    # has three possible upstream tasks, in order of preference:
+    # 1) `bicleaner-ai` (from the `bicleaner` kind) is used if there is a bicleaner-ai data pack
+    #    for the language pair.
+    # 2) `bicleaner` (also from the `bicleaner` kind) is used if there is a non-ai bicleaner
+    #    data pack available
+    # 3) Otherwise, `clean` is the upstream and `bicleaner` is skipped altogether.
+    - bicleaner
+    - clean
+    # The second part of the graph this kind handles is `merge-devset`. This step allows operates
+    # directly on datasets (skipping cleaning and/or bicleaning altogether).
+    - dataset
+    - toolchain
+
+task-defaults:
+    attributes:
+        cache:
+            resources:
+                - pipeline/clean/merge-corpus.sh
+    dataset-config:
+        substitution-fields:
+            - label
+            - description
+            - name
+            - treeherder.symbol
+            - worker.env
+            - upstreams-config.locale-pair
+    upstreams-config:
+        locale-pair:
+            src: "{src_locale}"
+            trg: "{trg_locale}"
+        upstream-artifacts:
+            - "{dataset_sanitized}.{src_locale}.zst"
+            - "{dataset_sanitized}.{trg_locale}.zst"
+    worker-type: b-linux-large
+    worker:
+        docker-image: {"in-tree": "train"}
+        max-run-time: 3600
+        artifacts:
+            - name: public/build
+              path: /builds/worker/artifacts
+              type: directory
+        env:
+            SRC: "{src_locale}"
+            TRG: "{trg_locale}"
+            COMPRESSION_CMD: zstdmt
+            ARTIFACT_EXT: zst
+
+    # Don't run unless explicitly scheduled
+    run-on-tasks-for: []
+
+    treeherder:
+        symbol: "{src_locale}-{trg_locale}"
+
+    run:
+        using: run-task
+        command:
+            - bash
+            - -c
+            # Arguments are:
+            # 1) output prefix
+            # 2) input files
+            - >-
+                export BIN=$MOZ_FETCHES_DIR &&
+                $VCS_PATH/pipeline/clean/merge-corpus.sh
+                artifacts/{artifact_prefix}
+                $MOZ_FETCHES_DIR/*.zst
+    fetches:
+        toolchain:
+            - preprocess
+
+tasks:
+    merge-corpus:
+        label: merge-corpus-{src_locale}-{trg_locale}
+        description: merge corpus for {src_locale}-{trg_locale}
+        attributes:
+            dataset-category: train
+            stage: merge-corpus
+            cache:
+                type: merge-corpus
+
+        upstreams-config:
+            upstream-task-attributes:
+                cleaning-type:
+                    by-cleaning-type:
+                        bicleaner-ai: bicleaner-ai
+                        bicleaner: bicleaner
+                        clean: clean
+
+        treeherder:
+            platform: merge-corpus/opt
+
+        run:
+            command-context:
+                artifact_prefix: corpus
+
+    merge-devset:
+        label: merge-devset-{src_locale}-{trg_locale}
+        description: merge devset for {src_locale}-{trg_locale}
+        attributes:
+            dataset-category: devtest
+            stage: merge-devset
+            cache:
+                type: merge-devset
+
+        upstreams-config:
+            upstream-task-attributes:
+                kind: dataset
+
+        treeherder:
+            platform: merge-devset/opt
+
+        run:
+            command-context:
+                artifact_prefix: devset

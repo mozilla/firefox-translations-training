@@ -14,7 +14,7 @@ transforms:
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
-    - merge-corpus
+    - merge
     - toolchain
 
 tasks:

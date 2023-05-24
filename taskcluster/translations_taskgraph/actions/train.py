@@ -38,7 +38,7 @@ defaults = get_defaults("")["training_config"]
 (any stages this choice depends on will be automatically included).""",
                 "default": defaults["target-stage"],
                 # TODO: this should probably be specified in ci/config.yml
-                "enum": ["clean", "bicleaner", "bicleaner-ai", "merge-corpus", "train-vocab"],
+                "enum": ["clean", "bicleaner", "bicleaner-ai", "merge-corpus", "merge-devset", "train-vocab"],
             },
             "datasets": {
                 "type": "object",
