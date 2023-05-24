@@ -13,7 +13,7 @@ from voluptuous import Optional, Required
 def get_defaults(_):
     return {
         "training_config": {
-            "target-stage": "train-vocab",
+            "target-stage": "train-backwards",
             "experiment": {
                 "src": "en",
                 "trg": "ru",
@@ -24,7 +24,16 @@ def get_defaults(_):
                         "mtdata_Neulab-tedtalks_train-1-eng-rus": 0.6,
                     },
                 },
+                "best-model": "chrf",
                 "spm-sample-size": 100000,
+            },
+            "marian-args": {
+                "training-backward": {
+                    "disp-freq": "10",
+                    "save-freq": "100",
+                    "valid-freq": "100",
+                    "after": "500u",
+                },
             },
             # These will never be used in practice, but specifying them ensures
             # that we always generate at least one task for each kind, which helps
@@ -57,6 +66,9 @@ extend_parameters_schema(
     {
         Required("training_config"): {
             Required("target-stage"): str,
+            Required("marian-args"): {
+                Optional("training-backward"): {str: str},
+            },
             Required("experiment"): {
                 Required("src"): str,
                 Required("trg"): str,
@@ -66,6 +78,7 @@ extend_parameters_schema(
                         str: float,
                     },
                 },
+                Required("best-model"): str,
                 Required("spm-sample-size"): int,
             },
             Optional("bicleaner_threshold"): str,
