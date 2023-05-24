@@ -6,7 +6,7 @@
 
 
 experiment:
-  name: opusmt-multimodel-test
+  name: opusmt-multimodel-prod
   src: en
   trg: sv
   src_three_letter: eng
@@ -23,9 +23,8 @@ experiment:
   #You only need to specify this if any model is target-multilingual
   target-language-token: "swe"
     
-      #URL to the OPUS-MT model to use as the backward model
-  #NOTE: this should probably be a different model from the teacher, teacher is used here just for testing
-  opusmt-backward: "https://object.pouta.csc.fi/Tatoeba-MT-models/gem-gem/opus-2020-10-04.zip"
+  #URL to the OPUS-MT model to use as the backward model
+  opusmt-backward: "https://object.pouta.csc.fi/Tatoeba-MT-models/swe-eng/opus-2021-02-12.zip"
 
   #You only need to specify this if backward model is target-multilingual
   source-language-token: "eng"
@@ -34,16 +33,16 @@ experiment:
   backward-model: ""
   
   # limits per downloaded dataset
-  mono-max-sentences-src: 10000
-  mono-max-sentences-trg: 20000
+  mono-max-sentences-src: 10000000
+  mono-max-sentences-trg: 2000000
 
   # parallel data limit (mainly used for downsizing testing runs, to make GPU steps quicker). 
   # Comment out or specify "inf" to use all parallel data
-  parallel-max-sentences: 10000
-  
-  # if using very small parallel corpus, also remember to set a low spm size, otherwise
-  # spm-encode fails due to not having enough subwords
-  spm-vocab-size: 1000
+  # parallel-max-sentences: 10000
+ 
+  # vocab training sample
+  spm-sample-size: 10000000
+
 
   # split corpus to parallelize translation
   split-length: 2000000
@@ -52,45 +51,27 @@ experiment:
   bicleaner:
     default-threshold: 0.5
     dataset-thresholds:
-      tc_Tatoeba-train-v2021-08-07: 0.5
+      tc_Tatoeba-train-v2021-08-07: 0.3
 
 marian-args:
+# these configs override pipeline/train/configs
   training-backward:
-    disp-freq: 10
-    save-freq: 100
-    valid-freq: 100
-    after: 500u
+    # change based on available training data
+    after: 10e
   training-teacher-base:
-    disp-freq: 10
-    save-freq: 100
-    valid-freq: 100
-    after: 500u
-  training-teacher-finetuned:
-    disp-freq: 10
-    save-freq: 100
-    valid-freq: 100
-    after: 500u
-  training-student:
-    disp-freq: 10
-    save-freq: 100
-    valid-freq: 100
-    after: 500u
-  training-student-finetuned:
-    disp-freq: 10
-    save-freq: 100
-    valid-freq: 100
-    after: 500u
+    # remove for low resource languages or if training without augmentation
+    after: 2e
+# these configs override pipeline/translate/decoder.yml
   decoding-backward:
+    # 12 Gb GPU, s2s model
     mini-batch-words: 2000
+    beam-size: 12
   decoding-teacher:
+    # 12 Gb GPU, ensemble of 2 teachers
     mini-batch-words: 1000
-
-#marian-args:
-#  decoding-teacher:
     # 2080ti or newer
-#    precision: float16
+    precision: float16
 
-#TODO: extract this info straight from the OPUS model yml info file
 datasets:
   # parallel training corpus
   train:

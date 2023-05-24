@@ -260,7 +260,6 @@ def dataset_norm(name: str):
 def get_args(section):
     return marian_args.get(section) or ""
 
-
 ### rules
 
 shell.prefix(f"{envs} ")

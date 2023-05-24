@@ -24,7 +24,7 @@ config:
   - deps=false
   - root=/pfs/lustrep1/scratch/project_462000088/members/niemine1/data
   - rocm=/opt/rocm
-  - workspace=10000
+  - workspace=50000
   - numgpus=1
   - mariancmake=""
   - gpus=""

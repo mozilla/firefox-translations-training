@@ -19,11 +19,11 @@ cores: 8
 #cache: false
 reason: true
 
-singularity-args: "--bind /pfs/lustrep1/scratch/project_462000088/members/niemine1/data,/pfs/lustrep1/scratch/project_462000088/members/niemine1/data/tmp:/tmp --rocm --containall"
+singularity-args: "--bind $PWD/../data,$PWD/../data/tmp:/tmp --rocm --containall"
 config:
   - deps=false
-  - root=/pfs/lustrep1/scratch/project_462000088/members/niemine1/data
-  - rocm=/opt/rocm
+    #- root=/pfs/lustrep1/scratch/project_462000088/members/niemine1/data
+    #- rocm=/opt/rocm
   - workspace=20000
   - numgpus=1
   - mariancmake=""
