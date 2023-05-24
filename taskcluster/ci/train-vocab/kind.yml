@@ -21,7 +21,6 @@ tasks:
     "{src_locale}-{trg_locale}":
         description: train vocab for {src_locale}-{trg_locale}
         attributes:
-            # TODO: is this `train` or `devset`? need to decode snakemake a bit more..
             dataset-category: train
             stage: train-vocab
             cache:
