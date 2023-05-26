@@ -19,7 +19,7 @@ args=( "${@:7}" )
 COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
 
-mkdir -p "$(basename "${res_prefix}")"
+mkdir -p "$(dirname "${res_prefix}")"
 
 echo "### Evaluating dataset: ${dataset_prefix}, pair: ${src}-${trg}, Results prefix: ${res_prefix}"
 
