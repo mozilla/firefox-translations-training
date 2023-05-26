@@ -16,13 +16,16 @@ marian=$5
 decoder_config=$6
 args=( "${@:7}" )
 
+COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
+ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
+
 mkdir -p "$(basename "${res_prefix}")"
 
 echo "### Evaluating dataset: ${dataset_prefix}, pair: ${src}-${trg}, Results prefix: ${res_prefix}"
 
-pigz -dc "${dataset_prefix}.${trg}.gz" > "${res_prefix}.${trg}.ref"
+${COMPRESSION_CMD} -dc "${dataset_prefix}.${trg}.${ARTIFACT_EXT}" > "${res_prefix}.${trg}.ref"
 
-pigz -dc "${dataset_prefix}.${src}.gz" |
+${COMPRESSION_CMD} -dc "${dataset_prefix}.${src}.${ARTIFACT_EXT}" |
   tee "${res_prefix}.${src}" |
   "${marian}"/marian-decoder \
     -c "${decoder_config}" \
