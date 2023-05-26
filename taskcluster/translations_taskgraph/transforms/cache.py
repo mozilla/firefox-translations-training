@@ -50,7 +50,10 @@ def add_cache(config, jobs):
 
         job["cache"] = {
             "type": cache_type,
-            "name": job["label"],
+            # Upstream cached tasks use "/" as a separator for different parts
+            # of the digest. If we don't remove them, caches are busted for
+            # anything with a "/" in its label.
+            "name": job["label"].replace("/", "_"),
             "digest-data": digest_data,
         }
 
