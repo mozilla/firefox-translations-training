@@ -20,7 +20,9 @@ invalid_url() {
 }
 
 if [ "${type}" == 'bicleaner-ai' ]; then
-    url="https://github.com/bitextor/bicleaner-ai-data/releases/latest/download"
+    #bicleaner-ai v2.0 full models are only available through Hugging Face.
+    #TODO: change this code to download models from HF 
+    url="https://github.com/bitextor/bicleaner-ai-data/releases/download/v1.0"
     prefix="full-"
     extension="tgz"
 elif [ "${type}" == 'bicleaner' ]; then

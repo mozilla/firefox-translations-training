@@ -214,13 +214,6 @@ if 'bicleaner' in config['experiment']:
 else:
     bicleaner_type = None    
 
-#this is a problematic way of defining envs, since only one of these envs will be containerized, change
-#this to include both envs always
-#HACK, bicleaner_ai env not currently in container, so bicleaner type is forced
-#TODO: find a way to include both bicleaner and bicleaner_ai envs in generated container definition (dummy rules?)
-#or include the env manually.
-if bicleaner_type == 'bicleaner-ai':
-    bicleaner_type = "bicleaner"
 bicleaner_env = "envs/bicleaner-ai.yml" if bicleaner_type == 'bicleaner-ai' else 'envs/bicleaner.yml'
 
 if bicleaner_type:
