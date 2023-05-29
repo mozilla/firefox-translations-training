@@ -1,15 +1,20 @@
 Bootstrap: docker
-From: condaforge/mambaforge:latest
+From: condaforge/mambaforge:22.11.1-4
 Stage: spython-base
 
 %files
 pipeline/setup/install-deps.sh install-deps.sh
 envs/base.yml /conda-envs/61dfc4a21c8d8961ba5e212eb4da6217/environment.yaml
+envs/bicleaner-ai.yml /conda-envs/853a8c23447f9e291bd736b9693e4fa1/environment.yaml
 envs/bicleaner.yml /conda-envs/a4f700aa6ff0256dcd9321b536a081ac/environment.yaml
+envs/corpus.yml /conda-envs/2e8e4401e9abbca04941f823d00fe74a/environment.yaml
+envs/tensorboard.yml /conda-envs/fadf1aec392d8a065ae29b9fcf9b3221/environment.yaml
 %labels
 io.github.snakemake.containerized="true"
-io.github.snakemake.conda_env_hash="402bfa55f7ee8d5ca8a6f560a58ae5089f05e325d596819f949edce1d0f27ac6"
+io.github.snakemake.conda_env_hash="5ce50cdb64f60967882d71af6ce042c721c1d3fc10d5df4c7e9becd041baa840"
 %post
+
+# Remove this if not in Finland, or change to closer mirror
 cat /etc/apt/sources.list | sed "s/archive.ubuntu.com/mirrors.nic.funet.fi/g" > temp && mv temp /etc/apt/sources.list 
 	
 apt-get update && apt-get -y install gcc g++ 
@@ -40,6 +45,21 @@ bash install-deps.sh
 mkdir -p /conda-envs/61dfc4a21c8d8961ba5e212eb4da6217
 
 # Conda environment:
+#   source: envs/bicleaner-ai.yml
+#   prefix: /conda-envs/853a8c23447f9e291bd736b9693e4fa1
+#   name: bicleaner-ai
+#   channels:
+#     - conda-forge
+#     - defaults
+#   dependencies:
+#     - python=3.9
+#     - pip==21.2.2
+#     - cmake=3.21.1
+#     - pip:
+#       - bicleaner-ai==2.2.1
+mkdir -p  /conda-envs/853a8c23447f9e291bd736b9693e4fa1
+
+# Conda environment:
 #   source: envs/bicleaner.yml
 #   prefix: /conda-envs/a4f700aa6ff0256dcd9321b536a081ac
 #   name: bicleaner
@@ -57,12 +77,50 @@ mkdir -p /conda-envs/61dfc4a21c8d8961ba5e212eb4da6217
 #        - bicleaner==0.16.1
 mkdir -p /conda-envs/a4f700aa6ff0256dcd9321b536a081ac
 
+# Conda environment:
+#   source: envs/corpus.yml
+#   prefix: /conda-envs/2e8e4401e9abbca04941f823d00fe74a
+#   name: corpus
+#   channels:
+#     - conda-forge
+#     - defaults
+#   dependencies:
+#     - python=3.9
+#     - pip=21.2.2
+#     - pip:
+#       - sacrebleu==2.0.0
+#       - mtdata==0.3.2
+#       - requests==2.26.0
+mkdir -p /conda-envs/2e8e4401e9abbca04941f823d00fe74a
+
+# Conda environment:
+#   source: envs/tensorboard.yml
+#   prefix: /conda-envs/fadf1aec392d8a065ae29b9fcf9b3221
+#   name: tensorboard
+#   channels:
+#     - conda-forge
+#     - defaults
+#   dependencies:
+#     - python=3.9
+#     - cmake=3.21.1
+#     - pip=21.2.2
+#     - pip:
+#       - tensorboard==2.5.0
+#       - tensorboardX==2.2
+#       - click==8.0.1
+#       - toolz==0.11.1
+mkdir -p /conda-envs/fadf1aec392d8a065ae29b9fcf9b3221
+
 # Step 2: Generate conda environments
 
 mamba env create --prefix /conda-envs/61dfc4a21c8d8961ba5e212eb4da6217 --file /conda-envs/61dfc4a21c8d8961ba5e212eb4da6217/environment.yaml && \
+mamba env create --prefix /conda-envs/853a8c23447f9e291bd736b9693e4fa1 --file /conda-envs/853a8c23447f9e291bd736b9693e4fa1/environment.yaml && \
 mamba env create --prefix /conda-envs/a4f700aa6ff0256dcd9321b536a081ac --file /conda-envs/a4f700aa6ff0256dcd9321b536a081ac/environment.yaml && \
+mamba env create --prefix /conda-envs/2e8e4401e9abbca04941f823d00fe74a --file /conda-envs/2e8e4401e9abbca04941f823d00fe74a/environment.yaml && \
+mamba env create --prefix /conda-envs/fadf1aec392d8a065ae29b9fcf9b3221 --file /conda-envs/fadf1aec392d8a065ae29b9fcf9b3221/environment.yaml && \
 mamba clean --all -y
 
+#Bicleaner needs the fasttext language id model installed
 wget -O /conda-envs/a4f700aa6ff0256dcd9321b536a081ac/lib/python3.8/site-packages/fastspell/lid.176.bin https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
 
 %runscript

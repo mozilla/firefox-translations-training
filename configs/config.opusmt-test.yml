@@ -36,7 +36,7 @@ experiment:
   bicleaner:
     default-threshold: 0.5
     dataset-thresholds:
-      tc_Tatoeba-train-v2021-08-07: 0.5
+      opus_GNOME/v1: 0.5
 
 marian-args:
   training-backward:
@@ -76,12 +76,9 @@ marian-args:
 
 #TODO: extract this info straight from the OPUS model yml info file
 datasets:
-  # parallel training corpus
   train:
-    - tc_Tatoeba-Challenge-v2021-08-07 
-  # datasets to merge for validation while training
+    - opus_GNOME/v1
   devtest:
-    - tc_Tatoeba-Challenge-v2021-08-07
-  # datasets for evaluation
+    - sacrebleu_wmt19
   test:
-    - tc_Tatoeba-Challenge-v2021-08-07
+    - sacrebleu_wmt19
