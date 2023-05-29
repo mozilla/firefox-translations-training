@@ -1,0 +1,133 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.task_substitution_from_params:transforms
+    - translations_taskgraph.transforms.from_datasets:per_dataset
+    - taskgraph.transforms.job:transforms
+    - translations_taskgraph.transforms.cache:transforms
+    - taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - dataset
+    - train
+    - train-vocab
+    - fetch
+    - toolchain
+
+task-defaults:
+    attributes:
+        cache:
+            resources:
+                - pipeline/eval/eval-gpu.sh
+                - pipeline/eval/eval.sh
+    dataset-config:
+        include-categories:
+            - test
+        substitution-fields:
+            - description
+            - name
+            - dependencies
+            - fetches
+            - treeherder.symbol
+            - worker.env
+            - run.command-context.pipeline_args1
+    task-substitution:
+        from-parameters:
+            best_model: training_config.experiment.best-model
+            src_locale: training_config.experiment.src_locale
+            trg_locale: training_config.experiment.trg_locale
+        substitution-fields:
+            - run.command-context.pipeline_args2
+            - fetches.train-backwards
+    worker-type: t-linux-v100-gpu
+    worker:
+        artifacts:
+            - name: public/build
+              path: artifacts
+              type: directory
+        max-run-time: 3600
+        env:
+            SRC: "{src_locale}"
+            TRG: "{trg_locale}"
+            GPUS: "0"
+            WORKSPACE: "8000"
+            COMPRESSION_CMD: zstdmt
+            ARTIFACT_EXT: zst
+
+    # Don't run unless explicitly scheduled
+    run-on-tasks-for: []
+
+    treeherder:
+        platform: evaluate/opt
+
+    run:
+        using: run-task
+        command:
+            - bash
+            - -c
+            # The two sed commands here are the unfortunate result of us consuming
+            # a marian config that was produced by an earlier step. These configs
+            # have hardcoded absolute paths to the models they were trained on,
+            # and end invalid when used on a different machine. In theory it is
+            # possible to adjust them at generation time to use relative paths,
+            # but in practice we have not been able to make this work.
+            - >-
+                pip install -r $VCS_PATH/pipeline/eval/requirements/eval.txt &&
+                export PATH=$PATH:~/.local/bin &&
+                export MARIAN=$MOZ_FETCHES_DIR &&
+                sed -i -e "s,- .*fetches,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
+                sed -i -e "s,- .*artifacts,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
+                {pipeline_script}
+                {pipeline_args1}
+                {pipeline_args2}
+
+    fetches:
+        toolchain:
+            - marian
+
+tasks:
+    backward-{provider}-{dataset}-{src_locale}-{trg_locale}:
+        description: backwards evaluation for {dataset} {src_locale}-{trg_locale}
+        attributes:
+            stage: evaluate-backwards
+            dataset-category: test
+            cache:
+                type: evaluate-backwards
+        treeherder:
+            symbol: "bw-{provider}-{dataset_short}-{src_locale}-{trg_locale}"
+        run:
+            command-context:
+                pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
+                pipeline_args1: >-
+                    $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    $MOZ_FETCHES_DIR/{dataset_sanitized}
+                    {trg_locale}
+                    {src_locale}
+                pipeline_args2: >-
+                    $MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz.decoder.yml
+                    $MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz
+
+        dependencies:
+            dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
+            train-backwards: train-backwards-{src_locale}-{trg_locale}
+            train-vocab: train-vocab-{src_locale}-{trg_locale}
+        fetches:
+            dataset:
+                - artifact: "{dataset_sanitized}.{src_locale}.zst"
+                  extract: false
+                - artifact: "{dataset_sanitized}.{trg_locale}.zst"
+                  extract: false
+            train-backwards:
+                - artifact: final.model.npz.best-{best_model}.npz
+                  extract: false
+                - artifact: final.model.npz.best-{best_model}.npz.decoder.yml
+                  extract: false
+            train-vocab:
+                - artifact: vocab.spm
+                  extract: false

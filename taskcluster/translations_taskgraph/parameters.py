@@ -13,7 +13,7 @@ from voluptuous import Optional, Required
 def get_defaults(_):
     return {
         "training_config": {
-            "target-stage": "train-backwards",
+            "target-stage": "evaluate-backwards",
             "experiment": {
                 "src": "en",
                 "trg": "ru",
