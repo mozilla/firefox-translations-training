@@ -122,6 +122,7 @@ mamba clean --all -y
 
 #Bicleaner needs the fasttext language id model installed
 wget -O /conda-envs/a4f700aa6ff0256dcd9321b536a081ac/lib/python3.8/site-packages/fastspell/lid.176.bin https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
+wget -O /conda-envs/853a8c23447f9e291bd736b9693e4fa1/lib/python3.9/site-packages/fastspell/lid.176.bin https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
 
 %runscript
 exec /bin/bash "$@"
