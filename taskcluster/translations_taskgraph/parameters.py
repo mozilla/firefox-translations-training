@@ -15,8 +15,8 @@ def get_defaults(_):
         "training_config": {
             "target-stage": "train-vocab",
             "experiment": {
-                "src": "en",
-                "trg": "ru",
+                "src": "ru",
+                "trg": "en",
                 "bicleaner": {
                     "default-threshold": 0.5,
                     "dataset-thresholds": {
