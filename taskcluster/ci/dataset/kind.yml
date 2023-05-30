@@ -82,7 +82,7 @@ tasks:
     opus:
         description: Fetch opus dataset
         # No slashes version of dataset used here because slashes break caches
-        label: dataset-opus-{dataset_no_slashes}-{src_locale}-{trg_locale}
+        label: dataset-opus-{dataset_sanitized}-{src_locale}-{trg_locale}
         dataset-config:
             include-datasets:
                 opus: {}
@@ -94,7 +94,7 @@ tasks:
             command:
                 - bash
                 - -c
-                - $VCS_PATH/pipeline/data/importers/corpus/opus.sh {src_locale} {trg_locale} /builds/worker/artifacts/{dataset_no_slashes} {dataset}
+                - $VCS_PATH/pipeline/data/importers/corpus/opus.sh {src_locale} {trg_locale} /builds/worker/artifacts/{dataset_sanitized} {dataset}
 
     mtdata:
         description: Fetch mtdata dataset
@@ -114,7 +114,7 @@ tasks:
 
     news-crawl:
         description: Fetch news-crawl dataset
-        label: dataset-news-crawl-{dataset}-{src_locale}-{trg_locale}
+        label: dataset-news-crawl-{dataset_sanitized}-{src_locale}-{trg_locale}
         dataset-config:
             include-datasets:
                 news-crawl: {}

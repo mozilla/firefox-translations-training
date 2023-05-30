@@ -24,8 +24,10 @@ task-defaults:
         cache:
             resources:
                 - pipeline/bicleaner/bicleaner.sh
-            parameters:
-                - bicleaner_threshold
+            from-parameters:
+                bicleaner_threshold:
+                    - training_config.experiment.bicleaner.dataset-thresholds.{provider}_{dataset_sanitized}
+                    - training_config.experiment.bicleaner.default-threshold
     dataset-config:
         substitution-fields:
             - description
@@ -34,6 +36,8 @@ task-defaults:
             - fetches
             - treeherder.symbol
             - worker.env
+            - attributes.cache.from-parameters.bicleaner_threshold
+            - run.command-context.from-parameters.bicleaner_threshold
     worker:
         max-run-time: 3600
         env:
@@ -55,7 +59,9 @@ task-defaults:
         using: run-task
         command-context:
             from-parameters:
-                - bicleaner_threshold
+                bicleaner_threshold:
+                    - training_config.experiment.bicleaner.dataset-thresholds.{provider}_{dataset_sanitized}
+                    - training_config.experiment.bicleaner.default-threshold
         command:
             - bash
             - -c
@@ -73,23 +79,23 @@ task-defaults:
                 pip install -r {bicleaner_reqs} &&
                 export PATH=$PATH:~/.local/bin &&
                 $VCS_PATH/pipeline/bicleaner/bicleaner.sh
-                $MOZ_FETCHES_DIR/{dataset_no_slashes}
-                artifacts/{dataset_no_slashes}
+                $MOZ_FETCHES_DIR/{dataset_sanitized}
+                artifacts/{dataset_sanitized}
                 {bicleaner_threshold}
                 {bicleaner_type}
                 {bicleaner_threads}
                 $MOZ_FETCHES_DIR/{src_locale}-{trg_locale}
     dependencies:
-        "{provider}": clean-{provider}-{dataset_no_slashes}-{src_locale}-{trg_locale}
+        "{provider}": clean-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
     fetches:
         toolchain:
             - hunspell
             - kenlm
             - cuda-toolkit
         "{provider}":
-            - artifact: "{dataset_no_slashes}.{src_locale}.zst"
+            - artifact: "{dataset_sanitized}.{src_locale}.zst"
               extract: false
-            - artifact: "{dataset_no_slashes}.{trg_locale}.zst"
+            - artifact: "{dataset_sanitized}.{trg_locale}.zst"
               extract: false
 
 tasks:

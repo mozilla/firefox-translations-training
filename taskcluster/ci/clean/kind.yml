@@ -63,14 +63,14 @@ task-defaults:
         command:
             - bash
             - -c
-            - $VCS_PATH/pipeline/clean/clean-corpus.sh $MOZ_FETCHES_DIR/{dataset_no_slashes} /builds/worker/artifacts/{dataset_no_slashes} auto {dataset}
+            - $VCS_PATH/pipeline/clean/clean-corpus.sh $MOZ_FETCHES_DIR/{dataset_sanitized} /builds/worker/artifacts/{dataset_sanitized} auto {dataset}
     dependencies:
-        "{provider}": dataset-{provider}-{dataset_no_slashes}-{src_locale}-{trg_locale}
+        "{provider}": dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
     fetches:
         "{provider}":
-            - artifact: "{dataset_no_slashes}.{src_locale}.zst"
+            - artifact: "{dataset_sanitized}.{src_locale}.zst"
               extract: false
-            - artifact: "{dataset_no_slashes}.{trg_locale}.zst"
+            - artifact: "{dataset_sanitized}.{trg_locale}.zst"
               extract: false
 
 tasks:
@@ -84,7 +84,7 @@ tasks:
             include-datasets:
                 sacrebleu: {}
 
-    opus-{dataset_no_slashes}-{src_locale}-{trg_locale}:
+    opus-{dataset_sanitized}-{src_locale}-{trg_locale}:
         dataset-config:
             include-datasets:
                 opus: {}
@@ -108,7 +108,7 @@ tasks:
                     - pipeline/clean/fixes/mtdata_OPUS_UNPC_v1_0.en.sh
                     - pipeline/clean/fixes/mtdata_OPUS_UNPC_v1_0.fr.sh
 
-    news-crawl-{dataset}-{src_locale}-{trg_locale}:
+    news-crawl-{dataset_sanitized}-{src_locale}-{trg_locale}:
         dataset-config:
             include-datasets:
                 news-crawl: {}
