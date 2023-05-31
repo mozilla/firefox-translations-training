@@ -32,16 +32,20 @@ datasets:
         dev:
             - src: en
               trg: ru
+            - src: ru
+              trg: en
             - src: en
               trg: fr
-            - src: ru
+            - src: fr
               trg: en
         devtest:
             - src: en
               trg: ru
+            - src: ru
+              trg: en
             - src: en
               trg: fr
-            - src: ru
+            - src: fr
               trg: en
 
     sacrebleu:
@@ -67,12 +71,20 @@ datasets:
               trg: ru
             - src: ru
               trg: en
+            - src: en
+              trg: fr
+            - src: fr
+              trg: en
 
     news-crawl:
         news.2020:
             - src: en
               trg: ru
             - src: ru
+              trg: en
+            - src: en
+              trg: fr
+            - src: fr
               trg: en
 
     mtdata:
