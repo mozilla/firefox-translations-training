@@ -1,0 +1,122 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.from_datasets:mono
+    - translations_taskgraph.transforms.command_context_from_params:transforms
+    - taskgraph.transforms.job:transforms
+    - translations_taskgraph.transforms.cache:transforms
+    - taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - merge-mono
+    - toolchain
+
+task-defaults:
+    description: split mono for {locale}
+    attributes:
+        stage: split-mono
+        cache:
+            type: split-mono
+            resources:
+                - pipeline/translate/split-mono.sh
+                - taskcluster/scripts/pipeline/split-taskcluster.sh
+            from-parameters:
+                split_length: training_config.experiment.split-length
+                split_chunks: training_config.taskcluster.split-chunks
+
+    dataset-config:
+        substitution-fields:
+            - description
+            - label
+            - treeherder.symbol
+            - fetches
+            - dependencies
+            - worker.env
+
+    worker-type: b-linux-large
+
+    worker:
+        docker-image: { "in-tree": "train" }
+        max-run-time: 3600
+        artifacts:
+            - name: public/build
+              path: /builds/worker/artifacts
+              type: directory
+        env:
+            LOCALE: "{locale}"
+            COMPRESSION_CMD: zstdmt
+            ARTIFACT_EXT: zst
+
+    # Don't run unless explicitly scheduled
+    run-on-tasks-for: []
+
+    run:
+        using: run-task
+        command-context:
+            from-parameters:
+                split_length: training_config.experiment.split-length
+                split_chunks: training_config.taskcluster.split-chunks
+        command:
+            - bash
+            - -c
+              # TODO: move number of chunks elsewhere
+            - >-
+                export BIN=$MOZ_FETCHES_DIR &&
+                $VCS_PATH/taskcluster/scripts/pipeline/split-taskcluster.sh
+                mono
+                {split_chunks}
+                /builds/worker/artifacts
+                {split_length}
+                $MOZ_FETCHES_DIR/mono.$LOCALE.zst
+
+    fetches:
+        toolchain:
+            - preprocess
+
+tasks:
+    src:
+        label: split-mono-src-{src_locale}-{trg_locale}
+        attributes:
+            dataset-category: mono-src
+
+        dataset-config:
+            include-categories:
+                - mono-src
+
+        treeherder:
+            symbol: "src-{src_locale}-{trg_locale}"
+            platform: split-mono/opt
+
+        dependencies:
+            merge-mono-src: merge-mono-src-{src_locale}-{trg_locale}
+
+        fetches:
+            merge-mono-src:
+                - artifact: mono.{src_locale}.zst
+                  extract: false
+
+    trg:
+        label: split-mono-trg-{src_locale}-{trg_locale}
+        attributes:
+            dataset-category: mono-trg
+
+        dataset-config:
+            include-categories:
+                - mono-trg
+
+        treeherder:
+            symbol: "trg-{src_locale}-{trg_locale}"
+            platform: split-mono/opt
+
+        dependencies:
+            merge-mono-trg: merge-mono-trg-{src_locale}-{trg_locale}
+
+        fetches:
+            merge-mono-trg:
+                - artifact: mono.{trg_locale}.zst
+                  extract: false

@@ -38,7 +38,7 @@ defaults = get_defaults("")["training_config"]
 (any stages this choice depends on will be automatically included).""",
                 "default": defaults["target-stage"],
                 # TODO: this should probably be specified in ci/config.yml
-                "enum": ["clean-corpus", "clean-mono", "bicleaner", "bicleaner-ai", "merge-corpus", "merge-devset", "merge-mono", "train-vocab", "train-backwards", "evaluate-backwards"],
+                "enum": ["clean-corpus", "clean-mono", "bicleaner", "bicleaner-ai", "merge-corpus", "merge-devset", "merge-mono", "train-vocab", "train-backwards", "evaluate-backwards", "split-corpus", "split-mono"],
             },
             "experiment": {
                 "type": "object",
@@ -216,6 +216,17 @@ leave empty to skip augmentation step (high resource languages)
                             # TODO
                             # "enum": []
                         },
+                    },
+                },
+            },
+            "taskcluster": {
+                "type": "object",
+                "default": defaults["taskcluster"],
+                "description": "Taskcluster-specific pipeline configuration, eg: chunking",
+                "properties": {
+                    "split-chunks": {
+                        "type": "number",
+                        "description": "The number of chunks (parallel jobs) to use in `split` steps",
                     },
                 },
             },

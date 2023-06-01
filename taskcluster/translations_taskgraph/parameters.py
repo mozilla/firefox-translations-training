@@ -97,6 +97,10 @@ def get_defaults(_):
                     "news-crawl_news.2020",
                 ],
             },
+            # Taskcluster-specific configuration
+            "taskcluster": {
+                "split-chunks": 10,
+            },
         },
     }
 
@@ -134,6 +138,9 @@ extend_parameters_schema(
             },
             Optional("datasets"): {
                 str: [str],
+            },
+            Optional("taskcluster"): {
+                Optional("split-chunks"): int,
             },
         },
     },
