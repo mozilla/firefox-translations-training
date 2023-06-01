@@ -41,7 +41,7 @@ if "resources" in job_properties:
             partition = cluster_config['single-gpu-partition']
         else:
             partition = cluster_config['multi-gpu-partition']
-        rocm_dir = os.getenv("CRAY_ROCM_PREFIX") 
+        rocm_dir = os.getenv("ROCM_PATH") 
         options += ['--export', f'ALL,SINGULARITY_BIND="{rocm_dir}"']
 
     # we don't need explicit memory limiting for now
