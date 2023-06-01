@@ -37,7 +37,6 @@ tasks:
             fetch:
                 - cuda
 
-    # TODO: probably need to make sure that these are all built statically?
     marian:
         description: Marian
         treeherder:
@@ -52,6 +51,26 @@ tasks:
         fetches:
             fetch:
                 - marian
+            toolchain:
+                - cuda-toolkit
+
+    browsermt-marian:
+        description: Browsermt Marian
+        treeherder:
+            symbol: TL(Browsermt-Marian)
+        worker-type: b-linux-large
+        run:
+            script: build-marian.sh
+            arguments:
+                - browsermt.patch
+            resources:
+                - taskcluster/scripts/toolchain/build-marian.sh
+                - taskcluster/scripts/toolchain/browsermt.patch
+                - pipeline/setup/compile-marian.sh
+            toolchain-artifact: public/build/browsermt-marian.tar.zst
+        fetches:
+            fetch:
+                - browsermt-marian
             toolchain:
                 - cuda-toolkit
 
