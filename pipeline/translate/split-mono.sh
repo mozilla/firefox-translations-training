@@ -13,5 +13,8 @@ mono_path=$1
 output_dir=$2
 length=$3
 
+COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
+ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
+
 mkdir -p "${output_dir}"
-pigz -dc "${mono_path}" | ${BIN}/dedupe | split -d -l ${length} - "${output_dir}/file."
+${COMPRESSION_CMD} -dc "${mono_path}" | ${BIN}/dedupe | split -d -l ${length} - "${output_dir}/file."
