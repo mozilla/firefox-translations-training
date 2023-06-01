@@ -14,28 +14,36 @@ test -v BIN
 
 output_prefix=$1
 max_sents=$2
-input_prefixes=( "${@:3}" )
+inputs=( "${@:3}" )
+
+COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
+ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
 
 tmp="${output_prefix}/merge"
 mkdir -p "${tmp}"
 
 echo "### Merging"
-cat "${input_prefixes[@]/%/.${SRC}.gz}" >"${tmp}/corpus.${SRC}.dup.gz"
-cat "${input_prefixes[@]/%/.${TRG}.gz}" >"${tmp}/corpus.${TRG}.dup.gz"
+if [[ "${inputs[0]}" == *.${ARTIFACT_EXT} ]]; then
+  cat `echo ${inputs[@]} | tr ' ' '\n' | grep ${SRC} | tr '\n' ' '` >"${tmp}/corpus.${SRC}.dup.${ARTIFACT_EXT}"
+  cat `echo ${inputs[@]} | tr ' ' '\n' | grep ${TRG} | tr '\n' ' '` >"${tmp}/corpus.${TRG}.dup.${ARTIFACT_EXT}"
+else
+  cat "${inputs[@]/%/.${SRC}.${ARTIFACT_EXT}}" >"${tmp}/corpus.${SRC}.dup.${ARTIFACT_EXT}"
+  cat "${inputs[@]/%/.${TRG}.${ARTIFACT_EXT}}" >"${tmp}/corpus.${TRG}.dup.${ARTIFACT_EXT}"
+fi
 
 echo "### Deduplication"
-paste <(pigz -dc "${tmp}/corpus.${SRC}.dup.gz") <(pigz -dc "${tmp}/corpus.${TRG}.dup.gz") |
+paste <(${COMPRESSION_CMD} -dc "${tmp}/corpus.${SRC}.dup.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${tmp}/corpus.${TRG}.dup.${ARTIFACT_EXT}") |
 ${BIN}/dedupe |
-pigz >"${tmp}.${SRC}${TRG}.gz"
+${COMPRESSION_CMD} >"${tmp}.${SRC}${TRG}.${ARTIFACT_EXT}"
 
-# if max sents not -1, get the first n sents (this is mainly used for testing to make translation and training go faster)
+# if max sents not "inf", get the first n sents (this is mainly used for testing to make translation and training go faster)
 if [ "${max_sents}" != "inf" ]; then
-    head -${max_sents} <(pigz -dc "${tmp}.${SRC}${TRG}.gz") | pigz > "${tmp}.${SRC}${TRG}.truncated.gz"
+    head -${max_sents} <(${COMPRESSION_CMD} -dc "${tmp}.${SRC}${TRG}.gz") | ${COMPRESSION_CMD} > "${tmp}.${SRC}${TRG}.truncated.gz"
     mv "${tmp}.${SRC}${TRG}.truncated.gz" "${tmp}.${SRC}${TRG}.gz"
 fi
 
-pigz -dc "${tmp}.${SRC}${TRG}.gz" | cut -f1 | pigz > "${output_prefix}.${SRC}.gz"
-pigz -dc "${tmp}.${SRC}${TRG}.gz" | cut -f2 | pigz > "${output_prefix}.${TRG}.gz"
+${COMPRESSION_CMD} -dc "${tmp}.${SRC}${TRG}.${ARTIFACT_EXT}" | cut -f1 | ${COMPRESSION_CMD} > "${output_prefix}.${SRC}.${ARTIFACT_EXT}"
+${COMPRESSION_CMD} -dc "${tmp}.${SRC}${TRG}.${ARTIFACT_EXT}" | cut -f2 | ${COMPRESSION_CMD} > "${output_prefix}.${TRG}.${ARTIFACT_EXT}"
 
 rm -rf "${tmp}"
 

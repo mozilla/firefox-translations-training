@@ -13,6 +13,9 @@ trg=$2
 output_prefix=$3
 dataset=$4
 
+COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
+ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
+
 name=${dataset%%/*}
 name_and_version="${dataset//[^A-Za-z0-9_- ]/_}"
 
@@ -26,8 +29,8 @@ wget -O "${archive_path}" "https://object.pouta.csc.fi/OPUS-${dataset}/moses/${s
 unzip -o "${archive_path}" -d "${tmp}"
 
 for lang in ${src} ${trg}; do
-  pigz -c "${tmp}/${name}.${src}-${trg}.${lang}" > "${output_prefix}.${lang}.gz" ||
-    pigz -c "${tmp}/${name}.${trg}-${src}.${lang}" > "${output_prefix}.${lang}.gz"
+  ${COMPRESSION_CMD} -c "${tmp}/${name}.${src}-${trg}.${lang}" > "${output_prefix}.${lang}.${ARTIFACT_EXT}" ||
+    ${COMPRESSION_CMD} -c "${tmp}/${name}.${trg}-${src}.${lang}" > "${output_prefix}.${lang}.${ARTIFACT_EXT}"
 done
 
 rm -rf "${tmp}"
