@@ -11,17 +11,19 @@ test -v MARIAN
 test -v WORKSPACE
 
 input=$1
-
-models=( "${@:3}" )
+output=$2
+models=( "${@:4}" )
 modeldir=$(dirname ${models})
 
 #if the model is an OPUS-MT model, use the model vocab instead of the defined forward vocab
-opusvocab=$(ls ${modeldir}/opus*.vocab.yml)
-if [ -n ${opusvocab} ]; then
-    vocab=${opusvocab}
-else
-    vocab=$2
-fi
+for opus_vocab in ${modeldir}/opus*.vocab.yml; do
+    if [[ -f ${opus_vocab} ]]; then
+    	vocab=${opus_vocab}
+    else
+	vocab=$3
+    fi
+    break
+done
 
 cd "$(dirname "${0}")"
 
@@ -30,9 +32,9 @@ cd "$(dirname "${0}")"
   -m "${models[@]}" \
   -v "${vocab}" "${vocab}" \
   -i "${input}" \
-  -o "${input}.out" \
+  -o "${output}" \
   --log "${input}.log" \
   -d ${GPUS} \
   -w "${WORKSPACE}"
 
-test "$(wc -l <"${input}")" == "$(wc -l <"${input}.out")"
+test "$(wc -l <"${input}")" == "$(wc -l <"${output}")"

@@ -9,15 +9,27 @@ set -euo pipefail
 echo "###### Downloading pretrained opus model"
 
 download_url=$1
-backward_dir=$2
-best_model=$3
-model_zip=${download_url##*/}
 
-archive_path="${backward_dir}/${model_zip}"
+model_dir=$2
+best_model=$3
+source_lang=$4
+target_lang=$5
+
+#if download url is best, find the best model from list
+if [[ $download_url = "best" ]]
+then
+    model_list="${model_dir}/released-model-results.txt"
+    wget -O ${model_list} "https://raw.githubusercontent.com/Helsinki-NLP/Tatoeba-Challenge/master/models/released-model-results.txt"
+    download_url=$(grep -P -m 1 "^${source_lang}-${target_lang}" ${model_list} | cut -f 4) 
+    echo "###### Using best ${source_lang}-${target_lang} model ${download_url}"
+fi
+
+model_zip=${download_url##*/}
+archive_path="${model_dir}/${model_zip}"
 
 wget -O "${archive_path}" "${download_url}"
 
-cd ${backward_dir}
+cd ${model_dir}
 unzip -j -o "${archive_path}"
 rm ${archive_path}
 
@@ -28,6 +40,5 @@ ln -s $model_file ${best_model}
 #Also create a standard name link for the vocab
 ln -s $vocab_file "vocab.yml"
 
-#modify preprocess script to remove host check
 
 echo "###### Done: Downloading and extracting opus mt model"

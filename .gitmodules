@@ -16,3 +16,6 @@
 [submodule "3rd_party/preprocess"]
 	path = 3rd_party/preprocess
 	url = https://github.com/kpu/preprocess.git
+[submodule "3rd_party/lumi-marian"]
+	path = 3rd_party/lumi-marian
+	url = git@github.com:hplt-project/lumi-marian.git

@@ -14,7 +14,8 @@ test -v CUDA_DIR
 test -v CUDNN_DIR
 
 # cuda and cudnn libs
-export LD_LIBRARY_PATH=${CUDA_DIR}/lib64:${CUDNN_DIR}:${LD_LIBRARY_PATH:+LD_LIBRARY_PATH:}
+echo $LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=${CUDA_DIR}/lib64:${CUDNN_DIR}:${ROCM_PATH}/lib:${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}
 
 corpus_prefix=$1
 output_prefix=$2
@@ -49,6 +50,7 @@ else
     export tcol=1
   fi
 
+  #TODO: More than 1 GPU is not supported with AMD GPUs right now (usually 1 is enough, though, it's pretty fast).
   #Export cuda visible devices if empty or not set
   if [ -z "${CUDA_VISIBLE_DEVICES:-}" ]; then
     export CUDA_VISIBLE_DEVICES=$(nvidia-smi --query-gpu=index --format=csv,noheader);
