@@ -4,12 +4,15 @@ from taskgraph.transforms.base import TransformSequence
 from taskgraph.util.schema import Schema
 from voluptuous import ALLOW_EXTRA, Optional
 
+from translations_taskgraph.util.substitution import substitute
+
 SCHEMA = Schema(
     {
         Optional("dataset-config"): {
             # Fields in each `job` that need to be substituted with data
             # provided by this transform.
             Optional("substitution-fields"): [str],
+            Optional("include-categories"): [str],
             # Dataset/locale pairs to include (and split each `job` by), by
             # provider and dataset name. This is essentially an override for
             # what's listed in `ci/config.yml`, which means that:
@@ -75,24 +78,6 @@ locales_only = TransformSequence()
 locales_only.add_validate(SCHEMA)
 
 
-def substitute(item, **subs):
-    if isinstance(item, list):
-        for i in range(len(item)):
-            item[i] = substitute(item[i], **subs)
-    elif isinstance(item, dict):
-        new_dict = {}
-        for k, v in item.items():
-            k = k.format(**subs)
-            new_dict[k] = substitute(v, **subs)
-        item = new_dict
-    elif isinstance(item, str):
-        item = item.format(**subs)
-    else:
-        item = item
-
-    return item
-
-
 def shorten_dataset_name(dataset):
     """Shortens various dataset names. Mainly used to make sure we can have
     useful Treeherder symbols."""
@@ -103,14 +88,25 @@ def shorten_dataset_name(dataset):
         .replace("Neulab-tedtalks_train-1", "Ntt1")
     )
 
+
+def get_dataset_category(provider, dataset, dataset_categories):
+    for category, datasets in dataset_categories.items():
+        if f"{provider}_{dataset}" in datasets:
+            return category
+
+    return ""
+
+
 @per_dataset.add
 def jobs_from_datasets(config, jobs):
     for job in jobs:
         dataset_config = job.pop("dataset-config", {})
+        include_categories = dataset_config.get("include-categories", [])
         include_datasets = dataset_config.get("include-datasets", {})
         exclude_datasets = dataset_config.get("exclude-datasets", {})
         exclude_locales = dataset_config.get("exclude-locales", [])
         substitution_fields = dataset_config.get("substitution-fields", [])
+        training_datasets = config.params.get("training_config", {}).get("datasets", {})
 
         providers = include_datasets.keys()
         if not providers:
@@ -123,6 +119,10 @@ def jobs_from_datasets(config, jobs):
 
             for dataset, locale_pairs in datasets.items():
                 if dataset in exclude_datasets.get(provider, {}):
+                    continue
+
+                category = get_dataset_category(provider, dataset, training_datasets)
+                if include_categories and category not in include_categories:
                     continue
 
                 for pair in locale_pairs:
@@ -168,10 +168,12 @@ def jobs_from_datasets(config, jobs):
 def jobs_from_locales(config, jobs):
     for job in jobs:
         dataset_config = job.pop("dataset-config", {})
+        include_categories = dataset_config.get("include-categories", [])
         include_datasets = dataset_config.get("include-datasets", {})
         exclude_datasets = dataset_config.get("exclude-datasets", {})
         exclude_locales = dataset_config.get("exclude-locales", [])
         substitution_fields = dataset_config.get("substitution-fields", [])
+        training_datasets = config.params.get("training_config", {}).get("datasets", {})
 
         all_pairs = set()
 
@@ -186,6 +188,10 @@ def jobs_from_locales(config, jobs):
 
             for dataset, locale_pairs in datasets.items():
                 if dataset in exclude_datasets.get(provider, {}):
+                    continue
+
+                category = get_dataset_category(provider, dataset, training_datasets)
+                if include_categories and category not in include_categories:
                     continue
 
                 for pair in locale_pairs:

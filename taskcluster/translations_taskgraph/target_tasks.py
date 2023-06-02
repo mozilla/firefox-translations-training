@@ -29,8 +29,10 @@ def train_target_tasks(full_task_graph, parameters, graph_config):
             dataset_category = task.attributes["dataset-category"]
             for ds in datasets[dataset_category]:
                 provider, dataset = ds.split("_", 1)
-                if task.attributes["provider"] != provider or task.attributes["dataset"] != dataset:
-                    return False
+                # If the task is for any of the datasets in the specified category,
+                # it's a match, and should be included in the target tasks.
+                if task.attributes["provider"] == provider and task.attributes["dataset"] == dataset:
+                    break
 
         return True
 
