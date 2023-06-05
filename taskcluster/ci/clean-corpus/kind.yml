@@ -18,10 +18,10 @@ kind-dependencies:
 task-defaults:
     description: Clean {provider} {dataset} dataset {src_locale}-{trg_locale}
     attributes:
-        cleaning-type: clean
+        cleaning-type: clean-corpus
         dataset-category: train
         cache:
-            type: clean
+            type: clean-corpus
             resources:
                 - pipeline/clean/clean-corpus.sh
                 - pipeline/clean/tools/deescape-special-chars.perl
@@ -55,7 +55,7 @@ task-defaults:
 
     treeherder:
         symbol: "{provider}({dataset_short}-{src_locale}-{trg_locale})"
-        platform: clean/opt
+        platform: clean-corpus/opt
     run:
         using: run-task
         # Include this so `from_datasets` will add a number of other values to it.

@@ -14,7 +14,7 @@ transforms:
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
-    - clean
+    - clean-corpus
     - fetch
     - toolchain
 
@@ -86,7 +86,7 @@ task-defaults:
                 {bicleaner_threads}
                 $MOZ_FETCHES_DIR/{src_locale}-{trg_locale}
     dependencies:
-        "{provider}": clean-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
+        "{provider}": clean-corpus-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
     fetches:
         toolchain:
             - hunspell
