@@ -126,4 +126,4 @@ tasks:
             command:
                 - bash
                 - -c
-                - $VCS_PATH/pipeline/data/importers/mono/news-crawl.sh {src_locale} /builds/worker/artifacts/{dataset}.{src_locale} {dataset} && $VCS_PATH/pipeline/data/importers/mono/news-crawl.sh {trg_locale} /builds/worker/artifacts/{dataset}.{trg_locale} {dataset}
+                - $VCS_PATH/pipeline/data/importers/mono/news-crawl.sh {src_locale} /builds/worker/artifacts/{dataset_sanitized}.{src_locale} {dataset} && $VCS_PATH/pipeline/data/importers/mono/news-crawl.sh {trg_locale} /builds/worker/artifacts/{dataset_sanitized}.{trg_locale} {dataset}
