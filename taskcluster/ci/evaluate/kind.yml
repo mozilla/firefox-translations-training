@@ -8,6 +8,7 @@ loader: taskgraph.loader.transform:loader
 transforms:
     - translations_taskgraph.transforms.task_substitution_from_params:transforms
     - translations_taskgraph.transforms.from_datasets:per_dataset
+    - translations_taskgraph.transforms.chunking:chunk
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cache:transforms
     - taskgraph.transforms.cached_tasks:transforms
@@ -16,6 +17,7 @@ transforms:
 kind-dependencies:
     - dataset
     - train-backwards
+    - train-teacher
     - train-vocab
     - fetch
     - toolchain
@@ -44,7 +46,6 @@ task-defaults:
             trg_locale: training_config.experiment.trg_locale
         substitution-fields:
             - run.command-context.pipeline_args2
-            - fetches.train-backwards
     worker-type: t-linux-v100-gpu
     worker:
         artifacts:
@@ -99,8 +100,11 @@ tasks:
             dataset-category: test
             cache:
                 type: evaluate-backwards
+        task-substitution:
+            substitution-fields:
+                - fetches.train-backwards
         treeherder:
-            symbol: "bw-{provider}-{dataset_short}-{src_locale}-{trg_locale}"
+            symbol: "bw-{provider_short}-{dataset_short}-{src_locale}-{trg_locale}"
         run:
             command-context:
                 pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
@@ -124,6 +128,57 @@ tasks:
                 - artifact: "{dataset_sanitized}.{trg_locale}.zst"
                   extract: false
             train-backwards:
+                - artifact: final.model.npz.best-{best_model}.npz
+                  extract: false
+                - artifact: final.model.npz.best-{best_model}.npz.decoder.yml
+                  extract: false
+            train-vocab:
+                - artifact: vocab.spm
+                  extract: false
+
+    teacher-{provider}-{dataset}-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}:
+        description: teacher evaluation for {dataset} {src_locale}-{trg_locale} {this_chunk}/{total_chunks}
+        attributes:
+            stage: evaluate-teacher
+            dataset-category: test
+            cache:
+                type: evaluate-teacher
+        task-substitution:
+            substitution-fields:
+                - fetches.train-teacher
+        chunk-config:
+            total-chunks:
+                from-parameters: training_config.experiment.teacher-ensemble
+            substitution-fields:
+                - name
+                - description
+                - treeherder.symbol
+                - dependencies.train-teacher
+        treeherder:
+            symbol: "tch-{provider_short}-{dataset_short}-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}"
+        run:
+            command-context:
+                pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
+                pipeline_args1: >-
+                    $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    $MOZ_FETCHES_DIR/{dataset_sanitized}
+                    {src_locale}
+                    {trg_locale}
+                pipeline_args2: >-
+                    $MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz.decoder.yml
+                    $MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz
+
+        dependencies:
+            dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
+            train-teacher: train-teacher-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}
+            train-vocab: train-vocab-{src_locale}-{trg_locale}
+        fetches:
+            dataset:
+                - artifact: "{dataset_sanitized}.{src_locale}.zst"
+                  extract: false
+                - artifact: "{dataset_sanitized}.{trg_locale}.zst"
+                  extract: false
+            train-teacher:
                 - artifact: final.model.npz.best-{best_model}.npz
                   extract: false
                 - artifact: final.model.npz.best-{best_model}.npz.decoder.yml

@@ -12,7 +12,8 @@ from translations_taskgraph.util.substitution import substitute
 
 CHUNK_SCHEMA = Schema(
     {
-        Required("chunk-config"): {
+        # Optional, so it can be used for a subset of jobs in a kind
+        Optional("chunk-config"): {
             Required("total-chunks"): {
                 Required("from-parameters"): str,
             },
@@ -28,7 +29,7 @@ chunk.add_validate(CHUNK_SCHEMA)
 
 UNCHUNK_SCHEMA = Schema(
     {
-        Required("chunk-config"): {
+        Optional("chunk-config"): {
             Required("total-chunks"): {
                 Required("from-parameters"): str,
             },
@@ -46,6 +47,10 @@ unchunk.add_validate(UNCHUNK_SCHEMA)
 def chunk_jobs(config, jobs):
     for job in jobs:
         chunk_config = job.pop("chunk-config", None)
+        if not chunk_config:
+            yield job
+            continue
+
         total_chunks = deep_get(config.params, chunk_config["total-chunks"]["from-parameters"])
         
         for this_chunk in range(1, total_chunks + 1):
@@ -71,6 +76,10 @@ def chunk_jobs(config, jobs):
 def do_unchunking(config, jobs):
     for job in jobs:
         chunk_config = job.pop("chunk-config", None)
+        if not chunk_config:
+            yield job
+            continue
+
         total_chunks = deep_get(config.params, chunk_config["total-chunks"]["from-parameters"])
         
         for this_chunk in range(1, total_chunks + 1):
