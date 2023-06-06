@@ -11,3 +11,9 @@ def shorten_dataset_name(dataset):
 
 def sanitize_dataset_name(dataset):
     return dataset.replace("/", "_").replace(".", "_")
+
+def shorten_provider_name(provider):
+    return (provider
+        .replace("sacrebleu", "sb")
+        .replace("flores", "fl")
+    )

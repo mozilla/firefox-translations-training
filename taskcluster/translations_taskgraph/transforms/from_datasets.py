@@ -5,7 +5,7 @@ from taskgraph.util.schema import Schema
 from voluptuous import ALLOW_EXTRA, Optional
 
 from translations_taskgraph.util.substitution import substitute
-from translations_taskgraph.util.dataset_helpers import shorten_dataset_name, sanitize_dataset_name
+from translations_taskgraph.util.dataset_helpers import shorten_dataset_name, sanitize_dataset_name, shorten_provider_name
 
 SCHEMA = Schema(
     {
@@ -129,6 +129,7 @@ def jobs_from_datasets(config, jobs):
                     subjob = copy.deepcopy(job)
                     subs = {
                         "provider": provider,
+                        "provider_short": shorten_provider_name(provider),
                         "dataset": f"{provider}_{dataset}",
                         "dataset_short": shorten_dataset_name(dataset),
                         "dataset_sanitized": sanitize_dataset_name(dataset),
@@ -205,6 +206,7 @@ def jobs_for_mono_datasets(config, jobs):
                     subjob = copy.deepcopy(job)
                     subs = {
                         "provider": provider,
+                        "provider_short": shorten_provider_name(provider),
                         "dataset": f"{provider}_{dataset}",
                         "dataset_short": shorten_dataset_name(dataset),
                         "dataset_sanitized": sanitize_dataset_name(dataset),
