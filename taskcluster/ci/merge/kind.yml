@@ -22,7 +22,7 @@ kind-dependencies:
     #    data pack available
     # 3) Otherwise, `clean` is the upstream and `bicleaner` is skipped altogether.
     - bicleaner
-    - clean
+    - clean-corpus
     # The second part of the graph this kind handles is `merge-devset`. This step allows operates
     # directly on datasets (skipping cleaning and/or bicleaning altogether).
     - dataset
@@ -101,7 +101,7 @@ tasks:
                     by-cleaning-type:
                         bicleaner-ai: bicleaner-ai
                         bicleaner: bicleaner
-                        clean: clean
+                        clean-corpus: clean-corpus
 
         treeherder:
             platform: merge-corpus/opt

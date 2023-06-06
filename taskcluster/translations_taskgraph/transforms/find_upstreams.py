@@ -47,7 +47,7 @@ def get_cleaning_type(src, trg, upstreams):
     candidates = set()
 
     for upstream in upstreams:
-        if upstream.kind not in ("bicleaner", "clean"):
+        if upstream.kind not in ("bicleaner", "clean-corpus"):
             continue
 
         if upstream.attributes["src_locale"] != src or upstream.attributes["trg_locale"] != trg:
@@ -55,7 +55,7 @@ def get_cleaning_type(src, trg, upstreams):
 
         candidates.add(upstream.attributes["cleaning-type"])
 
-    for type_ in ("bicleaner-ai", "bicleaner", "clean"):
+    for type_ in ("bicleaner-ai", "bicleaner", "clean-corpus"):
         if type_ in candidates:
             return type_
 

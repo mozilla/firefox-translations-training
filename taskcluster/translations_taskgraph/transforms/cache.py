@@ -1,6 +1,6 @@
 from taskgraph.transforms.base import TransformSequence
 from taskgraph.util.hash import hash_path
-from taskgraph.util.schema import Schema
+from taskgraph.util.schema import Schema, optionally_keyed_by, resolve_keyed_by
 from voluptuous import ALLOW_EXTRA, Any, Optional, Required
 
 from translations_taskgraph.util.dict_helpers import deep_get
@@ -10,7 +10,7 @@ SCHEMA = Schema(
         Required("attributes"): {
             Required("cache"): {
                 Required("type"): str,
-                Optional("resources"): [str],
+                Optional("resources"): optionally_keyed_by("provider", [str]),
                 Optional("from-parameters"): {
                     str: Any([str], str),
                 },
@@ -22,6 +22,19 @@ SCHEMA = Schema(
 
 transforms = TransformSequence()
 transforms.add_validate(SCHEMA)
+
+@transforms.add
+def resolved_keyed_by_fields(config, jobs):
+    for job in jobs:
+        provider = job["attributes"].get("provider", None)
+        resolve_keyed_by(
+            job["attributes"]["cache"],
+            "resources",
+            item_name=job["description"],
+            **{"provider": provider},
+        )
+
+        yield job
 
 @transforms.add
 def add_cache(config, jobs):

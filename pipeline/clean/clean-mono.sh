@@ -19,6 +19,9 @@ ARTIFACT_EXT="${ARTIFACT_EXT:-${ARTIFACT_EXT}}"
 
 echo "### Cleaning ${input_prefix}"
 
+if [ "$threads" = "auto" ]; then
+  threads=$(nproc)
+fi
 cd "$(dirname "${0}")"
 export PYTHONPATH="tools"
 
@@ -50,7 +53,7 @@ echo "### Language identification"
 test -s "${output_prefix}.${lang}.langid.${ARTIFACT_EXT}" ||
   ${COMPRESSION_CMD} -dc "${output_prefix}.${lang}.monofix.${ARTIFACT_EXT}" |
   # memory intensive
-  parallel --no-notice --pipe -k -j "$(echo "${threads}"/4 | bc)" --block 50M "python tools/langid_fasttext.py" |
+  parallel --no-notice --pipe -k -j "$(echo "${threads}"/4 | bc)" --block 50M "python3 tools/langid_fasttext.py" |
   grep -P "^${lang}\t" | cut -f2 |
   ${COMPRESSION_CMD} >"${output_prefix}.${lang}.langid.${ARTIFACT_EXT}"
 
@@ -59,7 +62,7 @@ echo "### Rule-based filtering"
 
 ${COMPRESSION_CMD} -dc "${output_prefix}.${lang}.langid.${ARTIFACT_EXT}" |
 parallel --no-notice --pipe -k -j "${threads}" --block 50M \
-  "python tools/clean_mono.py -l ${lang} --debug" \
+  "python3 tools/clean_mono.py -l ${lang} --debug" \
   2>"${output_prefix}.${lang}.clean.debug.txt" |
 ${COMPRESSION_CMD} >"${output_prefix}.${lang}.${ARTIFACT_EXT}"
 
