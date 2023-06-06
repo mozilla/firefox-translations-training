@@ -38,7 +38,7 @@ defaults = get_defaults("")["training_config"]
 (any stages this choice depends on will be automatically included).""",
                 "default": defaults["target-stage"],
                 # TODO: this should probably be specified in ci/config.yml
-                "enum": ["clean-corpus", "clean-mono", "bicleaner", "bicleaner-ai", "merge-corpus", "merge-devset", "train-vocab", "train-backwards", "evaluate-backwards"],
+                "enum": ["clean-corpus", "clean-mono", "bicleaner", "bicleaner-ai", "merge-corpus", "merge-devset", "merge-mono", "train-vocab", "train-backwards", "evaluate-backwards"],
             },
             "datasets": {
                 "type": "object",
@@ -151,6 +151,14 @@ leave empty to skip augmentation step (high resource languages)
                     "spm-sample-size": {
                         "type": "number",
                         "description": "vocabularly training sample size",
+                    },
+                    "mono-max-sentences-src": {
+                        "type": "number",
+                        "description": "limits per downloaded src dataset",
+                    },
+                    "mono-max-sentences-trg": {
+                        "type": "number",
+                        "description": "limits per downloaded trg dataset",
                     },
                 },
                 "required": [

@@ -1,0 +1,118 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.from_datasets:mono
+    - translations_taskgraph.transforms.find_upstreams:mono
+    - translations_taskgraph.transforms.command_context_from_params:transforms
+    - taskgraph.transforms.job:transforms
+    - translations_taskgraph.transforms.cache:transforms
+    - taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - clean-mono
+    - toolchain
+
+task-defaults:
+    label: merge-mono-{locale}
+    description: merge mono for {locale}
+    attributes:
+        stage: merge-mono
+        cache:
+            type: merge-mono
+            resources:
+                - pipeline/clean/merge-mono.sh
+
+    dataset-config:
+        substitution-fields:
+            - label
+            - description
+            - name
+            - treeherder.symbol
+            - worker.env
+            - upstreams-config.locale
+
+    upstreams-config:
+        locale: "{locale}"
+        upstream-task-attributes:
+            cleaning-type: clean-mono
+        upstream-artifacts:
+            - "{dataset_sanitized}.{locale}.zst"
+
+    worker-type: b-linux-large
+
+    worker:
+        docker-image: { "in-tree": "train" }
+        max-run-time: 3600
+        artifacts:
+            - name: public/build
+              path: /builds/worker/artifacts
+              type: directory
+        env:
+            LOCALE: "{locale}"
+            COMPRESSION_CMD: zstdmt
+            ARTIFACT_EXT: zst
+
+    # Don't run unless explicitly scheduled
+    run-on-tasks-for: []
+
+    treeherder:
+        symbol: "{locale}"
+        platform: merge-mono/opt
+
+    run:
+        using: run-task
+        command:
+            - bash
+            - -c
+            # Arguments are:
+            # 1) output directory
+            # 2) max_sent (sent to shuf -n to output at most max_sent lines)
+            # 3) input files
+            - >-
+                export BIN=$MOZ_FETCHES_DIR &&
+                $VCS_PATH/pipeline/clean/merge-mono.sh
+                /builds/worker/artifacts
+                {max_sent}
+                $MOZ_FETCHES_DIR/*.zst
+
+    fetches:
+        toolchain:
+            - preprocess
+
+tasks:
+    src:
+        attributes:
+            dataset-category: mono-src
+            cache:
+                from-parameters:
+                    max_sent: training_config.experiment.mono-max-sentences-src
+
+        dataset-config:
+            include-categories:
+                - mono-src
+
+        run:
+            command-context:
+                from-parameters:
+                    max_sent: training_config.experiment.mono-max-sentences-src
+
+    trg:
+        attributes:
+            dataset-category: mono-trg
+            cache:
+                from-parameters:
+                    max_sent: training_config.experiment.mono-max-sentences-trg
+
+        dataset-config:
+            include-categories:
+                - mono-trg
+
+        run:
+            command-context:
+                from-parameters:
+                    max_sent: training_config.experiment.mono-max-sentences-trg
