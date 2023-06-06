@@ -20,3 +20,4 @@ curl -L "http://data.statmt.org/news-crawl/${lang}/${dataset}.${lang}.shuffled.d
 
 echo "###### Done: Downloading WMT newscrawl monolingual data"
 
+
