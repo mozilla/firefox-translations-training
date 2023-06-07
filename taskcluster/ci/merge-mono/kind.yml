@@ -6,7 +6,6 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.from_datasets:mono
-    - translations_taskgraph.transforms.find_upstreams:mono
     - translations_taskgraph.transforms.command_context_from_params:transforms
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cache:transforms
@@ -34,14 +33,8 @@ task-defaults:
             - name
             - treeherder.symbol
             - worker.env
-            - upstreams-config.locale
-
-    upstreams-config:
-        locale: "{locale}"
-        upstream-task-attributes:
-            cleaning-type: clean-mono
-        upstream-artifacts:
-            - "{dataset_sanitized}.{locale}.zst"
+            - fetches
+            - dependencies
 
     worker-type: b-linux-large
 
@@ -83,6 +76,9 @@ task-defaults:
     fetches:
         toolchain:
             - preprocess
+        clean-mono:
+            - artifact: "{dataset_sanitized}.{locale}.zst"
+              extract: false
 
 tasks:
     src:
@@ -101,6 +97,9 @@ tasks:
                 from-parameters:
                     max_sent: training_config.experiment.mono-max-sentences-src
 
+        dependencies:
+            clean-mono: clean-mono-{provider}-{dataset}-mono-src-{locale}
+
     trg:
         attributes:
             dataset-category: mono-trg
@@ -116,3 +115,6 @@ tasks:
             command-context:
                 from-parameters:
                     max_sent: training_config.experiment.mono-max-sentences-trg
+
+        dependencies:
+            clean-mono: clean-mono-{provider}-{dataset}-mono-trg-{locale}

@@ -43,23 +43,6 @@ SCHEMA = Schema(
 by_locales = TransformSequence()
 by_locales.add_validate(SCHEMA)
 
-mono = TransformSequence()
-mono.add_validate(
-    Schema(
-        {
-            Required("upstreams-config"): {
-                Required("locale"): str,
-                Required("upstream-task-attributes"): {
-                    str: str,
-                },
-                Required("upstream-artifacts"): [str],
-            },
-        },
-        extra=ALLOW_EXTRA,
-    )
-)
-
-
 def get_cleaning_type(src, trg, upstreams):
     candidates = set()
 
@@ -150,50 +133,4 @@ def upstreams_for_locales(config, jobs):
                     }
                 )
             
-        yield subjob
-
-
-@mono.add
-def upstreams_for_mono(config, jobs):
-    datasets = config.params.get("training_config", {}).get("datasets", {})
-    for job in jobs:
-        dataset_category = job["attributes"]["dataset-category"]
-        target_datasets = datasets[dataset_category]
-        upstreams_config = job.pop("upstreams-config")
-        locale = upstreams_config["locale"]
-        artifacts = upstreams_config["upstream-artifacts"]
-        upstream_task_attributes = upstreams_config["upstream-task-attributes"]
-        subjob = copy.deepcopy(job)
-        subjob.setdefault("dependencies", {})
-        subjob.setdefault("fetches", {})
-        for task in config.kind_dependencies_tasks.values():
-            # Filter out any tasks that don't match the desired attributes.
-            if any(
-                task.attributes.get(k) != v for k, v in upstream_task_attributes.items()
-            ):
-                continue
-            # Filter out any tasks that aren't for the correct locale.
-            if (
-                task.attributes["locale"] != locale
-            ):
-                continue
-            provider = task.attributes["provider"]
-            dataset = task.attributes["dataset"]
-            task_dataset = f"{provider}_{dataset}"
-            # Filter out any tasks that don't match a desired dataset.
-            if task_dataset not in target_datasets:
-                continue
-            subs = {
-                "locale": locale,
-                "dataset_sanitized": dataset.replace("/", "_").replace(".", "_"),
-            }
-            subjob["dependencies"][task.label] = task.label
-            subjob["fetches"].setdefault(task.label, [])
-            for artifact in artifacts:
-                subjob["fetches"][task.label].append(
-                    {
-                        "artifact": artifact.format(**subs),
-                        "extract": False,
-                    }
-                )
         yield subjob
