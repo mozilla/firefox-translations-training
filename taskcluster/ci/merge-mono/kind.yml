@@ -48,7 +48,6 @@ task-defaults:
         env:
             LOCALE: "{locale}"
             COMPRESSION_CMD: zstdmt
-            ARTIFACT_EXT: zst
 
     # Don't run unless explicitly scheduled
     run-on-tasks-for: []
@@ -69,7 +68,7 @@ task-defaults:
             - >-
                 export BIN=$MOZ_FETCHES_DIR &&
                 $VCS_PATH/pipeline/clean/merge-mono.sh
-                /builds/worker/artifacts
+                /builds/worker/artifacts/mono.$LOCALE.zst
                 {max_sent}
                 $MOZ_FETCHES_DIR/*.zst
 
