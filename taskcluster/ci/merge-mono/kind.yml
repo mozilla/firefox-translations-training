@@ -84,7 +84,7 @@ tasks:
                     max_sent: training_config.experiment.mono-max-sentences-src
 
         treeherder:
-            symbol: "{dataset_short}-src-{src_locale}-{trg_locale}"
+            symbol: "src-{src_locale}-{trg_locale}"
             platform: merge-mono/opt
 
         run:
@@ -101,7 +101,7 @@ tasks:
                     max_sent: training_config.experiment.mono-max-sentences-trg
 
         treeherder:
-            symbol: "{dataset_short}-trg-{src_locale}-{trg_locale}"
+            symbol: "trg-{src_locale}-{trg_locale}"
             platform: merge-mono/opt
 
         run:
