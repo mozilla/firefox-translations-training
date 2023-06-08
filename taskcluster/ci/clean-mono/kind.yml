@@ -70,7 +70,6 @@ task-defaults:
     run-on-tasks-for: []
 
     treeherder:
-        symbol: "{provider}({dataset_short}-{locale})"
         platform: clean-mono/opt
     run:
         using: run-task
@@ -88,18 +87,22 @@ task-defaults:
               extract: false
 
 tasks:
-    "{provider}-{dataset}-mono-src-{locale}":
+    "{provider}-{dataset}-mono-src-{src_locale}-{trg_locale}":
         description: Clean {provider} {dataset} dataset mono-src {locale}
         attributes:
             dataset-category: mono-src
+        treeherder:
+            symbol: "{provider}({dataset_short}-src-{src_locale}-{trg_locale})"
         dataset-config:
             include-categories:
                 - mono-src
 
-    "{provider}-{dataset}-mono-trg-{locale}":
+    "{provider}-{dataset}-mono-trg-{src_locale}-{trg_locale}":
         description: Clean {provider} {dataset} dataset mono-trg {locale}
         attributes:
             dataset-category: mono-trg
+        treeherder:
+            symbol: "{provider}({dataset_short}-trg-{src_locale}-{trg_locale})"
         dataset-config:
             include-categories:
                 - mono-trg
