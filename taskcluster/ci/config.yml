@@ -32,39 +32,67 @@ datasets:
         dev:
             - src: en
               trg: ru
+            - src: ru
+              trg: en
             - src: en
               trg: fr
+            - src: fr
+              trg: en
         devtest:
             - src: en
               trg: ru
+            - src: ru
+              trg: en
             - src: en
               trg: fr
+            - src: fr
+              trg: en
 
     sacrebleu:
         wmt19:
             - src: en
               trg: ru
+            - src: ru
+              trg: en
         wmt20:
             - src: en
               trg: ru
+            - src: ru
+              trg: en
 
     opus:
         ada83/v1:
             - src: en
               trg: ru
+            - src: ru
+              trg: en
         GNOME/v1:
             - src: en
               trg: ru
+            - src: ru
+              trg: en
+            - src: en
+              trg: fr
+            - src: fr
+              trg: en
 
     news-crawl:
         news.2020:
             - src: en
               trg: ru
+            - src: ru
+              trg: en
+            - src: en
+              trg: fr
+            - src: fr
+              trg: en
 
     mtdata:
         Neulab-tedtalks_train-1-eng-rus:
             - src: en
               trg: ru
+            - src: ru
+              trg: en
 
 workers:
     aliases:

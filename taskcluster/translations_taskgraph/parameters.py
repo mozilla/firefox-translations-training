@@ -15,8 +15,8 @@ def get_defaults(_):
         "training_config": {
             "target-stage": "evaluate-backwards",
             "experiment": {
-                "src": "en",
-                "trg": "ru",
+                "src": "ru",
+                "trg": "en",
                 "bicleaner": {
                     "default-threshold": 0.5,
                     "dataset-thresholds": {

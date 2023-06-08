@@ -51,7 +51,7 @@ else
 
   export scol=1
   export tcol=2
-  if [ -d "${pack_dir}/${TRG}-${SRC}" ]; then
+  if [ -f "${pack_dir}/${TRG}-${SRC}.yaml" ]; then
     export scol=2
     export tcol=1
   fi
