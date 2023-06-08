@@ -86,6 +86,15 @@ datasets:
               trg: fr
             - src: fr
               trg: en
+        news.2019:
+            - src: en
+              trg: ru
+            - src: ru
+              trg: en
+            - src: en
+              trg: fr
+            - src: fr
+              trg: en
 
     mtdata:
         Neulab-tedtalks_train-1-eng-rus:

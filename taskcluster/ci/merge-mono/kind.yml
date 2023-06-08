@@ -5,7 +5,7 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.from_datasets:mono
+    - translations_taskgraph.transforms.find_upstreams:mono
     - translations_taskgraph.transforms.command_context_from_params:transforms
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cache:transforms
@@ -17,7 +17,6 @@ kind-dependencies:
     - toolchain
 
 task-defaults:
-    label: merge-mono-{locale}
     description: merge mono for {locale}
     attributes:
         stage: merge-mono
@@ -26,15 +25,18 @@ task-defaults:
             resources:
                 - pipeline/clean/merge-mono.sh
 
-    dataset-config:
+    upstreams-config:
+        locale: "{locale}"
+        upstream-task-attributes:
+            cleaning-type: clean-mono
+        upstream-artifacts:
+            - "{dataset_sanitized}.{locale}.zst"
         substitution-fields:
             - label
             - description
             - name
             - treeherder.symbol
             - worker.env
-            - fetches
-            - dependencies
 
     worker-type: b-linux-large
 
@@ -51,10 +53,6 @@ task-defaults:
 
     # Don't run unless explicitly scheduled
     run-on-tasks-for: []
-
-    treeherder:
-        symbol: "{locale}"
-        platform: merge-mono/opt
 
     run:
         using: run-task
@@ -75,45 +73,38 @@ task-defaults:
     fetches:
         toolchain:
             - preprocess
-        clean-mono:
-            - artifact: "{dataset_sanitized}.{locale}.zst"
-              extract: false
 
 tasks:
     src:
+        label: merge-mono-{provider}-mono-src-{src_locale}-{trg_locale}
         attributes:
             dataset-category: mono-src
             cache:
                 from-parameters:
                     max_sent: training_config.experiment.mono-max-sentences-src
 
-        dataset-config:
-            include-categories:
-                - mono-src
+        treeherder:
+            symbol: "{dataset_short}-src-{src_locale}-{trg_locale}"
+            platform: merge-mono/opt
 
         run:
             command-context:
                 from-parameters:
                     max_sent: training_config.experiment.mono-max-sentences-src
 
-        dependencies:
-            clean-mono: clean-mono-{provider}-{dataset}-mono-src-{locale}
-
     trg:
+        label: merge-mono-{provider}-mono-trg-{src_locale}-{trg_locale}
         attributes:
             dataset-category: mono-trg
             cache:
                 from-parameters:
                     max_sent: training_config.experiment.mono-max-sentences-trg
 
-        dataset-config:
-            include-categories:
-                - mono-trg
+        treeherder:
+            symbol: "{dataset_short}-trg-{src_locale}-{trg_locale}"
+            platform: merge-mono/opt
 
         run:
             command-context:
                 from-parameters:
                     max_sent: training_config.experiment.mono-max-sentences-trg
-
-        dependencies:
-            clean-mono: clean-mono-{provider}-{dataset}-mono-trg-{locale}
