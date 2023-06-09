@@ -5,7 +5,7 @@ from taskgraph.util.schema import Schema
 from voluptuous import ALLOW_EXTRA, Optional
 
 from translations_taskgraph.util.substitution import substitute
-from translations_taskgraph.util.dataset_helpers import shorten_dataset_name
+from translations_taskgraph.util.dataset_helpers import shorten_dataset_name, sanitize_dataset_name
 
 SCHEMA = Schema(
     {
@@ -131,7 +131,7 @@ def jobs_from_datasets(config, jobs):
                         "provider": provider,
                         "dataset": dataset,
                         "dataset_short": shorten_dataset_name(dataset),
-                        "dataset_sanitized": dataset.replace("/", "_").replace(".", "_"),
+                        "dataset_sanitized": sanitize_dataset_name(dataset),
                         "src_locale": pair["src"],
                         "trg_locale": pair["trg"],
                     }
@@ -207,7 +207,7 @@ def jobs_for_mono_datasets(config, jobs):
                         "provider": provider,
                         "dataset": dataset,
                         "dataset_short": shorten_dataset_name(dataset),
-                        "dataset_sanitized": dataset.replace("/", "_").replace(".", "_"),
+                        "dataset_sanitized": sanitize_dataset_name(dataset),
                         "locale": locale,
                         "src_locale": pair["src"],
                         "trg_locale": pair["trg"],

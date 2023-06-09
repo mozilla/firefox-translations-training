@@ -25,7 +25,7 @@ from taskgraph.util.schema import Schema, optionally_keyed_by, resolve_keyed_by
 from voluptuous import ALLOW_EXTRA, Required, Optional
 
 from translations_taskgraph.util.substitution import substitute
-from translations_taskgraph.util.dataset_helpers import shorten_dataset_name
+from translations_taskgraph.util.dataset_helpers import shorten_dataset_name, sanitize_dataset_name
 
 SCHEMA = Schema(
     {
@@ -141,7 +141,7 @@ def upstreams_for_locales(config, jobs):
             subs = {
                 "src_locale": src,
                 "trg_locale": trg,
-                "dataset_sanitized": dataset.replace("/", "_").replace(".", "_"),
+                "dataset_sanitized": sanitize_dataset_name(dataset),
             }
 
             subjob["dependencies"][task.label] = task.label
@@ -197,11 +197,6 @@ def upstreams_for_mono(config, jobs):
             if task.attributes["locale"] != locale or task.attributes["src_locale"] != src or task.attributes["trg_locale"] != trg:
                 continue
 
-            subs = {
-                "locale": locale,
-                "dataset_sanitized": dataset.replace("/", "_").replace(".", "_"),
-            }
-
             job["dependencies"][task.label] = task.label
             job["fetches"].setdefault(task.label, [])
 
@@ -209,7 +204,7 @@ def upstreams_for_mono(config, jobs):
                 "provider": provider,
                 "dataset": dataset,
                 "dataset_short": shorten_dataset_name(dataset),
-                "dataset_sanitized": dataset.replace("/", "_").replace(".", "_"),
+                "dataset_sanitized": sanitize_dataset_name(dataset),
                 "locale": locale,
                 "src_locale": src,
                 "trg_locale": trg,

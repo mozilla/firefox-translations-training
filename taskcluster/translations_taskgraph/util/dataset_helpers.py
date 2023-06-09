@@ -7,3 +7,7 @@ def shorten_dataset_name(dataset):
         .replace("news.2020", "n2020")
         .replace("Neulab-tedtalks_train-1", "Ntt1")
     )
+
+
+def sanitize_dataset_name(dataset):
+    return dataset.replace("/", "_").replace(".", "_")
