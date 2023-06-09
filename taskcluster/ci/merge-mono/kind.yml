@@ -5,6 +5,7 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
+    - translations_taskgraph.transforms.from_datasets:mono
     - translations_taskgraph.transforms.find_upstreams:mono
     - translations_taskgraph.transforms.command_context_from_params:transforms
     - taskgraph.transforms.job:transforms
@@ -25,18 +26,21 @@ task-defaults:
             resources:
                 - pipeline/clean/merge-mono.sh
 
-    upstreams-config:
-        locale: "{locale}"
-        upstream-task-attributes:
-            cleaning-type: clean-mono
-        upstream-artifacts:
-            - "{dataset_sanitized}.{locale}.zst"
+    dataset-config:
         substitution-fields:
             - label
             - description
             - name
             - treeherder.symbol
             - worker.env
+            - upstreams-config.locale
+
+    upstreams-config:
+        locale: "{locale}"
+        upstream-task-attributes:
+            cleaning-type: clean-mono
+        upstream-artifacts:
+            - "{dataset_sanitized}.{locale}.zst"
 
     worker-type: b-linux-large
 
@@ -83,6 +87,10 @@ tasks:
                 from-parameters:
                     max_sent: training_config.experiment.mono-max-sentences-src
 
+        dataset-config:
+            include-categories:
+                - mono-src
+
         treeherder:
             symbol: "src-{src_locale}-{trg_locale}"
             platform: merge-mono/opt
@@ -99,6 +107,10 @@ tasks:
             cache:
                 from-parameters:
                     max_sent: training_config.experiment.mono-max-sentences-trg
+
+        dataset-config:
+            include-categories:
+                - mono-trg
 
         treeherder:
             symbol: "trg-{src_locale}-{trg_locale}"
