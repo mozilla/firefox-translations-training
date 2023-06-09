@@ -26,6 +26,8 @@ def get_defaults(_):
                 },
                 "best-model": "chrf",
                 "spm-sample-size": 100000,
+                "mono-max-sentences-trg": 200000,
+                "mono-max-sentences-src": 100000,
             },
             "marian-args": {
                 "training-backward": {
@@ -80,6 +82,8 @@ extend_parameters_schema(
                 },
                 Required("best-model"): str,
                 Required("spm-sample-size"): int,
+                Required("mono-max-sentences-trg"): int,
+                Required("mono-max-sentences-src"): int,
             },
             Optional("bicleaner_threshold"): str,
             Optional("train_vocab_sample_size"): str,

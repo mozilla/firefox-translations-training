@@ -5,6 +5,7 @@ from taskgraph.util.schema import Schema
 from voluptuous import ALLOW_EXTRA, Optional
 
 from translations_taskgraph.util.substitution import substitute
+from translations_taskgraph.util.dataset_helpers import shorten_dataset_name, sanitize_dataset_name
 
 SCHEMA = Schema(
     {
@@ -81,17 +82,6 @@ locales_only = TransformSequence()
 locales_only.add_validate(SCHEMA)
 
 
-def shorten_dataset_name(dataset):
-    """Shortens various dataset names. Mainly used to make sure we can have
-    useful Treeherder symbols."""
-    # TODO: should the replacements live in ci/config.yml?
-    return (dataset
-        .replace("new-crawl", "nc")
-        .replace("news.2020", "n2020")
-        .replace("Neulab-tedtalks_train-1", "Ntt1")
-    )
-
-
 def get_dataset_categories(provider, dataset, dataset_categories):
     categories = set()
     for category, datasets in dataset_categories.items():
@@ -141,7 +131,7 @@ def jobs_from_datasets(config, jobs):
                         "provider": provider,
                         "dataset": dataset,
                         "dataset_short": shorten_dataset_name(dataset),
-                        "dataset_sanitized": dataset.replace("/", "_").replace(".", "_"),
+                        "dataset_sanitized": sanitize_dataset_name(dataset),
                         "src_locale": pair["src"],
                         "trg_locale": pair["trg"],
                     }
@@ -217,7 +207,7 @@ def jobs_for_mono_datasets(config, jobs):
                         "provider": provider,
                         "dataset": dataset,
                         "dataset_short": shorten_dataset_name(dataset),
-                        "dataset_sanitized": dataset.replace("/", "_").replace(".", "_"),
+                        "dataset_sanitized": sanitize_dataset_name(dataset),
                         "locale": locale,
                         "src_locale": pair["src"],
                         "trg_locale": pair["trg"],
