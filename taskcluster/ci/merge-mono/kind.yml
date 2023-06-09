@@ -76,7 +76,7 @@ task-defaults:
 
 tasks:
     src:
-        label: merge-mono-{provider}-mono-src-{src_locale}-{trg_locale}
+        label: merge-mono-src-{src_locale}-{trg_locale}
         attributes:
             dataset-category: mono-src
             cache:
@@ -93,7 +93,7 @@ tasks:
                     max_sent: training_config.experiment.mono-max-sentences-src
 
     trg:
-        label: merge-mono-{provider}-mono-trg-{src_locale}-{trg_locale}
+        label: merge-mono-trg-{src_locale}-{trg_locale}
         attributes:
             dataset-category: mono-trg
             cache:
