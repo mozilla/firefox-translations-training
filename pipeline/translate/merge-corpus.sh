@@ -27,23 +27,26 @@ trg2=$4
 res_src=$5
 res_trg=$6
 
+COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
+ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
+
 tmp_dir="$(dirname "${res_src}")/tmp"
 mkdir -p "${tmp_dir}"
 
-cat <(pigz -dc "${src1}") <(pigz -dc "${src2}") | pigz >"${tmp_dir}/original.src.gz"
-cat <(pigz -dc "${trg1}") <(pigz -dc "${trg2}") | pigz >"${tmp_dir}/original.trg.gz"
+cat <(${COMPRESSION_CMD} -dc "${src1}") <(${COMPRESSION_CMD} -dc "${src2}") | ${COMPRESSION_CMD} >"${tmp_dir}/original.src.${ARTIFACT_EXT}"
+cat <(${COMPRESSION_CMD} -dc "${trg1}") <(${COMPRESSION_CMD} -dc "${trg2}") | ${COMPRESSION_CMD} >"${tmp_dir}/original.trg.${ARTIFACT_EXT}"
 
 echo "#### Deduplicating"
-paste <(pigz -dc "${tmp_dir}/original.src.gz") <(pigz -dc "${tmp_dir}/original.trg.gz") |
+paste <(${COMPRESSION_CMD} -dc "${tmp_dir}/original.src.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${tmp_dir}/original.trg.${ARTIFACT_EXT}") |
   shuf --random-source=<(get_seeded_random 42) |
   ${BIN}/dedupe |
-  pigz > "${tmp_dir}/all.gz"
+  ${COMPRESSION_CMD} > "${tmp_dir}/all.${ARTIFACT_EXT}"
 
-pigz -dc "${tmp_dir}/all.gz" | cut -f1 | pigz > "${res_src}"
-pigz -dc "${tmp_dir}/all.gz" | cut -f2 | pigz > "${res_trg}"
+${COMPRESSION_CMD} -dc "${tmp_dir}/all.${ARTIFACT_EXT}" | cut -f1 | ${COMPRESSION_CMD} > "${res_src}"
+${COMPRESSION_CMD} -dc "${tmp_dir}/all.${ARTIFACT_EXT}" | cut -f2 | ${COMPRESSION_CMD} > "${res_trg}"
 
-src_len=$(pigz -dc "${res_src}" | wc -l)
-trg_len=$(pigz -dc "${res_trg}" | wc -l)
+src_len=$(${COMPRESSION_CMD} -dc "${res_src}" | wc -l)
+trg_len=$(${COMPRESSION_CMD} -dc "${res_trg}" | wc -l)
 if [ "${src_len}" != "${trg_len}" ]; then
   echo "Error: length of ${res_src} ${src_len} is different from ${res_trg} ${trg_len}"
   exit 1
