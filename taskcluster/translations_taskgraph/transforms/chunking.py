@@ -10,7 +10,7 @@ from voluptuous import ALLOW_EXTRA, Required, Optional
 from translations_taskgraph.util.dict_helpers import deep_get
 from translations_taskgraph.util.substitution import substitute
 
-SCHEMA = Schema(
+CHUNK_SCHEMA = Schema(
     {
         Required("chunk-config"): {
             Required("total-chunks"): {
@@ -23,7 +23,23 @@ SCHEMA = Schema(
 )
 
 chunk = TransformSequence()
-chunk.add_validate(SCHEMA)
+chunk.add_validate(CHUNK_SCHEMA)
+
+
+UNCHUNK_SCHEMA = Schema(
+    {
+        Required("chunk-config"): {
+            Required("total-chunks"): {
+                Required("from-parameters"): str,
+            },
+            Optional("per-upstream-fields"): object,
+        }
+    },
+    extra=ALLOW_EXTRA,
+)
+
+unchunk = TransformSequence()
+unchunk.add_validate(UNCHUNK_SCHEMA)
 
 
 @chunk.add
@@ -49,3 +65,24 @@ def chunk_jobs(config, jobs):
                 container[subfield] = substitute(container[subfield], **subs)
 
             yield subjob
+
+
+@unchunk.add
+def do_unchunking(config, jobs):
+    for job in jobs:
+        chunk_config = job.pop("chunk-config", None)
+        total_chunks = deep_get(config.params, chunk_config["total-chunks"]["from-parameters"])
+        
+        for this_chunk in range(1, total_chunks + 1):
+            subs = {
+                "this_chunk": this_chunk,
+                "total_chunks": total_chunks,
+            }
+
+            for field, value in chunk_config.get("per-upstream-fields", {}).items():
+                if field not in job:
+                    field[job] = {}
+
+                job[field].update(substitute(copy.deepcopy(value), **subs))
+
+        yield job
