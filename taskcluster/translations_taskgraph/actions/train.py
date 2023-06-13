@@ -40,6 +40,127 @@ defaults = get_defaults("")["training_config"]
                 # TODO: this should probably be specified in ci/config.yml
                 "enum": ["clean-corpus", "clean-mono", "bicleaner", "bicleaner-ai", "merge-corpus", "merge-devset", "merge-mono", "train-vocab", "train-backwards", "evaluate-backwards"],
             },
+            "experiment": {
+                "type": "object",
+                "default": defaults["experiment"],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "A name for the experiment",
+                    },
+                    "src": {
+                        "type": "string",
+                        "description": "The src locale to train",
+                    },
+                    "trg": {
+                        "type": "string",
+                        "description": "The trg locale to train",
+                    },
+                    "teacher-ensemble": {
+                        "type": "number",
+                        "description": "Number of teachers to train",
+                    },
+                    "backward-model": {
+                        "type": "string",
+                        "description": "???",
+                    },
+                    "vocab": {
+                        "type": "string",
+                        "description": "???",
+                    },
+                    "mono-max-sentences-src": {
+                        "type": "number",
+                        "description": "limits per downloaded src dataset",
+                    },
+                    "mono-max-sentences-trg": {
+                        "type": "number",
+                        "description": "limits per downloaded trg dataset",
+                    },
+                    "split-length": {
+                        "type": "number",
+                        "description": "???",
+                    },
+                    "spm-sample-size": {
+                        "type": "number",
+                        "description": "vocabularly training sample size",
+                    },
+                    "best-model": {
+                        "type": "string",
+                        "description": "best model to use for training",
+                    },
+                    "bicleaner": {
+                        "properties": {
+                            "default-threshold": {
+                                "type": "number",
+                                "description": "bicleaner threshold",
+                            },
+                            "dataset-thresholds": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "number",
+                                }
+                            },
+                        },
+                        "required": [
+                            "default-threshold",
+                        ],
+                    },
+                },
+                "required": [
+                    "name",
+                    "src",
+                    "trg",
+                    "bicleaner",
+                ],
+            },
+            "marian-args": {
+                "type": "object",
+                "default": defaults["marian-args"],
+                "properties": {
+                    "training-backward": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string",
+                        },
+                    },
+                    "training-teacher-base": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string",
+                        },
+                    },
+                    "training-teacher-finetuned": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string",
+                        },
+                    },
+                    "training-student": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string",
+                        },
+                    },
+                    "training-student-finetuned": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string",
+                        },
+                    },
+                    "decoding-backward": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string",
+                        },
+                    },
+                    "decoding-teacher": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string",
+                        },
+                    },
+                },
+            },
             "datasets": {
                 "type": "object",
                 "default": defaults["datasets"],
@@ -97,74 +218,6 @@ leave empty to skip augmentation step (high resource languages)
                         },
                     },
                 },
-            },
-            "marian-args": {
-                "type": "object",
-                "default": defaults["marian-args"],
-                "properties": {
-                    "training-backward": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "string",
-                        },
-                    },
-                },
-            },
-            "experiment": {
-                "type": "object",
-                "default": defaults["experiment"],
-                "properties": {
-                    "src": {
-                        "type": "string",
-                        "description": "The src locale to train",
-                    },
-                    "trg": {
-                        "type": "string",
-                        "description": "The trg locale to train",
-                    },
-                    "bicleaner": {
-                        "properties": {
-                            "default-threshold": {
-                                "type": "number",
-                                "description": "bicleaner threshold",
-                            },
-                            "dataset-thresholds": {
-                                "type": "object",
-                                "properties": {
-                                    "opus_ada83/v1": {
-                                        "type": "number",
-                                    },
-                                    "mtdata_Neulab-tedtalks_train-1-eng-rus": {
-                                        "type": "number",
-                                    },
-                                },
-                                "additionalProperties": {
-                                    "type": "number",
-                                }
-                            },
-                        },
-                    },
-                    "best-model": {
-                        "type": "string",
-                        "description": "best model to use for training",
-                    },
-                    "spm-sample-size": {
-                        "type": "number",
-                        "description": "vocabularly training sample size",
-                    },
-                    "mono-max-sentences-src": {
-                        "type": "number",
-                        "description": "limits per downloaded src dataset",
-                    },
-                    "mono-max-sentences-trg": {
-                        "type": "number",
-                        "description": "limits per downloaded trg dataset",
-                    },
-                },
-                "required": [
-                    "src",
-                    "trg",
-                ],
             },
         },
         "required": [
