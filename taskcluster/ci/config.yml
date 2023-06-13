@@ -121,6 +121,11 @@ workers:
             implementation: generic-worker
             os: linux
             worker-type: '{alias}'
+        t-linux-v100-gpu-4:
+            provisioner: '{trust-domain}-{level}'
+            implementation: generic-worker
+            os: linux
+            worker-type: '{alias}'
         images:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
