@@ -6,7 +6,6 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.from_datasets:mono
-    - translations_taskgraph.transforms.find_upstreams:mono
     - translations_taskgraph.transforms.command_context_from_params:transforms
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cache:transforms
@@ -14,33 +13,30 @@ transforms:
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
-    - clean-mono
+    - merge-mono
     - toolchain
 
 task-defaults:
-    description: merge mono for {locale}
+    description: split mono for {locale}
     attributes:
-        stage: merge-mono
+        stage: split-mono
         cache:
-            type: merge-mono
+            type: split-mono
             resources:
-                - pipeline/clean/merge-mono.sh
+                - pipeline/translate/split-mono.sh
+                - taskcluster/scripts/pipeline/split-taskcluster.sh
+            from-parameters:
+                split_length: training_config.experiment.split-length
+                split_chunks: training_config.taskcluster.split-chunks
 
     dataset-config:
         substitution-fields:
-            - label
             - description
-            - name
+            - label
             - treeherder.symbol
+            - fetches
+            - dependencies
             - worker.env
-            - upstreams-config.locale
-
-    upstreams-config:
-        locale: "{locale}"
-        upstream-task-attributes:
-            cleaning-type: clean-mono
-        upstream-artifacts:
-            - "{dataset_sanitized}.{locale}.zst"
 
     worker-type: b-linux-large
 
@@ -54,25 +50,29 @@ task-defaults:
         env:
             LOCALE: "{locale}"
             COMPRESSION_CMD: zstdmt
+            ARTIFACT_EXT: zst
 
     # Don't run unless explicitly scheduled
     run-on-tasks-for: []
 
     run:
         using: run-task
+        command-context:
+            from-parameters:
+                split_length: training_config.experiment.split-length
+                split_chunks: training_config.taskcluster.split-chunks
         command:
             - bash
             - -c
-            # Arguments are:
-            # 1) output directory
-            # 2) max_sent (sent to shuf -n to output at most max_sent lines)
-            # 3) input files
+              # TODO: move number of chunks elsewhere
             - >-
                 export BIN=$MOZ_FETCHES_DIR &&
-                $VCS_PATH/pipeline/clean/merge-mono.sh
-                /builds/worker/artifacts/mono.$LOCALE.zst
-                {max_sent}
-                $MOZ_FETCHES_DIR/*.zst
+                $VCS_PATH/taskcluster/scripts/pipeline/split-taskcluster.sh
+                mono
+                {split_chunks}
+                /builds/worker/artifacts
+                {split_length}
+                $MOZ_FETCHES_DIR/mono.$LOCALE.zst
 
     fetches:
         toolchain:
@@ -80,12 +80,9 @@ task-defaults:
 
 tasks:
     src:
-        label: merge-mono-src-{src_locale}-{trg_locale}
+        label: split-mono-src-{src_locale}-{trg_locale}
         attributes:
             dataset-category: mono-src
-            cache:
-                from-parameters:
-                    max_sent: training_config.experiment.mono-max-sentences-src
 
         dataset-config:
             include-categories:
@@ -93,20 +90,20 @@ tasks:
 
         treeherder:
             symbol: "src-{src_locale}-{trg_locale}"
-            platform: merge-mono/opt
+            platform: split-mono/opt
 
-        run:
-            command-context:
-                from-parameters:
-                    max_sent: training_config.experiment.mono-max-sentences-src
+        dependencies:
+            merge-mono-src: merge-mono-src-{src_locale}-{trg_locale}
+
+        fetches:
+            merge-mono-src:
+                - artifact: mono.{src_locale}.zst
+                  extract: false
 
     trg:
-        label: merge-mono-trg-{src_locale}-{trg_locale}
+        label: split-mono-trg-{src_locale}-{trg_locale}
         attributes:
             dataset-category: mono-trg
-            cache:
-                from-parameters:
-                    max_sent: training_config.experiment.mono-max-sentences-trg
 
         dataset-config:
             include-categories:
@@ -114,9 +111,12 @@ tasks:
 
         treeherder:
             symbol: "trg-{src_locale}-{trg_locale}"
-            platform: merge-mono/opt
+            platform: split-mono/opt
 
-        run:
-            command-context:
-                from-parameters:
-                    max_sent: training_config.experiment.mono-max-sentences-trg
+        dependencies:
+            merge-mono-trg: merge-mono-trg-{src_locale}-{trg_locale}
+
+        fetches:
+            merge-mono-trg:
+                - artifact: mono.{trg_locale}.zst
+                  extract: false

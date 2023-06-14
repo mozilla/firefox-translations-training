@@ -171,7 +171,7 @@ def upstreams_for_mono(config, jobs):
         upstreams_config = job.pop("upstreams-config")
         upstream_task_attributes = upstreams_config["upstream-task-attributes"]
         artifacts = upstreams_config["upstream-artifacts"]
-        substitution_fields = upstreams_config["substitution-fields"]
+        substitution_fields = upstreams_config.get("substitution-fields", [])
 
         for task in config.kind_dependencies_tasks.values():
             # Filter out any tasks that don't match the desired attributes.
