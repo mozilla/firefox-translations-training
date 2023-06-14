@@ -38,7 +38,7 @@ defaults = get_defaults("")["training_config"]
 (any stages this choice depends on will be automatically included).""",
                 "default": defaults["target-stage"],
                 # TODO: this should probably be specified in ci/config.yml
-                "enum": ["clean-corpus", "clean-mono", "bicleaner", "bicleaner-ai", "merge-corpus", "merge-devset", "merge-mono", "train-vocab", "train-backwards", "evaluate-backwards", "split-corpus", "split-mono", "translate-mono-trg", "collect-mono-trg", "merge-augmented"],
+                "enum": ["clean-corpus", "clean-mono", "bicleaner", "bicleaner-ai", "merge-corpus", "merge-devset", "merge-mono", "train-vocab", "train-backwards", "evaluate-backwards", "split-corpus", "split-mono", "translate-mono-trg", "collect-mono-trg", "merge-augmented", "train-teacher"],
             },
             "experiment": {
                 "type": "object",

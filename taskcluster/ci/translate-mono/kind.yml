@@ -15,7 +15,7 @@ transforms:
 
 kind-dependencies:
     - split-mono
-    - train
+    - train-backwards
     - train-vocab
     - toolchain
 

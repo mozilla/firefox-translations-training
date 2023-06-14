@@ -15,7 +15,7 @@ transforms:
 
 kind-dependencies:
     - dataset
-    - train
+    - train-backwards
     - train-vocab
     - fetch
     - toolchain
