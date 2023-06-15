@@ -2,7 +2,7 @@ import copy
 
 from taskgraph.transforms.base import TransformSequence
 from taskgraph.util.schema import Schema
-from voluptuous import ALLOW_EXTRA, Required, Any
+from voluptuous import ALLOW_EXTRA, Required, Any, Optional
 
 from translations_taskgraph.util.dict_helpers import deep_get
 
@@ -10,7 +10,7 @@ SCHEMA = Schema(
     {
         Required("run"): {
             Required("command-context"): {
-                Required("from-parameters"): {
+                Optional("from-parameters"): {
                     str: Any([str], str),
                 },
             },
@@ -28,7 +28,7 @@ def render_command(config, jobs):
     for job in jobs:
         subjob = copy.deepcopy(job)
 
-        for param, path in job["run"]["command-context"]["from-parameters"].items():
+        for param, path in job["run"]["command-context"].get("from-parameters", {}).items():
             if isinstance(path, str):
                 value = deep_get(config.params, path)
                 subjob["run"]["command-context"][param] = value
