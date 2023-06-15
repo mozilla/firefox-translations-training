@@ -1,3 +1,5 @@
+import itertools
+
 from taskgraph.transforms.base import TransformSequence
 from taskgraph.util.hash import hash_path
 from taskgraph.util.schema import Schema, optionally_keyed_by, resolve_keyed_by
@@ -44,6 +46,7 @@ def add_cache(config, jobs):
         cache_resources = cache["resources"]
         cache_parameters = cache.get("from-parameters", {})
         digest_data = []
+        digest_data.extend(list(itertools.chain.from_iterable(job["worker"]["command"])))
 
         if cache_resources:
             for r in cache_resources:
