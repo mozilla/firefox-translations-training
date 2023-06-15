@@ -19,6 +19,7 @@ RUN apt-get update -qq \
                           tar \
                           libxml2 \
                           libhunspell-dev \
+                          bc \
     && apt-get clean
 
 RUN locale-gen "$LANG"
