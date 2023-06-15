@@ -92,8 +92,8 @@ task-defaults:
             - marian
 
 tasks:
-    backward-{provider}-{dataset}-{src_locale}-{trg_locale}:
-        description: backwards evaluation for {dataset} {src_locale}-{trg_locale}
+    backward-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}:
+        description: backwards evaluation for {dataset_sanitized} {src_locale}-{trg_locale}
         attributes:
             stage: evaluate-backwards
             dataset-category: test

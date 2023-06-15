@@ -99,8 +99,8 @@ task-defaults:
               extract: false
 
 tasks:
-    "{provider}-{dataset}-{src_locale}-{trg_locale}":
-        description: bicleaner for {provider} {dataset} dataset {src_locale}-{trg_locale}
+    "{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}":
+        description: bicleaner for {provider} {dataset_sanitized} dataset {src_locale}-{trg_locale}
         worker-type: b-linux-large
         worker:
             docker-image: {"in-tree": "train"}
@@ -126,8 +126,8 @@ tasks:
                 # auto = use `nproc` value
                 bicleaner_threads: auto
 
-    ai-{provider}-{dataset}-{src_locale}-{trg_locale}:
-        description: bicleaner-ai for {provider} {dataset} dataset {src_locale}-{trg_locale}
+    ai-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}:
+        description: bicleaner-ai for {provider} {dataset_sanitized} dataset {src_locale}-{trg_locale}
         worker-type: t-linux-v100-gpu
         worker:
             artifacts:

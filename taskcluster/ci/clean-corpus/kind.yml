@@ -17,7 +17,7 @@ kind-dependencies:
 
 tasks:
     "{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}":
-        description: Clean {provider} {dataset} dataset {src_locale}-{trg_locale}
+        description: Clean {provider} {dataset_sanitized} dataset {src_locale}-{trg_locale}
         attributes:
             cleaning-type: clean-corpus
             dataset-category: train

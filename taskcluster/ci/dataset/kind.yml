@@ -53,7 +53,7 @@ task-defaults:
 tasks:
     flores:
         description: Fetch flores101 dataset
-        label: dataset-flores-{dataset}-{src_locale}-{trg_locale}
+        label: dataset-flores-{dataset_sanitized}-{src_locale}-{trg_locale}
         dataset-config:
             include-datasets:
                 flores: {}
@@ -73,7 +73,7 @@ tasks:
 
     sacrebleu:
         description: Fetch sacrebleu dataset
-        label: dataset-sacrebleu-{dataset}-{src_locale}-{trg_locale}
+        label: dataset-sacrebleu-{dataset_sanitized}-{src_locale}-{trg_locale}
         dataset-config:
             include-datasets:
                 sacrebleu: {}
@@ -114,7 +114,7 @@ tasks:
 
     mtdata:
         description: Fetch mtdata dataset
-        label: dataset-mtdata-{dataset}-{src_locale}-{trg_locale}
+        label: dataset-mtdata-{dataset_sanitized}-{src_locale}-{trg_locale}
         dataset-config:
             include-datasets:
                 mtdata: {}
