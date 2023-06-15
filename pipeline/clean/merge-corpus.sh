@@ -23,8 +23,8 @@ mkdir -p "${tmp}"
 
 echo "### Merging"
 if [[ "${inputs[0]}" == *.${ARTIFACT_EXT} ]]; then
-  cat `echo ${inputs[@]} | tr ' ' '\n' | grep ${SRC} | tr '\n' ' '` >"${tmp}/corpus.${SRC}.dup.${ARTIFACT_EXT}"
-  cat `echo ${inputs[@]} | tr ' ' '\n' | grep ${TRG} | tr '\n' ' '` >"${tmp}/corpus.${TRG}.dup.${ARTIFACT_EXT}"
+  cat `echo ${inputs[@]} | tr ' ' '\n' | grep "${SRC}.${ARTIFACT_EXT}" | tr '\n' ' '` >"${tmp}/corpus.${SRC}.dup.${ARTIFACT_EXT}"
+  cat `echo ${inputs[@]} | tr ' ' '\n' | grep "${TRG}.${ARTIFACT_EXT}" | tr '\n' ' '` >"${tmp}/corpus.${TRG}.dup.${ARTIFACT_EXT}"
 else
   cat "${inputs[@]/%/.${SRC}.${ARTIFACT_EXT}}" >"${tmp}/corpus.${SRC}.dup.${ARTIFACT_EXT}"
   cat "${inputs[@]/%/.${TRG}.${ARTIFACT_EXT}}" >"${tmp}/corpus.${TRG}.dup.${ARTIFACT_EXT}"
