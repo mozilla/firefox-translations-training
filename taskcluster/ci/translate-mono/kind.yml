@@ -69,7 +69,7 @@ task-defaults:
             - >-
                 export MARIAN=$MOZ_FETCHES_DIR &&
                 $VCS_PATH/taskcluster/scripts/pipeline/translate-taskcluster.sh
-                $MOZ_FETCHES_DIR/split-file.{this_chunk}.zst
+                $MOZ_FETCHES_DIR/src-file.{this_chunk}.zst
                 artifacts
                 $MOZ_FETCHES_DIR/vocab.spm
                 $MOZ_FETCHES_DIR/*.npz
@@ -112,7 +112,7 @@ tasks:
 
         fetches:
             split-mono-trg:
-                - artifact: split-file.{this_chunk}.zst
+                - artifact: src-file.{this_chunk}.zst
                   extract: true
             train-backwards:
                 - artifact: final.model.npz.best-{best_model}.npz
