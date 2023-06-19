@@ -71,6 +71,7 @@ task-defaults:
                 $VCS_PATH/taskcluster/scripts/pipeline/translate-taskcluster.sh
                 $MOZ_FETCHES_DIR/src-file.{this_chunk}.zst
                 artifacts
+                plain
                 $MOZ_FETCHES_DIR/vocab.spm
                 $MOZ_FETCHES_DIR/*.npz
 
