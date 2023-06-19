@@ -29,7 +29,7 @@ chunk.add_validate(CHUNK_SCHEMA)
 
 UNCHUNK_SCHEMA = Schema(
     {
-        Optional("chunk-config"): {
+        Optional("unchunk-config"): {
             Required("total-chunks"): {
                 Required("from-parameters"): str,
             },
@@ -75,7 +75,7 @@ def chunk_jobs(config, jobs):
 @unchunk.add
 def do_unchunking(config, jobs):
     for job in jobs:
-        chunk_config = job.pop("chunk-config", None)
+        chunk_config = job.pop("unchunk-config", None)
         if not chunk_config:
             yield job
             continue

@@ -27,7 +27,7 @@ task-defaults:
             - description
             - name
             - treeherder.symbol
-            - chunk-config.per-upstream-fields
+            - unchunk-config.per-upstream-fields
             - run.command
             - dependencies
             - fetches
@@ -68,7 +68,7 @@ tasks:
             cache:
                 type: collect-mono-trg
 
-        chunk-config:
+        unchunk-config:
             total-chunks:
                 from-parameters: training_config.taskcluster.split-chunks
             per-upstream-fields:
