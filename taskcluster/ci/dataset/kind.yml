@@ -10,6 +10,7 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.from_datasets:per_dataset
+    - translations_taskgraph.transforms.command_context_from_params:transforms
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cache:transforms
     - taskgraph.transforms.cached_tasks:transforms
@@ -26,12 +27,15 @@ task-defaults:
             - name
             - label
             - treeherder.symbol
+            - worker.env
     worker:
         docker-image: {in-tree: toolchain-build}
         max-run-time: 1800
         env:
             COMPRESSION_CMD: zstdmt
             ARTIFACT_EXT: zst
+            SRC: "{src_locale}"
+            TRG: "{trg_locale}"
         artifacts:
             - name: public/build
               path: /builds/worker/artifacts
@@ -49,7 +53,7 @@ task-defaults:
 tasks:
     flores:
         description: Fetch flores101 dataset
-        label: dataset-flores-{dataset}-{src_locale}-{trg_locale}
+        label: dataset-flores-{dataset_sanitized}-{src_locale}-{trg_locale}
         dataset-config:
             include-datasets:
                 flores: {}
@@ -57,15 +61,19 @@ tasks:
             cache:
                 resources:
                     - pipeline/data/importers/corpus/flores.sh
+                    - pipeline/data/download-corpus.sh
         run:
             command:
                 - bash
                 - -c
-                - $VCS_PATH/pipeline/data/importers/corpus/flores.sh {src_locale} {trg_locale} /builds/worker/artifacts/{dataset} {dataset}
+                - >-
+                    $VCS_PATH/pipeline/data/download-corpus.sh
+                    {dataset}
+                    /builds/worker/artifacts/{dataset_sanitized}
 
     sacrebleu:
         description: Fetch sacrebleu dataset
-        label: dataset-sacrebleu-{dataset}-{src_locale}-{trg_locale}
+        label: dataset-sacrebleu-{dataset_sanitized}-{src_locale}-{trg_locale}
         dataset-config:
             include-datasets:
                 sacrebleu: {}
@@ -73,11 +81,15 @@ tasks:
             cache:
                 resources:
                     - pipeline/data/importers/corpus/sacrebleu.sh
+                    - pipeline/data/download-corpus.sh
         run:
             command:
                 - bash
                 - -c
-                - $VCS_PATH/pipeline/data/importers/corpus/sacrebleu.sh {src_locale} {trg_locale} /builds/worker/artifacts/{dataset} {dataset}
+                - >-
+                    $VCS_PATH/pipeline/data/download-corpus.sh
+                    {dataset}
+                    /builds/worker/artifacts/{dataset_sanitized}
 
     opus:
         description: Fetch opus dataset
@@ -90,15 +102,19 @@ tasks:
             cache:
                 resources:
                     - pipeline/data/importers/corpus/opus.sh
+                    - pipeline/data/download-corpus.sh
         run:
             command:
                 - bash
                 - -c
-                - $VCS_PATH/pipeline/data/importers/corpus/opus.sh {src_locale} {trg_locale} /builds/worker/artifacts/{dataset_sanitized} {dataset}
+                - >-
+                    $VCS_PATH/pipeline/data/download-corpus.sh
+                    {dataset}
+                    /builds/worker/artifacts/{dataset_sanitized}
 
     mtdata:
         description: Fetch mtdata dataset
-        label: dataset-mtdata-{dataset}-{src_locale}-{trg_locale}
+        label: dataset-mtdata-{dataset_sanitized}-{src_locale}-{trg_locale}
         dataset-config:
             include-datasets:
                 mtdata: {}
@@ -106,11 +122,15 @@ tasks:
             cache:
                 resources:
                     - pipeline/data/importers/corpus/mtdata.sh
+                    - pipeline/data/download-corpus.sh
         run:
             command:
                 - bash
                 - -c
-                - $VCS_PATH/pipeline/data/importers/corpus/mtdata.sh {src_locale} {trg_locale} /builds/worker/artifacts/{dataset} {dataset}
+                - >-
+                    $VCS_PATH/pipeline/data/download-corpus.sh
+                    {dataset}
+                    /builds/worker/artifacts/{dataset_sanitized}
 
     news-crawl:
         description: Fetch news-crawl dataset
@@ -122,8 +142,30 @@ tasks:
             cache:
                 resources:
                     - pipeline/data/importers/mono/news-crawl.sh
+                    - pipeline/data/download-mono.sh
+                from-parameters:
+                    max_sent_src:
+                        - training_config.experiment.mono-max-sentences-src
+                    max_sent_trg:
+                        - training_config.experiment.mono-max-sentences-trg
         run:
+            command-context:
+                from-parameters:
+                    max_sent_src:
+                        - training_config.experiment.mono-max-sentences-src
+                    max_sent_trg:
+                        - training_config.experiment.mono-max-sentences-trg
             command:
                 - bash
                 - -c
-                - $VCS_PATH/pipeline/data/importers/mono/news-crawl.sh {src_locale} /builds/worker/artifacts/{dataset_sanitized}.{src_locale} {dataset} && $VCS_PATH/pipeline/data/importers/mono/news-crawl.sh {trg_locale} /builds/worker/artifacts/{dataset_sanitized}.{trg_locale} {dataset}
+                - >-
+                    $VCS_PATH/pipeline/data/download-mono.sh
+                    {dataset}
+                    {src_locale}
+                    {max_sent_src}
+                    /builds/worker/artifacts/{dataset_sanitized}.{src_locale}.zst &&
+                    $VCS_PATH/pipeline/data/download-mono.sh
+                    {dataset}
+                    {trg_locale}
+                    {max_sent_trg}
+                    /builds/worker/artifacts/{dataset_sanitized}.{trg_locale}.zst

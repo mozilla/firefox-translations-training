@@ -87,8 +87,8 @@ task-defaults:
               extract: false
 
 tasks:
-    "{provider}-{dataset}-mono-src-{src_locale}-{trg_locale}":
-        description: Clean {provider} {dataset} dataset mono-src {locale}
+    "{provider}-{dataset_sanitized}-mono-src-{src_locale}-{trg_locale}":
+        description: Clean {provider} {dataset_sanitized} dataset mono-src {locale}
         attributes:
             dataset-category: mono-src
         treeherder:
@@ -97,8 +97,8 @@ tasks:
             include-categories:
                 - mono-src
 
-    "{provider}-{dataset}-mono-trg-{src_locale}-{trg_locale}":
-        description: Clean {provider} {dataset} dataset mono-trg {locale}
+    "{provider}-{dataset_sanitized}-mono-trg-{src_locale}-{trg_locale}":
+        description: Clean {provider} {dataset_sanitized} dataset mono-trg {locale}
         attributes:
             dataset-category: mono-trg
         treeherder:
