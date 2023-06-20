@@ -67,7 +67,9 @@ def chunk_jobs(config, jobs):
                     f, subfield = subfield.split(".", 1)
                     container = container[f]
 
-                container[subfield] = substitute(container[subfield], **subs)
+                subcontainer = copy.deepcopy(container[subfield])
+                subfield = substitute(subfield, **subs)
+                container[subfield] = substitute(subcontainer, **subs)
 
             yield subjob
 
