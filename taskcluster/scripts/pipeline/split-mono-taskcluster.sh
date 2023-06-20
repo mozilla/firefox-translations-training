@@ -18,15 +18,15 @@ ${VCS_ROOT}/pipeline/translate/split-mono.sh "${lang_args[@]}" "${output_dir}" "
 # evenly into the requested number of chunks, creating empty archives if there's
 # not enough files to go around.
 cd "${output_dir}"
-ls file* | sort > src-files.txt
+ls file* | sort > out-files.txt
 for i in $(seq 1 ${chunks} | tr '\n' ' '); do
-  src_files=$(split -n l/${i}/${chunks} src-files.txt | tr '\n' ' ')
-  if [ "${src_files}" = "" ]; then
-    touch "src-file.${i}"
+  out_files=$(split -n l/${i}/${chunks} out-files.txt | tr '\n' ' ')
+  if [ "${out_files}" = "" ]; then
+    touch "out-file.${i}"
   else
-    cat ${src_files} > "src-file.${i}"
+    cat ${out_files} > "out-file.${i}"
   fi
-  zstd --rm "src-file.${i}"
+  zstd --rm "out-file.${i}"
 done
 
-rm file* src-files.txt
+rm file* out-files.txt

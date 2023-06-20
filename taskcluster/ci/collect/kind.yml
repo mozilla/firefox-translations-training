@@ -53,7 +53,7 @@ task-defaults:
             - bash
             - -c
             - >-
-                zstd -d --rm $MOZ_FETCHES_DIR/split-file* &&
+                zstd -d --rm $MOZ_FETCHES_DIR/out-file* &&
                 $VCS_PATH/pipeline/translate/collect.sh
                 fetches
                 artifacts/mono.{src_locale}.zst
@@ -76,7 +76,7 @@ tasks:
                     translate-mono-trg-{this_chunk}: translate-mono-trg-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}
                 fetches:
                     translate-mono-trg-{this_chunk}:
-                        - artifact: split-file.{this_chunk}.out.zst
+                        - artifact: out-file.{this_chunk}.out.zst
 
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
