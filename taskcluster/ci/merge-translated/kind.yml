@@ -15,7 +15,7 @@ transforms:
 kind-dependencies:
     - merge-mono
     - merge
-    - collect
+    - collect-mono
     - toolchain
 
 task-defaults:
