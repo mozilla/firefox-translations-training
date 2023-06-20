@@ -60,7 +60,7 @@ task-defaults:
                 $MOZ_FETCHES_DIR/mono.{trg_locale}.zst
 
 tasks:
-    trg-{src_locale}-{trg_locale}:
+    "{src_locale}-{trg_locale}":
         description: collect mono trg {src_locale}-{trg_locale}
         attributes:
             dataset-category: mono-trg

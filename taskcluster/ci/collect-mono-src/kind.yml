@@ -7,6 +7,7 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.from_datasets:locales_only
+    - translations_taskgraph.transforms.chunking:unchunk
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cache:transforms
     - taskgraph.transforms.cached_tasks:transforms
@@ -14,25 +15,22 @@ transforms:
 
 kind-dependencies:
     - merge-mono
-    - merge
-    - collect-mono
-    - toolchain
+    - translate-mono-src
 
 task-defaults:
     attributes:
         cache:
             resources:
-                - pipeline/translate/merge-corpus.sh
+                - pipeline/translate/collect.sh
     dataset-config:
         substitution-fields:
-            - label
             - description
             - name
             - treeherder.symbol
-            - worker.env
+            - unchunk-config.per-upstream-fields
+            - run.command
             - dependencies
             - fetches
-            - run.command
     worker-type: b-linux-large
     worker:
         docker-image: {"in-tree": "train"}
@@ -42,58 +40,53 @@ task-defaults:
               path: /builds/worker/artifacts
               type: directory
         env:
-            SRC: "{src_locale}"
-            TRG: "{trg_locale}"
             COMPRESSION_CMD: zstdmt
-            ARTIFACT_EXT: zst
 
     # Don't run unless explicitly scheduled
     run-on-tasks-for: []
 
     treeherder:
         symbol: "{src_locale}-{trg_locale}"
-
     run:
         using: run-task
         command:
             - bash
             - -c
             - >-
-                export BIN=$MOZ_FETCHES_DIR &&
-                $VCS_PATH/pipeline/translate/merge-corpus.sh
-                $MOZ_FETCHES_DIR/corpus.{src_locale}.zst
+                zstd -d --rm $MOZ_FETCHES_DIR/out-file* &&
+                $VCS_PATH/pipeline/translate/collect.sh
+                fetches
+                artifacts/mono.{trg_locale}.zst
                 $MOZ_FETCHES_DIR/mono.{src_locale}.zst
-                $MOZ_FETCHES_DIR/corpus.{trg_locale}.zst
-                $MOZ_FETCHES_DIR/mono.{trg_locale}.zst
-                /builds/worker/artifacts/corpus.{src_locale}.zst
-                /builds/worker/artifacts/corpus.{trg_locale}.zst
-    fetches:
-        toolchain:
-            - preprocess
 
 tasks:
-    merge-augmented:
-        label: merge-augmented-{src_locale}-{trg_locale}
-        description: merge augmented for {src_locale}-{trg_locale}
+    "{src_locale}-{trg_locale}":
+        description: collect mono src {src_locale}-{trg_locale}
         attributes:
-            dataset-category: devtest
-            stage: merge-augmented
+            dataset-category: mono-src
+            stage: collect-mono-src
             cache:
-                type: merge-augmented
+                type: collect-mono-src
+
+        unchunk-config:
+            total-chunks:
+                from-parameters: training_config.taskcluster.split-chunks
+            per-upstream-fields:
+                dependencies:
+                    translate-mono-src-{this_chunk}: translate-mono-src-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}
+                fetches:
+                    translate-mono-src-{this_chunk}:
+                        - artifact: out-file.{this_chunk}.out.zst
+
+        # Don't run unless explicitly scheduled
+        run-on-tasks-for: []
 
         treeherder:
-            platform: merge-augmented/opt
+            platform: collect-mono-src/opt
 
         dependencies:
-            merge-corpus: merge-corpus-{src_locale}-{trg_locale}
-            merge-mono-trg: merge-mono-trg-{src_locale}-{trg_locale}
-            collect-mono-trg: collect-mono-trg-{src_locale}-{trg_locale}
+            merge-mono-src: merge-mono-src-{src_locale}-{trg_locale}
 
         fetches:
-            merge-corpus:
-                - artifact: corpus.{src_locale}.zst
-                - artifact: corpus.{trg_locale}.zst
-            merge-mono-trg:
-                - artifact: mono.{trg_locale}.zst
-            collect-mono-trg:
+            merge-mono-src:
                 - artifact: mono.{src_locale}.zst

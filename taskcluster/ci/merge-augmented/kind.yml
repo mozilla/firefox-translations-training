@@ -1,0 +1,99 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.from_datasets:locales_only
+    - taskgraph.transforms.job:transforms
+    - translations_taskgraph.transforms.cache:transforms
+    - taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - merge-mono
+    - merge
+    - collect-mono-trg
+    - toolchain
+
+task-defaults:
+    attributes:
+        cache:
+            resources:
+                - pipeline/translate/merge-corpus.sh
+    dataset-config:
+        substitution-fields:
+            - label
+            - description
+            - name
+            - treeherder.symbol
+            - worker.env
+            - dependencies
+            - fetches
+            - run.command
+    worker-type: b-linux-large
+    worker:
+        docker-image: {"in-tree": "train"}
+        max-run-time: 3600
+        artifacts:
+            - name: public/build
+              path: /builds/worker/artifacts
+              type: directory
+        env:
+            SRC: "{src_locale}"
+            TRG: "{trg_locale}"
+            COMPRESSION_CMD: zstdmt
+            ARTIFACT_EXT: zst
+
+    # Don't run unless explicitly scheduled
+    run-on-tasks-for: []
+
+    treeherder:
+        symbol: "{src_locale}-{trg_locale}"
+
+    run:
+        using: run-task
+        command:
+            - bash
+            - -c
+            - >-
+                export BIN=$MOZ_FETCHES_DIR &&
+                $VCS_PATH/pipeline/translate/merge-corpus.sh
+                $MOZ_FETCHES_DIR/corpus.{src_locale}.zst
+                $MOZ_FETCHES_DIR/mono.{src_locale}.zst
+                $MOZ_FETCHES_DIR/corpus.{trg_locale}.zst
+                $MOZ_FETCHES_DIR/mono.{trg_locale}.zst
+                /builds/worker/artifacts/corpus.{src_locale}.zst
+                /builds/worker/artifacts/corpus.{trg_locale}.zst
+    fetches:
+        toolchain:
+            - preprocess
+
+tasks:
+    merge-augmented:
+        label: merge-augmented-{src_locale}-{trg_locale}
+        description: merge augmented for {src_locale}-{trg_locale}
+        attributes:
+            dataset-category: devtest
+            stage: merge-augmented
+            cache:
+                type: merge-augmented
+
+        treeherder:
+            platform: merge-augmented/opt
+
+        dependencies:
+            merge-corpus: merge-corpus-{src_locale}-{trg_locale}
+            merge-mono-trg: merge-mono-trg-{src_locale}-{trg_locale}
+            collect-mono-trg: collect-mono-trg-{src_locale}-{trg_locale}
+
+        fetches:
+            merge-corpus:
+                - artifact: corpus.{src_locale}.zst
+                - artifact: corpus.{trg_locale}.zst
+            merge-mono-trg:
+                - artifact: mono.{trg_locale}.zst
+            collect-mono-trg:
+                - artifact: mono.{src_locale}.zst

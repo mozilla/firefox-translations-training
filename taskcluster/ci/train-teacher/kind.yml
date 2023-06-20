@@ -17,7 +17,7 @@ transforms:
 
 kind-dependencies:
     - merge
-    - merge-translated
+    - merge-augmented
     - train-vocab
     - toolchain
 
