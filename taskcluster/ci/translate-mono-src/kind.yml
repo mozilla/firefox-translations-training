@@ -1,0 +1,134 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.task_substitution_from_params:transforms
+    - translations_taskgraph.transforms.from_datasets:mono
+    - translations_taskgraph.transforms.chunking:chunk
+    - translations_taskgraph.transforms.chunking:unchunk
+    - taskgraph.transforms.job:transforms
+    - translations_taskgraph.transforms.cache:transforms
+    - taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - split-mono
+    - finetune-teacher
+    - train-vocab
+    - toolchain
+
+task-defaults:
+    description: translate mono for {locale}
+    attributes:
+        cache:
+            resources:
+                - pipeline/translate/translate.sh
+                - taskcluster/scripts/pipeline/translate-taskcluster.sh
+            from-parameters:
+                split_chunks: training_config.taskcluster.split-chunks
+
+    dataset-config:
+        substitution-fields:
+            - description
+            - label
+            - treeherder.symbol
+            - fetches
+            - dependencies
+            - worker.env
+            - unchunk-config.per-upstream-fields
+
+    task-substitution:
+        from-parameters:
+            best_model: training_config.experiment.best-model
+        substitution-fields:
+            - unchunk-config.per-upstream-fields.fetches
+
+    worker-type: t-linux-v100-gpu-4
+
+    worker:
+        max-run-time: 86400
+        artifacts:
+            - name: public/build
+              path: artifacts
+              type: directory
+        env:
+            GPUS: "0 1 2 3"
+            WORKSPACE: "8000"
+            CUDA_DIR: fetches/cuda-toolkit
+            CUDNN_DIR: fetches/cuda-toolkit
+
+    # Don't run unless explicitly scheduled
+    run-on-tasks-for: []
+
+    run:
+        using: run-task
+        command:
+            - bash
+            - -xc
+            - >-
+                export MARIAN=$MOZ_FETCHES_DIR &&
+                $VCS_PATH/taskcluster/scripts/pipeline/translate-taskcluster.sh
+                $MOZ_FETCHES_DIR/out-file.{this_chunk}.zst
+                artifacts
+                plain
+                $MOZ_FETCHES_DIR/vocab.spm
+                $MOZ_FETCHES_DIR/model*/*.npz
+
+    dependencies:
+        train-vocab: train-vocab-{src_locale}-{trg_locale}
+
+    fetches:
+        toolchain:
+            - marian
+            - cuda-toolkit
+        train-vocab:
+            - artifact: vocab.spm
+              extract: false
+
+tasks:
+    src:
+        label: translate-mono-src-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}
+        attributes:
+            stage: translate-mono-src
+            dataset-category: mono-src
+            cache:
+                type: translate-mono-src
+
+        chunk-config:
+            total-chunks:
+                from-parameters: training_config.taskcluster.split-chunks
+            substitution-fields:
+                - label
+                - treeherder.symbol
+                - fetches.split-mono-src
+                - run.command
+
+        unchunk-config:
+            total-chunks:
+                from-parameters: training_config.experiment.teacher-ensemble
+            per-upstream-fields:
+                dependencies:
+                    finetune-teacher-{this_chunk}: finetune-teacher-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}
+                fetches:
+                    finetune-teacher-{this_chunk}:
+                        - artifact: final.model.npz.best-{best_model}.npz
+                          dest: model{this_chunk}
+
+        dataset-config:
+            include-categories:
+                - mono-src
+
+        treeherder:
+            symbol: "src-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}"
+            platform: translate-mono/opt
+
+        dependencies:
+            split-mono-src: split-mono-src-{src_locale}-{trg_locale}
+
+        fetches:
+            split-mono-src:
+                - artifact: out-file.{this_chunk}.zst
+                  extract: true

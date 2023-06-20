@@ -15,7 +15,7 @@ transforms:
 
 kind-dependencies:
     - merge-mono
-    - translate-mono
+    - translate-mono-trg
 
 task-defaults:
     attributes:

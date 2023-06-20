@@ -75,10 +75,16 @@ task-defaults:
                 $MOZ_FETCHES_DIR/vocab.spm
                 $MOZ_FETCHES_DIR/*.npz
 
+    dependencies:
+        train-vocab: train-vocab-{src_locale}-{trg_locale}
+
     fetches:
         toolchain:
             - marian
             - cuda-toolkit
+        train-vocab:
+            - artifact: vocab.spm
+              extract: false
 
 tasks:
     trg:
@@ -109,7 +115,6 @@ tasks:
         dependencies:
             split-mono-trg: split-mono-trg-{src_locale}-{trg_locale}
             train-backwards: train-backwards-{src_locale}-{trg_locale}
-            train-vocab: train-vocab-{src_locale}-{trg_locale}
 
         fetches:
             split-mono-trg:
@@ -117,7 +122,4 @@ tasks:
                   extract: true
             train-backwards:
                 - artifact: final.model.npz.best-{best_model}.npz
-                  extract: false
-            train-vocab:
-                - artifact: vocab.spm
                   extract: false
