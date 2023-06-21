@@ -22,7 +22,8 @@ kind-dependencies:
     - finetune-teacher
     - train-student
     - finetune-student
-    - fetch
+    - quantize
+    - alignments
     - toolchain
 
 task-defaults:
@@ -41,7 +42,7 @@ task-defaults:
             - fetches
             - treeherder.symbol
             - worker.env
-            - run.command-context.pipeline_args1
+            - run.command-context
     task-substitution:
         from-parameters:
             best_model: training_config.experiment.best-model
@@ -72,28 +73,28 @@ task-defaults:
 
     run:
         using: run-task
-        command:
-            - bash
-            - -c
+        command-context:
             # The two sed commands here are the unfortunate result of us consuming
             # a marian config that was produced by an earlier step. These configs
             # have hardcoded absolute paths to the models they were trained on,
             # and end invalid when used on a different machine. In theory it is
             # possible to adjust them at generation time to use relative paths,
             # but in practice we have not been able to make this work.
+            pipeline_setup: >-
+                sed -i -e "s,- .*fetches,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
+                sed -i -e "s,- .*artifacts,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml
+        command:
+            - bash
+            - -c
             - >-
                 pip install -r $VCS_PATH/pipeline/eval/requirements/eval.txt &&
                 export PATH=$PATH:~/.local/bin &&
                 export MARIAN=$MOZ_FETCHES_DIR &&
-                sed -i -e "s,- .*fetches,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
-                sed -i -e "s,- .*artifacts,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
+                export BMT_MARIAN=$MOZ_FETCHES_DIR &&
+                {pipeline_setup} &&
                 {pipeline_script}
                 {pipeline_args1}
                 {pipeline_args2}
-
-    fetches:
-        toolchain:
-            - marian
 
 tasks:
     backward-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}:
@@ -138,6 +139,8 @@ tasks:
             train-vocab:
                 - artifact: vocab.spm
                   extract: false
+            toolchain:
+                - marian
 
     teacher-{provider}-{dataset}-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}:
         description: teacher evaluation for {dataset} {src_locale}-{trg_locale} {this_chunk}/{total_chunks}
@@ -189,6 +192,8 @@ tasks:
             train-vocab:
                 - artifact: vocab.spm
                   extract: false
+            toolchain:
+                - marian
 
     finetuned-teacher-{provider}-{dataset}-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}:
         description: teacher evaluation for {dataset} {src_locale}-{trg_locale} {this_chunk}/{total_chunks}
@@ -241,6 +246,8 @@ tasks:
             train-vocab:
                 - artifact: vocab.spm
                   extract: false
+            toolchain:
+                - marian
 
     student-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}:
         description: student evaluation for {dataset_sanitized} {src_locale}-{trg_locale}
@@ -284,6 +291,8 @@ tasks:
             train-vocab:
                 - artifact: vocab.spm
                   extract: false
+            toolchain:
+                - marian
 
     finetuned-student-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}:
         description: finetuned-student evaluation for {dataset_sanitized} {src_locale}-{trg_locale}
@@ -327,3 +336,48 @@ tasks:
             train-vocab:
                 - artifact: vocab.spm
                   extract: false
+            toolchain:
+                - marian
+
+    quantized-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}:
+        description: quantized evaluation for {dataset_sanitized} {src_locale}-{trg_locale}
+        attributes:
+            stage: evaluate-quantized
+            dataset-category: test
+            cache:
+                type: evaluate-quantized
+        treeherder:
+            symbol: "quant-{provider_short}-{dataset_short}-{src_locale}-{trg_locale}"
+        run:
+            command-context:
+                pipeline_setup: zstd --rm -d $MOZ_FETCHES_DIR/lex.s2t.pruned.zst
+                pipeline_script: $VCS_PATH/pipeline/eval/eval-quantized.sh
+                pipeline_args1: >-
+                    $MOZ_FETCHES_DIR/model.intgemm.alphas.bin
+                    $MOZ_FETCHES_DIR/lex.s2t.pruned
+                    $MOZ_FETCHES_DIR/{dataset_sanitized}
+                pipeline_args2: >-
+                    $MOZ_FETCHES_DIR/vocab.spm
+                    $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    $TASK_WORKDIR/$VCS_PATH/pipeline/quantize/decoder.yml
+
+        dependencies:
+            dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
+            train-vocab: train-vocab-{src_locale}-{trg_locale}
+            quantize: quantize-{src_locale}-{trg_locale}
+            alignments: alignments-{src_locale}-{trg_locale}
+        fetches:
+            dataset:
+                - artifact: "{dataset_sanitized}.{src_locale}.zst"
+                  extract: false
+                - artifact: "{dataset_sanitized}.{trg_locale}.zst"
+                  extract: false
+            train-vocab:
+                - artifact: vocab.spm
+                  extract: false
+            quantize:
+                - artifact: model.intgemm.alphas.bin
+            alignments:
+                - artifact: lex.s2t.pruned.zst
+            toolchain:
+                - browsermt-marian
