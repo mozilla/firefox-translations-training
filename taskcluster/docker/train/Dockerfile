@@ -9,6 +9,9 @@ RUN apt-get update -qq \
                           bc \
                           libhunspell-1.7-0 \
                           libboost-program-options1.74.0 \
+                          libboost-filesystem1.74.0 \
+                          libboost-iostreams1.74.0 \
+                          pigz \
     && apt-get clean
 
 # Required to download sacrebleu datasets
