@@ -1,0 +1,89 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.from_datasets:locales_only
+    - translations_taskgraph.transforms.command_context_from_params:transforms
+    - taskgraph.transforms.job:transforms
+    - translations_taskgraph.transforms.cache:transforms
+    - taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - cefilter
+    - train-vocab
+    - toolchain
+
+tasks:
+    "{src_locale}-{trg_locale}":
+        description: alignments for {src_locale}-{trg_locale}
+        attributes:
+            dataset-category: train
+            stage: alignments
+            cache:
+                type: alignments
+                resources:
+                    - pipeline/alignment/generate-alignment-and-shortlist.sh
+        dataset-config:
+            substitution-fields:
+                - description
+                - name
+                - treeherder.symbol
+                - fetches
+                - dependencies
+                - worker.env
+        worker-type: b-linux-large
+        worker:
+            docker-image: {"in-tree": "train"}
+            max-run-time: 3600
+            artifacts:
+                - name: public/build
+                  path: /builds/worker/artifacts
+                  type: directory
+            env:
+                COMPRESSION_CMD: zstdmt
+                ARTIFACT_EXT: zst
+                SRC: "{src_locale}"
+                TRG: "{trg_locale}"
+
+        # Don't run unless explicitly scheduled
+        run-on-tasks-for: []
+
+        treeherder:
+            symbol: "{src_locale}-{trg_locale}"
+            platform: alignments/opt
+        run:
+            using: run-task
+            command-context: {}
+            command:
+                - bash
+                - -c
+                - >-
+                    export BIN=$MOZ_FETCHES_DIR &&
+                    export MARIAN=$MOZ_FETCHES_DIR &&
+                    export PATH=$PATH:$MOZ_FETCHES_DIR &&
+                    $VCS_PATH/pipeline/alignment/generate-alignment-and-shortlist.sh
+                    $MOZ_FETCHES_DIR/corpus
+                    $MOZ_FETCHES_DIR/vocab.spm
+                    /builds/worker/artifacts
+                    auto
+
+        dependencies:
+            train-vocab: train-vocab-{src_locale}-{trg_locale}
+            cefilter: cefilter-{src_locale}-{trg_locale}
+
+        fetches:
+            train-vocab:
+                - artifact: vocab.spm
+                  extract: false
+            cefilter:
+                - artifact: corpus.{src_locale}.zst
+                - artifact: corpus.{trg_locale}.zst
+            toolchain:
+                - marian
+                - fast-align
+                - extract-lex
