@@ -14,8 +14,8 @@ output_prefix=$3
 threads=$4
 dataset=$5
 
-COMPRESSION_CMD="${COMPRESSION_CMD:-${COMPRESSION_CMD}}"
-ARTIFACT_EXT="${ARTIFACT_EXT:-${ARTIFACT_EXT}}"
+COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
+ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
 
 echo "### Cleaning ${input_prefix}"
 
