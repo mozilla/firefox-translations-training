@@ -1,0 +1,109 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.task_substitution_from_params:transforms
+    - translations_taskgraph.transforms.from_datasets:locales_only
+    - translations_taskgraph.transforms.command_context_from_params:transforms
+    - taskgraph.transforms.job:transforms
+    - translations_taskgraph.transforms.cache:transforms
+    - taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - finetune-student
+    - train-vocab
+    - alignments
+    - merge
+    - toolchain
+
+tasks:
+    "{src_locale}-{trg_locale}":
+        description: quantize for {src_locale}-{trg_locale}
+        attributes:
+            dataset-category: train
+            stage: quantize
+            cache:
+                type: quantize
+                resources:
+                    - pipeline/quantize/requirements/quantize.txt
+                    - pipeline/quantize/quantize.sh
+        dataset-config:
+            substitution-fields:
+                - description
+                - name
+                - treeherder.symbol
+                - fetches
+                - dependencies
+                - worker.env
+        task-substitution:
+            from-parameters:
+                best_model: training_config.experiment.best-model
+            substitution-fields:
+                - fetches.finetune-student
+        worker-type: b-linux-large
+        worker:
+            docker-image: {"in-tree": "train"}
+            max-run-time: 3600
+            artifacts:
+                - name: public/build
+                  path: /builds/worker/artifacts
+                  type: directory
+            env:
+                SRC: "{src_locale}"
+                TRG: "{trg_locale}"
+
+        # Don't run unless explicitly scheduled
+        run-on-tasks-for: []
+
+        treeherder:
+            symbol: "{src_locale}-{trg_locale}"
+            platform: quantize/opt
+        run:
+            using: run-task
+            command-context:
+                from-parameters:
+                    best_model: training_config.experiment.best-model
+            command:
+                - bash
+                - -c
+                - >-
+                    export BMT_MARIAN=$MOZ_FETCHES_DIR &&
+                    export BIN=$MOZ_FETCHES_DIR &&
+                    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$MOZ_FETCHES_DIR/cuda-toolkit/lib64" &&
+                    zstd --rm -d $MOZ_FETCHES_DIR/*.zst &&
+                    pip install -r $VCS_PATH/pipeline/quantize/requirements/quantize.txt &&
+                    mkdir -p scripts/alphas &&
+                    mv $MOZ_FETCHES_DIR/extract_stats.py scripts/alphas &&
+                    $VCS_PATH/pipeline/quantize/quantize.sh
+                    $MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz
+                    $MOZ_FETCHES_DIR/vocab.spm
+                    $MOZ_FETCHES_DIR/lex.s2t.pruned
+                    $MOZ_FETCHES_DIR/devset.{src_locale}
+                    /builds/worker/artifacts
+
+        dependencies:
+            merge-devset: merge-devset-{src_locale}-{trg_locale}
+            finetune-student: finetune-student-{src_locale}-{trg_locale}
+            train-vocab: train-vocab-{src_locale}-{trg_locale}
+            alignments: alignments-{src_locale}-{trg_locale}
+
+        fetches:
+            toolchain:
+                - browsermt-marian
+                - cuda-toolkit
+            merge-devset:
+                - artifact: devset.{src_locale}.zst
+                  extract: false
+            finetune-student:
+                - artifact: final.model.npz.best-{best_model}.npz
+                  extract: false
+            train-vocab:
+                - artifact: vocab.spm
+                  extract: false
+            alignments:
+                - artifact: lex.s2t.pruned.zst
