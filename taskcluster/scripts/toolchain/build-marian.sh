@@ -19,7 +19,7 @@ fi
 bash $VCS_PATH/pipeline/setup/compile-marian.sh "${MARIAN_DIR}/build" "$(nproc)"
 
 cd $MARIAN_DIR/build
-tar --zstd -cf $UPLOAD_DIR/marian.tar.zst \
+tar -cf $UPLOAD_DIR/marian.tar \
   "marian" \
   "marian-decoder" \
   "marian-scorer" \
@@ -27,3 +27,10 @@ tar --zstd -cf $UPLOAD_DIR/marian.tar.zst \
   "spm_train" \
   "spm_encode" \
   "spm_export_vocab"
+
+if [ -f "${MARIAN_DIR}/scripts/alphas/extract_stats.py" ]; then
+  cd "${MARIAN_DIR}/scripts/alphas"
+  tar -rf $UPLOAD_DIR/marian.tar extract_stats.py
+fi
+
+zstd --rm $UPLOAD_DIR/marian.tar

@@ -67,7 +67,7 @@ tasks:
                 - taskcluster/scripts/toolchain/build-marian.sh
                 - taskcluster/scripts/toolchain/browsermt.patch
                 - pipeline/setup/compile-marian.sh
-            toolchain-artifact: public/build/browsermt-marian.tar.zst
+            toolchain-artifact: public/build/marian.tar.zst
         fetches:
             fetch:
                 - browsermt-marian
