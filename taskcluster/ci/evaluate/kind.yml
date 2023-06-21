@@ -20,6 +20,7 @@ kind-dependencies:
     - train-teacher
     - train-vocab
     - finetune-teacher
+    - train-student
     - fetch
     - toolchain
 
@@ -232,6 +233,49 @@ tasks:
                 - artifact: "{dataset_sanitized}.{trg_locale}.zst"
                   extract: false
             finetune-teacher:
+                - artifact: final.model.npz.best-{best_model}.npz
+                  extract: false
+                - artifact: final.model.npz.best-{best_model}.npz.decoder.yml
+                  extract: false
+            train-vocab:
+                - artifact: vocab.spm
+                  extract: false
+
+    student-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}:
+        description: student evaluation for {dataset_sanitized} {src_locale}-{trg_locale}
+        attributes:
+            stage: evaluate-student
+            dataset-category: test
+            cache:
+                type: evaluate-student
+        task-substitution:
+            substitution-fields:
+                - fetches.train-student
+        treeherder:
+            symbol: "st-{provider_short}-{dataset_short}-{src_locale}-{trg_locale}"
+        run:
+            command-context:
+                pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
+                pipeline_args1: >-
+                    $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    $MOZ_FETCHES_DIR/{dataset_sanitized}
+                    {src_locale}
+                    {trg_locale}
+                pipeline_args2: >-
+                    $MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz.decoder.yml
+                    $MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz
+
+        dependencies:
+            dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
+            train-student: train-student-{src_locale}-{trg_locale}
+            train-vocab: train-vocab-{src_locale}-{trg_locale}
+        fetches:
+            dataset:
+                - artifact: "{dataset_sanitized}.{src_locale}.zst"
+                  extract: false
+                - artifact: "{dataset_sanitized}.{trg_locale}.zst"
+                  extract: false
+            train-student:
                 - artifact: final.model.npz.best-{best_model}.npz
                   extract: false
                 - artifact: final.model.npz.best-{best_model}.npz.decoder.yml

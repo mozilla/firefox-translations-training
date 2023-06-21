@@ -13,7 +13,7 @@ from voluptuous import Optional, Required
 def get_defaults(_):
     return {
         "training_config": {
-            "target-stage": "train-student",
+            "target-stage": "evaluate-student",
             "experiment": {
                 "name": "training pipeline test config",
                 "src": "ru",
