@@ -1,0 +1,82 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.from_datasets:locales_only
+    - translations_taskgraph.transforms.command_context_from_params:transforms
+    - taskgraph.transforms.job:transforms
+    - translations_taskgraph.transforms.cache:transforms
+    - taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - merge-translated
+    - score
+    - toolchain
+
+tasks:
+    "{src_locale}-{trg_locale}":
+        description: cefilter for {src_locale}-{trg_locale}
+        attributes:
+            dataset-category: train
+            stage: cefilter
+            cache:
+                type: cefilter
+                resources:
+                    - pipeline/cefilter/ce-filter.sh
+        dataset-config:
+            substitution-fields:
+                - description
+                - name
+                - treeherder.symbol
+                - fetches
+                - dependencies
+                - worker.env
+        worker-type: b-linux-large
+        worker:
+            docker-image: {"in-tree": "train"}
+            max-run-time: 3600
+            artifacts:
+                - name: public/build
+                  path: /builds/worker/artifacts
+                  type: directory
+            env:
+                COMPRESSION_CMD: zstdmt
+                ARTIFACT_EXT: zst
+                SRC: "{src_locale}"
+                TRG: "{trg_locale}"
+
+        # Don't run unless explicitly scheduled
+        run-on-tasks-for: []
+
+        treeherder:
+            symbol: "{src_locale}-{trg_locale}"
+            platform: cefilter/opt
+        run:
+            using: run-task
+            command-context: {}
+            command:
+                - bash
+                - -c
+                - >-
+                    $VCS_PATH/pipeline/cefilter/ce-filter.sh
+                    $MOZ_FETCHES_DIR/corpus
+                    /builds/worker/artifacts/corpus
+                    $MOZ_FETCHES_DIR/scores.txt
+
+        dependencies:
+            merge-translated: merge-translated-{src_locale}-{trg_locale}
+            score: score-{src_locale}-{trg_locale}
+
+        fetches:
+            merge-translated:
+                - artifact: corpus.{src_locale}.zst
+                  extract: false
+                - artifact: corpus.{trg_locale}.zst
+                  extract: false
+            score:
+                - artifact: scores.txt
