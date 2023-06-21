@@ -1,0 +1,116 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.from_datasets:locales_only
+    - translations_taskgraph.transforms.command_context_from_params:transforms
+    - translations_taskgraph.transforms.marian_args:transforms
+    - taskgraph.transforms.job:transforms
+    - translations_taskgraph.transforms.cache:transforms
+    - taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - merge
+    - cefilter
+    - train-vocab
+    - alignments
+    - toolchain
+
+tasks:
+    "{src_locale}-{trg_locale}":
+        description: train student for {src_locale}-{trg_locale}
+        dataset-config:
+            substitution-fields:
+                - description
+                - name
+                - treeherder.symbol
+                - fetches
+                - dependencies
+        attributes:
+            stage: train-student
+            cache:
+                type: train-student
+                resources:
+                    - pipeline/train/configs/model/student.yml
+                    - pipeline/train/configs/training/student.train.yml
+                    - pipeline/train/train.sh
+                    - pipeline/train/train-student.sh
+                from-parameters:
+                    marian_args: training_config.marian-args.training-student
+        worker-type: t-linux-v100-gpu-4
+        worker:
+            max-run-time: 86400
+            env:
+                # TODO: what should we _actually_ use for the workspace value?
+                # and should we centralize this, since it seems to depend on available
+                # memory?
+                WORKSPACE: "8000"
+                # TODO: this needs to be updated, ideally to have the script detect
+                # GPUs. it should _always_ be aligned with the # of GPUs on the intsance
+                GPUS: "0 1 2 3"
+                ARTIFACT_EXT: zst
+            artifacts:
+                - name: public/build
+                  path: artifacts
+                  type: directory
+
+        # Don't run unless explicitly scheduled
+        run-on-tasks-for: []
+
+        treeherder:
+            symbol: "{src_locale}-{trg_locale}"
+            platform: train-student/opt
+        marian-args:
+            from-parameters: training_config.marian-args.training-student
+        run:
+            using: run-task
+            command-context:
+                from-parameters:
+                    best_model: training_config.experiment.best-model
+            command:
+                - bash
+                - -c
+                - >-
+                    export MARIAN=$MOZ_FETCHES_DIR &&
+                    $VCS_PATH/pipeline/train/train-student.sh
+                    $MOZ_FETCHES_DIR/corpus.aln.zst
+                    student
+                    train
+                    {src_locale}
+                    {trg_locale}
+                    $MOZ_FETCHES_DIR/corpus
+                    $MOZ_FETCHES_DIR/devset
+                    $TASK_WORKDIR/artifacts
+                    $MOZ_FETCHES_DIR/vocab.spm
+                    {best_model}
+                    {marian_args}
+
+        dependencies:
+            train-vocab: train-vocab-{src_locale}-{trg_locale}
+            merge-devset: merge-devset-{src_locale}-{trg_locale}
+            cefilter: cefilter-{src_locale}-{trg_locale}
+            alignments: alignments-{src_locale}-{trg_locale}
+
+        fetches:
+            toolchain:
+                - marian
+            train-vocab:
+                - artifact: vocab.spm
+                  extract: false
+            cefilter:
+                - artifact: corpus.{src_locale}.zst
+                  extract: false
+                - artifact: corpus.{trg_locale}.zst
+                  extract: false
+            merge-devset:
+                - artifact: devset.{src_locale}.zst
+                  extract: false
+                - artifact: devset.{trg_locale}.zst
+                  extract: false
+            alignments:
+                - artifact: corpus.aln.zst
