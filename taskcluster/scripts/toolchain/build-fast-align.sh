@@ -9,4 +9,6 @@ cd $build_dir
 cmake $FAST_ALIGN_DIR
 make -j$(nproc)
 
-tar -c $build_dir/fast_align $build_dir/atools | zstd > $UPLOAD_DIR/fast-align.tar.zst
+cd "${build_dir}"
+chmod +x fast_align atools
+tar -c fast_align atools | zstd > $UPLOAD_DIR/fast-align.tar.zst
