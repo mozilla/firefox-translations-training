@@ -1,0 +1,108 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.task_substitution_from_params:transforms
+    - translations_taskgraph.transforms.from_datasets:locales_only
+    - translations_taskgraph.transforms.command_context_from_params:transforms
+    - taskgraph.transforms.job:transforms
+    - translations_taskgraph.transforms.cache:transforms
+    - taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - train-backwards
+    - train-vocab
+    - merge-translated
+    - toolchain
+
+tasks:
+    "{src_locale}-{trg_locale}":
+        description: score for {src_locale}-{trg_locale}
+        attributes:
+            dataset-category: train
+            stage: score
+            cache:
+                type: score
+                resources:
+                    - pipeline/cefilter/score.sh
+        dataset-config:
+            substitution-fields:
+                - description
+                - name
+                - treeherder.symbol
+                - fetches
+                - dependencies
+                - worker.env
+
+        task-substitution:
+            from-parameters:
+                best_model: training_config.experiment.best-model
+            substitution-fields:
+                - fetches.train-backwards
+
+        worker-type: t-linux-v100-gpu
+        worker:
+            max-run-time: 3600
+            env:
+                # TODO: what should we _actually_ use for the workspace value?
+                # and should we centralize this, since it seems to depend on available
+                # memory?
+                WORKSPACE: "8000"
+                # TODO: this needs to be updated, ideally to have the script detect
+                # GPUs. it should _always_ be aligned with the # of GPUs on the intsance
+                GPUS: "0"
+                ARTIFACT_EXT: zst
+                SRC: "{src_locale}"
+                TRG: "{trg_locale}"
+            artifacts:
+                - name: public/build
+                  path: artifacts
+                  type: directory
+
+        # Don't run unless explicitly scheduled
+        run-on-tasks-for: []
+
+        treeherder:
+            symbol: "{src_locale}-{trg_locale}"
+            platform: score/opt
+        run:
+            using: run-task
+            command-context:
+                from-parameters:
+                    best_model: training_config.experiment.best-model
+            command:
+                - bash
+                - -c
+                - >-
+                    export MARIAN=$MOZ_FETCHES_DIR &&
+                    find fetches &&
+                    $VCS_PATH/pipeline/cefilter/score.sh
+                    fetches/final.model.npz.best-{best_model}.npz
+                    fetches/vocab.spm
+                    fetches/corpus
+                    artifacts/scores.txt
+
+        dependencies:
+            train-backwards: train-backwards-{src_locale}-{trg_locale}
+            train-vocab: train-vocab-{src_locale}-{trg_locale}
+            merge-translated: merge-translated-{src_locale}-{trg_locale}
+
+        fetches:
+            toolchain:
+                - marian
+            train-backwards:
+                - artifact: final.model.npz.best-{best_model}.npz
+                  extract: false
+            train-vocab:
+                - artifact: vocab.spm
+                  extract: false
+            merge-translated:
+                - artifact: corpus.{src_locale}.zst
+                  extract: false
+                - artifact: corpus.{trg_locale}.zst
+                  extract: false
