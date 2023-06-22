@@ -39,7 +39,7 @@ task-defaults:
             - attributes.cache.from-parameters.bicleaner_threshold
             - run.command-context.from-parameters.bicleaner_threshold
     worker:
-        max-run-time: 3600
+        max-run-time: 86400
         env:
             SRC: "{src_locale}"
             TRG: "{trg_locale}"

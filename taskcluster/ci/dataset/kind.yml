@@ -30,7 +30,7 @@ task-defaults:
             - worker.env
     worker:
         docker-image: {in-tree: toolchain-build}
-        max-run-time: 1800
+        max-run-time: 86400
         env:
             COMPRESSION_CMD: zstdmt
             ARTIFACT_EXT: zst

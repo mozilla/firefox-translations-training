@@ -46,7 +46,7 @@ tasks:
         worker-type: b-linux-large
         worker:
             docker-image: {"in-tree": "train"}
-            max-run-time: 3600
+            max-run-time: 86400
             artifacts:
                 - name: public/build
                   path: /builds/worker/artifacts

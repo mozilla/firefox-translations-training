@@ -47,7 +47,7 @@ tasks:
 
         worker-type: t-linux-v100-gpu
         worker:
-            max-run-time: 3600
+            max-run-time: 86400
             env:
                 # TODO: what should we _actually_ use for the workspace value?
                 # and should we centralize this, since it seems to depend on available

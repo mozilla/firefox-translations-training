@@ -88,7 +88,7 @@ tasks:
         worker-type: t-linux-v100-gpu
     
         worker:
-            max-run-time: 10800
+            max-run-time: 86400
             artifacts:
                 - name: public/build
                   path: artifacts
