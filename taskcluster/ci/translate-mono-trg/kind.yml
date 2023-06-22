@@ -7,6 +7,7 @@ loader: taskgraph.loader.transform:loader
 transforms:
     - translations_taskgraph.transforms.task_substitution_from_params:transforms
     - translations_taskgraph.transforms.from_datasets:mono
+    - translations_taskgraph.transforms.marian_args:transforms
     - translations_taskgraph.transforms.chunking:chunk
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cache:transforms
@@ -28,6 +29,7 @@ task-defaults:
                 - taskcluster/scripts/pipeline/translate-taskcluster.sh
             from-parameters:
                 split_chunks: training_config.taskcluster.split-chunks
+                marian_args: training_config.marian-args.decoding-backward
 
     dataset-config:
         substitution-fields:
@@ -43,6 +45,9 @@ task-defaults:
             best_model: training_config.experiment.best-model
         substitution-fields:
             - fetches.train-backwards
+
+    marian-args:
+        from-parameters: training_config.marian-args.decoding-backward
 
     worker-type: t-linux-v100-gpu-4
 
@@ -74,6 +79,7 @@ task-defaults:
                 plain
                 $MOZ_FETCHES_DIR/vocab.spm
                 $MOZ_FETCHES_DIR/*.npz
+                {marian_args}
 
     dependencies:
         train-vocab: train-vocab-{src_locale}-{trg_locale}
