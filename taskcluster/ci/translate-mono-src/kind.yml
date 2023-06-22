@@ -118,8 +118,7 @@ tasks:
                           dest: model{this_chunk}
 
         dataset-config:
-            include-categories:
-                - mono-src
+            category: mono-src
 
         treeherder:
             symbol: "src-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}"

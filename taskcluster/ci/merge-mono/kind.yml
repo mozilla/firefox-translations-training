@@ -88,8 +88,11 @@ tasks:
                     max_sent: training_config.experiment.mono-max-sentences-src
 
         dataset-config:
-            include-categories:
-                - mono-src
+            category: mono-src
+
+        upstreams-config:
+            upstream-task-attributes:
+                dataset-category: mono-src
 
         treeherder:
             symbol: "src-{src_locale}-{trg_locale}"
@@ -109,8 +112,11 @@ tasks:
                     max_sent: training_config.experiment.mono-max-sentences-trg
 
         dataset-config:
-            include-categories:
-                - mono-trg
+            category: mono-trg
+
+        upstreams-config:
+            upstream-task-attributes:
+                dataset-category: mono-trg
 
         treeherder:
             symbol: "trg-{src_locale}-{trg_locale}"

@@ -30,10 +30,6 @@ from translations_taskgraph.util.dataset_helpers import shorten_dataset_name, sa
 SCHEMA = Schema(
     {
         Required("upstreams-config"): {
-            Required("locale-pair"): {
-                Required("src"): str,
-                Required("trg"): str,
-            },
             Required("upstream-task-attributes"): {
                 str: optionally_keyed_by("cleaning-type", str),
             },
@@ -49,7 +45,6 @@ by_locales.add_validate(SCHEMA)
 MONO = Schema(
     {
         Required("upstreams-config"): {
-            Required("locale"): str,
             Required("upstream-task-attributes"): {
                 str: optionally_keyed_by("cleaning-type", str),
             },
@@ -64,14 +59,11 @@ mono = TransformSequence()
 mono.add_validate(MONO)
 
 
-def get_cleaning_type(src, trg, upstreams):
+def get_cleaning_type(upstreams):
     candidates = set()
 
     for upstream in upstreams:
         if upstream.kind not in ("bicleaner", "clean-corpus"):
-            continue
-
-        if upstream.attributes["src_locale"] != src or upstream.attributes["trg_locale"] != trg:
             continue
 
         candidates.add(upstream.attributes["cleaning-type"])
@@ -80,17 +72,14 @@ def get_cleaning_type(src, trg, upstreams):
         if type_ in candidates:
             return type_
 
-    raise Exception(f"Unable to find cleaning type for {src}-{trg}!")
+    raise Exception(f"Unable to find cleaning type!")
 
 
 @by_locales.add
 def resolve_keyed_by_fields(config, jobs):
     for job in jobs:
         upstreams_config = job["upstreams-config"]
-        src = upstreams_config["locale-pair"]["src"]
-        trg = upstreams_config["locale-pair"]["trg"]
-
-        cleaning_type = get_cleaning_type(src, trg, config.kind_dependencies_tasks.values())
+        cleaning_type = get_cleaning_type(config.kind_dependencies_tasks.values())
 
         resolve_keyed_by(
             upstreams_config,
@@ -109,8 +98,6 @@ def upstreams_for_locales(config, jobs):
         dataset_category = job["attributes"]["dataset-category"]
         target_datasets = datasets[dataset_category]
         upstreams_config = job.pop("upstreams-config")
-        src = upstreams_config["locale-pair"]["src"]
-        trg = upstreams_config["locale-pair"]["trg"]
         artifacts = upstreams_config["upstream-artifacts"]
         upstream_task_attributes = upstreams_config["upstream-task-attributes"]
 
@@ -134,13 +121,9 @@ def upstreams_for_locales(config, jobs):
             if task_dataset not in target_datasets:
                 continue
 
-            # Filter out any tasks that aren't for the correct locale pair.
-            if task.attributes["src_locale"] != src or task.attributes["trg_locale"] != trg:
-                continue
-
             subs = {
-                "src_locale": src,
-                "trg_locale": trg,
+                "src_locale": task.attributes["src_locale"],
+                "trg_locale": task.attributes["trg_locale"],
                 "dataset_sanitized": sanitize_dataset_name(dataset),
             }
 
@@ -192,10 +175,6 @@ def upstreams_for_mono(config, jobs):
                 locale = trg
             else:
                 raise Exception("Don't use `find_upstreams:mono` without the `mono-src` or `mono-trg` category!")
-
-            # Filter out any tasks that aren't for the correct locale.
-            if task.attributes["locale"] != locale or task.attributes["src_locale"] != src or task.attributes["trg_locale"] != trg:
-                continue
 
             job["dependencies"][task.label] = task.label
             job["fetches"].setdefault(task.label, [])

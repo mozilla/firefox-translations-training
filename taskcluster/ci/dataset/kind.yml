@@ -19,7 +19,6 @@ transforms:
 task-defaults:
     worker-type: b-linux
     attributes:
-        dataset-category: train
         cache:
             type: dataset
     dataset-config:
@@ -55,8 +54,7 @@ tasks:
         description: Fetch flores101 dataset
         label: dataset-flores-{dataset_sanitized}-{src_locale}-{trg_locale}
         dataset-config:
-            include-datasets:
-                flores: {}
+            provider: flores
         attributes:
             cache:
                 resources:
@@ -75,8 +73,7 @@ tasks:
         description: Fetch sacrebleu dataset
         label: dataset-sacrebleu-{dataset_sanitized}-{src_locale}-{trg_locale}
         dataset-config:
-            include-datasets:
-                sacrebleu: {}
+            provider: sacrebleu
         attributes:
             cache:
                 resources:
@@ -96,8 +93,7 @@ tasks:
         # No slashes version of dataset used here because slashes break caches
         label: dataset-opus-{dataset_sanitized}-{src_locale}-{trg_locale}
         dataset-config:
-            include-datasets:
-                opus: {}
+            provider: opus
         attributes:
             cache:
                 resources:
@@ -116,8 +112,7 @@ tasks:
         description: Fetch mtdata dataset
         label: dataset-mtdata-{dataset_sanitized}-{src_locale}-{trg_locale}
         dataset-config:
-            include-datasets:
-                mtdata: {}
+            provider: mtdata
         attributes:
             cache:
                 resources:
@@ -136,8 +131,7 @@ tasks:
         description: Fetch news-crawl dataset
         label: dataset-news-crawl-{dataset_sanitized}-{src_locale}-{trg_locale}
         dataset-config:
-            include-datasets:
-                news-crawl: {}
+            provider: news-crawl
         attributes:
             cache:
                 resources:

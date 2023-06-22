@@ -94,8 +94,7 @@ tasks:
         treeherder:
             symbol: "{provider}({dataset_short}-src-{src_locale}-{trg_locale})"
         dataset-config:
-            include-categories:
-                - mono-src
+            category: mono-src
 
     "{provider}-{dataset_sanitized}-mono-trg-{src_locale}-{trg_locale}":
         description: Clean {provider} {dataset_sanitized} dataset mono-trg {locale}
@@ -104,5 +103,4 @@ tasks:
         treeherder:
             symbol: "{provider}({dataset_short}-trg-{src_locale}-{trg_locale})"
         dataset-config:
-            include-categories:
-                - mono-trg
+            category: mono-trg

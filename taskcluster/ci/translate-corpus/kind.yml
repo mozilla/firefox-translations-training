@@ -6,7 +6,6 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.task_substitution_from_params:transforms
-    - translations_taskgraph.transforms.from_datasets:locales_only
     - translations_taskgraph.transforms.marian_args:transforms
     - translations_taskgraph.transforms.chunking:chunk
     - translations_taskgraph.transforms.chunking:unchunk
@@ -58,20 +57,17 @@ tasks:
                         - artifact: final.model.npz.best-{best_model}.npz
                           dest: model{this_chunk}
 
-        dataset-config:
-            include-categories:
-                - train
+        task-substitution:
+            from-parameters:
+                src_locale: training_config.experiment.src
+                trg_locale: training_config.experiment.trg
+                best_model: training_config.experiment.best-model
             substitution-fields:
                 - description
                 - name
                 - treeherder.symbol
                 - dependencies
                 - worker.env
-                - unchunk-config.per-upstream-fields
-        task-substitution:
-            from-parameters:
-                best_model: training_config.experiment.best-model
-            substitution-fields:
                 - unchunk-config.per-upstream-fields
 
         marian-args:

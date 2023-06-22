@@ -7,7 +7,6 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.task_substitution_from_params:transforms
-    - translations_taskgraph.transforms.from_datasets:locales_only
     - translations_taskgraph.transforms.command_context_from_params:transforms
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cache:transforms
@@ -32,7 +31,11 @@ tasks:
                 resources:
                     - pipeline/quantize/requirements/quantize.txt
                     - pipeline/quantize/quantize.sh
-        dataset-config:
+        task-substitution:
+            from-parameters:
+                best_model: training_config.experiment.best-model
+                src_locale: training_config.experiment.src
+                trg_locale: training_config.experiment.trg
             substitution-fields:
                 - description
                 - name
@@ -40,11 +43,8 @@ tasks:
                 - fetches
                 - dependencies
                 - worker.env
-        task-substitution:
-            from-parameters:
-                best_model: training_config.experiment.best-model
-            substitution-fields:
                 - fetches.finetune-student
+                - run.command
         worker-type: b-linux-large
         worker:
             docker-image: {"in-tree": "train"}

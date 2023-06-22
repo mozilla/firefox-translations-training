@@ -6,7 +6,7 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.from_datasets:locales_only
+    - translations_taskgraph.transforms.task_substitution_from_params:transforms
     - translations_taskgraph.transforms.command_context_from_params:transforms
     - translations_taskgraph.transforms.marian_args:transforms
     - taskgraph.transforms.job:transforms
@@ -24,13 +24,17 @@ kind-dependencies:
 tasks:
     "{src_locale}-{trg_locale}":
         description: train student for {src_locale}-{trg_locale}
-        dataset-config:
+        task-substitution:
+            from-parameters:
+                src_locale: training_config.experiment.src
+                trg_locale: training_config.experiment.trg
             substitution-fields:
                 - description
                 - name
                 - treeherder.symbol
                 - fetches
                 - dependencies
+                - run.command
         attributes:
             stage: train-student
             cache:

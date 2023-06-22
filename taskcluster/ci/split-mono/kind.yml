@@ -84,8 +84,7 @@ tasks:
             dataset-category: mono-src
 
         dataset-config:
-            include-categories:
-                - mono-src
+            category: mono-src
 
         treeherder:
             symbol: "src-{src_locale}-{trg_locale}"
@@ -105,8 +104,7 @@ tasks:
             dataset-category: mono-trg
 
         dataset-config:
-            include-categories:
-                - mono-trg
+            category: mono-trg
 
         treeherder:
             symbol: "trg-{src_locale}-{trg_locale}"

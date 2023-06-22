@@ -6,7 +6,7 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.from_datasets:locales_only
+    - translations_taskgraph.transforms.task_substitution_from_params:transforms
     - translations_taskgraph.transforms.command_context_from_params:transforms
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cache:transforms
@@ -30,7 +30,10 @@ tasks:
                 from-parameters:
                     split_length: training_config.experiment.split-length
                     split_chunks: training_config.taskcluster.split-chunks
-        dataset-config:
+        task-substitution:
+            from-parameters:
+                src_locale: training_config.experiment.src
+                trg_locale: training_config.experiment.trg
             substitution-fields:
                 - description
                 - name
@@ -61,6 +64,8 @@ tasks:
                 from-parameters:
                     split_length: training_config.experiment.split-length
                     split_chunks: training_config.taskcluster.split-chunks
+                    src_locale: training_config.experiment.src
+                    trg_locale: training_config.experiment.trg
             command:
                 - bash
                 - -c

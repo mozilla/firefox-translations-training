@@ -111,8 +111,7 @@ tasks:
                 - run.command
 
         dataset-config:
-            include-categories:
-                - mono-trg
+            category: mono-trg
 
         treeherder:
             symbol: "trg-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}"
