@@ -74,8 +74,7 @@ tasks:
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
 
-                # TODO: uprgade to 4 gpu
-        worker-type: t-linux-v100-gpu
+        worker-type: t-linux-v100-gpu-4
     
         worker:
             max-run-time: 86400
@@ -84,7 +83,7 @@ tasks:
                   path: artifacts
                   type: directory
             env:
-                GPUS: "0"
+                GPUS: "0 1 2 3"
                 WORKSPACE: "8000"
                 CUDA_DIR: fetches/cuda-toolkit
                 CUDNN_DIR: fetches/cuda-toolkit

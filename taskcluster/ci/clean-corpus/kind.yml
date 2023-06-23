@@ -30,7 +30,7 @@ tasks:
                     - pipeline/clean/tools/remove-non-printing-char.perl
                     - pipeline/clean/tools/clean_parallel.py
                     - pipeline/clean/tools/langid_fasttext.py
-        worker-type: b-linux
+        worker-type: b-linux-large-300gb
         dataset-config:
             substitution-fields:
                 - description

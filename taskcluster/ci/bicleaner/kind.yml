@@ -98,7 +98,7 @@ task-defaults:
 tasks:
     "{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}":
         description: bicleaner for {provider} {dataset_sanitized} dataset {src_locale}-{trg_locale}
-        worker-type: b-linux-large
+        worker-type: b-linux-large-300gb
         worker:
             docker-image: {"in-tree": "train"}
             artifacts:
@@ -123,7 +123,7 @@ tasks:
 
     ai-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}:
         description: bicleaner-ai for {provider} {dataset_sanitized} dataset {src_locale}-{trg_locale}
-        worker-type: t-linux-v100-gpu
+        worker-type: b-linux-v100-gpu-4-300gb
         worker:
             artifacts:
                 - name: public/build
