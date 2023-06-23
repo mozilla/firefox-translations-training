@@ -51,7 +51,9 @@ else
 
   export scol=1
   export tcol=2
-  if [ -f "${pack_dir}/${TRG}-${SRC}.yaml" ]; then
+  # Older bicleaner versions have a $src-$trg.yaml
+  # Newer versions have metadata.yaml
+  if grep "source_lang" ${pack_dir}/*.yaml | grep -q "${TRG}"; then
     export scol=2
     export tcol=1
   fi
