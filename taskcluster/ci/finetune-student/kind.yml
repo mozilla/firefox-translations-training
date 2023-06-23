@@ -33,7 +33,6 @@ tasks:
             substitution-fields:
                 - description
                 - name
-                - treeherder.symbol
                 - fetches
                 - dependencies
                 - fetches.train-student
@@ -69,9 +68,6 @@ tasks:
                   path: artifacts
                   type: directory
 
-        treeherder:
-            symbol: "{src_locale}-{trg_locale}"
-            platform: finetune-student/opt
         marian-args:
             from-parameters: training_config.marian-args.training-student-finetuned
         run:

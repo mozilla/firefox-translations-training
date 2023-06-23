@@ -42,7 +42,6 @@ task-defaults:
             - label
             - description
             - worker.env
-            - treeherder.symbol
             - dependencies
             - fetches
     upstreams-config:
@@ -65,9 +64,6 @@ task-defaults:
 
     # Don't run unless explicitly scheduled
     run-on-tasks-for: []
-
-    treeherder:
-        symbol: "{src_locale}-{trg_locale}"
 
     run:
         using: run-task
@@ -104,9 +100,6 @@ tasks:
                         bicleaner: bicleaner
                         clean-corpus: clean-corpus
 
-        treeherder:
-            platform: merge-corpus/opt
-
         run:
             command-context:
                 artifact_prefix: corpus
@@ -123,9 +116,6 @@ tasks:
         upstreams-config:
             upstream-task-attributes:
                 kind: dataset
-
-        treeherder:
-            platform: merge-devset/opt
 
         run:
             command-context:

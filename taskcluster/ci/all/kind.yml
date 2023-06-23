@@ -27,14 +27,10 @@ tasks:
                 src_locale: training_config.experiment.src
                 trg_locale: training_config.experiment.trg
             substitution-fields:
-                - treeherder.symbol
                 - attributes
 
         run-on-tasks-for: []
         worker-type: succeed
-        treeherder:
-            symbol: "{src_locale}-{trg_locale}"
-            platform: all/opt
 
         from-deps:
             unique-kinds: false

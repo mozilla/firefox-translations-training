@@ -34,7 +34,6 @@ task-defaults:
             - name
             - dependencies
             - fetches
-            - treeherder.symbol
             - worker.env
             - attributes.cache.from-parameters.bicleaner_threshold
             - run.command-context.from-parameters.bicleaner_threshold
@@ -53,8 +52,6 @@ task-defaults:
     # Don't run unless explicitly scheduled
     run-on-tasks-for: []
 
-    treeherder:
-        symbol: "{provider}({dataset_short}-{src_locale}-{trg_locale})"
     run:
         using: run-task
         command-context:
@@ -108,8 +105,6 @@ tasks:
                 - name: public/build
                   path: /builds/worker/artifacts
                   type: directory
-        treeherder:
-            platform: bicleaner/opt
         attributes:
             cleaning-type: bicleaner
             cache:
@@ -134,8 +129,6 @@ tasks:
                 - name: public/build
                   path: artifacts
                   type: directory
-        treeherder:
-            platform: bicleaner-ai/opt
         dataset-config:
             exclude-locales:
                 - src: en

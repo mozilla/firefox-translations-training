@@ -41,7 +41,6 @@ tasks:
                 from-parameters: training_config.taskcluster.split-chunks
             substitution-fields:
                 - name
-                - treeherder.symbol
                 - fetches.split-corpus
                 - run.command
 
@@ -65,7 +64,6 @@ tasks:
             substitution-fields:
                 - description
                 - name
-                - treeherder.symbol
                 - dependencies
                 - worker.env
                 - unchunk-config.per-upstream-fields
@@ -75,10 +73,6 @@ tasks:
 
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
-
-        treeherder:
-            symbol: "{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}"
-            platform: translate-corpus/opt
 
                 # TODO: uprgade to 4 gpu
         worker-type: t-linux-v100-gpu

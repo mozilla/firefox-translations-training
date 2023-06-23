@@ -40,7 +40,6 @@ task-defaults:
             - name
             - dependencies
             - fetches
-            - treeherder.symbol
             - worker.env
             - run.command-context
     task-substitution:
@@ -67,9 +66,6 @@ task-defaults:
 
     # Don't run unless explicitly scheduled
     run-on-tasks-for: []
-
-    treeherder:
-        platform: evaluate/opt
 
     run:
         using: run-task
@@ -107,8 +103,6 @@ tasks:
         task-substitution:
             substitution-fields:
                 - fetches.train-backwards
-        treeherder:
-            symbol: "bw-{provider_short}-{dataset_short}-{src_locale}-{trg_locale}"
         run:
             command-context:
                 pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
@@ -158,10 +152,7 @@ tasks:
             substitution-fields:
                 - name
                 - description
-                - treeherder.symbol
                 - dependencies.train-teacher
-        treeherder:
-            symbol: "tch-{provider_short}-{dataset_short}-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}"
         run:
             command-context:
                 pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
@@ -211,11 +202,7 @@ tasks:
             substitution-fields:
                 - name
                 - description
-                - treeherder.symbol
                 - dependencies.finetune-teacher
-        treeherder:
-            # TODO: this doesn't match the format for other chunked jobs...
-            symbol: "ftt-{provider_short}-{dataset_short}-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}"
         run:
             command-context:
                 pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
@@ -273,8 +260,6 @@ tasks:
                         - artifact: final.model.npz.best-{best_model}.npz
                           dest: model{this_chunk}
                         - artifact: final.model.npz.best-chrf.npz.decoder.yml
-        treeherder:
-            symbol: "ens-{provider_short}-{dataset_short}-{src_locale}-{trg_locale}"
         run:
             command-context:
                 pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
@@ -312,8 +297,6 @@ tasks:
         task-substitution:
             substitution-fields:
                 - fetches.train-student
-        treeherder:
-            symbol: "st-{provider_short}-{dataset_short}-{src_locale}-{trg_locale}"
         run:
             command-context:
                 pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
@@ -357,8 +340,6 @@ tasks:
         task-substitution:
             substitution-fields:
                 - fetches.finetune-student
-        treeherder:
-            symbol: "fts-{provider_short}-{dataset_short}-{src_locale}-{trg_locale}"
         run:
             command-context:
                 pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
@@ -399,8 +380,6 @@ tasks:
             dataset-category: test
             cache:
                 type: evaluate-quantized
-        treeherder:
-            symbol: "quant-{provider_short}-{dataset_short}-{src_locale}-{trg_locale}"
         run:
             command-context:
                 pipeline_setup: zstd --rm -d $MOZ_FETCHES_DIR/lex.s2t.pruned.zst

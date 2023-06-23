@@ -29,7 +29,6 @@ task-defaults:
         substitution-fields:
             - description
             - name
-            - treeherder.symbol
             - unchunk-config.per-upstream-fields
             - run.command
             - dependencies
@@ -48,8 +47,6 @@ task-defaults:
     # Don't run unless explicitly scheduled
     run-on-tasks-for: []
 
-    treeherder:
-        symbol: "{src_locale}-{trg_locale}"
     run:
         using: run-task
         command:
@@ -83,9 +80,6 @@ tasks:
 
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
-
-        treeherder:
-            platform: collect-mono-trg/opt
 
         dependencies:
             merge-mono-trg: merge-mono-trg-{src_locale}-{trg_locale}

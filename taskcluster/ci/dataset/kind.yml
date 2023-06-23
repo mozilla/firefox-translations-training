@@ -25,7 +25,6 @@ task-defaults:
         substitution-fields:
             - name
             - label
-            - treeherder.symbol
             - worker.env
     worker:
         docker-image: {in-tree: toolchain-build}
@@ -40,9 +39,6 @@ task-defaults:
               path: /builds/worker/artifacts
               type: directory
 
-    treeherder:
-        symbol: "{provider}({dataset_short}-{src_locale}-{trg_locale})"
-        platform: dataset/opt
     run-on-tasks-for: []
     run:
         using: run-task

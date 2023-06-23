@@ -33,7 +33,6 @@ task-defaults:
         substitution-fields:
             - description
             - label
-            - treeherder.symbol
             - fetches
             - dependencies
             - worker.env
@@ -86,10 +85,6 @@ tasks:
         dataset-config:
             category: mono-src
 
-        treeherder:
-            symbol: "src-{src_locale}-{trg_locale}"
-            platform: split-mono/opt
-
         dependencies:
             merge-mono-src: merge-mono-src-{src_locale}-{trg_locale}
 
@@ -105,10 +100,6 @@ tasks:
 
         dataset-config:
             category: mono-trg
-
-        treeherder:
-            symbol: "trg-{src_locale}-{trg_locale}"
-            platform: split-mono/opt
 
         dependencies:
             merge-mono-trg: merge-mono-trg-{src_locale}-{trg_locale}

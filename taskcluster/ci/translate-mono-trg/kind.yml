@@ -35,7 +35,6 @@ task-defaults:
         substitution-fields:
             - description
             - label
-            - treeherder.symbol
             - fetches.train-backwards
             - dependencies
             - worker.env
@@ -106,16 +105,11 @@ tasks:
                 from-parameters: training_config.taskcluster.split-chunks
             substitution-fields:
                 - label
-                - treeherder.symbol
                 - fetches.split-mono-trg
                 - run.command
 
         dataset-config:
             category: mono-trg
-
-        treeherder:
-            symbol: "trg-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}"
-            platform: translate-mono/opt
 
         dependencies:
             split-mono-trg: split-mono-trg-{src_locale}-{trg_locale}

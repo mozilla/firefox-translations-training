@@ -37,7 +37,6 @@ tasks:
             substitution-fields:
                 - description
                 - name
-                - treeherder.symbol
                 - fetches
                 - dependencies
         worker-type: b-linux-large
@@ -55,9 +54,6 @@ tasks:
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
 
-        treeherder:
-            symbol: "{src_locale}-{trg_locale}"
-            platform: split-corpus/opt
         run:
             using: run-task
             command-context:

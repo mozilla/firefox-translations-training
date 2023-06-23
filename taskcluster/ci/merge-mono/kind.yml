@@ -31,7 +31,6 @@ task-defaults:
             - label
             - description
             - name
-            - treeherder.symbol
             - worker.env
             - upstreams-config.locale
 
@@ -94,10 +93,6 @@ tasks:
             upstream-task-attributes:
                 dataset-category: mono-src
 
-        treeherder:
-            symbol: "src-{src_locale}-{trg_locale}"
-            platform: merge-mono/opt
-
         run:
             command-context:
                 from-parameters:
@@ -117,10 +112,6 @@ tasks:
         upstreams-config:
             upstream-task-attributes:
                 dataset-category: mono-trg
-
-        treeherder:
-            symbol: "trg-{src_locale}-{trg_locale}"
-            platform: merge-mono/opt
 
         run:
             command-context:

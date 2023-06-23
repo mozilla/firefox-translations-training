@@ -36,7 +36,6 @@ tasks:
                 - name
                 - description
                 - worker.env
-                - treeherder.symbol
                 - dependencies
                 - fetches
         worker-type: b-linux-large
@@ -56,9 +55,6 @@ tasks:
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
 
-        treeherder:
-            symbol: "{src_locale}-{trg_locale}"
-            platform: cefilter/opt
         run:
             using: run-task
             command-context: {}

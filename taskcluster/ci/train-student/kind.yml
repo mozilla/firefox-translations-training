@@ -31,7 +31,6 @@ tasks:
             substitution-fields:
                 - description
                 - name
-                - treeherder.symbol
                 - fetches
                 - dependencies
                 - run.command
@@ -66,9 +65,6 @@ tasks:
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
 
-        treeherder:
-            symbol: "{src_locale}-{trg_locale}"
-            platform: train-student/opt
         marian-args:
             from-parameters: training_config.marian-args.training-student
         run:

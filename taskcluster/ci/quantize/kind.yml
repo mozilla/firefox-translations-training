@@ -39,7 +39,6 @@ tasks:
             substitution-fields:
                 - description
                 - name
-                - treeherder.symbol
                 - fetches
                 - dependencies
                 - worker.env
@@ -60,9 +59,6 @@ tasks:
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
 
-        treeherder:
-            symbol: "{src_locale}-{trg_locale}"
-            platform: quantize/opt
         run:
             using: run-task
             command-context:

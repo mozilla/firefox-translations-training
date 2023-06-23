@@ -35,7 +35,6 @@ tasks:
             substitution-fields:
                 - description
                 - name
-                - treeherder.symbol
                 - run.command
                 - dependencies
                 - fetches
@@ -46,7 +45,6 @@ tasks:
             substitution-fields:
                 - name
                 - description
-                - treeherder.symbol
                 - dependencies
                 - fetches
                 - run.command
@@ -65,9 +63,6 @@ tasks:
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
 
-        treeherder:
-            symbol: "{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}"
-            platform: extract-best/opt
         run:
             using: run-task
             command:

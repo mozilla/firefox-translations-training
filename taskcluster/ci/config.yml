@@ -5,12 +5,6 @@ treeherder:
     group-names:
         "I": "Docker images"
         "Fetch": "Fetching tasks"
-        "TL": "Toolchain tasks"
-        "flores": "flores"
-        "sacrebleu": "sacrebleu"
-        "opus": "opus"
-        "mtdata": "mtdata"
-        "news-crawl": "news-crawl"
 
 taskgraph:
     register: translations_taskgraph:register
