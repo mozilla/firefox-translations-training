@@ -13,7 +13,7 @@ transforms:
     - taskgraph.transforms.task:transforms
 
 task-defaults:
-    worker-type: b-linux
+    worker-type: b-linux-large
     worker:
         docker-image: {"in-tree": "toolchain-build"}
         max-run-time: 3600
