@@ -21,6 +21,7 @@ kind-dependencies:
 task-defaults:
     attributes:
         dataset-category: train
+        stage: bicleaner
         cache:
             resources:
                 - pipeline/bicleaner/bicleaner.sh
