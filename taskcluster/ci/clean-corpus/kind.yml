@@ -37,11 +37,10 @@ tasks:
                 - name
                 - dependencies
                 - fetches
-                - treeherder.symbol
                 - worker.env
         worker:
             docker-image: {"in-tree": "train"}
-            max-run-time: 3600
+            max-run-time: 86400
             artifacts:
                 - name: public/build
                   path: /builds/worker/artifacts
@@ -55,9 +54,6 @@ tasks:
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
     
-        treeherder:
-            symbol: "{provider}({dataset_short}-{src_locale}-{trg_locale})"
-            platform: clean-corpus/opt
         run:
             using: run-task
             # Include this so `from_datasets` will add a number of other values to it.

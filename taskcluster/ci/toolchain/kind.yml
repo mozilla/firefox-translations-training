@@ -18,16 +18,12 @@ task-defaults:
         docker-image: {"in-tree": "toolchain-build"}
         max-run-time: 3600
         env: {}
-    treeherder:
-        platform: toolchain/opt
     run:
         using: toolchain-script
 
 tasks:
     cuda-toolkit:
         description: CUDA Toolkit preparation
-        treeherder:
-            symbol: TL(CUDA)
         run:
             script: build-cuda-toolkit.sh
             resources:
@@ -39,8 +35,6 @@ tasks:
 
     marian:
         description: Marian
-        treeherder:
-            symbol: TL(Marian)
         worker-type: b-linux-large
         run:
             script: build-marian.sh
@@ -56,8 +50,6 @@ tasks:
 
     browsermt-marian:
         description: Browsermt Marian
-        treeherder:
-            symbol: TL(Browsermt-Marian)
         worker-type: b-linux-large
         run:
             script: build-marian.sh
@@ -67,7 +59,7 @@ tasks:
                 - taskcluster/scripts/toolchain/build-marian.sh
                 - taskcluster/scripts/toolchain/browsermt.patch
                 - pipeline/setup/compile-marian.sh
-            toolchain-artifact: public/build/browsermt-marian.tar.zst
+            toolchain-artifact: public/build/marian.tar.zst
         fetches:
             fetch:
                 - browsermt-marian
@@ -76,8 +68,6 @@ tasks:
 
     fast-align:
         description: fast_align
-        treeherder:
-            symbol: TL(FA)
         run:
             script: build-fast-align.sh
             resources:
@@ -89,8 +79,6 @@ tasks:
 
     preprocess:
         description: preprocess
-        treeherder:
-            symbol: TL(PP)
         run:
             script: build-preprocess.sh
             resources:
@@ -102,8 +90,6 @@ tasks:
 
     extract-lex:
         description: extract-lex
-        treeherder:
-            symbol: TL(Lex)
         run:
             script: build-extract-lex.sh
             resources:
@@ -115,8 +101,6 @@ tasks:
 
     kenlm:
         description: kenlm
-        treeherder:
-            symbol: TL(kenlm)
         run:
             script: build-kenlm.sh
             resources:
@@ -128,8 +112,6 @@ tasks:
 
     hunspell:
         description: build hunspell binary wheel
-        treeherder:
-            symbol: TL(hunspell)
         run:
             script: build-hunspell.sh
             resources:

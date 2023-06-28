@@ -1,0 +1,120 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.task_substitution_from_params:transforms
+    - translations_taskgraph.transforms.marian_args:transforms
+    - translations_taskgraph.transforms.chunking:chunk
+    - translations_taskgraph.transforms.chunking:unchunk
+    - taskgraph.transforms.job:transforms
+    - translations_taskgraph.transforms.cache:transforms
+    - taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - split-corpus
+    - finetune-teacher
+    - train-vocab
+    - toolchain
+
+tasks:
+    "{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}":
+        description: translate corpus for {locale}
+        attributes:
+            stage: translate-corpus
+            dataset-category: train
+            cache:
+                type: translate-corpus
+                resources:
+                    - pipeline/translate/translate-nbest.sh
+                    - taskcluster/scripts/pipeline/translate-taskcluster.sh
+                from-parameters:
+                    split_chunks: training_config.taskcluster.split-chunks
+                    marian_args: training_config.marian-args.decoding-teacher
+
+        # This job is split into `split-chunks`
+        chunk-config:
+            total-chunks:
+                from-parameters: training_config.taskcluster.split-chunks
+            substitution-fields:
+                - name
+                - fetches.split-corpus
+                - run.command
+
+        # One of our upstreams is split into `teacher-ensemble` chunks
+        unchunk-config:
+            total-chunks:
+                from-parameters: training_config.experiment.teacher-ensemble
+            per-upstream-fields:
+                dependencies:
+                    finetune-teacher-{this_chunk}: finetune-teacher-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}
+                fetches:
+                    finetune-teacher-{this_chunk}:
+                        - artifact: final.model.npz.best-{best_model}.npz
+                          dest: model{this_chunk}
+
+        task-substitution:
+            from-parameters:
+                src_locale: training_config.experiment.src
+                trg_locale: training_config.experiment.trg
+                best_model: training_config.experiment.best-model
+            substitution-fields:
+                - description
+                - name
+                - dependencies
+                - worker.env
+                - unchunk-config.per-upstream-fields
+
+        marian-args:
+            from-parameters: training_config.marian-args.decoding-teacher
+
+        # Don't run unless explicitly scheduled
+        run-on-tasks-for: []
+
+                # TODO: uprgade to 4 gpu
+        worker-type: t-linux-v100-gpu
+    
+        worker:
+            max-run-time: 86400
+            artifacts:
+                - name: public/build
+                  path: artifacts
+                  type: directory
+            env:
+                GPUS: "0"
+                WORKSPACE: "8000"
+                CUDA_DIR: fetches/cuda-toolkit
+                CUDNN_DIR: fetches/cuda-toolkit
+
+        run:
+            using: run-task
+            command:
+                - bash
+                - -xc
+                - >-
+                    export MARIAN=$MOZ_FETCHES_DIR &&
+                    $VCS_PATH/taskcluster/scripts/pipeline/translate-taskcluster.sh
+                    $MOZ_FETCHES_DIR/src-file.{this_chunk}.zst
+                    artifacts
+                    nbest
+                    $MOZ_FETCHES_DIR/vocab.spm
+                    $MOZ_FETCHES_DIR/model*/*.npz
+                    {marian_args}
+
+        dependencies:
+            split-corpus: split-corpus-{src_locale}-{trg_locale}
+            train-vocab: train-vocab-{src_locale}-{trg_locale}
+
+        fetches:
+            toolchain:
+                - marian
+                - cuda-toolkit
+            split-corpus:
+                - artifact: src-file.{this_chunk}.zst
+                  extract: true
+            train-vocab:
+                - artifact: vocab.spm
+                  extract: false

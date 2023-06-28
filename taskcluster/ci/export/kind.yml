@@ -1,0 +1,88 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.task_substitution_from_params:transforms
+    - translations_taskgraph.transforms.command_context_from_params:transforms
+    - taskgraph.transforms.job:transforms
+    - translations_taskgraph.transforms.cache:transforms
+    - taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - quantize
+    - alignments
+    - train-vocab
+    - toolchain
+
+tasks:
+    "{src_locale}-{trg_locale}":
+        description: export for {src_locale}-{trg_locale}
+        attributes:
+            dataset-category: train
+            stage: export
+            cache:
+                type: export
+                resources:
+                    - pipeline/quantize/export.sh
+        task-substitution:
+            from-parameters:
+                src_locale: training_config.experiment.src
+                trg_locale: training_config.experiment.trg
+            substitution-fields:
+                - description
+                - name
+                - fetches
+                - dependencies
+                - worker.env
+        worker-type: b-linux-large
+        worker:
+            docker-image: {"in-tree": "train"}
+            max-run-time: 86400
+            artifacts:
+                - name: public/build
+                  path: /builds/worker/artifacts
+                  type: directory
+            env:
+                SRC: "{src_locale}"
+                TRG: "{trg_locale}"
+
+        # Don't run unless explicitly scheduled
+        run-on-tasks-for: []
+
+        run:
+            using: run-task
+            command-context: {}
+            command:
+                - bash
+                - -c
+                - >-
+                    export BMT_MARIAN=$MOZ_FETCHES_DIR &&
+                    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$MOZ_FETCHES_DIR/cuda-toolkit/lib64" &&
+                    zstd --rm -d $MOZ_FETCHES_DIR/*.zst &&
+                    $VCS_PATH/pipeline/quantize/export.sh
+                    $MOZ_FETCHES_DIR
+                    $MOZ_FETCHES_DIR/lex.s2t.pruned
+                    $MOZ_FETCHES_DIR/vocab.spm
+                    /builds/worker/artifacts
+
+        dependencies:
+            train-vocab: train-vocab-{src_locale}-{trg_locale}
+            quantize: quantize-{src_locale}-{trg_locale}
+            alignments: alignments-{src_locale}-{trg_locale}
+
+        fetches:
+            toolchain:
+                - browsermt-marian
+                - cuda-toolkit
+            quantize:
+                - artifact: model.intgemm.alphas.bin
+            train-vocab:
+                - artifact: vocab.spm
+                  extract: false
+            alignments:
+                - artifact: lex.s2t.pruned.zst

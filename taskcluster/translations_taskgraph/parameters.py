@@ -13,14 +13,16 @@ from voluptuous import Optional, Required
 def get_defaults(_):
     return {
         "training_config": {
-            "target-stage": "merge-augmented",
+            "target-stage": "all",
             "experiment": {
                 "name": "training pipeline test config",
                 "src": "ru",
                 "trg": "en",
                 "teacher-ensemble": 2,
-                "backward-model": "",
-                "vocab": "",
+                # Used for providing a pretrained backward model. We do not support this yet.
+                "backward-model": "NOT-YET-SUPPORTED",
+                # Used for providing a pretrained vocab. We do not support this yet.
+                "vocab": "NOT-YET-SUPPORTED",
                 "mono-max-sentences-trg": 200000,
                 "mono-max-sentences-src": 100000,
                 "split-length": 100000,

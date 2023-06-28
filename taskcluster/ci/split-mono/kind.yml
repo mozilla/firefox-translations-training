@@ -24,7 +24,7 @@ task-defaults:
             type: split-mono
             resources:
                 - pipeline/translate/split-mono.sh
-                - taskcluster/scripts/pipeline/split-taskcluster.sh
+                - taskcluster/scripts/pipeline/split-mono-taskcluster.sh
             from-parameters:
                 split_length: training_config.experiment.split-length
                 split_chunks: training_config.taskcluster.split-chunks
@@ -33,7 +33,6 @@ task-defaults:
         substitution-fields:
             - description
             - label
-            - treeherder.symbol
             - fetches
             - dependencies
             - worker.env
@@ -42,7 +41,7 @@ task-defaults:
 
     worker:
         docker-image: { "in-tree": "train" }
-        max-run-time: 3600
+        max-run-time: 86400
         artifacts:
             - name: public/build
               path: /builds/worker/artifacts
@@ -67,8 +66,7 @@ task-defaults:
               # TODO: move number of chunks elsewhere
             - >-
                 export BIN=$MOZ_FETCHES_DIR &&
-                $VCS_PATH/taskcluster/scripts/pipeline/split-taskcluster.sh
-                mono
+                $VCS_PATH/taskcluster/scripts/pipeline/split-mono-taskcluster.sh
                 {split_chunks}
                 /builds/worker/artifacts
                 {split_length}
@@ -85,12 +83,7 @@ tasks:
             dataset-category: mono-src
 
         dataset-config:
-            include-categories:
-                - mono-src
-
-        treeherder:
-            symbol: "src-{src_locale}-{trg_locale}"
-            platform: split-mono/opt
+            category: mono-src
 
         dependencies:
             merge-mono-src: merge-mono-src-{src_locale}-{trg_locale}
@@ -106,12 +99,7 @@ tasks:
             dataset-category: mono-trg
 
         dataset-config:
-            include-categories:
-                - mono-trg
-
-        treeherder:
-            symbol: "trg-{src_locale}-{trg_locale}"
-            platform: split-mono/opt
+            category: mono-trg
 
         dependencies:
             merge-mono-trg: merge-mono-trg-{src_locale}-{trg_locale}

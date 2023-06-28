@@ -12,10 +12,6 @@ arrow==1.2.3 \
     --hash=sha256:3934b30ca1b9f292376d9db15b19446088d12ec58629bc3f0da28fd55fb633a1 \
     --hash=sha256:5a49ab92e3b7b71d96cd6bfcc4df14efefc9dfa96ea19045815914a6ab6b1fe2
     # via jinja2-time
-attrs==22.2.0 \
-    --hash=sha256:29e95c7f6778868dbd49170f98f8818f78f3dc5e0e37c0b1f474e3561b240836 \
-    --hash=sha256:c9227bfc2f01993c03f68db37d1d15c9690188323c067c641f1a35ca58185f99
-    # via taskcluster-taskgraph
 binaryornot==0.4.4 \
     --hash=sha256:359501dfc9d40632edc9fac890e19542db1a287bbcfa58175b66658392018061 \
     --hash=sha256:b8b71173c917bddcd2c16070412e369c3ed7f0528926f70cac18a6c97fd563e4
@@ -279,9 +275,9 @@ slugid==2.0.0 \
     --hash=sha256:a950d98b72691178bdd4d6c52743c4a2aa039207cf7a97d71060a111ff9ba297 \
     --hash=sha256:aec8b0e01c4ad32e38e12d609eab3ec912fd129aaf6b2ded0199b56a5f8fd67c
     # via taskcluster-taskgraph
-taskcluster-taskgraph==5.1.0 \
-    --hash=sha256:12d1fa73c9149400458018d78d1c2a33912f290283c16bfaf9bd356051a11dc7 \
-    --hash=sha256:93df9c2a2f94411a88788f79fbcc51576003a8d7795af70b195f123ff3886777
+taskcluster-taskgraph==5.4.0 \
+    --hash=sha256:217ef7eadea441364916f68d06d8902a6135416f2ed4b7d0caa175c2711f2825 \
+    --hash=sha256:aae180089c10dacc429b04057e77a2f9255db53a10f6fc67fc78e718e94b8a45
     # via -r requirements.in
 taskcluster-urls==13.0.1 \
     --hash=sha256:5e25e7e6818e8877178b175ff43d2e6548afad72694aa125f404a7329ece0973 \

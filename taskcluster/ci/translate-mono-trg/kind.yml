@@ -7,6 +7,7 @@ loader: taskgraph.loader.transform:loader
 transforms:
     - translations_taskgraph.transforms.task_substitution_from_params:transforms
     - translations_taskgraph.transforms.from_datasets:mono
+    - translations_taskgraph.transforms.marian_args:transforms
     - translations_taskgraph.transforms.chunking:chunk
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cache:transforms
@@ -15,7 +16,7 @@ transforms:
 
 kind-dependencies:
     - split-mono
-    - train
+    - train-backwards
     - train-vocab
     - toolchain
 
@@ -28,12 +29,12 @@ task-defaults:
                 - taskcluster/scripts/pipeline/translate-taskcluster.sh
             from-parameters:
                 split_chunks: training_config.taskcluster.split-chunks
+                marian_args: training_config.marian-args.decoding-backward
 
     dataset-config:
         substitution-fields:
             - description
             - label
-            - treeherder.symbol
             - fetches.train-backwards
             - dependencies
             - worker.env
@@ -44,10 +45,13 @@ task-defaults:
         substitution-fields:
             - fetches.train-backwards
 
+    marian-args:
+        from-parameters: training_config.marian-args.decoding-backward
+
     worker-type: t-linux-v100-gpu-4
 
     worker:
-        max-run-time: 3600
+        max-run-time: 86400
         artifacts:
             - name: public/build
               path: artifacts
@@ -69,15 +73,23 @@ task-defaults:
             - >-
                 export MARIAN=$MOZ_FETCHES_DIR &&
                 $VCS_PATH/taskcluster/scripts/pipeline/translate-taskcluster.sh
-                $MOZ_FETCHES_DIR/split-file.{this_chunk}.zst
+                $MOZ_FETCHES_DIR/out-file.{this_chunk}.zst
                 artifacts
+                plain
                 $MOZ_FETCHES_DIR/vocab.spm
                 $MOZ_FETCHES_DIR/*.npz
+                {marian_args}
+
+    dependencies:
+        train-vocab: train-vocab-{src_locale}-{trg_locale}
 
     fetches:
         toolchain:
             - marian
             - cuda-toolkit
+        train-vocab:
+            - artifact: vocab.spm
+              extract: false
 
 tasks:
     trg:
@@ -93,30 +105,20 @@ tasks:
                 from-parameters: training_config.taskcluster.split-chunks
             substitution-fields:
                 - label
-                - treeherder.symbol
                 - fetches.split-mono-trg
                 - run.command
 
         dataset-config:
-            include-categories:
-                - mono-trg
-
-        treeherder:
-            symbol: "trg-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}"
-            platform: translate-mono/opt
+            category: mono-trg
 
         dependencies:
             split-mono-trg: split-mono-trg-{src_locale}-{trg_locale}
             train-backwards: train-backwards-{src_locale}-{trg_locale}
-            train-vocab: train-vocab-{src_locale}-{trg_locale}
 
         fetches:
             split-mono-trg:
-                - artifact: split-file.{this_chunk}.zst
+                - artifact: out-file.{this_chunk}.zst
                   extract: true
             train-backwards:
                 - artifact: final.model.npz.best-{best_model}.npz
-                  extract: false
-            train-vocab:
-                - artifact: vocab.spm
                   extract: false

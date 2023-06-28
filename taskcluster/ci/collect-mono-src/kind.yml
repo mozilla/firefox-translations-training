@@ -6,7 +6,7 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.from_datasets:locales_only
+    - translations_taskgraph.transforms.task_substitution_from_params:transforms
     - translations_taskgraph.transforms.chunking:unchunk
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cache:transforms
@@ -15,26 +15,28 @@ transforms:
 
 kind-dependencies:
     - merge-mono
-    - translate-mono
+    - translate-mono-src
 
 task-defaults:
     attributes:
         cache:
             resources:
                 - pipeline/translate/collect.sh
-    dataset-config:
+    task-substitution:
+        from-parameters:
+            src_locale: training_config.experiment.src
+            trg_locale: training_config.experiment.trg
         substitution-fields:
             - description
             - name
-            - treeherder.symbol
-            - chunk-config.per-upstream-fields
+            - unchunk-config.per-upstream-fields
             - run.command
             - dependencies
             - fetches
     worker-type: b-linux-large
     worker:
         docker-image: {"in-tree": "train"}
-        max-run-time: 3600
+        max-run-time: 86400
         artifacts:
             - name: public/build
               path: /builds/worker/artifacts
@@ -45,48 +47,43 @@ task-defaults:
     # Don't run unless explicitly scheduled
     run-on-tasks-for: []
 
-    treeherder:
-        symbol: "{src_locale}-{trg_locale}"
     run:
         using: run-task
         command:
             - bash
             - -c
             - >-
-                zstd -d --rm $MOZ_FETCHES_DIR/split-file* &&
+                zstd -d --rm $MOZ_FETCHES_DIR/out-file* &&
                 $VCS_PATH/pipeline/translate/collect.sh
                 fetches
-                artifacts/mono.{src_locale}.zst
-                $MOZ_FETCHES_DIR/mono.{trg_locale}.zst
+                artifacts/mono.{trg_locale}.zst
+                $MOZ_FETCHES_DIR/mono.{src_locale}.zst
 
 tasks:
-    mono-trg-{src_locale}-{trg_locale}:
-        description: collect mono trg {src_locale}-{trg_locale}
+    "{src_locale}-{trg_locale}":
+        description: collect mono src {src_locale}-{trg_locale}
         attributes:
-            dataset-category: mono-trg
-            stage: collect-mono-trg
+            dataset-category: mono-src
+            stage: collect-mono-src
             cache:
-                type: collect-mono-trg
+                type: collect-mono-src
 
-        chunk-config:
+        unchunk-config:
             total-chunks:
                 from-parameters: training_config.taskcluster.split-chunks
             per-upstream-fields:
                 dependencies:
-                    translate-mono-trg-{this_chunk}: translate-mono-trg-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}
+                    translate-mono-src-{this_chunk}: translate-mono-src-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}
                 fetches:
-                    translate-mono-trg-{this_chunk}:
-                        - artifact: split-file.{this_chunk}.out.zst
+                    translate-mono-src-{this_chunk}:
+                        - artifact: out-file.{this_chunk}.out.zst
 
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
 
-        treeherder:
-            platform: collect-mono-trg/opt
-
         dependencies:
-            merge-mono-trg: merge-mono-trg-{src_locale}-{trg_locale}
+            merge-mono-src: merge-mono-src-{src_locale}-{trg_locale}
 
         fetches:
-            merge-mono-trg:
-                - artifact: mono.{trg_locale}.zst
+            merge-mono-src:
+                - artifact: mono.{src_locale}.zst

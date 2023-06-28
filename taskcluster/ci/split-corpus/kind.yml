@@ -6,7 +6,7 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.from_datasets:locales_only
+    - translations_taskgraph.transforms.task_substitution_from_params:transforms
     - translations_taskgraph.transforms.command_context_from_params:transforms
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cache:transforms
@@ -26,21 +26,23 @@ tasks:
                 type: split-corpus
                 resources:
                     - pipeline/translate/split-corpus.sh
-                    - taskcluster/scripts/pipeline/split-taskcluster.sh
+                    - taskcluster/scripts/pipeline/split-corpus-taskcluster.sh
                 from-parameters:
                     split_length: training_config.experiment.split-length
                     split_chunks: training_config.taskcluster.split-chunks
-        dataset-config:
+        task-substitution:
+            from-parameters:
+                src_locale: training_config.experiment.src
+                trg_locale: training_config.experiment.trg
             substitution-fields:
                 - description
                 - name
-                - treeherder.symbol
                 - fetches
                 - dependencies
         worker-type: b-linux-large
         worker:
             docker-image: {"in-tree": "train"}
-            max-run-time: 3600
+            max-run-time: 86400
             artifacts:
                 - name: public/build
                   path: /builds/worker/artifacts
@@ -52,22 +54,20 @@ tasks:
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
 
-        treeherder:
-            symbol: "{src_locale}-{trg_locale}"
-            platform: split-corpus/opt
         run:
             using: run-task
             command-context:
                 from-parameters:
                     split_length: training_config.experiment.split-length
                     split_chunks: training_config.taskcluster.split-chunks
+                    src_locale: training_config.experiment.src
+                    trg_locale: training_config.experiment.trg
             command:
                 - bash
                 - -c
                   # TODO: move number of chunks elsewhere
                 - >-
-                    $VCS_PATH/pipeline/translate/split-taskcluster.sh
-                    corpus
+                    $VCS_PATH/taskcluster/scripts/pipeline/split-corpus-taskcluster.sh
                     {split_chunks}
                     /builds/worker/artifacts
                     {split_length}

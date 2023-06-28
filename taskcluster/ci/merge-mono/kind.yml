@@ -31,7 +31,6 @@ task-defaults:
             - label
             - description
             - name
-            - treeherder.symbol
             - worker.env
             - upstreams-config.locale
 
@@ -46,7 +45,7 @@ task-defaults:
 
     worker:
         docker-image: { "in-tree": "train" }
-        max-run-time: 3600
+        max-run-time: 86400
         artifacts:
             - name: public/build
               path: /builds/worker/artifacts
@@ -88,12 +87,11 @@ tasks:
                     max_sent: training_config.experiment.mono-max-sentences-src
 
         dataset-config:
-            include-categories:
-                - mono-src
+            category: mono-src
 
-        treeherder:
-            symbol: "src-{src_locale}-{trg_locale}"
-            platform: merge-mono/opt
+        upstreams-config:
+            upstream-task-attributes:
+                dataset-category: mono-src
 
         run:
             command-context:
@@ -109,12 +107,11 @@ tasks:
                     max_sent: training_config.experiment.mono-max-sentences-trg
 
         dataset-config:
-            include-categories:
-                - mono-trg
+            category: mono-trg
 
-        treeherder:
-            symbol: "trg-{src_locale}-{trg_locale}"
-            platform: merge-mono/opt
+        upstreams-config:
+            upstream-task-attributes:
+                dataset-category: mono-trg
 
         run:
             command-context:

@@ -1,0 +1,89 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.task_substitution_from_params:transforms
+    - translations_taskgraph.transforms.chunking:unchunk
+    - taskgraph.transforms.job:transforms
+    - translations_taskgraph.transforms.cache:transforms
+    - taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - merge-mono
+    - translate-mono-trg
+
+task-defaults:
+    attributes:
+        cache:
+            resources:
+                - pipeline/translate/collect.sh
+    task-substitution:
+        from-parameters:
+            src_locale: training_config.experiment.src
+            trg_locale: training_config.experiment.trg
+        substitution-fields:
+            - description
+            - name
+            - unchunk-config.per-upstream-fields
+            - run.command
+            - dependencies
+            - fetches
+    worker-type: b-linux-large
+    worker:
+        docker-image: {"in-tree": "train"}
+        max-run-time: 86400
+        artifacts:
+            - name: public/build
+              path: /builds/worker/artifacts
+              type: directory
+        env:
+            COMPRESSION_CMD: zstdmt
+
+    # Don't run unless explicitly scheduled
+    run-on-tasks-for: []
+
+    run:
+        using: run-task
+        command:
+            - bash
+            - -c
+            - >-
+                zstd -d --rm $MOZ_FETCHES_DIR/out-file* &&
+                $VCS_PATH/pipeline/translate/collect.sh
+                fetches
+                artifacts/mono.{src_locale}.zst
+                $MOZ_FETCHES_DIR/mono.{trg_locale}.zst
+
+tasks:
+    "{src_locale}-{trg_locale}":
+        description: collect mono trg {src_locale}-{trg_locale}
+        attributes:
+            dataset-category: mono-trg
+            stage: collect-mono-trg
+            cache:
+                type: collect-mono-trg
+
+        unchunk-config:
+            total-chunks:
+                from-parameters: training_config.taskcluster.split-chunks
+            per-upstream-fields:
+                dependencies:
+                    translate-mono-trg-{this_chunk}: translate-mono-trg-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}
+                fetches:
+                    translate-mono-trg-{this_chunk}:
+                        - artifact: out-file.{this_chunk}.out.zst
+
+        # Don't run unless explicitly scheduled
+        run-on-tasks-for: []
+
+        dependencies:
+            merge-mono-trg: merge-mono-trg-{src_locale}-{trg_locale}
+
+        fetches:
+            merge-mono-trg:
+                - artifact: mono.{trg_locale}.zst

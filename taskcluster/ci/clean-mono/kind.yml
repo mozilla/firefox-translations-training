@@ -54,10 +54,9 @@ task-defaults:
             - name
             - dependencies
             - fetches
-            - treeherder.symbol
     worker:
         docker-image: {"in-tree": "train"}
-        max-run-time: 3600
+        max-run-time: 86400
         artifacts:
             - name: public/build
               path: /builds/worker/artifacts
@@ -69,8 +68,6 @@ task-defaults:
     # Don't run unless explicitly scheduled
     run-on-tasks-for: []
 
-    treeherder:
-        platform: clean-mono/opt
     run:
         using: run-task
         # Include this so `from_datasets` will add a number of other values to it.
@@ -91,18 +88,12 @@ tasks:
         description: Clean {provider} {dataset_sanitized} dataset mono-src {locale}
         attributes:
             dataset-category: mono-src
-        treeherder:
-            symbol: "{provider}({dataset_short}-src-{src_locale}-{trg_locale})"
         dataset-config:
-            include-categories:
-                - mono-src
+            category: mono-src
 
     "{provider}-{dataset_sanitized}-mono-trg-{src_locale}-{trg_locale}":
         description: Clean {provider} {dataset_sanitized} dataset mono-trg {locale}
         attributes:
             dataset-category: mono-trg
-        treeherder:
-            symbol: "{provider}({dataset_short}-trg-{src_locale}-{trg_locale})"
         dataset-config:
-            include-categories:
-                - mono-trg
+            category: mono-trg
