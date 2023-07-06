@@ -49,7 +49,7 @@ task-defaults:
             trg_locale: training_config.experiment.trg
         substitution-fields:
             - run.command-context.pipeline_args2
-    worker-type: t-linux-v100-gpu
+    worker-type: b-linux-v100-gpu
     worker:
         artifacts:
             - name: public/build

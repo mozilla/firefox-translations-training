@@ -45,7 +45,7 @@ tasks:
                     - pipeline/train/train-student.sh
                 from-parameters:
                     marian_args: training_config.marian-args.training-student
-        worker-type: t-linux-v100-gpu-4
+        worker-type: b-linux-v100-gpu-4
         worker:
             max-run-time: 86400
             env:

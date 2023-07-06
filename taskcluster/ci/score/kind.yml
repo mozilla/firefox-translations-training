@@ -42,7 +42,7 @@ tasks:
                 - dependencies
                 - worker.env
 
-        worker-type: t-linux-v100-gpu
+        worker-type: b-linux-v100-gpu
         worker:
             max-run-time: 86400
             env:

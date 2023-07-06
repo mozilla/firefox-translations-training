@@ -45,7 +45,7 @@ task-defaults:
         substitution-fields:
             - unchunk-config.per-upstream-fields.fetches
 
-    worker-type: t-linux-v100-gpu-4
+    worker-type: b-linux-v100-gpu-4
 
     worker:
         max-run-time: 86400

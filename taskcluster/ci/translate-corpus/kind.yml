@@ -74,7 +74,7 @@ tasks:
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
 
-        worker-type: t-linux-v100-gpu-4
+        worker-type: b-linux-v100-gpu-4-1tb
     
         worker:
             max-run-time: 86400

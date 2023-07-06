@@ -51,7 +51,7 @@ tasks:
                 from-parameters:
                     marian_args: training_config.marian-args.training-teacher-base
                     teacher-ensemble: training_config.experiment.teacher-ensemble
-        worker-type: t-linux-v100-gpu-4
+        worker-type: b-linux-v100-gpu-4
         worker:
             max-run-time: 86400
             env:

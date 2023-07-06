@@ -48,7 +48,7 @@ task-defaults:
     marian-args:
         from-parameters: training_config.marian-args.decoding-backward
 
-    worker-type: t-linux-v100-gpu-4
+    worker-type: b-linux-v100-gpu-4
 
     worker:
         max-run-time: 86400
