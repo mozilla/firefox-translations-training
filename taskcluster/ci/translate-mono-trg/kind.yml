@@ -6,7 +6,6 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.task_substitution_from_params:transforms
-    - translations_taskgraph.transforms.from_datasets:mono
     - translations_taskgraph.transforms.marian_args:transforms
     - translations_taskgraph.transforms.chunking:chunk
     - taskgraph.transforms.job:transforms
@@ -33,7 +32,11 @@ task-defaults:
                 split_chunks: training_config.taskcluster.split-chunks
                 marian_args: training_config.marian-args.decoding-backward
 
-    dataset-config:
+    task-substitution:
+        from-parameters:
+            src_locale: training_config.experiment.src
+            trg_locale: training_config.experiment.trg
+            best_model: training_config.experiment.best-model
         substitution-fields:
             - description
             - label
@@ -41,12 +44,6 @@ task-defaults:
             - dependencies
             - worker.env
             - attributes
-
-    task-substitution:
-        from-parameters:
-            best_model: training_config.experiment.best-model
-        substitution-fields:
-            - fetches.train-backwards
 
     marian-args:
         from-parameters: training_config.marian-args.decoding-backward
@@ -103,6 +100,10 @@ tasks:
             cache:
                 type: translate-mono-trg
 
+        task-substitution:
+            from-parameters:
+                locale: training_config.experiment.trg
+
         chunk-config:
             total-chunks:
                 from-parameters: training_config.taskcluster.split-chunks
@@ -110,9 +111,6 @@ tasks:
                 - label
                 - fetches.split-mono-trg
                 - run.command
-
-        dataset-config:
-            category: mono-trg
 
         dependencies:
             split-mono-trg: split-mono-trg-{src_locale}-{trg_locale}

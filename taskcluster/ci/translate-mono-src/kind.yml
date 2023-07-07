@@ -6,7 +6,6 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.task_substitution_from_params:transforms
-    - translations_taskgraph.transforms.from_datasets:mono
     - translations_taskgraph.transforms.chunking:chunk
     - translations_taskgraph.transforms.chunking:unchunk
     - taskgraph.transforms.job:transforms
@@ -23,6 +22,8 @@ kind-dependencies:
 task-defaults:
     description: translate mono for {locale}
     attributes:
+        src_locale: "{src_locale}"
+        trg_locale: "{trg_locale}"
         cache:
             resources:
                 - pipeline/translate/translate.sh
@@ -30,7 +31,11 @@ task-defaults:
             from-parameters:
                 split_chunks: training_config.taskcluster.split-chunks
 
-    dataset-config:
+    task-substitution:
+        from-parameters:
+            src_locale: training_config.experiment.src
+            trg_locale: training_config.experiment.trg
+            best_model: training_config.experiment.best-model
         substitution-fields:
             - description
             - label
@@ -38,12 +43,8 @@ task-defaults:
             - dependencies
             - worker.env
             - unchunk-config.per-upstream-fields
-
-    task-substitution:
-        from-parameters:
-            best_model: training_config.experiment.best-model
-        substitution-fields:
             - unchunk-config.per-upstream-fields.fetches
+            - attributes
 
     worker-type: b-linux-v100-gpu-4
 
@@ -96,6 +97,10 @@ tasks:
             cache:
                 type: translate-mono-src
 
+        task-substitution:
+            from-parameters:
+                locale: training_config.experiment.src
+
         chunk-config:
             total-chunks:
                 from-parameters: training_config.taskcluster.split-chunks
@@ -114,9 +119,6 @@ tasks:
                     finetune-teacher-{this_chunk}:
                         - artifact: final.model.npz.best-{best_model}.npz
                           dest: model{this_chunk}
-
-        dataset-config:
-            category: mono-src
 
         dependencies:
             split-mono-src: split-mono-src-{src_locale}-{trg_locale}
