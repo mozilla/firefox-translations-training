@@ -34,8 +34,11 @@ tasks:
                 - fetches
                 - dependencies
                 - run.command
+                - attributes
         attributes:
             stage: train-student
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
             cache:
                 type: train-student
                 resources:

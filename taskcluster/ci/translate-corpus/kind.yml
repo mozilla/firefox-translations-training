@@ -25,6 +25,8 @@ tasks:
         description: translate corpus for {locale}
         attributes:
             stage: translate-corpus
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
             dataset-category: train
             cache:
                 type: translate-corpus
@@ -43,6 +45,7 @@ tasks:
                 - name
                 - fetches.split-corpus
                 - run.command
+                - attributes
 
         # One of our upstreams is split into `teacher-ensemble` chunks
         unchunk-config:

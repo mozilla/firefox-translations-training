@@ -22,6 +22,8 @@ tasks:
         attributes:
             dataset-category: train
             stage: split-corpus
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
             cache:
                 type: split-corpus
                 resources:
@@ -39,6 +41,7 @@ tasks:
                 - name
                 - fetches
                 - dependencies
+                - attributes
         worker-type: b-linux-large
         worker:
             docker-image: {"in-tree": "train"}

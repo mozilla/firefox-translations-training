@@ -25,6 +25,8 @@ tasks:
         attributes:
             dataset-category: train
             stage: score
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
             cache:
                 type: score
                 resources:
@@ -41,6 +43,7 @@ tasks:
                 - fetches
                 - dependencies
                 - worker.env
+                - attributes
 
         worker-type: b-linux-v100-gpu
         worker:

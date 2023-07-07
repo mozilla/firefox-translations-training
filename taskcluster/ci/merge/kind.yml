@@ -30,6 +30,8 @@ kind-dependencies:
 
 task-defaults:
     attributes:
+        src_locale: "{src_locale}"
+        trg_locale: "{trg_locale}"
         cache:
             resources:
                 - pipeline/clean/merge-corpus.sh
@@ -44,6 +46,7 @@ task-defaults:
             - worker.env
             - dependencies
             - fetches
+            - attributes
     upstreams-config:
         upstream-artifacts:
             - "{dataset_sanitized}.{src_locale}.zst"

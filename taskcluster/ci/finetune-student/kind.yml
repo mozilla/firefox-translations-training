@@ -37,8 +37,11 @@ tasks:
                 - dependencies
                 - fetches.train-student
                 - run.command
+                - attributes
         attributes:
             stage: finetune-student
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
             cache:
                 type: finetune-student
                 resources:

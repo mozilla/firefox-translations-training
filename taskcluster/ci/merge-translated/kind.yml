@@ -21,6 +21,8 @@ kind-dependencies:
 
 task-defaults:
     attributes:
+        src_locale: "{src_locale}"
+        trg_locale: "{trg_locale}"
         cache:
             resources:
                 - pipeline/translate/merge-corpus.sh
@@ -36,6 +38,7 @@ task-defaults:
             - dependencies
             - fetches
             - run.command
+            - attributes
     worker-type: b-linux-large
     worker:
         docker-image: {"in-tree": "train"}

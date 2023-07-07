@@ -24,6 +24,8 @@ tasks:
         attributes:
             dataset-category: train
             stage: cefilter
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
             cache:
                 type: cefilter
                 resources:
@@ -38,6 +40,7 @@ tasks:
                 - worker.env
                 - dependencies
                 - fetches
+                - attributes
         worker-type: b-linux-large
         worker:
             docker-image: {"in-tree": "train"}

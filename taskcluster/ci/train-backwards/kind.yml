@@ -24,6 +24,8 @@ tasks:
         description: train backwards for {src_locale}-{trg_locale}
         attributes:
             stage: train-backwards
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
             cache:
                 type: train-backwards
                 resources:
@@ -41,6 +43,7 @@ tasks:
                 - name
                 - fetches
                 - dependencies
+                - attributes
         worker-type: b-linux-v100-gpu-4
         worker:
             max-run-time: 86400

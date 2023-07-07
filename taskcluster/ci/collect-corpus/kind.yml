@@ -23,6 +23,8 @@ tasks:
         attributes:
             dataset-category: train
             stage: collect-corpus
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
             cache:
                 type: collect-corpus
                 resources:
@@ -39,6 +41,7 @@ tasks:
                 - run.command
                 - dependencies
                 - fetches
+                - attributes
 
         unchunk-config:
             total-chunks:

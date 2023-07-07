@@ -26,6 +26,8 @@ tasks:
         attributes:
             dataset-category: train
             stage: quantize
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
             cache:
                 type: quantize
                 resources:
@@ -44,6 +46,7 @@ tasks:
                 - worker.env
                 - fetches.finetune-student
                 - run.command
+                - attributes
         worker-type: b-linux-large
         worker:
             docker-image: {"in-tree": "train"}

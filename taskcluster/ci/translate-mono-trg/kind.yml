@@ -23,6 +23,8 @@ kind-dependencies:
 task-defaults:
     description: translate mono for {locale}
     attributes:
+        src_locale: "{src_locale}"
+        trg_locale: "{trg_locale}"
         cache:
             resources:
                 - pipeline/translate/translate.sh
@@ -38,6 +40,7 @@ task-defaults:
             - fetches.train-backwards
             - dependencies
             - worker.env
+            - attributes
 
     task-substitution:
         from-parameters:

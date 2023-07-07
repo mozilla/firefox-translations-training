@@ -23,6 +23,8 @@ tasks:
         attributes:
             dataset-category: train
             stage: extract-best 
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
             cache:
                 type: extract-best
                 resources:
@@ -38,6 +40,7 @@ tasks:
                 - run.command
                 - dependencies
                 - fetches
+                - attributes
 
         chunk-config:
             total-chunks:

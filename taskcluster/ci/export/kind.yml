@@ -25,6 +25,8 @@ tasks:
         attributes:
             dataset-category: train
             stage: export
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
             cache:
                 type: export
                 resources:
@@ -39,6 +41,7 @@ tasks:
                 - fetches
                 - dependencies
                 - worker.env
+                - attributes
         worker-type: b-linux-large
         worker:
             docker-image: {"in-tree": "train"}
