@@ -7,7 +7,6 @@ def register(graph_config):
             "actions.train",
             "parameters",
             "target_tasks",
-            "transforms.from_deps_group_by_all",
         ]
     )
 
