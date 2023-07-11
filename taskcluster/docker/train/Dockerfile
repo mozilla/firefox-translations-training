@@ -12,6 +12,8 @@ RUN apt-get update -qq \
                           libboost-filesystem1.74.0 \
                           libboost-iostreams1.74.0 \
                           pigz \
+                          curl \
+                          wget \
     && apt-get clean
 
 # Required to download sacrebleu datasets
