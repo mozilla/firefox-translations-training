@@ -6,7 +6,7 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.task_substitution_from_params:transforms
+    - taskgraph.transforms.task_context
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
@@ -25,7 +25,7 @@ task-defaults:
         cache:
             resources:
                 - pipeline/translate/merge-corpus.sh
-    task-substitution:
+    task-context:
         from-parameters:
             src_locale: training_config.experiment.src
             trg_locale: training_config.experiment.trg

@@ -6,7 +6,7 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.task_substitution_from_params:transforms
+    - taskgraph.transforms.task_context
     - taskgraph.transforms.from_deps
     - taskgraph.transforms.task:transforms
 
@@ -22,7 +22,7 @@ tasks:
             src_locale: "{src_locale}"
             trg_locale: "{trg_locale}"
         
-        task-substitution:
+        task-context:
             from-parameters:
                 src_locale: training_config.experiment.src
                 trg_locale: training_config.experiment.trg

@@ -5,8 +5,7 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.task_substitution_from_params:transforms
-    - translations_taskgraph.transforms.command_context_from_params:transforms
+    - taskgraph.transforms.task_context
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
@@ -30,8 +29,10 @@ task-defaults:
                 split_length: training_config.experiment.split-length
                 split_chunks: training_config.taskcluster.split-chunks
 
-    task-substitution:
+    task-context:
         from-parameters:
+            split_length: training_config.experiment.split-length
+            split_chunks: training_config.taskcluster.split-chunks
             src_locale: training_config.experiment.src
             trg_locale: training_config.experiment.trg
         substitution-fields:
@@ -41,6 +42,7 @@ task-defaults:
             - dependencies
             - worker.env
             - attributes
+            - run.command
 
     worker-type: b-linux-large
 
@@ -61,10 +63,6 @@ task-defaults:
 
     run:
         using: run-task
-        command-context:
-            from-parameters:
-                split_length: training_config.experiment.split-length
-                split_chunks: training_config.taskcluster.split-chunks
         command:
             - bash
             - -c
@@ -87,7 +85,7 @@ tasks:
         attributes:
             dataset-category: mono-src
 
-        task-substitution:
+        task-context:
             from-parameters:
                 locale: training_config.experiment.src
 
@@ -104,7 +102,7 @@ tasks:
         attributes:
             dataset-category: mono-trg
 
-        task-substitution:
+        task-context:
             from-parameters:
                 locale: training_config.experiment.trg
 

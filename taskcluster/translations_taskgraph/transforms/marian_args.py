@@ -26,8 +26,8 @@ def render_command(config, jobs):
         for name, value in deep_get(config.params, job.pop("marian-args")["from-parameters"]).items():
             marian_args = marian_args + f" --{name} {value}"
 
-        job.setdefault("run", {})
-        job["run"].setdefault("command-context", {})
-        job["run"]["command-context"]["marian_args"] = marian_args
+        if "from-object" not in job["task-context"]:
+            job["task-context"]["from-object"] = {}
+        job["task-context"]["from-object"]["marian_args"] = marian_args
 
         yield job

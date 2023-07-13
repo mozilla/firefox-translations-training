@@ -5,10 +5,10 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.task_substitution_from_params:transforms
-    - translations_taskgraph.transforms.marian_args:transforms
     - translations_taskgraph.transforms.chunking:chunk
     - translations_taskgraph.transforms.chunking:unchunk
+    - translations_taskgraph.transforms.marian_args:transforms
+    - taskgraph.transforms.task_context
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
@@ -21,7 +21,7 @@ kind-dependencies:
 
 tasks:
     "{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}":
-        description: translate corpus for {locale}
+        description: translate corpus for {src_locale}-{trg_locale}
         attributes:
             stage: translate-corpus
             src_locale: "{src_locale}"
@@ -58,7 +58,7 @@ tasks:
                         - artifact: final.model.npz.best-{best_model}.npz
                           dest: model{this_chunk}
 
-        task-substitution:
+        task-context:
             from-parameters:
                 src_locale: training_config.experiment.src
                 trg_locale: training_config.experiment.trg
@@ -68,7 +68,8 @@ tasks:
                 - name
                 - dependencies
                 - worker.env
-                - unchunk-config.per-upstream-fields
+                - fetches
+                - run.command
 
         marian-args:
             from-parameters: training_config.marian-args.decoding-teacher
