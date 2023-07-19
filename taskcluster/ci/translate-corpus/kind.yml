@@ -10,8 +10,7 @@ transforms:
     - translations_taskgraph.transforms.chunking:chunk
     - translations_taskgraph.transforms.chunking:unchunk
     - taskgraph.transforms.job:transforms
-    - translations_taskgraph.transforms.cache:transforms
-    - taskgraph.transforms.cached_tasks:transforms
+    - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
@@ -25,6 +24,8 @@ tasks:
         description: translate corpus for {locale}
         attributes:
             stage: translate-corpus
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
             dataset-category: train
             cache:
                 type: translate-corpus
@@ -43,6 +44,7 @@ tasks:
                 - name
                 - fetches.split-corpus
                 - run.command
+                - attributes
 
         # One of our upstreams is split into `teacher-ensemble` chunks
         unchunk-config:
@@ -74,8 +76,7 @@ tasks:
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
 
-                # TODO: uprgade to 4 gpu
-        worker-type: t-linux-v100-gpu
+        worker-type: b-linux-v100-gpu-4-1tb
     
         worker:
             max-run-time: 86400
@@ -84,7 +85,7 @@ tasks:
                   path: artifacts
                   type: directory
             env:
-                GPUS: "0"
+                GPUS: "0 1 2 3"
                 WORKSPACE: "8000"
                 CUDA_DIR: fetches/cuda-toolkit
                 CUDNN_DIR: fetches/cuda-toolkit

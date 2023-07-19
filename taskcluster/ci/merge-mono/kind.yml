@@ -5,12 +5,11 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.from_datasets:mono
+    - translations_taskgraph.transforms.task_substitution_from_params:transforms
     - translations_taskgraph.transforms.find_upstreams:mono
     - translations_taskgraph.transforms.command_context_from_params:transforms
     - taskgraph.transforms.job:transforms
-    - translations_taskgraph.transforms.cache:transforms
-    - taskgraph.transforms.cached_tasks:transforms
+    - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
@@ -21,18 +20,24 @@ task-defaults:
     description: merge mono for {locale}
     attributes:
         stage: merge-mono
+        src_locale: "{src_locale}"
+        trg_locale: "{trg_locale}"
         cache:
             type: merge-mono
             resources:
                 - pipeline/clean/merge-mono.sh
 
-    dataset-config:
+    task-substitution:
+        from-parameters:
+            src_locale: training_config.experiment.src
+            trg_locale: training_config.experiment.trg
         substitution-fields:
             - label
             - description
             - name
             - worker.env
             - upstreams-config.locale
+            - attributes
 
     upstreams-config:
         locale: "{locale}"
@@ -86,8 +91,9 @@ tasks:
                 from-parameters:
                     max_sent: training_config.experiment.mono-max-sentences-src
 
-        dataset-config:
-            category: mono-src
+        task-substitution:
+            from-parameters:
+                locale: training_config.experiment.src
 
         upstreams-config:
             upstream-task-attributes:
@@ -106,8 +112,9 @@ tasks:
                 from-parameters:
                     max_sent: training_config.experiment.mono-max-sentences-trg
 
-        dataset-config:
-            category: mono-trg
+        task-substitution:
+            from-parameters:
+                locale: training_config.experiment.trg
 
         upstreams-config:
             upstream-task-attributes:

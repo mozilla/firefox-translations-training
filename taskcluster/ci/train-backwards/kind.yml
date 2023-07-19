@@ -10,8 +10,7 @@ transforms:
     - translations_taskgraph.transforms.command_context_from_params:transforms
     - translations_taskgraph.transforms.marian_args:transforms
     - taskgraph.transforms.job:transforms
-    - translations_taskgraph.transforms.cache:transforms
-    - taskgraph.transforms.cached_tasks:transforms
+    - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
@@ -24,6 +23,8 @@ tasks:
         description: train backwards for {src_locale}-{trg_locale}
         attributes:
             stage: train-backwards
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
             cache:
                 type: train-backwards
                 resources:
@@ -41,7 +42,8 @@ tasks:
                 - name
                 - fetches
                 - dependencies
-        worker-type: t-linux-v100-gpu-4
+                - attributes
+        worker-type: b-linux-v100-gpu-4
         worker:
             max-run-time: 86400
             env:

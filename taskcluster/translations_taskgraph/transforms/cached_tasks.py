@@ -1,11 +1,25 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+from collections import deque
 import itertools
 
+import taskgraph
 from taskgraph.transforms.base import TransformSequence
+from taskgraph.transforms.cached_tasks import order_tasks, format_task_digest
+from taskgraph.util.cached_tasks import add_optimization
 from taskgraph.util.hash import hash_path
 from taskgraph.util.schema import Schema, optionally_keyed_by, resolve_keyed_by
-from voluptuous import ALLOW_EXTRA, Any, Optional, Required
+from voluptuous import ALLOW_EXTRA, Any, Required, Optional
 
 from translations_taskgraph.util.dict_helpers import deep_get
+
+transforms = TransformSequence()
+
+
+DONT_INVALIDATE_KINDS = ["docker-image", "fetch", "toolchain"]
 
 SCHEMA = Schema(
     {
@@ -74,3 +88,48 @@ def add_cache(config, jobs):
         }
 
         yield job
+
+
+@transforms.add
+def cache_task(config, tasks):
+    if taskgraph.fast:
+        for task in tasks:
+            yield task
+        return
+
+    digests = {}
+    for task in config.kind_dependencies_tasks.values():
+        if "cached_task" in task.attributes:
+            digests[task.label] = format_task_digest(task.attributes["cached_task"])
+
+    for task in order_tasks(config, tasks):
+        cache = task.pop("cache", None)
+        if cache is None:
+            yield task
+            continue
+
+        dependency_digests = []
+        for p in task.get("dependencies", {}).values():
+            # Here in Translations, we explicit do _not_ invalidate cached
+            # training jobs when non-training jobs are invalidated.
+            if any([kind in p for kind in DONT_INVALIDATE_KINDS]):
+                continue
+            if p in digests:
+                dependency_digests.append(digests[p])
+            else:
+                raise Exception(
+                    "Cached task {} has uncached parent task: {}".format(
+                        task["label"], p
+                    )
+                )
+        digest_data = cache["digest-data"] + sorted(dependency_digests)
+        add_optimization(
+            config,
+            task,
+            cache_type=cache["type"],
+            cache_name=cache["name"],
+            digest_data=digest_data,
+        )
+        digests[task["label"]] = format_task_digest(task["attributes"]["cached_task"])
+
+        yield task

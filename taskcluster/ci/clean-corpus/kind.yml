@@ -8,8 +8,7 @@ loader: taskgraph.loader.transform:loader
 transforms:
     - translations_taskgraph.transforms.from_datasets:per_dataset
     - taskgraph.transforms.job:transforms
-    - translations_taskgraph.transforms.cache:transforms
-    - taskgraph.transforms.cached_tasks:transforms
+    - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
@@ -30,7 +29,7 @@ tasks:
                     - pipeline/clean/tools/remove-non-printing-char.perl
                     - pipeline/clean/tools/clean_parallel.py
                     - pipeline/clean/tools/langid_fasttext.py
-        worker-type: b-linux
+        worker-type: b-linux-large-300gb
         dataset-config:
             substitution-fields:
                 - description

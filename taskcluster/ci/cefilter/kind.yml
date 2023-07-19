@@ -9,8 +9,7 @@ transforms:
     - translations_taskgraph.transforms.task_substitution_from_params:transforms
     - translations_taskgraph.transforms.command_context_from_params:transforms
     - taskgraph.transforms.job:transforms
-    - translations_taskgraph.transforms.cache:transforms
-    - taskgraph.transforms.cached_tasks:transforms
+    - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
@@ -24,6 +23,8 @@ tasks:
         attributes:
             dataset-category: train
             stage: cefilter
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
             cache:
                 type: cefilter
                 resources:
@@ -38,6 +39,7 @@ tasks:
                 - worker.env
                 - dependencies
                 - fetches
+                - attributes
         worker-type: b-linux-large
         worker:
             docker-image: {"in-tree": "train"}

@@ -9,8 +9,7 @@ transforms:
     - translations_taskgraph.transforms.task_substitution_from_params:transforms
     - translations_taskgraph.transforms.chunking:unchunk
     - taskgraph.transforms.job:transforms
-    - translations_taskgraph.transforms.cache:transforms
-    - taskgraph.transforms.cached_tasks:transforms
+    - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
@@ -19,6 +18,8 @@ kind-dependencies:
 
 task-defaults:
     attributes:
+        src_locale: "{src_locale}"
+        trg_locale: "{trg_locale}"
         cache:
             resources:
                 - pipeline/translate/collect.sh
@@ -33,6 +34,7 @@ task-defaults:
             - run.command
             - dependencies
             - fetches
+            - attributes
     worker-type: b-linux-large
     worker:
         docker-image: {"in-tree": "train"}
