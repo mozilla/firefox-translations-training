@@ -86,7 +86,7 @@ tasks:
                   type: directory
             env:
                 GPUS: "0 1 2 3"
-                WORKSPACE: "8000"
+                WORKSPACE: "12000"
                 CUDA_DIR: fetches/cuda-toolkit
                 CUDNN_DIR: fetches/cuda-toolkit
 
