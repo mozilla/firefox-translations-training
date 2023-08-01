@@ -59,8 +59,7 @@ tasks:
               $eval: 'tasks_for[:19] == "github-pull-request"'
       in:
           $if: >
-              tasks_for in ["action", "cron"]
-              || (tasks_for == "github-push" && (head_branch == "refs/heads/main" || (repoUrl == "https://github.com/mozilla-releng/staging-firefox-translations-training" && head_branch[:15] == "refs/heads/dev-")))
+              tasks_for in ["action", "cron", "github-push"]
               || (isPullRequest && pullRequestAction in ["opened", "reopened", "synchronize"])
           then:
               $let:
