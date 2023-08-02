@@ -5,15 +5,16 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.chunking:chunk
-    - translations_taskgraph.transforms.chunking:unchunk
     - taskgraph.transforms.task_context
+    - translations_taskgraph.transforms.cast_to
+    - taskgraph.transforms.chunking
+    - taskgraph.transforms.from_deps
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
-    - split-mono
+    - split-mono-src
     - finetune-teacher
     - train-vocab
     - toolchain
@@ -38,8 +39,6 @@ task-defaults:
         substitution-fields:
             - description
             - label
-            - fetches
-            - dependencies
             - worker.env
             - attributes
 
@@ -74,20 +73,14 @@ task-defaults:
                 $MOZ_FETCHES_DIR/vocab.spm
                 $MOZ_FETCHES_DIR/model*/*.npz
 
-    dependencies:
-        train-vocab: train-vocab-{src_locale}-{trg_locale}
-
     fetches:
         toolchain:
             - marian
             - cuda-toolkit
-        train-vocab:
-            - artifact: vocab.spm
-              extract: false
 
 tasks:
     src:
-        label: translate-mono-src-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}
+        label: translate-mono-src-{src_locale}-{trg_locale}-{{this_chunk}}/{{total_chunks}}
         attributes:
             stage: translate-mono-src
             dataset-category: mono-src
@@ -97,30 +90,36 @@ tasks:
         task-context:
             from-parameters:
                 locale: training_config.experiment.src
+                split_chunks: training_config.taskcluster.split-chunks
+            substitution-fields:
+                - chunk.total-chunks
 
-        chunk-config:
-            total-chunks:
-                from-parameters: training_config.taskcluster.split-chunks
+        cast-to:
+            int:
+                - chunk.total-chunks
+
+        chunk:
+            total-chunks: "{split_chunks}"
             substitution-fields:
                 - label
-                - fetches.split-mono-src
                 - run.command
+                - from-deps.fetches.split-mono-src
 
-        unchunk-config:
-            total-chunks:
-                from-parameters: training_config.experiment.teacher-ensemble
-            per-upstream-fields:
-                dependencies:
-                    finetune-teacher-{this_chunk}: finetune-teacher-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}
-                fetches:
-                    finetune-teacher-{this_chunk}:
-                        - artifact: final.model.npz.best-{best_model}.npz
-                          dest: model{this_chunk}
-
-        dependencies:
-            split-mono-src: split-mono-src-{src_locale}-{trg_locale}
-
-        fetches:
-            split-mono-src:
-                - artifact: out-file.{this_chunk}.zst
-                  extract: true
+        from-deps:
+            group-by: all
+            set-name: false
+            unique-kinds: false
+            kinds:
+                - finetune-teacher
+                - split-mono-src
+                - train-vocab
+            fetches:
+                split-mono-src:
+                    - artifact: out-file.{this_chunk}.zst
+                      extract: true
+                train-vocab:
+                    - artifact: vocab.spm
+                      extract: false
+                finetune-teacher:
+                    - artifact: final.model.npz.best-{best_model}.npz
+                      dest: model{this_chunk}

@@ -5,15 +5,16 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.chunking:chunk
     - translations_taskgraph.transforms.marian_args:transforms
     - taskgraph.transforms.task_context
+    - translations_taskgraph.transforms.cast_to
+    - taskgraph.transforms.chunking
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
-    - split-mono
+    - split-mono-trg
     - train-backwards
     - train-vocab
     - toolchain
@@ -38,11 +39,11 @@ task-defaults:
             best_model: training_config.experiment.best-model
         substitution-fields:
             - description
-            - label
             - fetches.train-backwards
             - dependencies
             - worker.env
             - attributes
+            - label
             - run.command
 
     marian-args:
@@ -73,7 +74,7 @@ task-defaults:
             - >-
                 export MARIAN=$MOZ_FETCHES_DIR &&
                 $VCS_PATH/taskcluster/scripts/pipeline/translate-taskcluster.sh
-                $MOZ_FETCHES_DIR/out-file.{this_chunk}.zst
+                $MOZ_FETCHES_DIR/out-file.{{this_chunk}}.zst
                 artifacts
                 plain
                 $MOZ_FETCHES_DIR/vocab.spm
@@ -93,7 +94,9 @@ task-defaults:
 
 tasks:
     trg:
-        label: translate-mono-trg-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}
+        # double curly braces are used for the chunk substitutions because
+        # this must first be formatted by task-context to get src and trg locale
+        label: translate-mono-trg-{src_locale}-{trg_locale}-{{this_chunk}}/{{total_chunks}}
         attributes:
             stage: translate-mono-trg
             dataset-category: mono-trg
@@ -103,10 +106,16 @@ tasks:
         task-context:
             from-parameters:
                 locale: training_config.experiment.trg
+                split_chunks: training_config.taskcluster.split-chunks
+            substitution-fields:
+                - chunk.total-chunks
 
-        chunk-config:
-            total-chunks:
-                from-parameters: training_config.taskcluster.split-chunks
+        cast-to:
+            int:
+                - chunk.total-chunks
+
+        chunk:
+            total-chunks: "{split_chunks}"
             substitution-fields:
                 - label
                 - fetches.split-mono-trg

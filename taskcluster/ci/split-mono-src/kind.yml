@@ -96,20 +96,3 @@ tasks:
             merge-mono-src:
                 - artifact: mono.{src_locale}.zst
                   extract: false
-
-    trg:
-        label: split-mono-trg-{src_locale}-{trg_locale}
-        attributes:
-            dataset-category: mono-trg
-
-        task-context:
-            from-parameters:
-                locale: training_config.experiment.trg
-
-        dependencies:
-            merge-mono-trg: merge-mono-trg-{src_locale}-{trg_locale}
-
-        fetches:
-            merge-mono-trg:
-                - artifact: mono.{trg_locale}.zst
-                  extract: false

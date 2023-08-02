@@ -15,7 +15,7 @@ kind-dependencies:
     - finetune-student
     - train-vocab
     - alignments
-    - merge
+    - merge-devset
     - toolchain
 
 tasks:

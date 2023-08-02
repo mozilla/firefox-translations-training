@@ -6,33 +6,37 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.chunking:chunk
     - translations_taskgraph.transforms.marian_args:transforms
     - taskgraph.transforms.task_context
+    - translations_taskgraph.transforms.cast_to
+    - taskgraph.transforms.chunking
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
-    - merge
+    - merge-devset
     - merge-augmented
     - train-vocab
     - toolchain
 
 tasks:
-    "{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}":
-        description: train teacher for {src_locale}-{trg_locale} {this_chunk}/{total_chunks}
-        chunk-config:
-            total-chunks:
-                from-parameters: training_config.experiment.teacher-ensemble
+    "{src_locale}-{trg_locale}-{{this_chunk}}/{{total_chunks}}":
+        description: train teacher for {src_locale}-{trg_locale} {{this_chunk}}/{{total_chunks}}
+        chunk:
+            total-chunks: "{teacher_ensemble}"
             substitution-fields:
                 - name
                 - description
+        cast-to:
+            int:
+                - chunk.total-chunks
         task-context:
             from-parameters:
                 src_locale: training_config.experiment.src
                 trg_locale: training_config.experiment.trg
                 best_model: training_config.experiment.best-model
+                teacher_ensemble: training_config.experiment.teacher-ensemble
             substitution-fields:
                 - description
                 - name
@@ -40,6 +44,7 @@ tasks:
                 - dependencies
                 - run.command
                 - attributes
+                - chunk.total-chunks
         attributes:
             stage: train-teacher
             src_locale: "{src_locale}"

@@ -7,9 +7,9 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.from_datasets:per_dataset
-    - translations_taskgraph.transforms.chunking:chunk
-    - translations_taskgraph.transforms.chunking:unchunk
     - taskgraph.transforms.task_context
+    - translations_taskgraph.transforms.cast_to
+    - taskgraph.transforms.chunking
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
@@ -48,6 +48,7 @@ task-defaults:
             best_model: training_config.experiment.best-model
             src_locale: training_config.experiment.src
             trg_locale: training_config.experiment.trg
+            split_chunks: training_config.experiment.teacher-ensemble
     worker-type: b-linux-v100-gpu
     worker:
         artifacts:
@@ -139,6 +140,7 @@ tasks:
         task-context:
             substitution-fields:
                 - fetches.train-teacher
+                - chunk.total-chunks
             from-object:
                 pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
                 pipeline_args1: >-
@@ -146,9 +148,12 @@ tasks:
                     $MOZ_FETCHES_DIR/{dataset_sanitized}
                     {src_locale}
                     {trg_locale}
-        chunk-config:
-            total-chunks:
-                from-parameters: training_config.experiment.teacher-ensemble
+        cast-to:
+            int:
+                - chunk.total-chunks
+
+        chunk:
+            total-chunks: "{split_chunks}"
             substitution-fields:
                 - name
                 - description
@@ -185,6 +190,7 @@ tasks:
         task-context:
             substitution-fields:
                 - fetches.finetune-teacher
+                - chunk.total-chunks
             from-object:
                 pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
                 pipeline_args1: >-
@@ -192,9 +198,12 @@ tasks:
                     $MOZ_FETCHES_DIR/{dataset_sanitized}
                     {src_locale}
                     {trg_locale}
-        chunk-config:
-            total-chunks:
-                from-parameters: training_config.experiment.teacher-ensemble
+        cast-to:
+            int:
+                - chunk.total-chunks
+
+        chunk:
+            total-chunks: "{split_chunks}"
             substitution-fields:
                 - name
                 - description
@@ -214,53 +223,6 @@ tasks:
                 - artifact: final.model.npz.best-{best_model}.npz
                   extract: false
                 - artifact: final.model.npz.best-{best_model}.npz.decoder.yml
-                  extract: false
-            train-vocab:
-                - artifact: vocab.spm
-                  extract: false
-            toolchain:
-                - marian
-
-    teacher-ensemble-{provider}-{dataset}-{src_locale}-{trg_locale}:
-        description: teacher evaluation for {dataset} {src_locale}-{trg_locale}
-        attributes:
-            stage: evaluate-teacher-ensemble
-            dataset-category: test
-            cache:
-                type: evaluate-teacher-ensemble
-        dataset-config:
-            substitution-fields:
-                - unchunk-config.per-upstream-fields
-        task-context:
-            substitution-fields:
-                - fetches
-            from-object:
-                pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
-                pipeline_args1: >-
-                    $TASK_WORKDIR/artifacts/{dataset_sanitized}
-                    $MOZ_FETCHES_DIR/{dataset_sanitized}
-                    {src_locale}
-                    {trg_locale}
-        unchunk-config:
-            total-chunks:
-                from-parameters: training_config.experiment.teacher-ensemble
-            per-upstream-fields:
-                dependencies:
-                    finetune-teacher-{this_chunk}: finetune-teacher-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}
-                fetches:
-                    finetune-teacher-{this_chunk}:
-                        - artifact: final.model.npz.best-{best_model}.npz
-                          dest: model{this_chunk}
-                        - artifact: final.model.npz.best-chrf.npz.decoder.yml
-
-        dependencies:
-            dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
-            train-vocab: train-vocab-{src_locale}-{trg_locale}
-        fetches:
-            dataset:
-                - artifact: "{dataset_sanitized}.{src_locale}.zst"
-                  extract: false
-                - artifact: "{dataset_sanitized}.{trg_locale}.zst"
                   extract: false
             train-vocab:
                 - artifact: vocab.spm

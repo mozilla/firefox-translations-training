@@ -13,7 +13,8 @@ transforms:
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
-    - merge
+    - merge-corpus
+    - merge-devset
     - train-vocab
     - toolchain
 
