@@ -158,7 +158,7 @@ tasks:
                           'tasks_for == "cron"': low
                           'tasks_for == "github-push"|| isPullRequest': very-low
                           $default: lowest  # tasks_for == 'action'
-                  retries: 5
+                  retries: 0
 
                   payload:
                       $let:
