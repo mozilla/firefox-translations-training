@@ -21,7 +21,8 @@ cd "${output_dir}"
 ls file* | grep -v "\.ref" | sort > src-files.txt
 ls file* | grep "\.ref" | sort > ref-files.txt
 for i in $(seq 1 ${chunks} | tr '\n' ' '); do
-  src_files=$(split -n l/${i}/${chunks} src-files.txt | tr '\n' ' ')
+  # Using `r` ensures that src and ref are chunked consistently.
+  src_files=$(split -n r/${i}/${chunks} src-files.txt | tr '\n' ' ')
   if [ "${src_files}" = "" ]; then
     touch "src-file.${i}"
   else
@@ -29,7 +30,7 @@ for i in $(seq 1 ${chunks} | tr '\n' ' '); do
   fi
   zstd --rm "src-file.${i}"
 
-  ref_files=$(split -n l/${i}/${chunks} ref-files.txt | tr '\n' ' ')
+  ref_files=$(split -n r/${i}/${chunks} ref-files.txt | tr '\n' ' ')
   if [ "${ref_files}" = "" ]; then
     touch "ref-file.${i}"
   else
