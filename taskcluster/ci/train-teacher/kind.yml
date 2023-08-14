@@ -21,6 +21,8 @@ kind-dependencies:
     - toolchain
 
 tasks:
+    # double curly braces are used for the chunk substitutions because
+    # this must first be formatted by task-context to get src and trg locale
     "{src_locale}-{trg_locale}-{{this_chunk}}/{{total_chunks}}":
         description: train teacher for {src_locale}-{trg_locale} {{this_chunk}}/{{total_chunks}}
         chunk:

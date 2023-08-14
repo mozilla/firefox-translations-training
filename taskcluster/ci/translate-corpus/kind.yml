@@ -21,6 +21,8 @@ kind-dependencies:
     - toolchain
 
 tasks:
+    # double curly braces are used for the chunk substitutions because
+    # this must first be formatted by task-context to get src and trg locale
     "{src_locale}-{trg_locale}-{{this_chunk}}/{{total_chunks}}":
         description: translate corpus for {src_locale}-{trg_locale}
         attributes:
@@ -108,6 +110,8 @@ tasks:
             command:
                 - bash
                 - -xc
+                # double curly braces are used for the chunk substitutions because
+                # this must first be formatted by task-context to get src and trg locale
                 - >-
                     export MARIAN=$MOZ_FETCHES_DIR &&
                     $VCS_PATH/taskcluster/scripts/pipeline/translate-taskcluster.sh

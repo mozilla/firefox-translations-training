@@ -71,6 +71,8 @@ task-defaults:
         command:
             - bash
             - -xc
+            # double curly braces are used for the chunk substitutions because
+            # this must first be formatted by task-context to get src and trg locale
             - >-
                 export MARIAN=$MOZ_FETCHES_DIR &&
                 $VCS_PATH/taskcluster/scripts/pipeline/translate-taskcluster.sh
