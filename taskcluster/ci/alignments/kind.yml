@@ -6,8 +6,7 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.task_substitution_from_params:transforms
-    - translations_taskgraph.transforms.command_context_from_params:transforms
+    - taskgraph.transforms.task_context
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
@@ -29,7 +28,7 @@ tasks:
                 type: alignments
                 resources:
                     - pipeline/alignment/generate-alignment-and-shortlist.sh
-        task-substitution:
+        task-context:
             from-parameters:
                 src_locale: training_config.experiment.src
                 trg_locale: training_config.experiment.trg
@@ -59,7 +58,6 @@ tasks:
 
         run:
             using: run-task
-            command-context: {}
             command:
                 - bash
                 - -c

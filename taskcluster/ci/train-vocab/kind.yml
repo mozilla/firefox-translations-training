@@ -6,14 +6,13 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.task_substitution_from_params:transforms
-    - translations_taskgraph.transforms.command_context_from_params:transforms
+    - taskgraph.transforms.task_context
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
-    - merge
+    - merge-corpus
     - toolchain
 
 tasks:
@@ -30,9 +29,9 @@ tasks:
                     - pipeline/train/spm-vocab.sh
                 from-parameters:
                     spm_sample_size: training_config.experiment.spm-sample-size
-        task-substitution:
+        task-context:
             from-parameters:
-                # TODO: fix other kinds to use the right vars
+                spm_sample_size: training_config.experiment.spm-sample-size
                 src_locale: training_config.experiment.src
                 trg_locale: training_config.experiment.trg
             substitution-fields:
@@ -41,6 +40,7 @@ tasks:
                 - fetches
                 - dependencies
                 - attributes
+                - run.command
         worker-type: b-linux-large
         worker:
             docker-image: {"in-tree": "train"}
@@ -57,11 +57,6 @@ tasks:
 
         run:
             using: run-task
-            command-context:
-                from-parameters:
-                    spm_sample_size: training_config.experiment.spm-sample-size
-                    src_locale: training_config.experiment.src
-                    trg_locale: training_config.experiment.trg
             command:
                 - bash
                 - -c

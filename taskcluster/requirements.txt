@@ -275,9 +275,9 @@ slugid==2.0.0 \
     --hash=sha256:a950d98b72691178bdd4d6c52743c4a2aa039207cf7a97d71060a111ff9ba297 \
     --hash=sha256:aec8b0e01c4ad32e38e12d609eab3ec912fd129aaf6b2ded0199b56a5f8fd67c
     # via taskcluster-taskgraph
-taskcluster-taskgraph==5.6.0 \
-    --hash=sha256:082a05fcb80e4d43cef3bf8e49d22950d80e988a8a1acf0172f1c7439d7a2131 \
-    --hash=sha256:f4a7358dd4f11d9212c209194f86a1d5482dd0a274993b62a583ed74234b0d42
+taskcluster-taskgraph==6.2.0 \
+    --hash=sha256:101c0ac0ce26a90c05a74b4f296424425409ffd4d89bbc4daf8bd4c24bc54c22 \
+    --hash=sha256:4e589bdaa8caac37c0bbd598b274eea7968380dbff396ce0e00bfbddcd34088f
     # via -r requirements.in
 taskcluster-urls==13.0.1 \
     --hash=sha256:5e25e7e6818e8877178b175ff43d2e6548afad72694aa125f404a7329ece0973 \

@@ -5,10 +5,11 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.task_substitution_from_params:transforms
     - translations_taskgraph.transforms.marian_args:transforms
-    - translations_taskgraph.transforms.chunking:chunk
-    - translations_taskgraph.transforms.chunking:unchunk
+    - taskgraph.transforms.task_context
+    - translations_taskgraph.transforms.cast_to
+    - taskgraph.transforms.chunking
+    - taskgraph.transforms.from_deps
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
@@ -20,8 +21,10 @@ kind-dependencies:
     - toolchain
 
 tasks:
-    "{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}":
-        description: translate corpus for {locale}
+    # double curly braces are used for the chunk substitutions because
+    # this must first be formatted by task-context to get src and trg locale
+    "{src_locale}-{trg_locale}-{{this_chunk}}/{{total_chunks}}":
+        description: translate corpus for {src_locale}-{trg_locale}
         attributes:
             stage: translate-corpus
             src_locale: "{src_locale}"
@@ -37,38 +40,50 @@ tasks:
                     marian_args: training_config.marian-args.decoding-teacher
 
         # This job is split into `split-chunks`
-        chunk-config:
-            total-chunks:
-                from-parameters: training_config.taskcluster.split-chunks
+        chunk:
+            total-chunks: "{split_chunks}"
             substitution-fields:
                 - name
-                - fetches.split-corpus
                 - run.command
                 - attributes
+                - from-deps.fetches.split-corpus
 
-        # One of our upstreams is split into `teacher-ensemble` chunks
-        unchunk-config:
-            total-chunks:
-                from-parameters: training_config.experiment.teacher-ensemble
-            per-upstream-fields:
-                dependencies:
-                    finetune-teacher-{this_chunk}: finetune-teacher-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}
-                fetches:
-                    finetune-teacher-{this_chunk}:
-                        - artifact: final.model.npz.best-{best_model}.npz
-                          dest: model{this_chunk}
+        cast-to:
+            int:
+                - chunk.total-chunks
 
-        task-substitution:
+        from-deps:
+            group-by: all
+            set-name: false
+            unique-kinds: false
+            kinds:
+                - finetune-teacher
+                - split-corpus
+                - train-vocab
+            fetches:
+                split-corpus:
+                    - artifact: src-file.{this_chunk}.zst
+                      extract: true
+                train-vocab:
+                    - artifact: vocab.spm
+                      extract: false
+                finetune-teacher:
+                    - artifact: final.model.npz.best-{best_model}.npz
+                      dest: model{this_chunk}
+
+        task-context:
             from-parameters:
                 src_locale: training_config.experiment.src
                 trg_locale: training_config.experiment.trg
                 best_model: training_config.experiment.best-model
+                split_chunks: training_config.taskcluster.split-chunks
             substitution-fields:
                 - description
-                - name
-                - dependencies
                 - worker.env
-                - unchunk-config.per-upstream-fields
+                - name
+                - run.command
+                - chunk.total-chunks
+                - attributes
 
         marian-args:
             from-parameters: training_config.marian-args.decoding-teacher
@@ -95,27 +110,19 @@ tasks:
             command:
                 - bash
                 - -xc
+                # double curly braces are used for the chunk substitutions because
+                # this must first be formatted by task-context to get src and trg locale
                 - >-
                     export MARIAN=$MOZ_FETCHES_DIR &&
                     $VCS_PATH/taskcluster/scripts/pipeline/translate-taskcluster.sh
-                    $MOZ_FETCHES_DIR/src-file.{this_chunk}.zst
+                    $MOZ_FETCHES_DIR/src-file.{{this_chunk}}.zst
                     artifacts
                     nbest
                     $MOZ_FETCHES_DIR/vocab.spm
                     $MOZ_FETCHES_DIR/model*/*.npz
                     {marian_args}
 
-        dependencies:
-            split-corpus: split-corpus-{src_locale}-{trg_locale}
-            train-vocab: train-vocab-{src_locale}-{trg_locale}
-
         fetches:
             toolchain:
                 - marian
                 - cuda-toolkit
-            split-corpus:
-                - artifact: src-file.{this_chunk}.zst
-                  extract: true
-            train-vocab:
-                - artifact: vocab.spm
-                  extract: false

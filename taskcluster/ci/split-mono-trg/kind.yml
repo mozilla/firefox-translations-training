@@ -2,7 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 ---
-
 loader: taskgraph.loader.transform:loader
 
 transforms:
@@ -13,41 +12,49 @@ transforms:
 
 kind-dependencies:
     - merge-mono
-    - merge-corpus
-    - collect-mono-trg
     - toolchain
 
 task-defaults:
+    description: split mono for {locale}
     attributes:
+        stage: split-mono
         src_locale: "{src_locale}"
         trg_locale: "{trg_locale}"
         cache:
+            type: split-mono
             resources:
-                - pipeline/translate/merge-corpus.sh
+                - pipeline/translate/split-mono.sh
+                - taskcluster/scripts/pipeline/split-mono-taskcluster.sh
+            from-parameters:
+                split_length: training_config.experiment.split-length
+                split_chunks: training_config.taskcluster.split-chunks
+
     task-context:
         from-parameters:
+            split_length: training_config.experiment.split-length
+            split_chunks: training_config.taskcluster.split-chunks
             src_locale: training_config.experiment.src
             trg_locale: training_config.experiment.trg
         substitution-fields:
-            - label
             - description
-            - name
-            - worker.env
-            - dependencies
+            - label
             - fetches
-            - run.command
+            - dependencies
+            - worker.env
             - attributes
+            - run.command
+
     worker-type: b-linux-large
+
     worker:
-        docker-image: {"in-tree": "train"}
+        docker-image: { "in-tree": "train" }
         max-run-time: 86400
         artifacts:
             - name: public/build
               path: /builds/worker/artifacts
               type: directory
         env:
-            SRC: "{src_locale}"
-            TRG: "{trg_locale}"
+            LOCALE: "{locale}"
             COMPRESSION_CMD: zstdmt
             ARTIFACT_EXT: zst
 
@@ -59,39 +66,33 @@ task-defaults:
         command:
             - bash
             - -c
+              # TODO: move number of chunks elsewhere
             - >-
                 export BIN=$MOZ_FETCHES_DIR &&
-                $VCS_PATH/pipeline/translate/merge-corpus.sh
-                $MOZ_FETCHES_DIR/corpus.{src_locale}.zst
-                $MOZ_FETCHES_DIR/mono.{src_locale}.zst
-                $MOZ_FETCHES_DIR/corpus.{trg_locale}.zst
-                $MOZ_FETCHES_DIR/mono.{trg_locale}.zst
-                /builds/worker/artifacts/corpus.{src_locale}.zst
-                /builds/worker/artifacts/corpus.{trg_locale}.zst
+                $VCS_PATH/taskcluster/scripts/pipeline/split-mono-taskcluster.sh
+                {split_chunks}
+                /builds/worker/artifacts
+                {split_length}
+                $MOZ_FETCHES_DIR/mono.$LOCALE.zst
+
     fetches:
         toolchain:
             - preprocess
 
 tasks:
-    merge-augmented:
-        label: merge-augmented-{src_locale}-{trg_locale}
-        description: merge augmented for {src_locale}-{trg_locale}
+    trg:
+        label: split-mono-trg-{src_locale}-{trg_locale}
         attributes:
-            dataset-category: devtest
-            stage: merge-augmented
-            cache:
-                type: merge-augmented
+            dataset-category: mono-trg
+
+        task-context:
+            from-parameters:
+                locale: training_config.experiment.trg
 
         dependencies:
-            merge-corpus: merge-corpus-{src_locale}-{trg_locale}
             merge-mono-trg: merge-mono-trg-{src_locale}-{trg_locale}
-            collect-mono-trg: collect-mono-trg-{src_locale}-{trg_locale}
 
         fetches:
-            merge-corpus:
-                - artifact: corpus.{src_locale}.zst
-                - artifact: corpus.{trg_locale}.zst
             merge-mono-trg:
                 - artifact: mono.{trg_locale}.zst
-            collect-mono-trg:
-                - artifact: mono.{src_locale}.zst
+                  extract: false
