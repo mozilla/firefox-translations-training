@@ -164,7 +164,7 @@ eval_teacher_ens_dir = f'{eval_res_dir}/teacher-ensemble'
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" BMT_MARIAN="{bmt_marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
-BIN="{bin}" CUDA_DIR="{cuda_dir}" CUDNN_DIR="{cudnn_dir}" ROCM_PATH="{rocm_dir}" '''
+BIN="{bin}" CUDA_DIR="{cuda_dir}" CUDNN_DIR="{cudnn_dir}" ROCM_PATH="{rocm_dir}" COMPRESSION_CMD=pigz ARTIFACT_EXT=gz'''
 # CUDA_VISIBLE_DEVICES is used by bicleaner ai. slurm sets this variable
 # it can be overriden manually by 'gpus' config setting to split GPUs in local mode
 if config['gpus']:
