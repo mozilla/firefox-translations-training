@@ -8,3 +8,4 @@ dependencies:
   - cmake=3.21.1
   - pip:
     - bicleaner-ai==2.2.1
+    - tensorflow-rocm==2.10.0.520    
