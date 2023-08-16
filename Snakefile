@@ -214,7 +214,13 @@ if 'bicleaner' in config['experiment']:
 else:
     bicleaner_type = None    
 
-bicleaner_env = "envs/bicleaner-ai.yml" if bicleaner_type == 'bicleaner-ai' else 'envs/bicleaner.yml'
+if bicleaner_type == 'bicleaner-ai':
+    if marian_version == 'lumi-marian':
+        bicleaner_env = 'envs/bicleaner-ai-lumi.yml'
+    else:
+        bicleaner_env = 'envs/bicleaner-ai.yml'
+else:
+    bicleaner_env = 'envs/bicleaner.yml' 
 
 if bicleaner_type:
     clean_corpus_prefix = f'{biclean}/corpus'
