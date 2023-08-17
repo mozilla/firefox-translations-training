@@ -5,13 +5,14 @@ Stage: spython-base
 %files
 pipeline/setup/install-deps.sh install-deps.sh
 envs/base.yml /conda-envs/c7aefb385f47824bd83e494ba6175afb/environment.yaml
-envs/bicleaner-ai.yml /conda-envs/6dc32b6f0731acf817ada219622a98b8/environment.yaml
+envs/bicleaner-ai-lumi.yml /conda-envs/6dc32b6f0731acf817ada219622a98b8/environment.yaml
+envs/bicleaner-ai.yml /conda-envs/04b8248cb528961ad452c73dd0a7c8b6/environment.yaml
 envs/bicleaner.yml /conda-envs/a4f700aa6ff0256dcd9321b536a081ac/environment.yaml
 envs/corpus.yml /conda-envs/2e8e4401e9abbca04941f823d00fe74a/environment.yaml
 envs/tensorboard.yml /conda-envs/fadf1aec392d8a065ae29b9fcf9b3221/environment.yaml
 %labels
 io.github.snakemake.containerized="true"
-io.github.snakemake.conda_env_hash="5ce50cdb64f60967882d71af6ce042c721c1d3fc10d5df4c7e9becd041baa840"
+io.github.snakemake.conda_env_hash="41592307ee99833c1ad2068c1e915ff9c38acc418b5bebfe7e107d9a79980cb4"
 %post
 
 # Remove this if not in Finland, or change to closer mirror
@@ -45,7 +46,7 @@ bash install-deps.sh
 mkdir -p /conda-envs/c7aefb385f47824bd83e494ba6175afb
 
 # Conda environment:
-#   source: envs/bicleaner-ai.yml
+#   source: envs/bicleaner-ai-lumi.yml
 #   prefix: /conda-envs/6dc32b6f0731acf817ada219622a98b8
 #   name: bicleaner-ai
 #   channels:
@@ -59,6 +60,22 @@ mkdir -p /conda-envs/c7aefb385f47824bd83e494ba6175afb
 #       - bicleaner-ai==2.2.1
 #       - tensorflow-rocm==2.10.0.520
 mkdir -p /conda-envs/6dc32b6f0731acf817ada219622a98b8
+
+# Conda environment:
+#   source: envs/bicleaner-ai.yml
+#   prefix: /conda-envs/04b8248cb528961ad452c73dd0a7c8b6
+#   name: bicleaner-ai
+#   channels:
+#     - conda-forge
+#     - defaults
+#   dependencies:
+#     - python=3.9
+#     - pip==21.2.2
+#     - cmake=3.21.1
+#     - pip:
+#       - bicleaner-ai==2.2.1
+#       - tensorflow==2.6.5
+mkdir -p /conda-envs/04b8248cb528961ad452c73dd0a7c8b6
 
 # Conda environment:
 #   source: envs/bicleaner.yml
@@ -116,6 +133,7 @@ mkdir -p /conda-envs/fadf1aec392d8a065ae29b9fcf9b3221
 
 mamba env create --prefix /conda-envs/c7aefb385f47824bd83e494ba6175afb --file /conda-envs/c7aefb385f47824bd83e494ba6175afb/environment.yaml && \
 mamba env create --prefix /conda-envs/6dc32b6f0731acf817ada219622a98b8 --file /conda-envs/6dc32b6f0731acf817ada219622a98b8/environment.yaml && \
+mamba env create --prefix /conda-envs/04b8248cb528961ad452c73dd0a7c8b6 --file /conda-envs/04b8248cb528961ad452c73dd0a7c8b6/environment.yaml && \
 mamba env create --prefix /conda-envs/a4f700aa6ff0256dcd9321b536a081ac --file /conda-envs/a4f700aa6ff0256dcd9321b536a081ac/environment.yaml && \
 mamba env create --prefix /conda-envs/2e8e4401e9abbca04941f823d00fe74a --file /conda-envs/2e8e4401e9abbca04941f823d00fe74a/environment.yaml && \
 mamba env create --prefix /conda-envs/fadf1aec392d8a065ae29b9fcf9b3221 --file /conda-envs/fadf1aec392d8a065ae29b9fcf9b3221/environment.yaml && \
@@ -124,6 +142,7 @@ mamba clean --all -y
 #Bicleaner needs the fasttext language id model installed
 wget -O /conda-envs/6dc32b6f0731acf817ada219622a98b8/lib/python3.9/site-packages/fastspell/lid.176.bin https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
 wget -O /conda-envs/a4f700aa6ff0256dcd9321b536a081ac/lib/python3.8/site-packages/fastspell/lid.176.bin https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
+wget -O /conda-envs/04b8248cb528961ad452c73dd0a7c8b6/lib/python3.9/site-packages/fastspell/lid.176.bin https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
 
 %runscript
 exec /bin/bash "$@"

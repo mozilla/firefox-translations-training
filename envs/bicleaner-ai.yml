@@ -8,3 +8,4 @@ dependencies:
   - cmake=3.21.1
   - pip:
     - bicleaner-ai==2.2.1
+    - tensorflow==2.6.5
