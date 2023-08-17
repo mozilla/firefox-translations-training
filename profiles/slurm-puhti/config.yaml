@@ -18,7 +18,7 @@ resources: gpu=1
 cores: 8
 cache: false
 reason: true
-singularity-args: "--bind $PWD/../data,$CUDA_INSTALL_ROOT,$CUDNN_INSTALL_ROOT:/cudnn,$PWD/../data/tmp:/tmp --nv --containall"
+singularity-args: "--bind $PWD/../data,$CUDA_INSTALL_ROOT,$CUDNN_INSTALL_ROOT,$PWD/../data/tmp:/tmp --nv --containall"
 config:
   - deps=false
   # These config values are now set in Snakefile, default values can be overwritten here

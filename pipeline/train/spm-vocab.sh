@@ -13,7 +13,7 @@ corpus_trg=$2
 vocab_output=$3
 sample_size=$4
 threads=$5
-vocab_size="${6:-32000}
+vocab_size="${6:-32000}"
 
 if [ "$threads" = "auto" ]; then
   threads=$(nproc)

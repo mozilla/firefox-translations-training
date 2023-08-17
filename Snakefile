@@ -18,9 +18,9 @@ containerized: 'Ftt.sif'
 
 install_deps = config['deps'] == 'true'
 data_root_dir = config.get('root', srcdir("../data"))
-cuda_dir = config.get('cuda', os.environ.get("CUDA_INSTALL_ROOT")) 
-cudnn_dir = config.get('cudnn', os.environ.get("CUDNN_INSTALL_ROOT"))
-rocm_dir = config.get('rocm',os.environ.get("ROCM_PATH"))
+cuda_dir = config.get('cuda', os.environ.get("CUDA_INSTALL_ROOT","")) 
+cudnn_dir = config.get('cudnn', os.environ.get("CUDNN_INSTALL_ROOT",""))
+rocm_dir = config.get('rocm',os.environ.get("ROCM_PATH",""))
 
 gpus_num = config['numgpus']
 # marian occupies all GPUs on a machine if `gpus` are not specified
@@ -499,7 +499,7 @@ if not vocab_pretrained:
         output: vocab_path
         params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset"
         shell: '''bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" {spm_sample_size} \
-                   {spm_vocab_size} >> {log} 2>&1'''
+                   {threads} {spm_vocab_size} >> {log} 2>&1'''
 
 if do_train_backward: 
     mono_trg_file = f'{translated}/mono_trg/file.{{part}}'
