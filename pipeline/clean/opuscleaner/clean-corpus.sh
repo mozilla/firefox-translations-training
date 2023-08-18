@@ -8,8 +8,8 @@ set -euo pipefail
 
 echo "###### Cleaning corpus with OpusCleaner"
 
-#test -v SRC
-#test -v TRG
+test -v SRC
+test -v TRG
 
 input_prefix=$1
 output_prefix=$2

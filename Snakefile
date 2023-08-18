@@ -311,7 +311,7 @@ rule clean_corpus:
     output: multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
     params: prefix_input=f"{original}/corpus/{{dataset}}",prefix_output=f"{clean}/corpus/{{dataset}}",
             dataset=lambda wildcards: dataset_norm(wildcards.dataset)
-    shell: '''bash pipeline/clean/clean-corpus.sh "{params.prefix_input}" "{params.prefix_output}" {threads} {params.dataset} \
+    shell: '''bash pipeline/clean/opuscleaner/clean-corpus.sh "{params.prefix_input}" "{params.prefix_output}" {threads} {params.dataset} \
                 >> {log} 2>&1'''
 
 rule clean_mono:
