@@ -53,6 +53,7 @@ opuscleaner-clean \
   "${filter_path}" |
   tee >(cut -f1 | ${COMPRESSION_CMD} >"${output_prefix}.${SRC}.${ARTIFACT_EXT}") |
         cut -f2 | ${COMPRESSION_CMD} >"${output_prefix}.${TRG}.${ARTIFACT_EXT}"
+# TODO: opuslceaer returns 0 if one of the processes fails
 
 test -s "${output_prefix}.${SRC}.${ARTIFACT_EXT}" || exit 1
 test -s "${output_prefix}.${TRG}.${ARTIFACT_EXT}" || exit 1

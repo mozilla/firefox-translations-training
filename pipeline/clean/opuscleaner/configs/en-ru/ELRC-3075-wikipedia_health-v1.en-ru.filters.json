@@ -20,11 +20,6 @@
       "language": "ru"
     },
     {
-      "filter": "deescape_tsv",
-      "parameters": {},
-      "language": null
-    },
-    {
       "filter": "remove_empty_lines",
       "parameters": {},
       "language": null

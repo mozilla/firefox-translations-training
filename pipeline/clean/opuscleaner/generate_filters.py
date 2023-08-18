@@ -46,6 +46,8 @@ def main() -> None:
         with open('configs/default.filters.json') as f:
             config_str = f.read()
             config_str = config_str.replace('<src>', src).replace('<trg>', trg)
+            abs_path_patterns = os.path.abspath('configs/remove_frequent_patterns.txt')
+            config_str = config_str.replace('configs/remove_frequent_patterns.txt', abs_path_patterns)
             config = json.loads(config_str)
             print(f'Using filter default.filters.json')
 
