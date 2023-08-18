@@ -1,0 +1,9 @@
+# Starting text in a lot of rows in OpenSubtitles, not everytime in both source and targets
+^ -	
+# Text in Czech Bible translations that is not in the source
+ (Ekumenická Bible)	
+# If there is a bullet in only one column, remove it
+^• *[^\t]*\t[^•]	^• *	
+# Note that the second pattern starts with a start of the string since 
+# it is run against the source and the target separately
+^[^•][^\t]*\t•	^• *	

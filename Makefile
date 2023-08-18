@@ -115,3 +115,13 @@ tensorboard:
 	ls -d $(MODELS)/*/*/* > tb-monitored-jobs
 	tensorboard --logdir=$(MODELS) --host=0.0.0.0 &
 	python utils/tb_log_parser.py --prefix=
+
+
+install-opuscleaner:
+	$(CONDA_ACTIVATE) base
+	conda env create -f envs/opuscleaner.yml
+
+opuscleaner-ui:
+	$(CONDA_ACTIVATE) opuscleaner
+	opuscleaner-server serve --host=0.0.0.0 --port=8000
+

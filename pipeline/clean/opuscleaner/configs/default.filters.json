@@ -4,24 +4,22 @@
   ],
   "filters": [
     {
-      "filter": "alpha_ratio",
+      "filter": "deescape-special-chars",
       "parameters": {
-        "LANG1": "<src>",
-        "LANG2": "<trg>",
-        "SRCWORDRAT": 0.4,
-        "TRGWORDRAT": 0.4,
-        "SRCALPHARAT": 0.5,
-        "TRGALPHARAT": 0.5,
-        "DEBUG": false
+        "LANG1": "<src>"
       },
-      "language": null
+      "language": "<src>"
     },
     {
-      "filter": "max_length",
+      "filter": "deescape-special-chars",
       "parameters": {
-        "MAXLENGTH": 150,
-        "MINLENGTH": 1
+        "LANG1": "other"
       },
+      "language": "<trg>"
+    },
+    {
+      "filter": "deescape_tsv",
+      "parameters": {},
       "language": null
     },
     {
@@ -35,9 +33,17 @@
       "language": null
     },
     {
-      "filter": "max_word_length",
+      "filter": "num_mismatch",
       "parameters": {
-        "MAXWORDLENGTH": 150
+        "RATIO": 1,
+        "DEBUG": false
+      },
+      "language": null
+    },
+    {
+      "filter": "remove_frequent_patterns",
+      "parameters": {
+        "PATTERN_FILE": "configs/remove_frequent_patterns.txt"
       },
       "language": null
     },
@@ -45,28 +51,46 @@
       "filter": "src_trg_ratio",
       "parameters": {
         "RATIO": 0.6,
-        "LOG": false
+        "LOG": true
       },
       "language": null
     },
     {
-      "filter": "deescape_tsv",
-      "parameters": {},
+      "filter": "max_word_length",
+      "parameters": {
+        "MAXWORDLENGTH": 150
+      },
       "language": null
     },
     {
-      "filter": "deescape-special-chars",
+      "filter": "max_length",
       "parameters": {
-        "LANG1": "<src>"
+        "MAXLENGTH": 150,
+        "MINLENGTH": 1
       },
-      "language": "<src>"
+      "language": null
     },
     {
-      "filter": "deescape-special-chars",
+      "filter": "alpha_ratio",
       "parameters": {
-        "LANG1": "<trg>"
+        "LANG1": "<src>",
+        "LANG2": "<trg>",
+        "SRCWORDRAT": 0.4,
+        "TRGWORDRAT": 0.4,
+        "SRCALPHARAT": 0.5,
+        "TRGALPHARAT": 0.5,
+        "DEBUG": false
       },
-      "language": "<trg>"
+      "language": null
+    },
+    {
+      "filter": "fasttext_filter",
+      "parameters": {
+        "FASTTEXT_MODEL_TYPE": "large",
+        "LANG1": "<src>",
+        "LANG2": "<trg>"
+      },
+      "language": null
     }
   ]
 }
