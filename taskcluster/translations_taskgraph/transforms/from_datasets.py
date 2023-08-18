@@ -79,12 +79,6 @@ def jobs_from_datasets(config, jobs):
 
                 container[subfield] = substitute(container[subfield], **subs)
 
-            # If the subjob has command-context, add these values there
-            # as well. These helps to avoid needing two levels of
-            # substitution in a command.
-            if subjob.get("run", {}).get("command-context") is not None:
-                subjob["run"]["command-context"].update(subs)
-
             subjob.setdefault("attributes", {})
             subjob["attributes"]["provider"] = dataset_provider
             subjob["attributes"]["dataset"] = dataset
@@ -150,12 +144,6 @@ def jobs_for_mono_datasets(config, jobs):
                     container = container[f]
 
                 container[subfield] = substitute(container[subfield], **subs)
-
-            # If the job has command-context, add these values there
-            # as well. These helps to avoid needing two levels of
-            # substitution in a command.
-            if subjob.get("run", {}).get("command-context") is not None:
-                subjob["run"]["command-context"].update(subs)
 
             subjob.setdefault("attributes", {})
             subjob["attributes"]["provider"] = dataset_provider

@@ -1,0 +1,133 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.from_datasets:per_dataset
+    - taskgraph.transforms.from_deps
+    - taskgraph.transforms.task_context
+    - taskgraph.transforms.job:transforms
+    - translations_taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - dataset
+    - finetune-teacher
+    - train-vocab
+    - alignments
+    - toolchain
+
+task-defaults:
+    attributes:
+        cache:
+            resources:
+                - pipeline/eval/eval-gpu.sh
+                - pipeline/eval/eval.sh
+    dataset-config:
+        category: test
+        substitution-fields:
+            - description
+            - name
+            - dependencies
+            - fetches
+            - worker.env
+            - task-context
+            - run.command
+    task-context:
+        substitution-fields:
+            - run.command
+        from-parameters:
+            best_model: training_config.experiment.best-model
+            src_locale: training_config.experiment.src
+            trg_locale: training_config.experiment.trg
+    worker-type: b-linux-v100-gpu
+    worker:
+        artifacts:
+            - name: public/build
+              path: artifacts
+              type: directory
+        max-run-time: 86400
+        env:
+            SRC: "{src_locale}"
+            TRG: "{trg_locale}"
+            GPUS: "0"
+            WORKSPACE: "8000"
+            COMPRESSION_CMD: zstdmt
+            ARTIFACT_EXT: zst
+
+    # Don't run unless explicitly scheduled
+    run-on-tasks-for: []
+
+    run:
+        using: run-task
+        # The two sed commands here are the unfortunate result of us consuming
+        # a marian config that was produced by an earlier step. These configs
+        # have hardcoded absolute paths to the models they were trained on,
+        # and end invalid when used on a different machine. In theory it is
+        # possible to adjust them at generation time to use relative paths,
+        # but in practice we have not been able to make this work.
+        command:
+            - bash
+            - -c
+            - >-
+                pip install -r $VCS_PATH/pipeline/eval/requirements/eval.txt &&
+                export PATH=$PATH:~/.local/bin &&
+                export MARIAN=$MOZ_FETCHES_DIR &&
+                export BMT_MARIAN=$MOZ_FETCHES_DIR &&
+                sed -i -e "s,- .*fetches,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
+                sed -i -e "s,- .*artifacts,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
+                {pipeline_script}
+                {pipeline_args1}
+                $MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz.decoder.yml
+                $MOZ_FETCHES_DIR/model*/*.npz
+
+tasks:
+    "{provider}-{dataset}-{src_locale}-{trg_locale}":
+        description: teacher evaluation for {dataset} {src_locale}-{trg_locale}
+        attributes:
+            stage: evaluate-teacher-ensemble
+            dataset-category: test
+            cache:
+                type: evaluate-teacher-ensemble
+        task-context:
+            substitution-fields:
+                - fetches
+            from-object:
+                pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
+                pipeline_args1: >-
+                    $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    $MOZ_FETCHES_DIR/{dataset_sanitized}
+                    {src_locale}
+                    {trg_locale}
+
+        from-deps:
+            group-by: all
+            set-name: false
+            unique-kinds: false
+            kinds:
+                - finetune-teacher
+                - train-vocab
+            fetches:
+                finetune-teacher:
+                    - artifact: final.model.npz.best-{best_model}.npz
+                      dest: model{this_chunk}
+                    - artifact: final.model.npz.best-chrf.npz.decoder.yml
+                train-vocab:
+                    - artifact: vocab.spm
+                      extract: false
+
+
+        dependencies:
+            dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
+
+        fetches:
+            dataset:
+                - artifact: "{dataset_sanitized}.{src_locale}.zst"
+                  extract: false
+                - artifact: "{dataset_sanitized}.{trg_locale}.zst"
+                  extract: false
+            toolchain:
+                - marian

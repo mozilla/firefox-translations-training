@@ -6,8 +6,7 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.task_substitution_from_params:transforms
-    - translations_taskgraph.transforms.command_context_from_params:transforms
+    - taskgraph.transforms.task_context
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
@@ -16,7 +15,7 @@ kind-dependencies:
     - finetune-student
     - train-vocab
     - alignments
-    - merge
+    - merge-devset
     - toolchain
 
 tasks:
@@ -32,7 +31,7 @@ tasks:
                 resources:
                     - pipeline/quantize/requirements/quantize.txt
                     - pipeline/quantize/quantize.sh
-        task-substitution:
+        task-context:
             from-parameters:
                 best_model: training_config.experiment.best-model
                 src_locale: training_config.experiment.src
@@ -63,9 +62,6 @@ tasks:
 
         run:
             using: run-task
-            command-context:
-                from-parameters:
-                    best_model: training_config.experiment.best-model
             command:
                 - bash
                 - -c

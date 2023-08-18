@@ -53,6 +53,7 @@ task-defaults:
             - name
             - dependencies
             - fetches
+            - run.command
     worker:
         docker-image: {"in-tree": "train"}
         max-run-time: 86400
@@ -69,8 +70,6 @@ task-defaults:
 
     run:
         using: run-task
-        # Include this so `from_datasets` will add a number of other values to it.
-        command-context: {}
         command:
             - bash
             - -c
