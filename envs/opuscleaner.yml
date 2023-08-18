@@ -9,5 +9,5 @@ dependencies:
     - opuscleaner==0.3.1
     - fasttext==0.9.2
     - sacremoses==0.0.53
-    - more_itertools==0.1.0
+    - more_itertools==10.1.0
     - requests==2.31.0
