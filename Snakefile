@@ -304,7 +304,7 @@ rule download_mono:
 rule clean_corpus:
     message: "Cleaning dataset"
     log: f"{log_dir}/clean_corpus/{{dataset}}.log"
-    conda: "envs/base.yml"
+    conda: "envs/opuscleaner.yml"
 #    group: "clean_corpus"
     threads: workflow.cores
     input: multiext(f"{original}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
