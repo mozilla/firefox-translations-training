@@ -31,7 +31,7 @@ def main() -> None:
         dataset_opus = f'{dataset[:idx]}-{dataset[idx+1:]}'
         custom_filter_opus = f'configs/{src}-{trg}/{dataset_opus}.{src}-{trg}.filters.json'
 
-    if os.path.exists(custom_filter_opus):
+    if custom_filter_opus and os.path.exists(custom_filter_opus):
         with open(custom_filter_opus) as f:
             config = json.load(f)
             print(f'Using filter {custom_filter_opus}')
