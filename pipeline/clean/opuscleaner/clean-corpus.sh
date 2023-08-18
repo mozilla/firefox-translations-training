@@ -32,26 +32,27 @@ cd "$(dirname "${0}")"
 dir="$(dirname "${output_prefix}")"
 mkdir -p "${dir}"
 
-# TODO: OpusCleander uses "-" to separate dataset version and we use "_"
-filter_path="filters/${SRC}-${TRG}/${dataset}.${SRC}-${TRG}.filters.json"
+echo "### Generating cleaning config: ${dataset}.${SRC}-${TRG}.filters.json"
+# save new filter to dataset output dir
+filter_path="${output_prefix}.${SRC}-${TRG}.filters.json"
+python3 generate_filters.py "${input_prefix}" "${SRC}" "${TRG}" "${dataset}" "${filter_path}"
+test -s "${filter_path}" || exit 1
 
-if [ ! -s "${filter_path}" ]; then
-  # generate cleaning pipeline config for each dataset based on defaults
-  echo "### Generating cleaning config: filters/${dataset}.${SRC}-${TRG}.filters.json"
-  # save new filter to dataset output dir
-  filter_path="${output_prefix}.${SRC}-${TRG}.filters.json"
-  python3 generate_filters.py "${input_prefix}" "${SRC}" "${TRG}" "${dataset}" "${filter_path}"
-  test -s "${filter_path}" || exit 1
-fi;
-
-echo "### Cleaning ${input_prefix}"
-#TODO: can we use stdin to feed input to opuscleaner?
+echo "### Cleaning ${input_prefix} with filter ${filter_path}"
+#can we use stdin to feed input to opuscleaner? this didn't work
+#paste <(${COMPRESSION_CMD} -dc "${input_prefix}.${SRC}.${ARTIFACT_EXT}") \
+#      <(${COMPRESSION_CMD} -dc "${input_prefix}.${TRG}.${ARTIFACT_EXT}") |
+#  opuscleaner-clean \
+#    --parallel ${threads} \
+#    --batch-size=50000 \
+#    --input=- \
+#    "${filter_path}" "${SRC}" "${TRG}" |
 opuscleaner-clean \
   --parallel ${threads} \
   --batch-size=50000 \
   "${filter_path}" |
-    tee >(cut -f1 | ${COMPRESSION_CMD} >"${output_prefix}.${SRC}.${ARTIFACT_EXT}") |
-    cut -f2 | ${COMPRESSION_CMD} >"${output_prefix}.${TRG}.${ARTIFACT_EXT}"
+  tee >(cut -f1 | ${COMPRESSION_CMD} >"${output_prefix}.${SRC}.${ARTIFACT_EXT}") |
+        cut -f2 | ${COMPRESSION_CMD} >"${output_prefix}.${TRG}.${ARTIFACT_EXT}"
 
 test -s "${output_prefix}.${SRC}.${ARTIFACT_EXT}" || exit 1
 test -s "${output_prefix}.${TRG}.${ARTIFACT_EXT}" || exit 1

@@ -4,6 +4,7 @@ Generates filter config for a dataset based on defaults to use in OpusCleaner
 
 import argparse
 import json
+import os
 
 
 def main() -> None:
@@ -21,13 +22,35 @@ def main() -> None:
     dataset = args.dataset
     output = args.output
 
-    with open('filters/default.filters.json') as f:
-        config_str = f.read()
+    # look whether there are filters produced by OpusCleaner UI first
+    custom_filter = f'configs/{src}-{trg}/{dataset}.{src}-{trg}.filters.json'
+    # workaround: we use "_" to separate the dataset version for OPUS datasets and OpusCleaner uses "-"
+    custom_filter_opus = None
+    idx = dataset.rfind('_')
+    if idx:
+        dataset_opus = f'{dataset[:idx]}-{dataset[idx+1:]}'
+        custom_filter_opus = f'configs/{src}-{trg}/{dataset_opus}.{src}-{trg}.filters.json'
 
-    config_str = config_str.replace('<src>', src).replace('<trg>', trg)
-    config = json.loads(config_str)
+    if os.path.exists(custom_filter_opus):
+        with open(custom_filter_opus) as f:
+            config = json.load(f)
+            print(f'Using filter {custom_filter_opus}')
+    elif os.path.exists(custom_filter):
+        with open(custom_filter) as f:
+            config = json.load(f)
+            print(f'Using filter {custom_filter}')
+    else:
+        # if custom filter is not found, use defaults
+        # note: do not call the folder with default filters "filters" because it's a magic work for opuscleaner-clean
+        # and it starts processing such folder
+        with open('configs/default.filters.json') as f:
+            config_str = f.read()
+            config_str = config_str.replace('<src>', src).replace('<trg>', trg)
+            config = json.loads(config_str)
+            print(f'Using filter default.filters.json')
 
-    config['files'] += [
+    # remove if we can use stdin
+    config['files'] = [
         f'{input_prefix}.{src}.gz',
         f'{input_prefix}.{trg}.gz'
     ]
