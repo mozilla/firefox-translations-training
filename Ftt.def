@@ -140,9 +140,15 @@ mamba env create --prefix /conda-envs/fadf1aec392d8a065ae29b9fcf9b3221 --file /c
 mamba clean --all -y
 
 #Bicleaner needs the fasttext language id model installed
-wget -O /conda-envs/6dc32b6f0731acf817ada219622a98b8/lib/python3.9/site-packages/fastspell/lid.176.bin https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
-wget -O /conda-envs/a4f700aa6ff0256dcd9321b536a081ac/lib/python3.8/site-packages/fastspell/lid.176.bin https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
-wget -O /conda-envs/04b8248cb528961ad452c73dd0a7c8b6/lib/python3.9/site-packages/fastspell/lid.176.bin https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
+wget -O lid.176.bin https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
+cp lid.176.bin /conda-envs/6dc32b6f0731acf817ada219622a98b8/lib/python3.9/site-packages/fastspell/lid.176.bin
+cp lid.176.bin /conda-envs/a4f700aa6ff0256dcd9321b536a081ac/lib/python3.8/site-packages/fastspell/lid.176.bin
+cp lid.176.bin /conda-envs/04b8248cb528961ad452c73dd0a7c8b6/lib/python3.9/site-packages/fastspell/lid.176.bin
+ 
+#Fastspell (used in bicleaner) uses hunspell to disambiguate between similar languages, install all hunspell dictionaries for that
+wget -O fastspell_dictionaries.tgz https://github.com/mbanon/fastspell/releases/download/dictionaries_v1/fastspell_dictionaries.tgz
+mkdir -p /usr/share/hunspell
+tar -xf fastspell_dictionaries.tgz --directory /usr/share/hunspell  
 
 %runscript
 exec /bin/bash "$@"
