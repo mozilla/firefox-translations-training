@@ -28,6 +28,11 @@ tasks:
         - bash
         - -c
         - >-
+          echo "Setting environment variables"                           &&
+          export CONDA_PATH=/builds/worker/.cache/mambaforge             &&
+          export SNAKEMAKE_OUTPUT_CACHE=/builds/worker/.cache/mambaforge &&
+          export REPORTS=/builds/worker/.cache/reports                   &&
+          export MODELS=/builds/worker/.cache/models                     &&
 
           echo "Install necessary dependencies"                          &&
           make conda                                                     &&
@@ -35,10 +40,6 @@ tasks:
           make git-modules                                               &&
 
           echo "Start the dry run"                                       &&
-          CONDA_PATH=/builds/worker/.cache/mambaforge
-          SNAKEMAKE_OUTPUT_CACHE=/builds/worker/.cache/mambaforge
-          REPORTS=/builds/worker/.cache/reports
-          MODELS=/builds/worker/.cache/models
           make dry-run
 
   run-my-test:
