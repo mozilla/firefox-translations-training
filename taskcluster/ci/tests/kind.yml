@@ -29,18 +29,18 @@ tasks:
         - -c
         - >-
           whoami &&
-          echo "Setting environment variables"                           &&
-          export CONDA_PATH=/builds/worker/.cache/mambaforge             &&
-          export SNAKEMAKE_OUTPUT_CACHE=/builds/worker/.cache/mambaforge &&
-          export REPORTS=/builds/worker/.cache/reports                   &&
-          export MODELS=/builds/worker/.cache/models                     &&
+          echo "Setting environment variables"                              &&
+          export CONDA_PATH=/builds/worker/artifacts/mambaforge             &&
+          export SNAKEMAKE_OUTPUT_CACHE=/builds/worker/artifacts/mambaforge &&
+          export REPORTS=/builds/worker/artifacts/reports                   &&
+          export MODELS=/builds/worker/artifacts/models                     &&
 
-          echo "Install necessary dependencies"                          &&
-          make conda                                                     &&
-          make snakemake                                                 &&
-          make git-modules                                               &&
+          echo "Install necessary dependencies"                             &&
+          make conda                                                        &&
+          make snakemake                                                    &&
+          make git-modules                                                  &&
 
-          echo "Start the dry run"                                       &&
+          echo "Start the dry run"                                          &&
           make dry-run
 
   run-my-test:
