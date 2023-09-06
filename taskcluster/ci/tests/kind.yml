@@ -1,0 +1,31 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - taskgraph.transforms.job:transforms
+    - taskgraph.transforms.task:transforms
+
+task-defaults:
+  description: "Run tests"
+  run:
+    using: run-task
+    cwd: '{checkout}'
+
+tasks:
+  run-my-test:
+    worker-type: b-linux-large
+    worker:
+      max-run-time: 86400
+      docker-image: {in-tree: testing}
+    run:
+      command:
+        - bash
+        - -c
+        - >-
+            poetry install &&
+            poetry run python3 test.py
+    run-on-tasks-for: ["github-push", "github-pull-request"]

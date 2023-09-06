@@ -9,6 +9,9 @@ transforms:
 tasks:
     base:
         symbol: Base
+    testing:
+        parent: base
+        symbol: Testing
     train:
         parent: base
         symbol: Train
