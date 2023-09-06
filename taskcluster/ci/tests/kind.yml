@@ -28,16 +28,18 @@ tasks:
         - bash
         - -c
         - >-
-          echo "Edit Makefile"                                   &&
-          sed -i 's/^NUM_GPUS=8/NUM_GPUS=0/' Makefile            &&
-          sed -i 's/^SHARED_ROOT.*/SHARED_ROOT=\/tmp/' Makefile  &&
+          echo "Setting environment variables"                           &&
+          export CONDA_PATH=/builds/worker/.cache/mambaforge             &&
+          export SNAKEMAKE_OUTPUT_CACHE=/builds/worker/.cache/mambaforge &&
+          export REPORTS=/builds/worker/.cache/reports                   &&
+          export MODELS=/builds/worker/.cache/models                     &&
 
-          echo "Install necessary dependencies"                  &&
-          make conda                                             &&
-          make snakemake                                         &&
-          make git-modules                                       &&
+          echo "Install necessary dependencies"                          &&
+          make conda                                                     &&
+          make snakemake                                                 &&
+          make git-modules                                               &&
 
-          echo "Start the dry run"                               &&
+          echo "Start the dry run"                                       &&
           make dry-run
 
   run-my-test:
