@@ -28,6 +28,7 @@ tasks:
         - bash
         - -c
         - >-
+          whoami &&
           echo "Setting environment variables"                           &&
           export CONDA_PATH=/builds/worker/.cache/mambaforge             &&
           export SNAKEMAKE_OUTPUT_CACHE=/builds/worker/.cache/mambaforge &&
