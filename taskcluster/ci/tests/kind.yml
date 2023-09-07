@@ -28,12 +28,12 @@ tasks:
         - bash
         - -c
         - >-
-          whoami &&
           echo "Setting environment variables"                              &&
           export CONDA_PATH=/builds/worker/artifacts/mambaforge             &&
           export SNAKEMAKE_OUTPUT_CACHE=/builds/worker/artifacts/mambaforge &&
           export REPORTS=/builds/worker/artifacts/reports                   &&
           export MODELS=/builds/worker/artifacts/models                     &&
+          export XDG_CACHE_HOME=/builds/worker/artifacts                    &&
 
           echo "Install necessary dependencies"                             &&
           make conda                                                        &&
