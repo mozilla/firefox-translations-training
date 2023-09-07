@@ -171,7 +171,7 @@ class JobMonitor:
                     for w in words[words.index("--devices") + 1 :]:
                         try:
                             int(w)
-                        except:
+                        except:  # noqa: E722
                             break
                         self.gpus += 1
                 elif "] Ep. " in line and "[valid]" not in line:
@@ -199,7 +199,7 @@ class JobMonitor:
                     label, *score = line.split()
                     try:
                         step = int(label.split("-")[2])
-                    except:
+                    except:  # noqa: E722
                         continue
                     if step <= self.avg_status[name]:
                         continue
@@ -220,8 +220,8 @@ def run(dir, prefix):
         with open("tb-monitored-jobs", "r") as f:
             monitored = set()
             # create new monitors
-            for line in f:
-                line = line.strip()
+            for line_raw in f:
+                line = line_raw.strip()
                 if line not in monitors:
                     path = os.path.join(line, prefix, "train.log")
                     if os.path.exists(path):
