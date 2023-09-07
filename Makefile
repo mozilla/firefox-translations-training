@@ -4,15 +4,15 @@
 SHELL=/bin/bash
 
 ### 1. change these settings or override with env variables
-CONFIG=configs/config.prod.yml
-CONDA_PATH=../mambaforge
-SNAKEMAKE_OUTPUT_CACHE=../cache
-PROFILE=local
+CONFIG?=configs/config.prod.yml
+CONDA_PATH?=../mambaforge
+SNAKEMAKE_OUTPUT_CACHE?=../cache
+PROFILE?=local
 # execution rule or path to rule output, default is all
 TARGET=
-REPORTS=../reports
+REPORTS?=../reports
 # for tensorboard
-MODELS=../models
+MODELS?=../models
 
 ###
 
