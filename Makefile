@@ -115,3 +115,22 @@ tensorboard:
 	ls -d $(MODELS)/*/*/* > tb-monitored-jobs
 	tensorboard --logdir=$(MODELS) --host=0.0.0.0 &
 	python utils/tb_log_parser.py --prefix=
+
+# Black is a code formatter for Python files. Running this command will check that
+# files are correctly formatted, but not fix them.
+black:
+	poetry install --only black
+	@if poetry run black . --check --diff; then \
+		echo "The python code formatting is correct."; \
+	else \
+	  echo ""; \
+		echo "Python code formatting issues detected."; \
+		echo "Run 'make black-fix' to fix them."; \
+		echo ""; \
+		exit 1; \
+	fi
+
+# Runs black, but also fixes the errors.
+black-fix:
+	poetry install --only black
+	poetry run black .
