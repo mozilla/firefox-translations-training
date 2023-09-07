@@ -7,3 +7,5 @@ VOLUME /builds/worker/checkouts
 
 # Poetry requires this folder.
 VOLUME /builds/worker/.cache
+
+RUN chown worker:worker /builds/worker/.cache

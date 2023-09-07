@@ -45,6 +45,4 @@ ENV SHELL=/bin/bash \
 VOLUME /builds/worker/checkouts
 VOLUME /builds/worker/.cache
 
-RUN chown worker:worker /builds/worker/.cache
-
 USER root
