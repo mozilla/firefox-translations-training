@@ -125,3 +125,6 @@ opuscleaner-ui:
 	$(CONDA_ACTIVATE) opuscleaner
 	opuscleaner-server serve --host=0.0.0.0 --port=8000
 
+update-opuscleaner:
+	$(CONDA_ACTIVATE) opuscleaner
+	conda env update -f envs/opuscleaner.yml --prune

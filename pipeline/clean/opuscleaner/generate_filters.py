@@ -51,12 +51,6 @@ def main() -> None:
             config = json.loads(config_str)
             print(f'Using filter default.filters.json')
 
-    # remove if we can use stdin
-    config['files'] = [
-        f'{input_prefix}.{src}.gz',
-        f'{input_prefix}.{trg}.gz'
-    ]
-
     with open(output, 'w') as f:
         json.dump(config, f, indent=2)
 

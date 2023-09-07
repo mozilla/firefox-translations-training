@@ -39,21 +39,16 @@ python3 generate_filters.py "${input_prefix}" "${SRC}" "${TRG}" "${dataset}" "${
 test -s "${filter_path}" || exit 1
 
 echo "### Cleaning ${input_prefix} with filter ${filter_path}"
-#can we use stdin to feed input to opuscleaner? this didn't work
-#paste <(${COMPRESSION_CMD} -dc "${input_prefix}.${SRC}.${ARTIFACT_EXT}") \
-#      <(${COMPRESSION_CMD} -dc "${input_prefix}.${TRG}.${ARTIFACT_EXT}") |
-#  opuscleaner-clean \
-#    --parallel ${threads} \
-#    --batch-size=50000 \
-#    --input=- \
-#    "${filter_path}" "${SRC}" "${TRG}" |
+
+paste <(${COMPRESSION_CMD} -dc "${input_prefix}.${SRC}.${ARTIFACT_EXT}") \
+      <(${COMPRESSION_CMD} -dc "${input_prefix}.${TRG}.${ARTIFACT_EXT}") |
 opuscleaner-clean \
   --parallel ${threads} \
   --batch-size=50000 \
-  "${filter_path}" |
+  --input=- \
+  "${filter_path}" "${SRC}" "${TRG}" |
   tee >(cut -f1 | ${COMPRESSION_CMD} >"${output_prefix}.${SRC}.${ARTIFACT_EXT}") |
         cut -f2 | ${COMPRESSION_CMD} >"${output_prefix}.${TRG}.${ARTIFACT_EXT}"
-# TODO: opuslceaer returns 0 if one of the processes fails
 
 test -s "${output_prefix}.${SRC}.${ARTIFACT_EXT}" || exit 1
 test -s "${output_prefix}.${TRG}.${ARTIFACT_EXT}" || exit 1

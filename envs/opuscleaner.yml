@@ -6,7 +6,8 @@ dependencies:
   - python=3.9
   - pip
   - pip:
-    - opuscleaner==0.3.1
+    # update to a normal pypi version when released
+    - git+https://github.com/hplt-project/OpusCleaner.git@3e258ea369c790b4e0697048f237179286b46e61
     - fasttext==0.9.2
     - sacremoses==0.0.53
     - more_itertools==10.1.0
