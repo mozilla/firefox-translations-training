@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "firefox-translations-training"
+version = "0.1.0"
+description = ""
+authors = []
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.black.dependencies]
+black = "^23.7.0"
+
+[tool.black]
+extend-exclude= "/3rd_party"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
