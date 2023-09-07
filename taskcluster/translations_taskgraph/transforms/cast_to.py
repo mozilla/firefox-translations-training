@@ -32,4 +32,3 @@ def cast(config, jobs):
             container[subfield] = int(container[subfield])
 
         yield job
-

@@ -5,13 +5,14 @@ import sys
 import re
 import argparse
 
-MIN_LENGTH = 2   # minimum number of words in a sentence
-MAX_LENGTH = 150 # maximum number of words in a sentence
+MIN_LENGTH = 2  # minimum number of words in a sentence
+MAX_LENGTH = 150  # maximum number of words in a sentence
 
 RATIO_ALPHA_WORDS = 0.4  # minimum fraction of "real" words in a sentence
 RATIO_ALPHA_CHARS = 0.5  # minimum fraction of alpha characters in a sentence
 
 from clean_parallel import CHARS
+
 
 def main():
     args = parse_user_args()
@@ -44,12 +45,13 @@ def clean_mono(src, lang):
 
     if lang in CHARS:
         num_alpha = sum(
-            [1 if re.match(CHARS[lang], t, re.IGNORECASE) else 0 for t in src_toks])
+            [1 if re.match(CHARS[lang], t, re.IGNORECASE) else 0 for t in src_toks]
+        )
         if num_alpha / float(src_len) < RATIO_ALPHA_WORDS:
             return "RATIO_ALPHA"
 
         char_alpha = len(re.findall(CHARS[lang], src, re.IGNORECASE))
-        if char_alpha / float(len(src.replace(' ', ''))) < RATIO_ALPHA_CHARS:
+        if char_alpha / float(len(src.replace(" ", ""))) < RATIO_ALPHA_CHARS:
             return "RATIO_CHARS"
 
     return None
@@ -57,8 +59,8 @@ def clean_mono(src, lang):
 
 def parse_user_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-l", "--lang", default='en')
-    parser.add_argument("--debug", action='store_true')
+    parser.add_argument("-l", "--lang", default="en")
+    parser.add_argument("--debug", action="store_true")
     return parser.parse_args()
 
 

@@ -30,7 +30,10 @@ for i in range(STATUS_ATTEMPTS):
         # 2379_2.batch|RUNNING|0:0
         # 2379_[3-7%1]|PENDING|0:0
         else:
-            all_steps = sorted([(k, v) for k, v in res.items() if not k.endswith('batch')], key=lambda x: x[0])
+            all_steps = sorted(
+                [(k, v) for k, v in res.items() if not k.endswith("batch")],
+                key=lambda x: x[0],
+            )
             statuses = {v for _, v in all_steps}
             if "COMPLETED" in statuses:
                 status = "COMPLETED"
@@ -47,11 +50,12 @@ for i in range(STATUS_ATTEMPTS):
         pass
     # Try getting job with scontrol instead in case sacct is misconfigured
     try:
-        sctrl_res = sp.check_output(
-            shlex.split(f"scontrol -o show job {jobid}")
-        )
-        statuses = [re.search(r"JobState=(\w+)", line).group(1)
-                    for line in sctrl_res.decode().split('\n') if line != ""]
+        sctrl_res = sp.check_output(shlex.split(f"scontrol -o show job {jobid}"))
+        statuses = [
+            re.search(r"JobState=(\w+)", line).group(1)
+            for line in sctrl_res.decode().split("\n")
+            if line != ""
+        ]
         if "COMPLETED" in statuses:
             status = "COMPLETED"
         elif "FAILED" in statuses:
@@ -91,4 +95,3 @@ elif status == "SUSPENDED":
     print("running")
 else:
     print("running")
-

@@ -25,7 +25,10 @@ from taskgraph.util.schema import Schema, optionally_keyed_by, resolve_keyed_by
 from voluptuous import ALLOW_EXTRA, Required, Optional
 
 from translations_taskgraph.util.substitution import substitute
-from translations_taskgraph.util.dataset_helpers import shorten_dataset_name, sanitize_dataset_name
+from translations_taskgraph.util.dataset_helpers import (
+    shorten_dataset_name,
+    sanitize_dataset_name,
+)
 
 SCHEMA = Schema(
     {
@@ -108,9 +111,13 @@ def upstreams_for_locales(config, jobs):
         # Now that we've resolved which type of upstream task we want, we need to
         # find all instances of that task for our locale pair, add them to our
         # dependencies, and the necessary artifacts to our fetches.
-        for task in sorted(config.kind_dependencies_tasks.values(), key=lambda t: t.label):
+        for task in sorted(
+            config.kind_dependencies_tasks.values(), key=lambda t: t.label
+        ):
             # Filter out any tasks that don't match the desired attributes.
-            if any(task.attributes.get(k) != v for k, v in upstream_task_attributes.items()):
+            if any(
+                task.attributes.get(k) != v for k, v in upstream_task_attributes.items()
+            ):
                 continue
 
             provider = task.attributes["provider"]
@@ -136,7 +143,7 @@ def upstreams_for_locales(config, jobs):
                         "extract": False,
                     }
                 )
-            
+
         yield subjob
 
 
@@ -156,9 +163,13 @@ def upstreams_for_mono(config, jobs):
         artifacts = upstreams_config["upstream-artifacts"]
         substitution_fields = upstreams_config.get("substitution-fields", [])
 
-        for task in sorted(config.kind_dependencies_tasks.values(), key=lambda t: t.label):
+        for task in sorted(
+            config.kind_dependencies_tasks.values(), key=lambda t: t.label
+        ):
             # Filter out any tasks that don't match the desired attributes.
-            if any(task.attributes.get(k) != v for k, v in upstream_task_attributes.items()):
+            if any(
+                task.attributes.get(k) != v for k, v in upstream_task_attributes.items()
+            ):
                 continue
 
             provider = task.attributes["provider"]
@@ -174,7 +185,9 @@ def upstreams_for_mono(config, jobs):
             elif dataset_category == "mono-trg":
                 locale = trg
             else:
-                raise Exception("Don't use `find_upstreams:mono` without the `mono-src` or `mono-trg` category!")
+                raise Exception(
+                    "Don't use `find_upstreams:mono` without the `mono-src` or `mono-trg` category!"
+                )
 
             job["dependencies"][task.label] = task.label
             job["fetches"].setdefault(task.label, [])

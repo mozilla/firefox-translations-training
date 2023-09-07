@@ -39,6 +39,7 @@ SCHEMA = Schema(
 transforms = TransformSequence()
 transforms.add_validate(SCHEMA)
 
+
 @transforms.add
 def resolved_keyed_by_fields(config, jobs):
     for job in jobs:
@@ -52,6 +53,7 @@ def resolved_keyed_by_fields(config, jobs):
 
         yield job
 
+
 @transforms.add
 def add_cache(config, jobs):
     for job in jobs:
@@ -60,7 +62,9 @@ def add_cache(config, jobs):
         cache_resources = cache["resources"]
         cache_parameters = cache.get("from-parameters", {})
         digest_data = []
-        digest_data.extend(list(itertools.chain.from_iterable(job["worker"]["command"])))
+        digest_data.extend(
+            list(itertools.chain.from_iterable(job["worker"]["command"]))
+        )
 
         if cache_resources:
             for r in cache_resources:
