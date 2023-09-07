@@ -23,7 +23,9 @@ transforms.add_validate(SCHEMA)
 def render_command(config, jobs):
     for job in jobs:
         marian_args = ""
-        for name, value in deep_get(config.params, job.pop("marian-args")["from-parameters"]).items():
+        for name, value in deep_get(
+            config.params, job.pop("marian-args")["from-parameters"]
+        ).items():
             marian_args = marian_args + f" --{name} {value}"
 
         if "from-object" not in job["task-context"]:

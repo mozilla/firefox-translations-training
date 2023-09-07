@@ -26,6 +26,7 @@ def main():
     if not os.path.exists(mpath):
         sys.stderr.write("Downloading model {} ...\n".format(URL))
         import urllib.request
+
         urllib.request.urlretrieve(URL, mpath)
 
     model = fasttext.load_model(mpath)

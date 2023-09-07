@@ -136,7 +136,7 @@ def upstreams_for_locales(config, jobs):
                         "extract": False,
                     }
                 )
-            
+
         yield subjob
 
 
@@ -174,7 +174,9 @@ def upstreams_for_mono(config, jobs):
             elif dataset_category == "mono-trg":
                 locale = trg
             else:
-                raise Exception("Don't use `find_upstreams:mono` without the `mono-src` or `mono-trg` category!")
+                raise Exception(
+                    "Don't use `find_upstreams:mono` without the `mono-src` or `mono-trg` category!"
+                )
 
             job["dependencies"][task.label] = task.label
             job["fetches"].setdefault(task.label, [])
