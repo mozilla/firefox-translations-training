@@ -7,6 +7,5 @@ VOLUME /builds/worker/checkouts
 # Poetry requires this folder.
 VOLUME /builds/worker/.cache
 
-RUN mkdir               /builds/worker/.cache && \
-    chown worker:worker /builds/worker/.cache && \
+RUN chown worker:worker /builds/worker/.cache && \
     chmod a+rwX         /builds/worker/.cache
