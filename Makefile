@@ -134,3 +134,13 @@ black:
 black-fix:
 	poetry install --only black
 	poetry run black .
+
+# Runs ruff, a linter for python.
+lint:
+	poetry install --only lint
+	poetry run ruff check .
+
+# Runs ruff, but also fixes the errors.
+lint-fix:
+	poetry install --only lint
+	poetry run ruff check . --fix
