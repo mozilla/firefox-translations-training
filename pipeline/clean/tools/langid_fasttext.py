@@ -11,9 +11,10 @@
 #   cat sents.txt | parallel --pipe -k -j16 --block 20M ./langid-fasttext.py > code-tab-sents.txt
 
 import argparse
-import fasttext
 import os
 import sys
+
+import fasttext
 
 BIN = "lid.176.bin"
 URL = "https://dl.fbaipublicfiles.com/fasttext/supervised-models/{}".format(BIN)

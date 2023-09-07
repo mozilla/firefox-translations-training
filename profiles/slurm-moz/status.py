@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
+import logging
 import re
-import subprocess as sp
 import shlex
+import subprocess as sp
 import sys
 import time
-import logging
 
 logger = logging.getLogger("__name__")
 
@@ -34,7 +34,7 @@ for i in range(STATUS_ATTEMPTS):
         logger.error(e)
         if i >= STATUS_ATTEMPTS - 1:
             print("failed")
-            exit(0)
+            sys.exit(0)
         else:
             time.sleep(1)
 

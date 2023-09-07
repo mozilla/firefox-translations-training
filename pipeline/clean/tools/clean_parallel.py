@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-import re
 import argparse
-
+import re
+import sys
 
 # The variables below need to be adjusted for a language pair and dataset.
 # To add a new language, define the list of alpha characters in the dict below.

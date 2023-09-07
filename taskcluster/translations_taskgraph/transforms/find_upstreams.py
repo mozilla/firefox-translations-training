@@ -72,7 +72,7 @@ def get_cleaning_type(upstreams):
         if type_ in candidates:
             return type_
 
-    raise Exception(f"Unable to find cleaning type!")
+    raise Exception("Unable to find cleaning type!")
 
 
 @by_locales.add

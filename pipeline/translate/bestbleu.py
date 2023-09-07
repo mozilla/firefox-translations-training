@@ -35,8 +35,6 @@ def main():
         t2t_best_bleu(args, score_function)
         pass
 
-    return
-
 
 def t2t_best_bleu(args, score_function):
     for i, ref_line in enumerate(args.references):
@@ -60,7 +58,6 @@ def t2t_best_bleu(args, score_function):
             sys.stderr.write("[{}]\n".format(i))
             pass
         pass
-    return
 
 
 def marian_best_bleu(args, score_function):

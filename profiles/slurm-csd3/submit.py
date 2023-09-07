@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-import re
-import sys
-import subprocess as sp
 import os
-import yaml
+import re
+import subprocess as sp
+import sys
 
-from snakemake.utils import read_job_properties
+import yaml
 from snakemake.logging import logger
+from snakemake.utils import read_job_properties
 
 cluster_config_file = os.path.join(os.path.dirname(__file__), "config.cluster.yaml")
 cluster_config = yaml.load(open(cluster_config_file), Loader=yaml.FullLoader)

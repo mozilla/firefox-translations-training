@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-import re
 import argparse
+import re
+import sys
 
 MIN_LENGTH = 2  # minimum number of words in a sentence
 MAX_LENGTH = 150  # maximum number of words in a sentence

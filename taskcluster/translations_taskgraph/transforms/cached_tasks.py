@@ -3,7 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-from collections import deque
 import itertools
 
 import taskgraph

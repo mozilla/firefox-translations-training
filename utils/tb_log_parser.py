@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-import click
-import tensorboardX as tb
-import sys
-import time
 import calendar
 import os
 import pickle
+import time
+
+import click
+import tensorboardX as tb
 
 
 def get_wall_time(date_str, time_str):
@@ -175,7 +175,7 @@ class JobMonitor:
                             break
                         self.gpus += 1
                 elif "] Ep. " in line and "[valid]" not in line:
-                    up = self.parse_train(line)
+                    self.parse_train(line)
                 elif "[valid]" in line:
                     self.parse_valid(line)
         self.last_update_line = i

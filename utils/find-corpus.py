@@ -12,8 +12,9 @@ Params:
 
 """
 
-import requests
 import sys
+
+import requests
 
 source = sys.argv[1]
 target = sys.argv[2]
@@ -38,7 +39,7 @@ elif type == "sacrebleu":
         if f"{source}-{target}" in meta or f"{target}-{source}" in meta
     ]
 elif type == "mtdata":
-    from mtdata.entry import LangPair, lang_pair
+    from mtdata.entry import lang_pair
     from mtdata.index import get_entries
     from mtdata.iso import iso3_code
 
