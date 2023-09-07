@@ -34,6 +34,7 @@ mono_max_sent_src = config['experiment']['mono-max-sentences-src']
 mono_max_sent_trg = config['experiment']['mono-max-sentences-trg']
 bicl_default_threshold = config['experiment']['bicleaner']['default-threshold']
 bicl_dataset_thresholds = config['experiment']['bicleaner']['dataset-thresholds']
+use_opuscleaner = config['experiment']['use-opuscleaner']
 backward_pretrained = config['experiment']['backward-model']
 vocab_pretrained = config['experiment']['vocab']
 
@@ -167,6 +168,12 @@ else:
 
 clean_corpus_src = f'{clean_corpus_prefix}.{src}.gz'
 clean_corpus_trg = f'{clean_corpus_prefix}.{trg}.gz'
+
+# cleaning tools
+
+clean_corpus_cmd = 'pipeline/clean/opuscleaner/clean-corpus.sh' \
+    if use_opuscleaner == 'true' \
+    else 'pipeline/clean/clean-corpus.sh'
 
 
 # augmentation
@@ -311,8 +318,7 @@ rule clean_corpus:
     output: multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
     params: prefix_input=f"{original}/corpus/{{dataset}}",prefix_output=f"{clean}/corpus/{{dataset}}",
             dataset=lambda wildcards: dataset_norm(wildcards.dataset)
-    shell: '''bash pipeline/clean/opuscleaner/clean-corpus.sh "{params.prefix_input}" "{params.prefix_output}" {threads} {params.dataset} \
-                >> {log} 2>&1'''
+    shell: f'bash {clean_corpus_cmd} ' + '''"{params.prefix_input}" "{params.prefix_output}" {threads} {params.dataset} >> {log} 2>&1'''
 
 rule clean_mono:
     message: "Cleaning monolingual dataset"
