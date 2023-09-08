@@ -119,7 +119,7 @@ tensorboard:
 # Black is a code formatter for Python files. Running this command will check that
 # files are correctly formatted, but not fix them.
 black:
-	poetry install --only black
+	poetry install --only lint
 	@if poetry run black . --check --diff; then \
 		echo "The python code formatting is correct."; \
 	else \
@@ -132,7 +132,7 @@ black:
 
 # Runs black, but also fixes the errors.
 black-fix:
-	poetry install --only black
+	poetry install --only lint
 	poetry run black .
 
 # Runs ruff, a linter for python.
