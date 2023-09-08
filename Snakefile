@@ -172,7 +172,7 @@ clean_corpus_trg = f'{clean_corpus_prefix}.{trg}.gz'
 # cleaning tools
 
 clean_corpus_cmd = 'pipeline/clean/opuscleaner/clean-corpus.sh' \
-    if use_opuscleaner == 'true' \
+    if use_opuscleaner \
     else 'pipeline/clean/clean-corpus.sh'
 
 
