@@ -70,3 +70,14 @@ tasks:
             pip install poetry &&
             make lint
     run-on-tasks-for: ["github-push", "github-pull-request"]
+
+  taskgraph-definition:
+      worker-type: b-linux-large
+      worker:
+          docker-image: {in-tree: base}
+          max-run-time: 3600
+      description: "Test the full `translations_taskgraph` to validate the latest changes"
+      run-on-tasks-for: ["github-push", "github-pull-request"]
+      run:
+          command: >-
+              pip3 install -r taskcluster/requirements.txt && taskgraph full
