@@ -45,7 +45,7 @@ tasks:
           make dry-run                                                      &&
           make test-dry-run
 
-  black:
+  lint-black:
     # Run python's black formatter, which formats python files.
     expires-after: "90 days"
     worker-type: b-linux-large
@@ -61,7 +61,7 @@ tasks:
             make black
     run-on-tasks-for: ["github-push", "github-pull-request"]
 
-  lint:
+  lint-ruff:
     # Run ruff, a python linter.
     expires-after: "90 days"
     worker-type: b-linux-large
@@ -74,7 +74,21 @@ tasks:
         - -c
         - >-
             pip install poetry &&
-            make lint
+            make ruff
+    run-on-tasks-for: ["github-push", "github-pull-request"]
+
+  lint-yaml:
+    worker-type: b-linux-large
+    worker:
+      max-run-time: 86400
+      docker-image: {in-tree: test}
+    run:
+      command:
+        - bash
+        - -c
+        - >-
+            pip install poetry &&
+            make yamllint
     run-on-tasks-for: ["github-push", "github-pull-request"]
 
   taskgraph-definition:
