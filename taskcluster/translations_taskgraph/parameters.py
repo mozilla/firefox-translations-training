@@ -5,6 +5,7 @@
 from taskgraph.parameters import extend_parameters_schema
 from voluptuous import Optional, Required
 
+
 # These defaults line up with the `config.test.yml` pipeline as much as possible.
 # Their purpose is to provide a minimal config with a few datasets that can run
 # the entire pipeline reasonably quickly to validate changes to the pipeline
@@ -106,6 +107,7 @@ def get_defaults(_):
         },
     }
 
+
 extend_parameters_schema(
     {
         Required("training_config"): {
@@ -149,12 +151,14 @@ extend_parameters_schema(
     defaults_fn=get_defaults,
 )
 
+
 def deep_setdefault(dict_, defaults):
     for k, v in defaults.items():
         if isinstance(dict_.get(k), dict):
             deep_setdefault(dict_[k], defaults[k])
         else:
             dict_[k] = v
+
 
 def get_decision_parameters(graph_config, parameters):
     parameters.setdefault("training_config", {})

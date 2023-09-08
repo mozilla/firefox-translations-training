@@ -3,7 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-from collections import deque
 import itertools
 
 import taskgraph
@@ -39,6 +38,7 @@ SCHEMA = Schema(
 transforms = TransformSequence()
 transforms.add_validate(SCHEMA)
 
+
 @transforms.add
 def resolved_keyed_by_fields(config, jobs):
     for job in jobs:
@@ -51,6 +51,7 @@ def resolved_keyed_by_fields(config, jobs):
         )
 
         yield job
+
 
 @transforms.add
 def add_cache(config, jobs):
@@ -118,9 +119,7 @@ def cache_task(config, tasks):
                 dependency_digests.append(digests[p])
             else:
                 raise Exception(
-                    "Cached task {} has uncached parent task: {}".format(
-                        task["label"], p
-                    )
+                    "Cached task {} has uncached parent task: {}".format(task["label"], p)
                 )
         digest_data = cache["digest-data"] + sorted(dependency_digests)
         add_optimization(
