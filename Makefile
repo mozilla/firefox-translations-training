@@ -136,19 +136,24 @@ black-fix:
 	poetry run black .
 
 # Runs ruff, a linter for python.
-lint:
+ruff:
 	poetry install --only lint
 	poetry run ruff check .
 
 # Runs ruff, but also fixes the errors.
-lint-fix:
+ruff-fix:
 	poetry install --only lint
 	poetry run ruff check . --fix
 
+# Runs all of the linters
+lint:
+	make black
+	make ruff
+
 # Fix all automatically fixable errors. This is useful to run before pushing.
-fix-all:
+lint-fix:
 	make black-fix
-	make lint-fix
+	make ruff-fix
 
 validate-taskgraph:
 	pip3 install -r taskcluster/requirements.txt && taskgraph full
