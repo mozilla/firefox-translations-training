@@ -11,6 +11,7 @@ python = "^3.10"
 [tool.poetry.group.lint.dependencies]
 black = "^23.7.0"
 ruff = "^0.0.287"
+yamllint = "^1.32.0"
 
 [tool.poetry.group.utils.dependencies]
 sacrebleu="2.0.0"
