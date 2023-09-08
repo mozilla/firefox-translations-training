@@ -52,6 +52,8 @@ opuscleaner-clean \
 
 test -s "${output_prefix}.${SRC}.${ARTIFACT_EXT}" || exit 1
 test -s "${output_prefix}.${TRG}.${ARTIFACT_EXT}" || exit 1
+[[ $(${COMPRESSION_CMD} -dc "${output_prefix}.${SRC}.${ARTIFACT_EXT}" | wc -l) -ge 1 ]] || exit 1
+[[ $(${COMPRESSION_CMD} -dc "${output_prefix}.${TRG}.${ARTIFACT_EXT}" | wc -l) -ge 1 ]] || exit 1
 
 echo "### Clean ${input_prefix} is written to  ${output_prefix}"
 
