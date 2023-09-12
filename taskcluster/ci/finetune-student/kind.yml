@@ -6,15 +6,14 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.task_substitution_from_params:transforms
-    - translations_taskgraph.transforms.command_context_from_params:transforms
     - translations_taskgraph.transforms.marian_args:transforms
+    - taskgraph.transforms.task_context
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
-    - merge
+    - merge-devset
     - cefilter
     - train-student
     - train-vocab
@@ -24,7 +23,7 @@ kind-dependencies:
 tasks:
     "{src_locale}-{trg_locale}":
         description: finetune student for {src_locale}-{trg_locale}
-        task-substitution:
+        task-context:
             from-parameters:
                 src_locale: training_config.experiment.src
                 trg_locale: training_config.experiment.trg
@@ -74,9 +73,6 @@ tasks:
             from-parameters: training_config.marian-args.training-student-finetuned
         run:
             using: run-task
-            command-context:
-                from-parameters:
-                    best_model: training_config.experiment.best-model
             command:
                 - bash
                 - -c

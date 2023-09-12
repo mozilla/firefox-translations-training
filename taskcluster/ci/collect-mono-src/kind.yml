@@ -6,8 +6,8 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.task_substitution_from_params:transforms
-    - translations_taskgraph.transforms.chunking:unchunk
+    - taskgraph.transforms.from_deps
+    - taskgraph.transforms.task_context
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
@@ -23,14 +23,13 @@ task-defaults:
         cache:
             resources:
                 - pipeline/translate/collect.sh
-    task-substitution:
+    task-context:
         from-parameters:
             src_locale: training_config.experiment.src
             trg_locale: training_config.experiment.trg
         substitution-fields:
             - description
             - name
-            - unchunk-config.per-upstream-fields
             - run.command
             - dependencies
             - fetches
@@ -70,22 +69,20 @@ tasks:
             cache:
                 type: collect-mono-src
 
-        unchunk-config:
-            total-chunks:
-                from-parameters: training_config.taskcluster.split-chunks
-            per-upstream-fields:
-                dependencies:
-                    translate-mono-src-{this_chunk}: translate-mono-src-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}
-                fetches:
-                    translate-mono-src-{this_chunk}:
-                        - artifact: out-file.{this_chunk}.out.zst
+        from-deps:
+            group-by: all
+            set-name: false
+            unique-kinds: false
+            kinds:
+                - translate-mono-src
+                - merge-mono
+            with-attributes:
+                dataset-category: mono-src
+            fetches:
+                translate-mono-src:
+                    - artifact: out-file.{this_chunk}.out.zst
+                merge-mono:
+                    - artifact: mono.{src_locale}.zst
 
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
-
-        dependencies:
-            merge-mono-src: merge-mono-src-{src_locale}-{trg_locale}
-
-        fetches:
-            merge-mono-src:
-                - artifact: mono.{src_locale}.zst

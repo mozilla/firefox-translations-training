@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
+import logging
 import re
-import subprocess as sp
 import shlex
+import subprocess as sp
 import sys
 import time
-import logging
 
 logger = logging.getLogger("__name__")
 
@@ -15,10 +15,7 @@ jobid = sys.argv[1]
 for i in range(STATUS_ATTEMPTS):
     try:
         sacct_res = sp.check_output(shlex.split(f"sacct -P -b -j {jobid} -n"))
-        res = {
-            x.split("|")[0]: x.split("|")[1]
-            for x in sacct_res.decode().strip().split("\n")
-        }
+        res = {x.split("|")[0]: x.split("|")[1] for x in sacct_res.decode().strip().split("\n")}
         break
     except sp.CalledProcessError as e:
         logger.error("sacct process error")
@@ -28,9 +25,7 @@ for i in range(STATUS_ATTEMPTS):
         pass
     # Try getting job with scontrol instead in case sacct is misconfigured
     try:
-        sctrl_res = sp.check_output(
-            shlex.split(f"scontrol -o show job {jobid}")
-        )
+        sctrl_res = sp.check_output(shlex.split(f"scontrol -o show job {jobid}"))
         m = re.search(r"JobState=(\w+)", sctrl_res.decode())
         res = {jobid: m.group(1)}
         break
@@ -39,7 +34,7 @@ for i in range(STATUS_ATTEMPTS):
         logger.error(e)
         if i >= STATUS_ATTEMPTS - 1:
             print("failed")
-            exit(0)
+            sys.exit(0)
         else:
             time.sleep(1)
 
@@ -67,4 +62,3 @@ elif status == "SUSPENDED":
     print("running")
 else:
     print("running")
-

@@ -72,7 +72,7 @@ def get_cleaning_type(upstreams):
         if type_ in candidates:
             return type_
 
-    raise Exception(f"Unable to find cleaning type!")
+    raise Exception("Unable to find cleaning type!")
 
 
 @by_locales.add
@@ -108,7 +108,7 @@ def upstreams_for_locales(config, jobs):
         # Now that we've resolved which type of upstream task we want, we need to
         # find all instances of that task for our locale pair, add them to our
         # dependencies, and the necessary artifacts to our fetches.
-        for task in config.kind_dependencies_tasks.values():
+        for task in sorted(config.kind_dependencies_tasks.values(), key=lambda t: t.label):
             # Filter out any tasks that don't match the desired attributes.
             if any(task.attributes.get(k) != v for k, v in upstream_task_attributes.items()):
                 continue
@@ -129,14 +129,14 @@ def upstreams_for_locales(config, jobs):
 
             subjob["dependencies"][task.label] = task.label
             subjob["fetches"].setdefault(task.label, [])
-            for artifact in artifacts:
+            for artifact in sorted(artifacts):
                 subjob["fetches"][task.label].append(
                     {
                         "artifact": artifact.format(**subs),
                         "extract": False,
                     }
                 )
-            
+
         yield subjob
 
 
@@ -156,7 +156,7 @@ def upstreams_for_mono(config, jobs):
         artifacts = upstreams_config["upstream-artifacts"]
         substitution_fields = upstreams_config.get("substitution-fields", [])
 
-        for task in config.kind_dependencies_tasks.values():
+        for task in sorted(config.kind_dependencies_tasks.values(), key=lambda t: t.label):
             # Filter out any tasks that don't match the desired attributes.
             if any(task.attributes.get(k) != v for k, v in upstream_task_attributes.items()):
                 continue
@@ -174,7 +174,9 @@ def upstreams_for_mono(config, jobs):
             elif dataset_category == "mono-trg":
                 locale = trg
             else:
-                raise Exception("Don't use `find_upstreams:mono` without the `mono-src` or `mono-trg` category!")
+                raise Exception(
+                    "Don't use `find_upstreams:mono` without the `mono-src` or `mono-trg` category!"
+                )
 
             job["dependencies"][task.label] = task.label
             job["fetches"].setdefault(task.label, [])
@@ -197,7 +199,7 @@ def upstreams_for_mono(config, jobs):
 
                 container[subfield] = substitute(container[subfield], **subs)
 
-            for artifact in artifacts:
+            for artifact in sorted(artifacts):
                 job["fetches"][task.label].append(
                     {
                         "artifact": artifact.format(**subs),

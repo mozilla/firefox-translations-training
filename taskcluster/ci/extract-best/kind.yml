@@ -6,8 +6,9 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.task_substitution_from_params:transforms
-    - translations_taskgraph.transforms.chunking:chunk
+    - taskgraph.transforms.task_context
+    - translations_taskgraph.transforms.cast_to
+    - taskgraph.transforms.chunking
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
@@ -17,8 +18,10 @@ kind-dependencies:
     - translate-corpus
 
 tasks:
-    "{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}":
-        description: extract best {src_locale}-{trg_locale} {this_chunk}/{total_chunks}
+    # double curly braces are used for the chunk substitutions because
+    # this must first be formatted by task-context to get src and trg locale
+    "{src_locale}-{trg_locale}-{{this_chunk}}/{{total_chunks}}":
+        description: extract best {src_locale}-{trg_locale} {{this_chunk}}/{{total_chunks}}
         attributes:
             dataset-category: train
             stage: extract-best 
@@ -29,21 +32,24 @@ tasks:
                 resources:
                     - pipeline/translate/bestbleu.py
 
-        task-substitution:
+        task-context:
             from-parameters:
                 src_locale: training_config.experiment.src
                 trg_locale: training_config.experiment.trg
+                split_chunks: training_config.taskcluster.split-chunks
             substitution-fields:
                 - description
                 - name
-                - run.command
                 - dependencies
-                - fetches
                 - attributes
+                - chunk.total-chunks
 
-        chunk-config:
-            total-chunks:
-                from-parameters: training_config.taskcluster.split-chunks
+        cast-to:
+            int:
+                - chunk.total-chunks
+
+        chunk:
+            total-chunks: "{split_chunks}"
             substitution-fields:
                 - name
                 - description
@@ -73,13 +79,15 @@ tasks:
                 - >-
                     zstd -d --rm $MOZ_FETCHES_DIR/*.zst &&
                     python3 $VCS_PATH/pipeline/translate/bestbleu.py
-                    -i "${MOZ_FETCHES_DIR}/src-file.{this_chunk}.nbest"
-                    -r "${MOZ_FETCHES_DIR}/ref-file.{this_chunk}"
+                    -i "$MOZ_FETCHES_DIR/src-file.{this_chunk}.nbest"
+                    -r "$MOZ_FETCHES_DIR/ref-file.{this_chunk}"
                     -o /builds/worker/artifacts/file.{this_chunk}.nbest.out
                     -m bleu
 
         dependencies:
-            translate-corpus-{this_chunk}: translate-corpus-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}
+            # double curly braces are used for the chunk substitutions because
+            # this must first be formatted by task-context to get src and trg locale
+            translate-corpus-{{this_chunk}}: translate-corpus-{src_locale}-{trg_locale}-{{this_chunk}}/{{total_chunks}}
             split-corpus: split-corpus-{src_locale}-{trg_locale}
         fetches:
             translate-corpus-{this_chunk}:

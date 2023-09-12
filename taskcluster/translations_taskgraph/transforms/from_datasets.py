@@ -5,7 +5,11 @@ from taskgraph.util.schema import Schema
 from voluptuous import ALLOW_EXTRA, Optional
 
 from translations_taskgraph.util.substitution import substitute
-from translations_taskgraph.util.dataset_helpers import shorten_dataset_name, sanitize_dataset_name, shorten_provider_name
+from translations_taskgraph.util.dataset_helpers import (
+    shorten_dataset_name,
+    sanitize_dataset_name,
+    shorten_provider_name,
+)
 
 SCHEMA = Schema(
     {
@@ -79,12 +83,6 @@ def jobs_from_datasets(config, jobs):
 
                 container[subfield] = substitute(container[subfield], **subs)
 
-            # If the subjob has command-context, add these values there
-            # as well. These helps to avoid needing two levels of
-            # substitution in a command.
-            if subjob.get("run", {}).get("command-context") is not None:
-                subjob["run"]["command-context"].update(subs)
-
             subjob.setdefault("attributes", {})
             subjob["attributes"]["provider"] = dataset_provider
             subjob["attributes"]["dataset"] = dataset
@@ -110,7 +108,9 @@ def jobs_for_mono_datasets(config, jobs):
             continue
 
         if category not in ("mono-src", "mono-trg"):
-            raise Exception("from_datasets:mono can only be used with mono-src and mono-trg categories")
+            raise Exception(
+                "from_datasets:mono can only be used with mono-src and mono-trg categories"
+            )
 
         included_datasets = set()
         if category:
@@ -131,7 +131,9 @@ def jobs_for_mono_datasets(config, jobs):
             elif category == "mono-trg":
                 locale = trg
             else:
-                raise Exception("from_datasets:mono can only be used with mono-src and mono-trg categories")
+                raise Exception(
+                    "from_datasets:mono can only be used with mono-src and mono-trg categories"
+                )
 
             subs = {
                 "provider": dataset_provider,
@@ -150,12 +152,6 @@ def jobs_for_mono_datasets(config, jobs):
                     container = container[f]
 
                 container[subfield] = substitute(container[subfield], **subs)
-
-            # If the job has command-context, add these values there
-            # as well. These helps to avoid needing two levels of
-            # substitution in a command.
-            if subjob.get("run", {}).get("command-context") is not None:
-                subjob["run"]["command-context"].update(subs)
 
             subjob.setdefault("attributes", {})
             subjob["attributes"]["provider"] = dataset_provider

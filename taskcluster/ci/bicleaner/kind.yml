@@ -7,7 +7,7 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.from_datasets:per_dataset
-    - translations_taskgraph.transforms.command_context_from_params:transforms
+    - taskgraph.transforms.task_context
     - taskgraph.transforms.job:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
@@ -36,7 +36,17 @@ task-defaults:
             - fetches
             - worker.env
             - attributes.cache.from-parameters.bicleaner_threshold
-            - run.command-context.from-parameters.bicleaner_threshold
+            - task-context.from-parameters.bicleaner_threshold
+            - run.command
+
+    task-context:
+        from-parameters:
+            bicleaner_threshold:
+                - training_config.experiment.bicleaner.dataset-thresholds.{dataset}
+                - training_config.experiment.bicleaner.default-threshold
+        substitution-fields:
+            - run.command
+
     worker:
         max-run-time: 86400
         env:
@@ -54,11 +64,6 @@ task-defaults:
 
     run:
         using: run-task
-        command-context:
-            from-parameters:
-                bicleaner_threshold:
-                    - training_config.experiment.bicleaner.dataset-thresholds.{dataset}
-                    - training_config.experiment.bicleaner.default-threshold
         command:
             - bash
             - -c
@@ -114,8 +119,8 @@ tasks:
         fetches:
             fetch:
                 - bicleaner-{src_locale}-{trg_locale}
-        run:
-            command-context:
+        task-context:
+            from-object:
                 bicleaner_type: bicleaner
                 bicleaner_reqs: $VCS_PATH/pipeline/bicleaner/requirements/bicleaner.txt
                 # auto = use `nproc` value
@@ -144,8 +149,9 @@ tasks:
         fetches:
             fetch:
                 - bicleaner-ai-{src_locale}-{trg_locale}
-        run:
-            command-context:
+
+        task-context:
+            from-object:
                 bicleaner_type: bicleaner-ai
                 bicleaner_reqs: $VCS_PATH/pipeline/bicleaner/requirements/bicleaner-ai.txt
                 # TODO: set this to a sensible value based on number of GPUs?

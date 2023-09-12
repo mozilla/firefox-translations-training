@@ -1,7 +1,7 @@
 class PartialSubstitutionDict(dict):
-    """A dictionary that will return any missing keys as their formatable 
-       version. Useful when a string needs to be formatted multiple times
-       in different places to get to its final form."""
+    """A dictionary that will return any missing keys as their formatable
+    version. Useful when a string needs to be formatted multiple times
+    in different places to get to its final form."""
 
     def __missing__(self, key):
         return "{" + key + "}"

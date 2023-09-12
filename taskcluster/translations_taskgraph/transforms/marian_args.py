@@ -1,8 +1,6 @@
-import copy
-
 from taskgraph.transforms.base import TransformSequence
 from taskgraph.util.schema import Schema
-from voluptuous import ALLOW_EXTRA, Required, Any
+from voluptuous import ALLOW_EXTRA, Required
 
 from translations_taskgraph.util.dict_helpers import deep_get
 
@@ -23,11 +21,13 @@ transforms.add_validate(SCHEMA)
 def render_command(config, jobs):
     for job in jobs:
         marian_args = ""
-        for name, value in deep_get(config.params, job.pop("marian-args")["from-parameters"]).items():
+        for name, value in deep_get(
+            config.params, job.pop("marian-args")["from-parameters"]
+        ).items():
             marian_args = marian_args + f" --{name} {value}"
 
-        job.setdefault("run", {})
-        job["run"].setdefault("command-context", {})
-        job["run"]["command-context"]["marian_args"] = marian_args
+        if "from-object" not in job["task-context"]:
+            job["task-context"]["from-object"] = {}
+        job["task-context"]["from-object"]["marian_args"] = marian_args
 
         yield job
