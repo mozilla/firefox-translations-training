@@ -14,7 +14,7 @@ min_version("6.6.1")
 
 ### configuration
 
-containerized: 'Ftt.sif'
+containerized: config.get('image', 'Singularity.sif')
 
 install_deps = config['deps'] == 'true'
 data_root_dir = config.get('root', srcdir("../data"))

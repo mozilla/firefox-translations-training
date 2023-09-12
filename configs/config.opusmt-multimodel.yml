@@ -4,6 +4,7 @@
 # Training low resource languages might require more tuning of pipeline/training/configs
 ###
 
+image: Ftt.sif
 
 experiment:
   name: opusmt-multimodel-prod
