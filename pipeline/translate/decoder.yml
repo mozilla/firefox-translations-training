@@ -1,14 +1,13 @@
 normalize: 1.0
 word-penalty: 0
-mini-batch: 512
-#mini-batch-words: 2000
+mini-batch: 16
 maxi-batch: 1000
 maxi-batch-sort: src
+mini-batch-words: 500
 max-length: 200
 max-length-crop: true
 beam-size: 8
 quiet-translation: true
-precision: float16
 #upgrade marian to enable this
 #data-threads: 8
-log-level: debug
+#log-level: debug

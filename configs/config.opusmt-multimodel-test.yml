@@ -84,6 +84,8 @@ marian-args:
     mini-batch-words: 2000
   decoding-teacher:
     mini-batch-words: 1000
+    precision: float16
+    mini-batch: 512
 
 #marian-args:
 #  decoding-teacher:

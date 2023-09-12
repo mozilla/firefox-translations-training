@@ -71,6 +71,7 @@ marian-args:
     mini-batch-words: 1000
     # 2080ti or newer
     precision: float16
+    mini-batch: 512
 
 datasets:
   # parallel training corpus

@@ -36,10 +36,10 @@ experiment:
     dataset-thresholds:
       tc_Tatoeba-train-v2021-08-07.eng.fin: 0.5
 
-#marian-args:
-#  decoding-teacher:
-    # 2080ti or newer
-#    precision: float16
+marian-args:
+  decoding-teacher:
+    precision: float16
+    mini-batch: 512
 
 #TODO: extract this info straight from the OPUS model yml info file
 datasets:
