@@ -4,16 +4,16 @@
 SHELL=/bin/bash
 
 ### 1. change these settings or override with env variables
-CONFIG=configs/config.opusmt-multimodel-test.yml
-CONDA_PATH=../mambaforge
-SNAKEMAKE_OUTPUT_CACHE=../cache
-#PROFILE=local
+CONFIG?=configs/config.prod.yml
+CONDA_PATH?=../mambaforge
+SNAKEMAKE_OUTPUT_CACHE?=../cache
+PROFILE?=local
 # execution rule or path to rule output, default is all
 TARGET=
+REPORTS?=../reports
 EXTRA=
-REPORTS=../reports
 # for tensorboard
-MODELS=../models
+MODELS?=../models
 
 ###
 
@@ -106,6 +106,7 @@ run-hpc:
 	  --conda-base-path=../bin \
 	  $(TARGET) \
 	  $(EXTRA)
+
 test: CONFIG=configs/config.test.yml
 test: run
 
@@ -152,3 +153,37 @@ tensorboard:
 	ls -d $(MODELS)/*/*/* > tb-monitored-jobs
 	tensorboard --logdir=$(MODELS) --host=0.0.0.0 &
 	python utils/tb_log_parser.py --prefix=
+
+# Black is a code formatter for Python files. Running this command will check that
+# files are correctly formatted, but not fix them.
+black:
+	poetry install --only black
+	@if poetry run black . --check --diff; then \
+		echo "The python code formatting is correct."; \
+	else \
+	  echo ""; \
+		echo "Python code formatting issues detected."; \
+		echo "Run 'make black-fix' to fix them."; \
+		echo ""; \
+		exit 1; \
+	fi
+
+# Runs black, but also fixes the errors.
+black-fix:
+	poetry install --only black
+	poetry run black .
+
+# Runs ruff, a linter for python.
+lint:
+	poetry install --only lint
+	poetry run ruff check .
+
+# Runs ruff, but also fixes the errors.
+lint-fix:
+	poetry install --only lint
+	poetry run ruff check . --fix
+
+# Fix all automatically fixable errors. This is useful to run before pushing.
+fix-all:
+	make black-fix
+	make lint-fix

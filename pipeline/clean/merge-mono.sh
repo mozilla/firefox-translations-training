@@ -13,13 +13,15 @@ output=$1
 max_sent=$2
 datasets=( "${@:3}" )
 
+COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
+
 dir=$(dirname "${output}")
 mkdir -p "${dir}"
 
-pigz -dc "${datasets[@]}" |
+${COMPRESSION_CMD} -dc "${datasets[@]}" |
   ${BIN}/dedupe |
   shuf -n "${max_sent}" |
-  pigz >"${output}"
+  ${COMPRESSION_CMD} >"${output}"
 
 
 echo "###### Done: Merging monolingual datasets"

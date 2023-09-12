@@ -12,7 +12,7 @@ with open(TOP, "r") as f:
     for line in f:
         tops.append(line.strip().split()[0])
 
-tops = tops[:MAX + 2]
+tops = tops[: MAX + 2]
 
 vocabTrg = []
 vocabSrc = []
@@ -44,4 +44,3 @@ for src in vocabSrc:
         if trg in d:
             prob = d[trg]
             print("{} {} {:.8f}".format(trg, src, prob))
-

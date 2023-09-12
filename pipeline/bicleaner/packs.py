@@ -9,10 +9,12 @@ def _exists(url):
 
 
 def find(src, trg):
-    if _exists(f'{bicleaner_ai}/full-{src}-{trg}.tgz') or _exists(f'{bicleaner_ai}/full-{trg}-{src}.tgz'):
-        return 'bicleaner-ai'
+    if _exists(f"{bicleaner_ai}/full-{src}-{trg}.tgz") or _exists(
+        f"{bicleaner_ai}/full-{trg}-{src}.tgz"
+    ):
+        return "bicleaner-ai"
 
-    if _exists(f'{bicleaner}/{src}-{trg}.tar.gz') or _exists(f'{bicleaner}/{trg}-{src}.tar.gz'):
-        return 'bicleaner'
+    if _exists(f"{bicleaner}/{src}-{trg}.tar.gz") or _exists(f"{bicleaner}/{trg}-{src}.tar.gz"):
+        return "bicleaner"
 
     return None

@@ -21,6 +21,16 @@ source_path=$3
 target_path=$4
 output=$5
 
+# TODO: this should be changed based on replacement of corpus prefix with source and target path
+#ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
+#if [ "${ARTIFACT_EXT}" = "zst" ]; then
+#  zstdmt --rm -d "${corpus_prefix}.${SRC}.${ARTIFACT_EXT}"
+#  zstdmt --rm -d "${corpus_prefix}.${TRG}.${ARTIFACT_EXT}"
+#  ARTIFACT_EXT=""
+#else
+#  ARTIFACT_EXT=".gz"
+#fi
+
 dir=$(dirname "${output}")
 mkdir -p "${dir}"
 

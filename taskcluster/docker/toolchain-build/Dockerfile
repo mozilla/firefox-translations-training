@@ -19,6 +19,14 @@ RUN apt-get update -qq \
                           tar \
                           libxml2 \
                           libhunspell-dev \
+                          bc \
+    && apt-get clean
+
+RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | apt-key add -
+COPY intel-mkl.list /etc/apt/sources.list.d/intel-mkl.list
+
+RUN apt-get update -qq \
+    && apt-get install -y intel-mkl-64bit-2020.0-088 \
     && apt-get clean
 
 RUN locale-gen "$LANG"

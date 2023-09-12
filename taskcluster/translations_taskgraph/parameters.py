@@ -5,6 +5,7 @@
 from taskgraph.parameters import extend_parameters_schema
 from voluptuous import Optional, Required
 
+
 # These defaults line up with the `config.test.yml` pipeline as much as possible.
 # Their purpose is to provide a minimal config with a few datasets that can run
 # the entire pipeline reasonably quickly to validate changes to the pipeline
@@ -13,10 +14,21 @@ from voluptuous import Optional, Required
 def get_defaults(_):
     return {
         "training_config": {
-            "target-stage": "train-vocab",
+            "target-stage": "all",
             "experiment": {
-                "src": "en",
-                "trg": "ru",
+                "name": "training pipeline test config",
+                "src": "ru",
+                "trg": "en",
+                "teacher-ensemble": 2,
+                # Used for providing a pretrained backward model. We do not support this yet.
+                "backward-model": "NOT-YET-SUPPORTED",
+                # Used for providing a pretrained vocab. We do not support this yet.
+                "vocab": "NOT-YET-SUPPORTED",
+                "mono-max-sentences-trg": 200000,
+                "mono-max-sentences-src": 100000,
+                "split-length": 100000,
+                "spm-sample-size": 100000,
+                "best-model": "chrf",
                 "bicleaner": {
                     "default-threshold": 0.5,
                     "dataset-thresholds": {
@@ -24,7 +36,45 @@ def get_defaults(_):
                         "mtdata_Neulab-tedtalks_train-1-eng-rus": 0.6,
                     },
                 },
-                "spm-sample-size": 100000,
+            },
+            "marian-args": {
+                "training-backward": {
+                    "disp-freq": "10",
+                    "save-freq": "100",
+                    "valid-freq": "100",
+                    "after": "500u",
+                },
+                "training-teacher-base": {
+                    "disp-freq": "10",
+                    "save-freq": "100",
+                    "valid-freq": "100",
+                    "after": "500u",
+                },
+                "training-teacher-finetuned": {
+                    "disp-freq": "10",
+                    "save-freq": "100",
+                    "valid-freq": "100",
+                    "after": "500u",
+                },
+                "training-student": {
+                    "disp-freq": "10",
+                    "save-freq": "100",
+                    "valid-freq": "100",
+                    "after": "500u",
+                },
+                "training-student-finetuned": {
+                    "disp-freq": "10",
+                    "save-freq": "100",
+                    "valid-freq": "100",
+                    "after": "500u",
+                },
+                "decoding-backward": {
+                    "mini-batch-words": "2000",
+                },
+                "decoding-teacher": {
+                    "mini-batch-words": "1000",
+                    "precision": "float16",
+                },
             },
             # These will never be used in practice, but specifying them ensures
             # that we always generate at least one task for each kind, which helps
@@ -50,33 +100,57 @@ def get_defaults(_):
                     "news-crawl_news.2020",
                 ],
             },
+            # Taskcluster-specific configuration
+            "taskcluster": {
+                "split-chunks": 10,
+            },
         },
     }
+
 
 extend_parameters_schema(
     {
         Required("training_config"): {
             Required("target-stage"): str,
+            Required("marian-args"): {
+                Optional("training-backward"): {str: str},
+                Optional("training-teacher-base"): {str: str},
+                Optional("training-teacher-finetuned"): {str: str},
+                Optional("training-student"): {str: str},
+                Optional("training-student-finetuned"): {str: str},
+                Optional("decoding-backward"): {str: str},
+                Optional("decoding-teacher"): {str: str},
+            },
             Required("experiment"): {
+                Required("name"): str,
                 Required("src"): str,
                 Required("trg"): str,
+                Required("teacher-ensemble"): int,
+                Required("backward-model"): str,
+                Required("vocab"): str,
+                Required("mono-max-sentences-trg"): int,
+                Required("mono-max-sentences-src"): int,
+                Required("split-length"): int,
+                Required("spm-sample-size"): int,
+                Required("best-model"): str,
                 Required("bicleaner"): {
                     Required("default-threshold"): float,
                     Optional("dataset-thresholds"): {
                         str: float,
                     },
                 },
-                Required("spm-sample-size"): int,
             },
-            Optional("bicleaner_threshold"): str,
-            Optional("train_vocab_sample_size"): str,
             Optional("datasets"): {
                 str: [str],
+            },
+            Optional("taskcluster"): {
+                Optional("split-chunks"): int,
             },
         },
     },
     defaults_fn=get_defaults,
 )
+
 
 def deep_setdefault(dict_, defaults):
     for k, v in defaults.items():
@@ -84,6 +158,7 @@ def deep_setdefault(dict_, defaults):
             deep_setdefault(dict_[k], defaults[k])
         else:
             dict_[k] = v
+
 
 def get_decision_parameters(graph_config, parameters):
     parameters.setdefault("training_config", {})

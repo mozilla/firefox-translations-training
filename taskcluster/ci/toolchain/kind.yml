@@ -13,21 +13,17 @@ transforms:
     - taskgraph.transforms.task:transforms
 
 task-defaults:
-    worker-type: b-linux
+    worker-type: b-linux-large
     worker:
         docker-image: {"in-tree": "toolchain-build"}
         max-run-time: 3600
         env: {}
-    treeherder:
-        platform: toolchain/opt
     run:
         using: toolchain-script
 
 tasks:
     cuda-toolkit:
         description: CUDA Toolkit preparation
-        treeherder:
-            symbol: TL(CUDA)
         run:
             script: build-cuda-toolkit.sh
             resources:
@@ -37,11 +33,8 @@ tasks:
             fetch:
                 - cuda
 
-    # TODO: probably need to make sure that these are all built statically?
     marian:
         description: Marian
-        treeherder:
-            symbol: TL(Marian)
         worker-type: b-linux-large
         run:
             script: build-marian.sh
@@ -55,10 +48,26 @@ tasks:
             toolchain:
                 - cuda-toolkit
 
+    browsermt-marian:
+        description: Browsermt Marian
+        worker-type: b-linux-large
+        run:
+            script: build-marian.sh
+            arguments:
+                - browsermt.patch
+            resources:
+                - taskcluster/scripts/toolchain/build-marian.sh
+                - taskcluster/scripts/toolchain/browsermt.patch
+                - pipeline/setup/compile-marian.sh
+            toolchain-artifact: public/build/marian.tar.zst
+        fetches:
+            fetch:
+                - browsermt-marian
+            toolchain:
+                - cuda-toolkit
+
     fast-align:
         description: fast_align
-        treeherder:
-            symbol: TL(FA)
         run:
             script: build-fast-align.sh
             resources:
@@ -70,8 +79,6 @@ tasks:
 
     preprocess:
         description: preprocess
-        treeherder:
-            symbol: TL(PP)
         run:
             script: build-preprocess.sh
             resources:
@@ -83,8 +90,6 @@ tasks:
 
     extract-lex:
         description: extract-lex
-        treeherder:
-            symbol: TL(Lex)
         run:
             script: build-extract-lex.sh
             resources:
@@ -96,8 +101,6 @@ tasks:
 
     kenlm:
         description: kenlm
-        treeherder:
-            symbol: TL(kenlm)
         run:
             script: build-kenlm.sh
             resources:
@@ -109,8 +112,6 @@ tasks:
 
     hunspell:
         description: build hunspell binary wheel
-        treeherder:
-            symbol: TL(hunspell)
         run:
             script: build-hunspell.sh
             resources:

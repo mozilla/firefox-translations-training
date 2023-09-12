@@ -7,26 +7,26 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.from_datasets:per_dataset
-    - translations_taskgraph.transforms.command_context_from_params:transforms
+    - taskgraph.transforms.task_context
     - taskgraph.transforms.job:transforms
-    - translations_taskgraph.transforms.cache:transforms
-    - taskgraph.transforms.cached_tasks:transforms
+    - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
-    - clean
+    - clean-corpus
     - fetch
     - toolchain
 
 task-defaults:
     attributes:
         dataset-category: train
+        stage: bicleaner
         cache:
             resources:
                 - pipeline/bicleaner/bicleaner.sh
             from-parameters:
                 bicleaner_threshold:
-                    - training_config.experiment.bicleaner.dataset-thresholds.{provider}_{dataset_sanitized}
+                    - training_config.experiment.bicleaner.dataset-thresholds.{dataset}
                     - training_config.experiment.bicleaner.default-threshold
     dataset-config:
         substitution-fields:
@@ -34,12 +34,21 @@ task-defaults:
             - name
             - dependencies
             - fetches
-            - treeherder.symbol
             - worker.env
             - attributes.cache.from-parameters.bicleaner_threshold
-            - run.command-context.from-parameters.bicleaner_threshold
+            - task-context.from-parameters.bicleaner_threshold
+            - run.command
+
+    task-context:
+        from-parameters:
+            bicleaner_threshold:
+                - training_config.experiment.bicleaner.dataset-thresholds.{dataset}
+                - training_config.experiment.bicleaner.default-threshold
+        substitution-fields:
+            - run.command
+
     worker:
-        max-run-time: 3600
+        max-run-time: 86400
         env:
             SRC: "{src_locale}"
             TRG: "{trg_locale}"
@@ -53,15 +62,8 @@ task-defaults:
     # Don't run unless explicitly scheduled
     run-on-tasks-for: []
 
-    treeherder:
-        symbol: "{provider}({dataset_short}-{src_locale}-{trg_locale})"
     run:
         using: run-task
-        command-context:
-            from-parameters:
-                bicleaner_threshold:
-                    - training_config.experiment.bicleaner.dataset-thresholds.{provider}_{dataset_sanitized}
-                    - training_config.experiment.bicleaner.default-threshold
         command:
             - bash
             - -c
@@ -84,9 +86,9 @@ task-defaults:
                 {bicleaner_threshold}
                 {bicleaner_type}
                 {bicleaner_threads}
-                $MOZ_FETCHES_DIR/{src_locale}-{trg_locale}
+                $MOZ_FETCHES_DIR/pack
     dependencies:
-        "{provider}": clean-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
+        "{provider}": clean-corpus-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
     fetches:
         toolchain:
             - hunspell
@@ -99,17 +101,15 @@ task-defaults:
               extract: false
 
 tasks:
-    "{provider}-{dataset}-{src_locale}-{trg_locale}":
-        description: bicleaner for {provider} {dataset} dataset {src_locale}-{trg_locale}
-        worker-type: b-linux-large
+    "{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}":
+        description: bicleaner for {provider} {dataset_sanitized} dataset {src_locale}-{trg_locale}
+        worker-type: b-linux-large-300gb
         worker:
             docker-image: {"in-tree": "train"}
             artifacts:
                 - name: public/build
                   path: /builds/worker/artifacts
                   type: directory
-        treeherder:
-            platform: bicleaner/opt
         attributes:
             cleaning-type: bicleaner
             cache:
@@ -119,27 +119,27 @@ tasks:
         fetches:
             fetch:
                 - bicleaner-{src_locale}-{trg_locale}
-        run:
-            command-context:
+        task-context:
+            from-object:
                 bicleaner_type: bicleaner
                 bicleaner_reqs: $VCS_PATH/pipeline/bicleaner/requirements/bicleaner.txt
                 # auto = use `nproc` value
                 bicleaner_threads: auto
 
-    ai-{provider}-{dataset}-{src_locale}-{trg_locale}:
-        description: bicleaner-ai for {provider} {dataset} dataset {src_locale}-{trg_locale}
-        worker-type: t-linux-v100-gpu
+    ai-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}:
+        description: bicleaner-ai for {provider} {dataset_sanitized} dataset {src_locale}-{trg_locale}
+        worker-type: b-linux-v100-gpu-4-300gb
         worker:
             artifacts:
                 - name: public/build
                   path: artifacts
                   type: directory
-        treeherder:
-            platform: bicleaner-ai/opt
         dataset-config:
             exclude-locales:
                 - src: en
                   trg: ru
+                - src: ru
+                  trg: en
         attributes:
             cleaning-type: bicleaner-ai
             cache:
@@ -149,8 +149,9 @@ tasks:
         fetches:
             fetch:
                 - bicleaner-ai-{src_locale}-{trg_locale}
-        run:
-            command-context:
+
+        task-context:
+            from-object:
                 bicleaner_type: bicleaner-ai
                 bicleaner_reqs: $VCS_PATH/pipeline/bicleaner/requirements/bicleaner-ai.txt
                 # TODO: set this to a sensible value based on number of GPUs?

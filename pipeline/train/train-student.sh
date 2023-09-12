@@ -11,6 +11,13 @@ echo "###### Training a student model"
 alignment=$1
 extra_params=( "${@:2}" )
 
+ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
+
+if [ "${ARTIFACT_EXT}" = "zst" ]; then
+  zstdmt --rm -d "${alignment}"
+  alignment="${alignment%%.zst}"
+fi
+
 cd "$(dirname "${0}")"
 
 bash "train.sh" \

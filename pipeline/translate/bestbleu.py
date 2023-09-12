@@ -13,37 +13,38 @@ import sys
 def main():
     args = parse_args()
 
-    if args.metric == 'bleu':
+    if args.metric == "bleu":
         score_function = compute_bleu
-    elif args.metric == 'sacrebleu':
-        global sacrebleu
+    elif args.metric == "sacrebleu":
+        global sacrebleu  # noqa: PLW0603
         import sacrebleu
+
         score_function = compute_sacrebleu
-    elif args.metric == 'chrf':
-        global sacrebleu
+    elif args.metric == "chrf":
+        global sacrebleu  # noqa: PLW0603
         import sacrebleu
+
         score_function = compute_chrf
     else:
-        sys.stderr.write('Unrecognized metric: {}\n'.format(args.metric))
+        sys.stderr.write("Unrecognized metric: {}\n".format(args.metric))
         pass
 
-    if args.toolkit == 'marian':
+    if args.toolkit == "marian":
         marian_best_bleu(args, score_function)
-    elif args.toolkit == 't2t':
+    elif args.toolkit == "t2t":
         t2t_best_bleu(args, score_function)
         pass
 
-    return
 
 def t2t_best_bleu(args, score_function):
     for i, ref_line in enumerate(args.references):
         refs = ref_line.strip().split("\n")
         if args.debpe:
-            refs = [re.sub(r'@@ +', '', r) for r in refs]
+            refs = [re.sub(r"@@ +", "", r) for r in refs]
             pass
-        texts = next(args.nbest).strip().split('\t')
+        texts = next(args.nbest).strip().split("\t")
         if args.debpe:
-            texts = [re.sub(r'@@ +', '', t) for t in texts]
+            texts = [re.sub(r"@@ +", "", t) for t in texts]
             pass
         refs = [r.split() for r in refs]
         scores = [score_function(refs, t.split()) for t in texts]
@@ -57,15 +58,14 @@ def t2t_best_bleu(args, score_function):
             sys.stderr.write("[{}]\n".format(i))
             pass
         pass
-    return
 
 
-def marian_best_bleu(args,score_function):
+def marian_best_bleu(args, score_function):
     prev_line = None
     for i, ref_line in enumerate(args.references):
         refs = ref_line.strip().split("\n")
         if args.debpe:
-            refs = [re.sub(r'@@ +', '', r) for r in refs]
+            refs = [re.sub(r"@@ +", "", r) for r in refs]
 
         texts = []
         while True:
@@ -81,7 +81,7 @@ def marian_best_bleu(args,score_function):
                 break
 
         if args.debpe:
-            texts = [re.sub(r'@@ +', '', t) for t in texts]
+            texts = [re.sub(r"@@ +", "", t) for t in texts]
         refs = [r.split() for r in refs]
         scores = [score_function(refs, t.split()) for t in texts]
         best_txt = texts[scores.index(max(scores))]
@@ -95,21 +95,21 @@ def marian_best_bleu(args,score_function):
 
 
 def compute_chrf(references, translation):
-    hypo = ' '.join(translation)
-    refs = [' '.join(r) for r in references][0]
+    hypo = " ".join(translation)
+    refs = [" ".join(r) for r in references][0]
     return sacrebleu.sentence_chrf(hypo, refs).score
 
 
 def compute_sacrebleu(references, translation):
-    hypo = ' '.join(translation)
-    refs = [' '.join(r) for r in references]
+    hypo = " ".join(translation)
+    refs = [" ".join(r) for r in references]
     return sacrebleu.sentence_bleu(hypo, refs).score
 
 
 def compute_bleu(references, translation, max_order=4):
     precisions = get_ngram_precisions(references, translation, max_order)
     if min(precisions) > 0:
-        p_log_sum = sum((1. / max_order) * math.log(p) for p in precisions)
+        p_log_sum = sum((1.0 / max_order) * math.log(p) for p in precisions)
         geo_mean = math.exp(p_log_sum)
     else:
         geo_mean = 0
@@ -123,9 +123,9 @@ def get_brevity_penalty(references, translation):
     translation_length = len(translation)
     ratio = float(translation_length) / reference_length
     if ratio > 1.0 or ratio == 0.0:
-        bp = 1.
+        bp = 1.0
     else:
-        bp = math.exp(1 - 1. / ratio)
+        bp = math.exp(1 - 1.0 / ratio)
     return bp
 
 
@@ -151,8 +151,7 @@ def get_ngram_precisions(references, translation, max_order=4):
         if matches_by_order[i] == 0 and possible_matches_by_order[i] == 0:
             precisions[i] = 0.0
         else:
-            precisions[i] = ((matches_by_order[i] + 1.) /
-                             (possible_matches_by_order[i] + 1.))
+            precisions[i] = (matches_by_order[i] + 1.0) / (possible_matches_by_order[i] + 1.0)
     return precisions
 
 
@@ -160,22 +159,22 @@ def get_ngrams(segment, max_order):
     ngram_counts = collections.Counter()
     for order in range(1, max_order + 1):
         for i in range(0, len(segment) - order + 1):
-            ngram = tuple(segment[i:i + order])
+            ngram = tuple(segment[i : i + order])
             ngram_counts[ngram] += 1
     return ngram_counts
 
 
 def parse_args():
     from argparse import FileType
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--nbest", type=FileType('r'), default=sys.stdin)
-    parser.add_argument("-r", "--references", type=FileType('r'), required=True)
-    parser.add_argument("-o", "--output", type=FileType('w'), default=sys.stdout)
-    parser.add_argument("-m", "--metric", default='bleu')
-    parser.add_argument("--debpe", action='store_true')
-    parser.add_argument("-d", "--debug", action='store_true')
-    parser.add_argument("-t", "--toolkit", default='marian',
-                        help="Toolkit: 'marian' or 't2t'")
+    parser.add_argument("-i", "--nbest", type=FileType("r"), default=sys.stdin)
+    parser.add_argument("-r", "--references", type=FileType("r"), required=True)
+    parser.add_argument("-o", "--output", type=FileType("w"), default=sys.stdout)
+    parser.add_argument("-m", "--metric", default="bleu")
+    parser.add_argument("--debpe", action="store_true")
+    parser.add_argument("-d", "--debug", action="store_true")
+    parser.add_argument("-t", "--toolkit", default="marian", help="Toolkit: 'marian' or 't2t'")
     return parser.parse_args()
 
 
