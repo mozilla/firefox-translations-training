@@ -16,8 +16,10 @@ test -v WORKSPACE
 
 model=$1
 vocab=$2
-corpus_prefix=$3
-output=$4
+#note that target will be used as source, since scoring is done with backward model
+source_path=$3
+target_path=$4
+output=$5
 
 dir=$(dirname "${output}")
 mkdir -p "${dir}"
@@ -25,7 +27,7 @@ mkdir -p "${dir}"
 "${MARIAN}/marian-scorer" \
   -m "${model}" \
   -v "${vocab}" "${vocab}" \
-  -t "${corpus_prefix}.${TRG}.gz" "${corpus_prefix}.${SRC}.gz" \
+  -t "${target_path}" "${source_path}" \
   --mini-batch 32 \
   --mini-batch-words 1500 \
   --maxi-batch 1000 \

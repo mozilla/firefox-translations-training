@@ -12,9 +12,10 @@ test -v SRC
 test -v TRG
 test -v CUDA_DIR
 test -v CUDNN_DIR
+test -v ROCM_PATH
 
-# cuda and cudnn libs
-export LD_LIBRARY_PATH=${CUDA_DIR}/lib64:${CUDNN_DIR}:${LD_LIBRARY_PATH:+LD_LIBRARY_PATH:}
+# cuda and cudnn or rocm libs
+export LD_LIBRARY_PATH=${CUDA_DIR:+$CUDA_DIR/lib64:}${CUDNN_DIR:+$CUDNN_DIR/lib64:}${ROCM_PATH:+$ROCM_PATH/lib:}${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}
 
 corpus_prefix=$1
 output_prefix=$2
@@ -56,6 +57,7 @@ else
     export tcol=1
   fi
 
+  #TODO: More than 1 GPU is not supported with AMD GPUs right now (usually 1 is enough, though, it's pretty fast).
   #Export cuda visible devices if empty or not set
   if [ -z "${CUDA_VISIBLE_DEVICES:-}" ]; then
     export CUDA_VISIBLE_DEVICES=$(nvidia-smi --query-gpu=index --format=csv,noheader);
@@ -79,6 +81,12 @@ else
        paste <(${COMPRESSION_CMD} -dc "${corpus_prefix}.${SRC}.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${corpus_prefix}.${TRG}.${ARTIFACT_EXT}") |
        parallel -j ${#CUDA_VISIBLE_ARRAY[@]} --pipe -k --block 10M biclean "${pack_dir}"/*.yaml {%} |
        ${COMPRESSION_CMD} >"${output_prefix}.scored.${ARTIFACT_EXT}"
+  elif [[ "${type}" == 'bicleaner-ai' ]]; then
+   #Turn on tensorflow logging in bicleaner-ai
+   export TF_CPP_MIN_LOG_LEVEL=0
+   paste <(${COMPRESSION_CMD} -dc "${corpus_prefix}.${SRC}.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${corpus_prefix}.${TRG}.${ARTIFACT_EXT}") |
+     ${cmd} --scol ${scol} --tcol ${tcol} - - "${pack_dir}"/*.yaml |
+     ${COMPRESSION_CMD} >"${output_prefix}.scored.${ARTIFACT_EXT}"
   else
    paste <(${COMPRESSION_CMD} -dc "${corpus_prefix}.${SRC}.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${corpus_prefix}.${TRG}.${ARTIFACT_EXT}") |
      ${cmd} --scol ${scol} --tcol ${tcol} --processes "${threads}"  - - "${pack_dir}"/*.yaml |

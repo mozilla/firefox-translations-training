@@ -1,7 +1,7 @@
 import requests
 
 bicleaner = 'https://github.com/bitextor/bicleaner-data/releases/latest/download'
-bicleaner_ai = 'https://github.com/bitextor/bicleaner-ai-data/releases/latest/download'
+bicleaner_ai = 'https://github.com/bitextor/bicleaner-ai-data/releases/download/v1.0'
 
 
 def _exists(url):

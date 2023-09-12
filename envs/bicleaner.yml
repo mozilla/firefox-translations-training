@@ -1,10 +1,13 @@
 name: bicleaner
 channels:
   - conda-forge
+  - bitextor
   - defaults
 dependencies:
-  - python=3.7
-  - pip==21.2.2
+  - python=3.8
+  - pip==23.0
   - cmake=3.21.1
+  - hunspell==1.7.0
   - pip:
-    - bicleaner==0.14
+     - pypi-kenlm
+     - bicleaner==0.16.1

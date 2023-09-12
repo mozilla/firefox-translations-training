@@ -13,7 +13,8 @@ test -v TRG
 test -v BIN
 
 output_prefix=$1
-inputs=( "${@:2}" )
+max_sents=$2
+inputs=( "${@:3}" )
 
 COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
@@ -34,6 +35,12 @@ echo "### Deduplication"
 paste <(${COMPRESSION_CMD} -dc "${tmp}/corpus.${SRC}.dup.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${tmp}/corpus.${TRG}.dup.${ARTIFACT_EXT}") |
 ${BIN}/dedupe |
 ${COMPRESSION_CMD} >"${tmp}.${SRC}${TRG}.${ARTIFACT_EXT}"
+
+# if max sents not "inf", get the first n sents (this is mainly used for testing to make translation and training go faster)
+if [ "${max_sents}" != "inf" ]; then
+    head -${max_sents} <(${COMPRESSION_CMD} -dc "${tmp}.${SRC}${TRG}.gz") | ${COMPRESSION_CMD} > "${tmp}.${SRC}${TRG}.truncated.gz"
+    mv "${tmp}.${SRC}${TRG}.truncated.gz" "${tmp}.${SRC}${TRG}.gz"
+fi
 
 ${COMPRESSION_CMD} -dc "${tmp}.${SRC}${TRG}.${ARTIFACT_EXT}" | cut -f1 | ${COMPRESSION_CMD} > "${output_prefix}.${SRC}.${ARTIFACT_EXT}"
 ${COMPRESSION_CMD} -dc "${tmp}.${SRC}${TRG}.${ARTIFACT_EXT}" | cut -f2 | ${COMPRESSION_CMD} > "${output_prefix}.${TRG}.${ARTIFACT_EXT}"
