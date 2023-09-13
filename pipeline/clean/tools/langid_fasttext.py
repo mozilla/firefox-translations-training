@@ -32,13 +32,14 @@ def main():
     model = fasttext.load_model(mpath)
 
     for line in sys.stdin:
-        #sys.stderr.write(line)
-        #sys.stderr.write(str(args.field)+"\n")
+        # sys.stderr.write(line)
+        # sys.stderr.write(str(args.field)+"\n")
         fields = line.strip().split("\t")
         lid = model.predict(fields[args.field])
-        #sys.stderr.write(str(lid)+'\n')
-        #sys.stderr.write("{}\t{}".format(lid[0][0][-2:], line))
+        # sys.stderr.write(str(lid)+'\n')
+        # sys.stderr.write("{}\t{}".format(lid[0][0][-2:], line))
         sys.stdout.write("{}\t{}".format(lid[0][0][-2:], line))
+
 
 def parse_user_args():
     parser = argparse.ArgumentParser()
