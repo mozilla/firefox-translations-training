@@ -40,7 +40,7 @@ tasks:
             script: build-marian.sh
             resources:
                 - taskcluster/scripts/toolchain/build-marian.sh
-                - pipeline/setup/compile-marian.sh
+                - pipeline/setup/compile-marian-dev.sh
             toolchain-artifact: public/build/marian.tar.zst
         fetches:
             fetch:
@@ -58,7 +58,7 @@ tasks:
             resources:
                 - taskcluster/scripts/toolchain/build-marian.sh
                 - taskcluster/scripts/toolchain/browsermt.patch
-                - pipeline/setup/compile-marian.sh
+                - pipeline/setup/compile-marian-dev.sh
             toolchain-artifact: public/build/marian.tar.zst
         fetches:
             fetch:
