@@ -63,7 +63,55 @@ marian-args:
 datasets:
   # parallel training corpus
   train:
+    - opus_ada83/v1
+    - opus_UN/v20090831
+    - opus_GNOME/v1
+    - opus_wikimedia/v20210402
     - opus_CCMatrix/v1
+    - opus_Wikipedia/v1.0
+    - opus_tico-19/v2020-10-28
+    - opus_KDE4/v2
+    - opus_OpenSubtitles/v2018
+    - opus_MultiUN/v1
+    - opus_GlobalVoices/v2018q4
+    - opus_ELRC_2922/v1
+    - opus_PHP/v1
+    - opus_Tatoeba/v2021-03-10
+    - opus_Tanzil/v1
+    - opus_XLEnt/v1.1
+    - opus_TildeMODEL/v2018
+    - opus_Ubuntu/v14.10
+    - opus_TED2013/v1.1
+    - opus_infopankki/v1
+    - opus_EUbookshop/v2
+    - opus_ParaCrawl/v8
+    - opus_Books/v1
+    - opus_bible-uedin/v1
+    - opus_QED/v2.0a
+    - opus_CCAligned/v1
+    - opus_TED2020/v1
+    - opus_News-Commentary/v16
+    - opus_UNPC/v1.0
+    - mtdata_Statmt-news_commentary-15-eng-rus
+    - mtdata_Neulab-tedtalks_train-1-eng-rus
+    - mtdata_ELRC-wikipedia_health-1-eng-rus
+    - mtdata_ParaCrawl-paracrawl-1_bonus-eng-rus
+    - mtdata_Statmt-news_commentary_wmt18-13-rus-eng
+    - mtdata_Tilde-worldbank-1-eng-rus
+    - mtdata_Statmt-news_commentary-16-eng-rus
+    - mtdata_UN-un_test-1-eng-rus
+    - mtdata_Statmt-wiki_titles-1-rus-eng
+    - mtdata_Statmt-paracrawl-8.wmt21-eng-rus
+    - mtdata_LinguaTools-wikititles-2014-eng-rus
+    - mtdata_Tilde-airbaltic-1-eng-rus
+    - mtdata_Statmt-wiki_titles-2-rus-eng
+    - mtdata_Neulab-tedtalks_dev-1-eng-rus
+    - mtdata_Statmt-news_commentary-14-eng-rus
+    - mtdata_Statmt-commoncrawl_wmt13-1-rus-eng
+    - mtdata_Tilde-czechtourism-1-eng-rus
+    - mtdata_Facebook-wikimatrix-1-eng-rus
+    - mtdata_Neulab-tedtalks_test-1-eng-rus
+    - mtdata_Statmt-wikititles-3-rus-eng
   # datasets to merge for validation while training
   devtest:
     - flores_dev
@@ -100,5 +148,4 @@ datasets:
     - news-crawl_news.2017
     - news-crawl_news.2016
     - news-crawl_news.2015
-
 
