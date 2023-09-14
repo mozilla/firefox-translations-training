@@ -22,7 +22,7 @@ tasks:
     expires-after: "5 days"
     worker-type: b-linux-large
     worker:
-      max-run-time: 86400
+      max-run-time: 3600
       docker-image: {in-tree: test}
     run-on-tasks-for: ["github-push", "github-pull-request"]
     run:
