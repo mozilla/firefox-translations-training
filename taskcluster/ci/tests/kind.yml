@@ -41,7 +41,42 @@ tasks:
           make git-modules                                                  &&
 
           echo "Start the dry run"                                          &&
-          make dry-run
+          make dry-run                                                      &&
+          make test-dry-run
+
+  snakemake-run:
+    # Ensure that the snakemake workflow is still executing correctly, even though
+    # taskcluster is the preferred execution environment.
+    worker-type: b-linux-v100-gpu
+    worker:
+      max-run-time: 86400
+      env:
+        CUDA_DIR: fetches/cuda-toolkit
+        CUDNN_DIR: fetches/cuda-toolkit
+    run-on-tasks-for: ["github-pull-request"]
+    fetches:
+        toolchain:
+            - cuda-toolkit
+    run:
+      command:
+        - bash
+        - -c
+        - >-
+          echo "Setting environment variables"                              &&
+          export CONDA_PATH=/builds/worker/artifacts/mambaforge             &&
+          export SNAKEMAKE_OUTPUT_CACHE=/builds/worker/artifacts/mambaforge &&
+          export REPORTS=/builds/worker/artifacts/reports                   &&
+          export MODELS=/builds/worker/artifacts/models                     &&
+          export PROFILE=profile/tc-test                                    &&
+
+          echo "Install necessary dependencies"                             &&
+          make conda                                                        &&
+          make snakemake                                                    &&
+          make git-modules                                                  &&
+
+          echo "Start the run"                                              &&
+          make test
+
   black:
     # Run python's black formatter, which formats python files.
     worker-type: b-linux-large
