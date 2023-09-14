@@ -23,7 +23,7 @@ workers:
             worker-type: '{alias}-gcp'
         b-linux-large-300gb:
             provisioner: '{trust-domain}-{level}'
-            implementation: docker-worker
+            implementation: generic-worker
             os: linux
             worker-type: 'b-linux-large-gcp-300gb'
         b-linux-v100-gpu:
