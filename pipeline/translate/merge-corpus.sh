@@ -34,21 +34,31 @@ ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
 tmp_dir="$(dirname "${res_src}")/tmp"
 mkdir -p "${tmp_dir}"
 
-# merge output from different teachers
-for model_index in "${model_indices[@]}"
-do
-  ${COMPRESSION_CMD} -dc "${src1}" >> "${tmp_dir}/original.src"
-  ${COMPRESSION_CMD} -dc "${trg1_template/model_index/"$model_index"}" >> "${tmp_dir}/original.trg"
-  # mono src might be empty
-  if [ -s ${src2} ]; then
-    ${COMPRESSION_CMD} -dc "${src2}" >> "${tmp_dir}/original.src"
-    ${COMPRESSION_CMD} -dc "${trg2_template/model_index/"$model_index"}" >> "${tmp_dir}/original.trg"
-  fi
-done
-
+#opusmt
+if [ ! -z "${model_indices}" ]; then
+  # merge output from different teachers
+  for model_index in "${model_indices[@]}"
+  do
+    ${COMPRESSION_CMD} -dc "${src1}" >> "${tmp_dir}/original.src"
+    ${COMPRESSION_CMD} -dc "${trg1_template/model_index/"$model_index"}" >> "${tmp_dir}/original.trg"
+    # mono src might be empty
+    if [ -s ${src2} ]; then
+      ${COMPRESSION_CMD} -dc "${src2}" >> "${tmp_dir}/original.src"
+      ${COMPRESSION_CMD} -dc "${trg2_template/model_index/"$model_index"}" >> "${tmp_dir}/original.trg"
+    fi
+  done
+  ${COMPRESSION_CMD} "${tmp_dir}/original.src"
+  ${COMPRESSION_CMD} "${tmp_dir}/original.trg"
+# task cluster
+else
+  cat <(${COMPRESSION_CMD} -dc "${src1}") <(${COMPRESSION_CMD} -dc "${src2}") |
+    ${COMPRESSION_CMD} >"${tmp_dir}/original.src.${ARTIFACT_EXT}"
+  cat <(${COMPRESSION_CMD} -dc "${trg1_template}") <(${COMPRESSION_CMD} -dc "${trg2_template}") |
+    ${COMPRESSION_CMD} >"${tmp_dir}/original.trg.${ARTIFACT_EXT}"
+fi
 
 echo "#### Deduplicating"
-paste "${tmp_dir}/original.src" "${tmp_dir}/original.trg" |
+paste <(${COMPRESSION_CMD} -dc "${tmp_dir}/original.src.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${tmp_dir}/original.trg.${ARTIFACT_EXT}") |
   shuf --random-source=<(get_seeded_random 42) |
   ${BIN}/dedupe |
   ${COMPRESSION_CMD} > "${tmp_dir}/all.${ARTIFACT_EXT}"

@@ -73,13 +73,11 @@ task-defaults:
         command:
             - bash
             - -c
-            # Arguments are:
-            # 1) output prefix
-            # 2) input files
             - >-
                 export BIN=$MOZ_FETCHES_DIR &&
                 $VCS_PATH/pipeline/clean/merge-corpus.sh
                 artifacts/{artifact_prefix}
+                inf
                 $MOZ_FETCHES_DIR/*.zst
     fetches:
         toolchain:

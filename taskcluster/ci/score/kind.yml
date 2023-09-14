@@ -77,7 +77,8 @@ tasks:
                     $VCS_PATH/pipeline/cefilter/score.sh
                     fetches/final.model.npz.best-{best_model}.npz
                     fetches/vocab.spm
-                    fetches/corpus
+                    fetches/corpus.{src_locale}.zst
+                    fetches/corpus.{trg_locale}.zst
                     artifacts/scores.txt
 
         dependencies:

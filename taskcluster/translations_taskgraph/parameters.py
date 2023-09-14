@@ -26,7 +26,8 @@ def get_defaults(_):
                 "vocab": "NOT-YET-SUPPORTED",
                 "mono-max-sentences-trg": 200000,
                 "mono-max-sentences-src": 100000,
-                "split-length": 100000,
+                "parallel-max-sentences": 100000,
+                "split-length": 10000,
                 "spm-sample-size": 100000,
                 "best-model": "chrf",
                 "bicleaner": {
@@ -130,6 +131,7 @@ extend_parameters_schema(
                 Required("vocab"): str,
                 Required("mono-max-sentences-trg"): int,
                 Required("mono-max-sentences-src"): int,
+                Optional("parallel-max-sentences"): int,
                 Required("split-length"): int,
                 Required("spm-sample-size"): int,
                 Required("best-model"): str,

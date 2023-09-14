@@ -10,7 +10,7 @@ set -euo pipefail
 dir=$1
 output_path=$2
 mono_path=$3
-model_index=$4
+model_index="${4:-""}"
 
 COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 
