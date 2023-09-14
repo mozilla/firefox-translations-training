@@ -9,6 +9,9 @@ transforms:
     - taskgraph.transforms.job:transforms
     - taskgraph.transforms.task:transforms
 
+kind-dependencies:
+    - toolchain
+
 task-defaults:
   description: "Run tests"
   run:
