@@ -19,6 +19,7 @@ tasks:
   snakemake-dry-run:
     # Ensure that the snakemake workflow is still executing correctly, even though
     # taskcluster is the preferred execution environment.
+    expires-after: "90 days"
     worker-type: b-linux-large
     worker:
       max-run-time: 3600
@@ -44,6 +45,7 @@ tasks:
           make dry-run
   black:
     # Run python's black formatter, which formats python files.
+    expires-after: "90 days"
     worker-type: b-linux-large
     worker:
       max-run-time: 3600
@@ -58,6 +60,7 @@ tasks:
     run-on-tasks-for: ["github-push", "github-pull-request"]
   lint:
     # Run ruff, a python linter.
+    expires-after: "90 days"
     worker-type: b-linux-large
     worker:
       max-run-time: 3600
@@ -72,6 +75,7 @@ tasks:
     run-on-tasks-for: ["github-push", "github-pull-request"]
 
   taskgraph-definition:
+      expires-after: "90 days"
       worker-type: b-linux-large
       worker:
           docker-image: {in-tree: base}
