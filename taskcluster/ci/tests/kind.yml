@@ -21,6 +21,7 @@ tasks:
     # taskcluster is the preferred execution environment.
     worker-type: b-linux-large
     worker:
+      expires-after: 90
       max-run-time: 86400
       docker-image: {in-tree: test}
     run-on-tasks-for: ["github-push", "github-pull-request"]
@@ -48,6 +49,7 @@ tasks:
     worker:
       max-run-time: 3600
       docker-image: {in-tree: test}
+      expires-after: 90
     run:
       command:
         - bash
@@ -62,6 +64,7 @@ tasks:
     worker:
       max-run-time: 3600
       docker-image: {in-tree: test}
+      expires-after: 90
     run:
       command:
         - bash
