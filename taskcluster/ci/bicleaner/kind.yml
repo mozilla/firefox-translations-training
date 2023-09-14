@@ -48,7 +48,7 @@ task-defaults:
             - run.command
 
     worker:
-        max-run-time: 86400
+        max-run-time: 2592000
         env:
             SRC: "{src_locale}"
             TRG: "{trg_locale}"

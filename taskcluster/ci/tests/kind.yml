@@ -21,7 +21,7 @@ tasks:
     # taskcluster is the preferred execution environment.
     worker-type: b-linux-large
     worker:
-      max-run-time: 86400
+      max-run-time: 2592000
       docker-image: {in-tree: test}
     run-on-tasks-for: ["github-push", "github-pull-request"]
     run:
@@ -46,7 +46,7 @@ tasks:
     # Run python's black formatter, which formats python files.
     worker-type: b-linux-large
     worker:
-      max-run-time: 86400
+      max-run-time: 2592000
       docker-image: {in-tree: test}
     run:
       command:
@@ -60,7 +60,7 @@ tasks:
     # Run ruff, a python linter.
     worker-type: b-linux-large
     worker:
-      max-run-time: 86400
+      max-run-time: 2592000
       docker-image: {in-tree: test}
     run:
       command:
