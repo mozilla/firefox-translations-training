@@ -31,7 +31,7 @@ tasks:
             substitution-fields:
                 - attributes
 
-        run-on-tasks-for: []
+        run-on-tasks-for: ["github-pull-request"]
         worker-type: succeed
 
         from-deps:
