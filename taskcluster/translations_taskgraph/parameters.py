@@ -28,6 +28,7 @@ def get_defaults(_):
                 "mono-max-sentences-src": 10000,
                 "split-length": 5000,
                 "spm-sample-size": 10000,
+                "spm-vocab-size": 1000,
                 "best-model": "chrf",
                 "bicleaner": {
                     "default-threshold": 0.5,
@@ -136,7 +137,7 @@ extend_parameters_schema(
                 Required("mono-max-sentences-src"): int,
                 Required("split-length"): int,
                 Required("spm-sample-size"): int,
-                Required("spm-vocab-size"): int,
+                Optional("spm-vocab-size"): int,
                 Required("best-model"): str,
                 Required("bicleaner"): {
                     Required("default-threshold"): float,
