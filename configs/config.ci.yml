@@ -7,7 +7,7 @@ experiment:
   src: ru
   trg: en
 
-  teacher-ensemble: 2
+  teacher-ensemble: 1
   backward-model: ""
   vocab: ""
 
@@ -74,8 +74,8 @@ datasets:
     - flores_devtest
     - sacrebleu_wmt20
   mono-src:
-    - news-crawl_news.2007
-  mono-trg:
     - news-crawl_news.2008
+  mono-trg:
+    - news-crawl_news.2007
 
 

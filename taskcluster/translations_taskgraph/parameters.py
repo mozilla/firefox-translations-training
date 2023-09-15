@@ -19,7 +19,7 @@ def get_defaults(_):
                 "name": "ci",
                 "src": "ru",
                 "trg": "en",
-                "teacher-ensemble": 2,
+                "teacher-ensemble": 1,
                 # Used for providing a pretrained backward model. We do not support this yet.
                 "backward-model": "NOT-YET-SUPPORTED",
                 # Used for providing a pretrained vocab. We do not support this yet.
@@ -99,10 +99,10 @@ def get_defaults(_):
                     "sacrebleu_wmt20",
                 ],
                 "mono-src": [
-                    "news-crawl_news.2007",
+                    "news-crawl_news.2008",
                 ],
                 "mono-trg": [
-                    "news-crawl_news.2008",
+                    "news-crawl_news.2007",
                 ],
             },
             # Taskcluster-specific configuration
