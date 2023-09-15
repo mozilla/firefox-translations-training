@@ -53,7 +53,6 @@ tasks:
     worker-type: b-linux-v100-gpu
     worker:
       max-run-time: 86400
-      docker-image: {in-tree: test}
       env:
         CUDA_DIR: fetches/cuda-toolkit
         CUDNN_DIR: fetches/cuda-toolkit
@@ -67,6 +66,7 @@ tasks:
         - -c
         - >-
           echo "Setting environment variables"                              &&
+          mkdir artifacts &&
           export CONDA_PATH=artifacts/mambaforge             &&
           export SNAKEMAKE_OUTPUT_CACHE=artifacts/mambaforge &&
           export REPORTS=artifacts/reports                   &&
@@ -87,6 +87,7 @@ tasks:
     worker-type: b-linux-large
     worker:
       max-run-time: 86400
+      docker-image: {in-tree: test}
     run:
       command:
         - bash
