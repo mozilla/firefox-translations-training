@@ -106,6 +106,7 @@ best_model_metric = config['experiment']['best-model']
 best_model = f"final.model.npz.best-{best_model_metric}.npz"
 backward_dir = f'{models_dir}/backward'
 spm_sample_size=config['experiment']['spm-sample-size']
+spm_vocab_size=config['experiment'].get('spm-vocab-size',"32000")
 vocab_path=vocab_pretrained or f"{models_dir}/vocab/vocab.spm"
 
 #evaluation
@@ -418,7 +419,7 @@ if not vocab_pretrained:
         output: vocab_path
         params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset"
         shell: '''bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" {spm_sample_size} \
-                    >> {log} 2>&1'''
+                    {threads} {spm_vocab_size} >> {log} 2>&1'''
 
 if do_train_backward:
     rule train_backward:
