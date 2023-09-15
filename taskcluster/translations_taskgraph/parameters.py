@@ -6,7 +6,7 @@ from taskgraph.parameters import extend_parameters_schema
 from voluptuous import Optional, Required
 
 
-# These defaults line up with the `config.test.yml` pipeline as much as possible.
+# These defaults line up with the `config.ci.yml` pipeline as much as possible.
 # Their purpose is to provide a minimal config with a few datasets that can run
 # the entire pipeline reasonably quickly to validate changes to the pipeline
 # itself. Any real training should be overriding most, if not all, of these
@@ -16,7 +16,7 @@ def get_defaults(_):
         "training_config": {
             "target-stage": "all",
             "experiment": {
-                "name": "training pipeline test config",
+                "name": "ci",
                 "src": "ru",
                 "trg": "en",
                 "teacher-ensemble": 2,
@@ -24,49 +24,54 @@ def get_defaults(_):
                 "backward-model": "NOT-YET-SUPPORTED",
                 # Used for providing a pretrained vocab. We do not support this yet.
                 "vocab": "NOT-YET-SUPPORTED",
-                "mono-max-sentences-trg": 200000,
-                "mono-max-sentences-src": 100000,
-                "split-length": 100000,
-                "spm-sample-size": 100000,
+                "mono-max-sentences-trg": 10000,
+                "mono-max-sentences-src": 10000,
+                "split-length": 5000,
+                "spm-sample-size": 10000,
                 "best-model": "chrf",
                 "bicleaner": {
                     "default-threshold": 0.5,
                     "dataset-thresholds": {
                         "opus_ada83/v1": 0.0,
-                        "mtdata_Neulab-tedtalks_train-1-eng-rus": 0.6,
+                        "mtdata_ELRC-wikipedia_health-1-eng-rus": 0.6,
                     },
                 },
             },
             "marian-args": {
                 "training-backward": {
-                    "disp-freq": "10",
-                    "save-freq": "100",
-                    "valid-freq": "100",
-                    "after": "500u",
+                    "disp-freq": "1",
+                    "save-freq": "5",
+                    "valid-freq": "10",
+                    "after": "10u",
+                    "dim-vocabs": "1000 1000",
                 },
                 "training-teacher-base": {
-                    "disp-freq": "10",
-                    "save-freq": "100",
-                    "valid-freq": "100",
-                    "after": "500u",
+                    "disp-freq": "1",
+                    "save-freq": "5",
+                    "valid-freq": "10",
+                    "after": "10u",
+                    "dim-vocabs": "1000 1000",
                 },
                 "training-teacher-finetuned": {
-                    "disp-freq": "10",
-                    "save-freq": "100",
-                    "valid-freq": "100",
-                    "after": "500u",
+                    "disp-freq": "1",
+                    "save-freq": "5",
+                    "valid-freq": "10",
+                    "after": "10u",
+                    "dim-vocabs": "1000 1000",
                 },
                 "training-student": {
-                    "disp-freq": "10",
-                    "save-freq": "100",
-                    "valid-freq": "100",
-                    "after": "500u",
+                    "disp-freq": "1",
+                    "save-freq": "5",
+                    "valid-freq": "10",
+                    "after": "10u",
+                    "dim-vocabs": "1000 1000",
                 },
                 "training-student-finetuned": {
-                    "disp-freq": "10",
-                    "save-freq": "100",
-                    "valid-freq": "100",
-                    "after": "500u",
+                    "disp-freq": "1",
+                    "save-freq": "5",
+                    "valid-freq": "10",
+                    "after": "10u",
+                    "dim-vocabs": "1000 1000",
                 },
                 "decoding-backward": {
                     "mini-batch-words": "2000",
@@ -82,8 +87,7 @@ def get_defaults(_):
             "datasets": {
                 "train": [
                     "opus_ada83/v1",
-                    "opus_GNOME/v1",
-                    "mtdata_Neulab-tedtalks_train-1-eng-rus",
+                    "mtdata_ELRC-wikipedia_health-1-eng-rus",
                 ],
                 "devtest": [
                     "flores_dev",
@@ -94,15 +98,15 @@ def get_defaults(_):
                     "sacrebleu_wmt20",
                 ],
                 "mono-src": [
-                    "news-crawl_news.2020",
+                    "news-crawl_news.2007",
                 ],
                 "mono-trg": [
-                    "news-crawl_news.2020",
+                    "news-crawl_news.2008",
                 ],
             },
             # Taskcluster-specific configuration
             "taskcluster": {
-                "split-chunks": 10,
+                "split-chunks": 2,
             },
         },
     }
@@ -132,6 +136,7 @@ extend_parameters_schema(
                 Required("mono-max-sentences-src"): int,
                 Required("split-length"): int,
                 Required("spm-sample-size"): int,
+                Required("spm-vocab-size"): int,
                 Required("best-model"): str,
                 Required("bicleaner"): {
                     Required("default-threshold"): float,
