@@ -67,10 +67,10 @@ tasks:
         - -c
         - >-
           echo "Setting environment variables"                              &&
-          export CONDA_PATH=/builds/worker/artifacts/mambaforge             &&
-          export SNAKEMAKE_OUTPUT_CACHE=/builds/worker/artifacts/mambaforge &&
-          export REPORTS=/builds/worker/artifacts/reports                   &&
-          export MODELS=/builds/worker/artifacts/models                     &&
+          export CONDA_PATH=artifacts/mambaforge             &&
+          export SNAKEMAKE_OUTPUT_CACHE=artifacts/mambaforge &&
+          export REPORTS=artifacts/reports                   &&
+          export MODELS=artifacts/models                     &&
           export PROFILE=profile/tc-test                                    &&
           export CONFIG=configs/config.ci.yml                               &&
 
@@ -87,7 +87,6 @@ tasks:
     worker-type: b-linux-large
     worker:
       max-run-time: 86400
-      docker-image: {in-tree: test}
     run:
       command:
         - bash
