@@ -72,6 +72,7 @@ tasks:
           export REPORTS=/builds/worker/artifacts/reports                   &&
           export MODELS=/builds/worker/artifacts/models                     &&
           export PROFILE=profile/tc-test                                    &&
+          export CONFIG=configs/config.ci.yml                               &&
 
           echo "Install necessary dependencies"                             &&
           make conda                                                        &&
@@ -79,7 +80,7 @@ tasks:
           make git-modules                                                  &&
 
           echo "Start the run"                                              &&
-          make test
+          make run
 
   black:
     # Run python's black formatter, which formats python files.

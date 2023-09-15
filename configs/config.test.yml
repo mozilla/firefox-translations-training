@@ -15,7 +15,6 @@ experiment:
   mono-max-sentences-trg: 200000
   split-length: 100000
   spm-sample-size: 100000
-  spm_vocab_size: 4000
 
   best-model: chrf
 
@@ -31,31 +30,26 @@ marian-args:
     save-freq: 100
     valid-freq: 100
     after: 500u
-    dim-vocabs: [4000, 4000]
   training-teacher-base:
     disp-freq: 10
     save-freq: 100
     valid-freq: 100
     after: 500u
-    dim-vocabs: [4000, 4000]
   training-teacher-finetuned:
     disp-freq: 10
     save-freq: 100
     valid-freq: 100
     after: 500u
-    dim-vocabs: [4000, 4000]
   training-student:
     disp-freq: 10
     save-freq: 100
     valid-freq: 100
     after: 500u
-    dim-vocabs: [4000, 4000]
   training-student-finetuned:
     disp-freq: 10
     save-freq: 100
     valid-freq: 100
     after: 500u
-    dim-vocabs: [4000, 4000]
   decoding-backward:
     mini-batch-words: 2000
   decoding-teacher:
@@ -65,7 +59,8 @@ marian-args:
 datasets:
   train:
     - opus_ada83/v1
-    - mtdata_ELRC-wikipedia_health-1-eng-rus
+    - opus_GNOME/v1
+    - mtdata_Neulab-tedtalks_train-1-eng-rus
   devtest:
     - flores_dev
     - sacrebleu_wmt19
@@ -73,8 +68,6 @@ datasets:
     - flores_devtest
     - sacrebleu_wmt20
   mono-src:
-    - news-crawl_news.2007
+    - news-crawl_news.2020
   mono-trg:
-    - news-crawl_news.2008
-
-
+    - news-crawl_news.2020
