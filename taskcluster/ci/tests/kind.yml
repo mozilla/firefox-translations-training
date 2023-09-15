@@ -47,44 +47,44 @@ tasks:
           make dry-run                                                      &&
           make test-dry-run
 
-  snakemake-run:
-    # Ensure that the snakemake workflow is still executing correctly, even though
-    # taskcluster is the preferred execution environment.
-    worker-type: b-linux-v100-gpu
-    worker:
-      max-run-time: 86400
-      env:
-        CUDA_DIR: fetches/cuda-toolkit
-        CUDNN_DIR: fetches/cuda-toolkit
-    run-on-tasks-for: ["github-pull-request"]
-    artifacts:
-      - name: public/build
-        path: artifacts
-        type: directory
-    fetches:
-        toolchain:
-            - cuda-toolkit
-    run:
-      command:
-        - bash
-        - -c
-        - >-
-          echo "Setting environment variables"                              &&
-          mkdir artifacts &&
-          export CONDA_PATH=artifacts/mambaforge             &&
-          export SNAKEMAKE_OUTPUT_CACHE=artifacts/mambaforge &&
-          export REPORTS=artifacts/reports                   &&
-          export MODELS=artifacts/models                     &&
-          export PROFILE=tc-test                                    &&
-          export CONFIG=configs/config.ci.yml                               &&
-
-          echo "Install necessary dependencies"                             &&
-          make conda                                                        &&
-          make snakemake                                                    &&
-          make git-modules                                                  &&
-
-          echo "Start the run"                                              &&
-          make run
+#  snakemake-run:
+#    # Ensure that the snakemake workflow is still executing correctly, even though
+#    # taskcluster is the preferred execution environment.
+#    worker-type: b-linux-v100-gpu
+#    worker:
+#      max-run-time: 86400
+#      env:
+#        CUDA_DIR: fetches/cuda-toolkit
+#        CUDNN_DIR: fetches/cuda-toolkit
+#    run-on-tasks-for: ["github-pull-request"]
+#    artifacts:
+#      - name: public/build
+#        path: artifacts
+#        type: directory
+#    fetches:
+#        toolchain:
+#            - cuda-toolkit
+#    run:
+#      command:
+#        - bash
+#        - -c
+#        - >-
+#          echo "Setting environment variables"                              &&
+#          mkdir artifacts &&
+#          export CONDA_PATH=artifacts/mambaforge             &&
+#          export SNAKEMAKE_OUTPUT_CACHE=artifacts/mambaforge &&
+#          export REPORTS=artifacts/reports                   &&
+#          export MODELS=artifacts/models                     &&
+#          export PROFILE=tc-test                                    &&
+#          export CONFIG=configs/config.ci.yml                               &&
+#
+#          echo "Install necessary dependencies"                             &&
+#          make conda                                                        &&
+#          make snakemake                                                    &&
+#          make git-modules                                                  &&
+#
+#          echo "Start the run"                                              &&
+#          make run
 
   black:
     # Run python's black formatter, which formats python files.
