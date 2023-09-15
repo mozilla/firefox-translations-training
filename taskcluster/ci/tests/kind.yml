@@ -53,7 +53,7 @@ tasks:
     worker-type: b-linux-v100-gpu
     worker:
       max-run-time: 86400
-      docker-image: {in-tree: train}
+#      docker-image: {in-tree: train}
       env:
         CUDA_DIR: fetches/cuda-toolkit
         CUDNN_DIR: fetches/cuda-toolkit
