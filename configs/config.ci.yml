@@ -15,15 +15,16 @@ experiment:
   mono-max-sentences-trg: 200000
   split-length: 1000
   spm-sample-size: 10000
-  spm_vocab_size: 1000
+  spm-vocab-size: 1000
 
   best-model: chrf
 
   bicleaner:
-    default-threshold: 0.5
-    dataset-thresholds:
-      opus_ada83/v1: 0
-      mtdata_ELRC-wikipedia_health-1-eng-rus: 0.6
+    default-threshold: 0
+    dataset-thresholds: []
+      # TODO: fix bicleaner
+#      opus_ada83/v1: 0
+#      mtdata_ELRC-wikipedia_health-1-eng-rus: 0.6
 
 marian-args:
   training-backward:
@@ -31,31 +32,31 @@ marian-args:
     save-freq: 5
     valid-freq: 10
     after: 10u
-    dim-vocabs: [1000, 1000]
+    dim-vocabs: "1000 1000"
   training-teacher-base:
     disp-freq: 1
     save-freq: 5
     valid-freq: 10
     after: 10u
-    dim-vocabs: [1000, 1000]
+    dim-vocabs: "1000 1000"
   training-teacher-finetuned:
     disp-freq: 1
     save-freq: 5
     valid-freq: 10
     after: 10u
-    dim-vocabs: [1000, 1000]
+    dim-vocabs: "1000 1000"
   training-student:
     disp-freq: 1
     save-freq: 5
     valid-freq: 10
     after: 10u
-    dim-vocabs: [1000, 1000]
+    dim-vocabs: "1000 1000"
   training-student-finetuned:
     disp-freq: 1
     save-freq: 5
     valid-freq: 10
     after: 10u
-    dim-vocabs: [1000, 1000]
+    dim-vocabs: "1000 1000"
   decoding-backward:
     mini-batch-words: 2000
   decoding-teacher:
