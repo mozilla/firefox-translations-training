@@ -8,7 +8,7 @@ config:
   # install dependencies on a local machine
   - deps=true
   # root path to a folder with data, models and logs
-  - root=/data
+  - root=artifacts
   - cuda=fetches/cuda-toolkit
   - cudnn=fetches/cuda-toolkit
   # how much memory Marian reserves on a GPU
