@@ -49,7 +49,7 @@ task-defaults:
             - name: public/build
               path: artifacts
               type: directory
-        max-run-time: 86400
+        max-run-time: 2592000
         env:
             SRC: "{src_locale}"
             TRG: "{trg_locale}"
