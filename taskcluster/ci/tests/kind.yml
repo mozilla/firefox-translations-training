@@ -47,6 +47,9 @@ tasks:
           make dry-run                                                      &&
           make test-dry-run
 
+# TODO: It requires more work to run this. We should copy pre-compiled marian an other tools from the toolchain,
+# TODO: expose job logs as artifacts to debug issues + I expect some issues with the environment.
+# TODO: Let's keep this disabled for now, maybe we'll migrate to the TC earlier and won't need this
 #  snakemake-run:
 #    # Ensure that the snakemake workflow is still executing correctly, even though
 #    # taskcluster is the preferred execution environment.
