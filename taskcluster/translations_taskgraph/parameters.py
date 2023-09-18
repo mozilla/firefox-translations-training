@@ -52,6 +52,7 @@ def get_defaults(_):
                     "valid-freq": "10",
                     "after": "10u",
                     "dim-vocabs": "1000 1000",
+                    "task": "transformer-base",
                 },
                 "training-teacher-finetuned": {
                     "disp-freq": "1",
@@ -59,6 +60,7 @@ def get_defaults(_):
                     "valid-freq": "10",
                     "after": "10u",
                     "dim-vocabs": "1000 1000",
+                    "task": "transformer-base",
                 },
                 "training-student": {
                     "disp-freq": "1",
