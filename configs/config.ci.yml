@@ -1,5 +1,5 @@
 ####
-# Blazing fast run config for CI
+# Blazing fast run config that's also used by TaskCluster CI
 ###
 
 experiment:
@@ -20,11 +20,10 @@ experiment:
   best-model: chrf
 
   bicleaner:
-    default-threshold: 0
-    dataset-thresholds: []
-      # TODO: fix bicleaner
-#      opus_ada83/v1: 0
-#      mtdata_ELRC-wikipedia_health-1-eng-rus: 0.6
+    default-threshold: 0.5
+    dataset-thresholds:
+      opus_ada83/v1: 0
+      mtdata_ELRC-wikipedia_health-1-eng-rus: 0.6
 
 marian-args:
   training-backward:
