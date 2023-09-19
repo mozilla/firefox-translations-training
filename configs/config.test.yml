@@ -22,7 +22,7 @@ experiment:
     default-threshold: 0.5
     dataset-thresholds:
       opus_ada83/v1: 0
-      mtdata_ELRC-wikipedia_health-1-eng-rus: 0.6
+      mtdata_Neulab-tedtalks_train-1-eng-rus: 0.6
 
 marian-args:
   training-backward:
