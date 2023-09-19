@@ -15,7 +15,7 @@ coef=0.1
 COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
 
-echo "###### Downloading monolingual data for language ${lang} dataset ${dataset} "
+echo "###### Downloading monolingual data for language ${lang} dataset ${dataset}"
 
 cd "$(dirname "${0}")"
 

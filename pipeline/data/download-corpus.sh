@@ -13,7 +13,7 @@ test -v TRG
 dataset=$1
 output_prefix=$2
 
-echo "###### Downloading dataset ${dataset} "
+echo "###### Downloading dataset ${dataset}"
 
 cd "$(dirname "${0}")"
 
