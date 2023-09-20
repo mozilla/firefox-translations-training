@@ -24,8 +24,7 @@ tasks:
             cache:
                 type: clean-corpus
                 from-parameters:
-                    use_opuscleaner:
-                        - training_config.experiment.use-opuscleaner
+                    use_opuscleaner: training_config.experiment.use-opuscleaner
                 resources:
                     - pipeline/clean/clean-corpus.sh
                     - pipeline/clean/tools/deescape-special-chars.perl
