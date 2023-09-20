@@ -11,9 +11,13 @@ python = "^3.10"
 [tool.poetry.group.black.dependencies]
 black = "^23.7.0"
 
-
 [tool.poetry.group.lint.dependencies]
 ruff = "^0.0.287"
+
+[tool.poetry.group.utils.dependencies]
+sacrebleu="2.0.0"
+mtdata="0.3.2"
+requests="2.26.0"
 
 [tool.black]
 extend-exclude= "/3rd_party"
