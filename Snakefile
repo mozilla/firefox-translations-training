@@ -18,7 +18,7 @@ containerized: config.get('image', 'Singularity.sif')
 
 install_deps = config['deps'] == 'true'
 data_root_dir = config.get('root', srcdir("../data"))
-cuda_dir = config.get('cuda', os.environ.get("CUDA_INSTALL_ROOT","")) 
+cuda_dir = config.get('cuda', os.environ.get("CUDA_INSTALL_ROOT",""))
 cudnn_dir = config.get('cudnn', os.environ.get("CUDNN_INSTALL_ROOT",""))
 rocm_dir = config.get('rocm',os.environ.get("ROCM_PATH",""))
 
@@ -94,7 +94,7 @@ if marian_version == 'lumi-marian':
     marian_dir = f'{third_party_dir}/lumi-marian/build/'
 else:
     marian_dir = f'{third_party_dir}/marian-dev/build/'
-    
+
 bmt_marian_dir = f'{third_party_dir}/browsermt-marian-dev/build'
 trainer = f'{marian_dir}marian'
 decoder = f'{marian_dir}marian-decoder'
@@ -142,7 +142,7 @@ spm_vocab_size=config['experiment'].get('spm-vocab-size',"32000")
 if forward_pretrained:
     teacher_base_dir = forward_pretrained
     #this means that the when the model dirs are expanded, the result is only the teacher_base_dir
-    ensemble = [""] 
+    ensemble = [""]
 
 
 #default vocab path used with base ftt
@@ -197,7 +197,7 @@ if backward_pretrained:
     do_train_backward = False
     backward_dir = backward_pretrained
 elif opusmt_backward:
-    do_train_backward = False 
+    do_train_backward = False
 else:
     # don't evaluate pretrained model
     results.extend(expand(f'{eval_backward_dir}/{{dataset}}.metrics',dataset=eval_datasets))
@@ -212,7 +212,7 @@ if 'bicleaner' in config['experiment']:
 
     bicleaner_type = packs.find(src, trg)
 else:
-    bicleaner_type = None    
+    bicleaner_type = None
 
 if bicleaner_type == 'bicleaner-ai':
     if marian_version == 'lumi-marian':
@@ -220,7 +220,7 @@ if bicleaner_type == 'bicleaner-ai':
     else:
         bicleaner_env = 'envs/bicleaner-ai.yml'
 else:
-    bicleaner_env = 'envs/bicleaner.yml' 
+    bicleaner_env = 'envs/bicleaner.yml'
 
 if bicleaner_type:
     clean_corpus_prefix = f'{biclean}/corpus'
@@ -456,7 +456,7 @@ rule merge_corpus:
     input:  expand(f"{clean_corpus_prefix}/{{dataset}}.{{lang}}.gz", dataset=train_datasets, lang=[src, trg]),
             bin=ancient(deduper)
     output: src=clean_corpus_src,trg=clean_corpus_trg
-    params: prefix_output=clean_corpus_prefix, 
+    params: prefix_output=clean_corpus_prefix,
             prefixes=expand(f"{clean_corpus_prefix}/{{dataset}}", dataset=train_datasets),
             max_sents=parallel_max_sents
     shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.max_sents} {params.prefixes} >> {log} 2>&1'''
@@ -501,10 +501,10 @@ if not vocab_pretrained:
         shell: '''bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" {spm_sample_size} \
                    {threads} {spm_vocab_size} >> {log} 2>&1'''
 
-if do_train_backward: 
+if do_train_backward:
     mono_trg_file = f'{translated}/mono_trg/file.{{part}}'
     deseg_mono_trg_outfile = f'{mono_trg_file}.out'
-    
+
     rule train_backward:
         message: "Training backward model"
         log: f"{log_dir}/train_backward.log"
@@ -525,14 +525,14 @@ if do_train_backward:
 elif opusmt_backward:
     mono_trg_file = f'{translated}/mono_trg/file.{{part}}.{{model_index}}.opusmt'
     deseg_mono_trg_outfile = f'{mono_trg_file}.out.deseg'
-    
+
     rule download_opusmt_backward:
         message: "Downloading OPUS-MT backward model"
         log: f"{log_dir}/download_backward.log"
         conda: "envs/base.yml"
         output:  model=f'{backward_dir}/{best_model}',vocab=f'{backward_dir}/vocab.yml', model_dir=directory({backward_dir})
         shell: '''bash pipeline/opusmt/download-model.sh \
-                    "{opusmt_backward}" "{backward_dir}" "{best_model}" {trg_three_letter} {src_three_letter} >> {log} 2>&1''' 
+                    "{opusmt_backward}" "{backward_dir}" "{best_model}" {trg_three_letter} {src_three_letter} >> {log} 2>&1'''
 
 
 if augment_corpus:
@@ -592,8 +592,8 @@ if augment_corpus:
                       >> {log} 2>&1'''
 
 # Three options for teacher: 1. download opus-mt model, 2. train teacher with pipeline, 3. path to pretrained teacher model
-# TODO: make it possible to combine any of the above options, i.e. use opus-mt, train and use 
-# pretrained all in the same run. Probably should have a model list where you can define all the 
+# TODO: make it possible to combine any of the above options, i.e. use opus-mt, train and use
+# pretrained all in the same run. Probably should have a model list where you can define all the
 # models to use, and then prefixes (opusmt_, train_, pretrained_, nllb_ etc.) determine how the models are
 # created/used/connected to (in case of e.g. external APIs).
 if 'opusmt-teacher' in config['experiment']:
@@ -604,7 +604,7 @@ if 'opusmt-teacher' in config['experiment']:
         threads: 1
         output: model=f'{teacher_base_dir}{{model_index}}-{{ens}}/{best_model}',vocab=f'{teacher_base_dir}{{model_index}}-{{ens}}/vocab.yml', model_dir=directory(f'{teacher_base_dir}{{model_index}}-{{ens}}')
         params: teacher_dir=f'{teacher_base_dir}{{model_index}}-{{ens}}',
-                teacher_url=lambda wildcards: opusmt_teacher[int(wildcards.model_index)] 
+                teacher_url=lambda wildcards: opusmt_teacher[int(wildcards.model_index)]
         shell: '''bash pipeline/opusmt/download-model.sh \
                     "{params.teacher_url}" "{params.teacher_dir}" "{best_model}" {src_three_letter} {trg_three_letter} >> {log} 2>&1'''
 elif not forward_pretrained:
@@ -618,8 +618,8 @@ elif not forward_pretrained:
             rules.merge_devset.output, train_src=f'{teacher_corpus}.{src}.gz',train_trg=f'{teacher_corpus}.{trg}.gz',
             bin=ancient(trainer), vocab=vocab_path
         output: model=f'{teacher_base_dir}{{model_index}}-{{ens}}/{best_model}'
-        params: prefix_train=teacher_corpus, 
-                prefix_test=f"{original}/devset", 
+        params: prefix_train=teacher_corpus,
+                prefix_test=f"{original}/devset",
                 dir=directory(f'{teacher_base_dir}{{model_index}}-{{ens}}'),
                 args=get_args("training-teacher-base")
         shell: '''bash pipeline/train/train.sh \
@@ -665,7 +665,7 @@ if opusmt_teacher:
     teacher_mono_target_file = f'{translated}/mono_src/file.{{part}}.{{model_index}}.opusmt.out'
     translated_mono_src_extension = "opusmt.out"
     deseg_nbest_file = f'{teacher_target_file}.deseg'
-    
+
     rule opusmt_deseg_translation:
         message: "Desegmenting OPUS-MT model translation"
         log: f"{log_dir}/opusmt_deseg_mono_translation/{{part}}.{{model_index}}.log"
@@ -674,7 +674,7 @@ if opusmt_teacher:
             model_index="\d+"
         input: f'{translated}/mono_src/file.{{part}}.{{model_index}}.opusmt.out'
         output: f'{translated}/mono_src/file.{{part}}.{{model_index}}.out'
-        run: 
+        run:
             with open(input[0], "rt", encoding="utf8") as infile,open(output[0], "wt", encoding="utf8") as outfile:
                 for line in infile:
                     deseg_line = line.replace(" ","").replace("▁"," ")
@@ -687,8 +687,8 @@ if opusmt_teacher:
         log: f"{log_dir}/opusmt_preprocess_corpus/{{corpus}}.{{part}}.{{model_index}}.log"
         conda: "envs/base.yml"
         threads: 1
-        input: 
-            file=f'{translated}/{{corpus}}/file.{{part}}', 
+        input:
+            file=f'{translated}/{{corpus}}/file.{{part}}',
             teacher_model=f"{final_teacher_dir}{{model_index}}-0/{best_model}",
             spm_encoder=ancient(spm_encoder)
         output: f'{translated}/{{corpus}}/file.{{part}}.{{model_index}}.opusmt'
@@ -700,13 +700,13 @@ if opusmt_teacher:
         threads: 1
         input: nbest=f"{teacher_source_file}.nbest"
         output: temp(deseg_nbest_file)
-        run: 
+        run:
             with open(input[0], "rt", encoding="utf8") as infile,open(output[0], "wt", encoding="utf8") as outfile:
                 for line in infile:
                     line_split = line.split(" ||| ")
                     line_split[1] = line_split[1].replace(" ","").replace("▁"," ")
                     outfile.write(" ||| ".join(line_split))
-else:    
+else:
     teacher_source_file = f'{translated}/corpus/file.{{part}}'
     teacher_target_file = f'{translated}/corpus/file.{{part}}.{{model_index}}.nbest'
     teacher_mono_source_file = f'{translated}/mono_src/file.{{part}}'
@@ -715,7 +715,7 @@ else:
     deseg_nbest_file = teacher_target_file
 
 
-     
+
 rule translate_corpus:
     message: "Translating corpus with teacher"
     log: f"{log_dir}/translate_corpus/{{part}}.{{model_index}}.log"
@@ -765,7 +765,7 @@ checkpoint split_mono_src:
     input: corpora=f"{clean}/mono.{src}.gz", bin=ancient(deduper)
     output: directory(f'{translated}/mono_src')
     shell: 'bash pipeline/translate/split-mono.sh {input.corpora} {output} {split_length} >> {log} 2>&1'
-    
+
 rule translate_mono_src:
     message: "Translating monolingual src dataset with teacher"
     log: f"{log_dir}/translate_mono_src/{{part}}.{{model_index}}.log"
@@ -820,7 +820,7 @@ else:
         output: f'{translated}/mono.{{model_index}}.{trg}.gz'
         params: src_mono=f"{clean}/mono.{src}.gz",dir=f'{translated}/mono_src'
         shell: 'bash pipeline/translate/collect-mono.sh "{params.dir}" "{output}" "{params.src_mono}" {wildcards.model_index} >> {log} 2>&1'
-    
+
 # merge
 
 rule merge_translated:
@@ -844,14 +844,14 @@ rule merge_translated:
                 "{input.src1}" "{input.src2}" "{params.trg1_template}" "{params.trg2_template}" \
                 "{output.res_src}" "{output.res_trg}" {model_indices} >> {log} 2>&1'''
 
-# train student 
+# train student
 
 # preprocess source and target when scoring with opusmt model (note that deseg is not required, since
 # scoring produces just scores)
 if opusmt_backward:
     score_source = f"{merged}/corpus.{src}.opusmt.gz"
     score_target = f"{merged}/corpus.{trg}.opusmt.gz"
-else:    
+else:
     score_source = rules.merge_translated.output.res_src
     score_target = rules.merge_translated.output.res_trg
 
@@ -863,7 +863,7 @@ rule opusmt_preprocess_for_scoring:
     conda: "envs/base.yml"
     threads: 1
     resources: mem_mb=64000
-    input: 
+    input:
         res_src=rules.merge_translated.output.res_src,
         res_trg=rules.merge_translated.output.res_trg,
         model=f'{backward_dir}/{best_model}',

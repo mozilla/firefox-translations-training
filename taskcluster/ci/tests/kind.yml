@@ -19,9 +19,10 @@ tasks:
   snakemake-dry-run:
     # Ensure that the snakemake workflow is still executing correctly, even though
     # taskcluster is the preferred execution environment.
+    expires-after: "90 days"
     worker-type: b-linux-large
     worker:
-      max-run-time: 86400
+      max-run-time: 3600
       docker-image: {in-tree: test}
     run-on-tasks-for: ["github-push", "github-pull-request"]
     run:
@@ -51,9 +52,10 @@ tasks:
 
   black:
     # Run python's black formatter, which formats python files.
+    expires-after: "90 days"
     worker-type: b-linux-large
     worker:
-      max-run-time: 86400
+      max-run-time: 3600
       docker-image: {in-tree: test}
     run:
       command:
@@ -63,11 +65,13 @@ tasks:
             pip install poetry &&
             make black
     run-on-tasks-for: ["github-push", "github-pull-request"]
+
   lint:
     # Run ruff, a python linter.
+    expires-after: "90 days"
     worker-type: b-linux-large
     worker:
-      max-run-time: 86400
+      max-run-time: 3600
       docker-image: {in-tree: test}
     run:
       command:
@@ -79,6 +83,7 @@ tasks:
     run-on-tasks-for: ["github-push", "github-pull-request"]
 
   taskgraph-definition:
+      expires-after: "90 days"
       worker-type: b-linux-large
       worker:
           docker-image: {in-tree: base}
