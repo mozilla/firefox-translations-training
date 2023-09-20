@@ -1,0 +1,90 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - taskgraph.transforms.job:transforms
+    - taskgraph.transforms.task:transforms
+
+task-defaults:
+  description: "Run tests"
+  run:
+    using: run-task
+    cwd: '{checkout}'
+
+tasks:
+  snakemake-dry-run:
+    # Ensure that the snakemake workflow is still executing correctly, even though
+    # taskcluster is the preferred execution environment.
+    expires-after: "90 days"
+    worker-type: b-linux-large
+    worker:
+      max-run-time: 3600
+      docker-image: {in-tree: test}
+    run-on-tasks-for: ["github-push", "github-pull-request"]
+    run:
+      command:
+        - bash
+        - -c
+        - >-
+          echo "Setting environment variables"                              &&
+          export CONDA_PATH=/builds/worker/artifacts/mambaforge             &&
+          export SNAKEMAKE_OUTPUT_CACHE=/builds/worker/artifacts/mambaforge &&
+          export REPORTS=/builds/worker/artifacts/reports                   &&
+          export MODELS=/builds/worker/artifacts/models                     &&
+
+          echo "Install necessary dependencies"                             &&
+          make conda                                                        &&
+          make snakemake                                                    &&
+          make git-modules                                                  &&
+
+          echo "Start the dry run"                                          &&
+          make dry-run                                                      &&
+          make test-dry-run
+
+  black:
+    # Run python's black formatter, which formats python files.
+    expires-after: "90 days"
+    worker-type: b-linux-large
+    worker:
+      max-run-time: 3600
+      docker-image: {in-tree: test}
+    run:
+      command:
+        - bash
+        - -c
+        - >-
+            pip install poetry &&
+            make black
+    run-on-tasks-for: ["github-push", "github-pull-request"]
+
+  lint:
+    # Run ruff, a python linter.
+    expires-after: "90 days"
+    worker-type: b-linux-large
+    worker:
+      max-run-time: 3600
+      docker-image: {in-tree: test}
+    run:
+      command:
+        - bash
+        - -c
+        - >-
+            pip install poetry &&
+            make lint
+    run-on-tasks-for: ["github-push", "github-pull-request"]
+
+  taskgraph-definition:
+      expires-after: "90 days"
+      worker-type: b-linux-large
+      worker:
+          docker-image: {in-tree: base}
+          max-run-time: 3600
+      description: "Test the full `translations_taskgraph` to validate the latest changes"
+      run-on-tasks-for: ["github-push", "github-pull-request"]
+      run:
+          command: >-
+              pip3 install -r taskcluster/requirements.txt && taskgraph full

@@ -11,9 +11,10 @@
 #   cat sents.txt | parallel --pipe -k -j16 --block 20M ./langid-fasttext.py > code-tab-sents.txt
 
 import argparse
-import fasttext
 import os
 import sys
+
+import fasttext
 
 BIN = "lid.176.bin"
 URL = "https://dl.fbaipublicfiles.com/fasttext/supervised-models/{}".format(BIN)
@@ -26,6 +27,7 @@ def main():
     if not os.path.exists(mpath):
         sys.stderr.write("Downloading model {} ...\n".format(URL))
         import urllib.request
+
         urllib.request.urlretrieve(URL, mpath)
 
     model = fasttext.load_model(mpath)

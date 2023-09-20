@@ -62,7 +62,7 @@ tasks:
                     teacher-ensemble: training_config.experiment.teacher-ensemble
         worker-type: b-linux-v100-gpu-4
         worker:
-            max-run-time: 86400
+            max-run-time: 2592000
             env:
                 # TODO: what should we _actually_ use for the workspace value?
                 # and should we centralize this, since it seems to depend on available

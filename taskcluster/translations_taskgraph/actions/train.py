@@ -20,6 +20,7 @@ def can_train(parameters):
 
 defaults = get_defaults("")["training_config"]
 
+
 @register_callback_action(
     name="train",
     title="Train",
@@ -38,7 +39,44 @@ defaults = get_defaults("")["training_config"]
 (any stages this choice depends on will be automatically included).""",
                 "default": defaults["target-stage"],
                 # TODO: this should probably be specified in ci/config.yml
-                "enum": ["clean-corpus", "clean-mono", "bicleaner", "merge-corpus", "merge-devset", "merge-mono", "train-vocab", "train-backwards", "evaluate-backwards", "split-corpus", "split-mono", "translate-mono-trg", "collect-mono-trg", "merge-augmented", "train-teacher", "evaluate-teacher", "finetune-teacher", "evaluate-finetuned-teacher", "translate-corpus", "extract-best", "collect-corpus", "translate-mono-src", "collect-mono-src", "merge-translated", "score", "cefilter", "alignments", "train-student", "evaluate-student", "finetune-student", "evaluate-finetuned-student", "quantize", "evaluate-quantized", "export", "evaluate-teacher-ensemble", "all"],
+                "enum": [
+                    "clean-corpus",
+                    "clean-mono",
+                    "bicleaner",
+                    "merge-corpus",
+                    "merge-devset",
+                    "merge-mono",
+                    "train-vocab",
+                    "train-backwards",
+                    "evaluate-backwards",
+                    "split-corpus",
+                    "split-mono",
+                    "translate-mono-trg",
+                    "collect-mono-trg",
+                    "merge-augmented",
+                    "train-teacher",
+                    "evaluate-teacher",
+                    "finetune-teacher",
+                    "evaluate-finetuned-teacher",
+                    "translate-corpus",
+                    "extract-best",
+                    "collect-corpus",
+                    "translate-mono-src",
+                    "collect-mono-src",
+                    "merge-translated",
+                    "score",
+                    "cefilter",
+                    "alignments",
+                    "train-student",
+                    "evaluate-student",
+                    "finetune-student",
+                    "evaluate-finetuned-student",
+                    "quantize",
+                    "evaluate-quantized",
+                    "export",
+                    "evaluate-teacher-ensemble",
+                    "all",
+                ],
             },
             "experiment": {
                 "type": "object",
@@ -98,7 +136,7 @@ defaults = get_defaults("")["training_config"]
                                 "type": "object",
                                 "additionalProperties": {
                                     "type": "number",
-                                }
+                                },
                             },
                         },
                         "required": [
@@ -240,7 +278,6 @@ leave empty to skip augmentation step (high resource languages)
     },
 )
 def train_action(parameters, graph_config, input, task_group_id, task_id):
-
     # TODO: Add a whack load of verification here. Things such as:
     # - datasets all exist
     # - locale pair exists for each dataset

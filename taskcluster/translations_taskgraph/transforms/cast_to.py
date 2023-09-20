@@ -1,10 +1,7 @@
-import copy
-
 from taskgraph.transforms.base import TransformSequence
 from taskgraph.util.schema import Schema
-from voluptuous import ALLOW_EXTRA, Required, Optional, Any
+from voluptuous import ALLOW_EXTRA, Optional
 
-from translations_taskgraph.util.dict_helpers import deep_get
 
 SCHEMA = Schema(
     {
@@ -32,4 +29,3 @@ def cast(config, jobs):
             container[subfield] = int(container[subfield])
 
         yield job
-
