@@ -14,7 +14,7 @@ from voluptuous import Optional, Required
 def get_defaults(_):
     return {
         "training_config": {
-            "target-stage": "all",
+            "target-stage": "merge_mono",
             "experiment": {
                 "name": "ci",
                 "src": "ru",
@@ -104,7 +104,7 @@ def get_defaults(_):
                     "news-crawl_news.2008",
                 ],
                 "mono-trg": [
-                    "news-crawl_news.2008",
+                    "news-crawl_news.2007",
                 ],
             },
             # Taskcluster-specific configuration

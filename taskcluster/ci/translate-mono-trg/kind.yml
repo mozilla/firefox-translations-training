@@ -124,7 +124,7 @@ tasks:
                 - run.command
 
         dependencies:
-            split-mono-trg: split-mono-trg-{src_locale}-{trg_locale}
+            split-mono-trg: split-mono-trg-{trg_locale}
             train-backwards: train-backwards-{src_locale}-{trg_locale}
 
         fetches:
