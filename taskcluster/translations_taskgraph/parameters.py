@@ -14,7 +14,8 @@ from voluptuous import Optional, Required
 def get_defaults(_):
     return {
         "training_config": {
-            "target-stage": "all",
+            # TODO: change back
+            "target-stage": "merge-corpus",
             "experiment": {
                 "name": "ci",
                 "src": "ru",
@@ -30,6 +31,7 @@ def get_defaults(_):
                 "spm-sample-size": 10000,
                 "spm-vocab-size": 1000,
                 "best-model": "chrf",
+                "use-opuscleaner": "true",
                 "bicleaner": {
                     "default-threshold": 0.5,
                     "dataset-thresholds": {
@@ -141,6 +143,7 @@ extend_parameters_schema(
                 Required("spm-sample-size"): int,
                 Optional("spm-vocab-size"): int,
                 Required("best-model"): str,
+                Required("use-opuscleaner"): str,
                 Required("bicleaner"): {
                     Required("default-threshold"): float,
                     Optional("dataset-thresholds"): {

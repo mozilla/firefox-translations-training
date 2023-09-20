@@ -23,12 +23,25 @@ tasks:
             stage: clean-corpus
             cache:
                 type: clean-corpus
+                from-parameters:
+                    use_opuscleaner:
+                        - training_config.experiment.use-opuscleaner
                 resources:
                     - pipeline/clean/clean-corpus.sh
                     - pipeline/clean/tools/deescape-special-chars.perl
                     - pipeline/clean/tools/remove-non-printing-char.perl
                     - pipeline/clean/tools/clean_parallel.py
                     - pipeline/clean/tools/langid_fasttext.py
+                    - pipeline/clean/opuscleaner/generate_filters.py
+                    - pipeline/clean/opuscleaner/clean-corpus.sh
+                    - pipeline/clean/opuscleaner/configs/remove_frequent_patterns.txt
+                    - pipeline/clean/opuscleaner/configs/default.filters.json
+                    - pipeline/clean/opuscleaner/configs/en-ru/ELRC-3075-wikipedia_health-v1.en-ru.filters.json
+                    - pipeline/clean/requirements/clean.txt
+        task-context:
+            from-parameters:
+                use_opuscleaner:
+                    - training_config.experiment.use-opuscleaner
         worker-type: b-linux-large-300gb
         dataset-config:
             substitution-fields:
@@ -48,6 +61,7 @@ tasks:
             env:
                 SRC: "{src_locale}"
                 TRG: "{trg_locale}"
+                USE_OPUSCLEANER: "{use_opuscleaner}"
                 COMPRESSION_CMD: zstdmt
                 ARTIFACT_EXT: zst
     
@@ -56,10 +70,15 @@ tasks:
     
         run:
             using: run-task
+            # We're going to migrate to OpusCleaner in the long term so we can use a simple 'if' in the command
+            # for now without introducing an extra step and complexity
             command:
                 - bash
                 - -c
-                - $VCS_PATH/pipeline/clean/clean-corpus.sh $MOZ_FETCHES_DIR/{dataset_sanitized} /builds/worker/artifacts/{dataset_sanitized} auto {dataset}
+                - >-
+                    pip install -r pipeline/clean/requirements/clean.txt &&
+                    if [ ${USE_OPUSCLEANER} = "true" ]; then dir="clean/opuscleaner"; else dir="clean"; fi; &&
+                    $VCS_PATH/pipeline/${dir}/clean-corpus.sh $MOZ_FETCHES_DIR/{dataset_sanitized} /builds/worker/artifacts/{dataset_sanitized} auto {dataset}
         dependencies:
             "{provider}": dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
         fetches:
