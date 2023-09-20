@@ -40,8 +40,7 @@ tasks:
                     - pipeline/clean/requirements/clean.txt
         task-context:
             from-parameters:
-                use_opuscleaner:
-                    - training_config.experiment.use-opuscleaner
+                use_opuscleaner: training_config.experiment.use-opuscleaner
         worker-type: b-linux-large-300gb
         dataset-config:
             substitution-fields:
