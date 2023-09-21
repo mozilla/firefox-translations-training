@@ -83,14 +83,14 @@ task-defaults:
               extract: false
 
 tasks:
-    "{provider}-{src_locale}-{dataset_sanitized}-mono-src-{src_locale}":
+    "{provider}-{src_locale}-{dataset_sanitized}-mono-src":
         description: Clean {provider} {dataset_sanitized} dataset mono-src {src_locale}
         attributes:
             dataset-category: mono-src
         dataset-config:
             category: mono-src
 
-    "{provider}-{trg_locale}-{dataset_sanitized}-mono-trg-{trg_locale}":
+    "{provider}-{trg_locale}-{dataset_sanitized}-mono-trg":
         description: Clean {provider} {dataset_sanitized} dataset mono-trg {trg_locale}
         attributes:
             dataset-category: mono-trg
