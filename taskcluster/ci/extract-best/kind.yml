@@ -58,6 +58,7 @@ tasks:
                 - run.command
 
         worker-type: b-linux-large
+        expires-after: "90 days"
         worker:
             docker-image: {"in-tree": "train"}
             max-run-time: 86400

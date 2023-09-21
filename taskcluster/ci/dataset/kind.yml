@@ -28,6 +28,7 @@ task-defaults:
             - run.command
     task-context:
         substitution-fields: []
+    expires-after: "90 days"
     worker:
         docker-image: {in-tree: toolchain-build}
         max-run-time: 86400

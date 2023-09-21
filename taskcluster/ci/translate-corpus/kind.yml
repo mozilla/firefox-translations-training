@@ -92,7 +92,7 @@ tasks:
         run-on-tasks-for: []
 
         worker-type: b-linux-v100-gpu-4-1tb
-    
+        expires-after: "90 days"
         worker:
             max-run-time: 2592000
             artifacts:
