@@ -31,6 +31,7 @@ tasks:
                     - pipeline/clean/tools/langid_fasttext.py
         worker-type: b-linux-large-300gb
         dataset-config:
+            category: train
             substitution-fields:
                 - description
                 - name

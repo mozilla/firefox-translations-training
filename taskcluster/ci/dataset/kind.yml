@@ -128,6 +128,7 @@ tasks:
         label: dataset-news-crawl-{dataset_sanitized}-{src_locale}
         dataset-config:
             provider: news-crawl
+            category: mono-src
         attributes:
             cache:
                 resources:
@@ -158,6 +159,7 @@ tasks:
         label: dataset-news-crawl-{dataset_sanitized}-{trg_locale}
         dataset-config:
             provider: news-crawl
+            category: mono-trg
         attributes:
             cache:
                 resources:
