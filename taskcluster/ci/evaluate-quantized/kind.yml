@@ -50,7 +50,9 @@ task-defaults:
             # possible to adjust them at generation time to use relative paths,
             # but in practice we have not been able to make this work.
             pipeline_setup: >-
+
     worker-type: b-linux-v100-gpu
+    expires-after: "90 days"
     worker:
         artifacts:
             - name: public/build
