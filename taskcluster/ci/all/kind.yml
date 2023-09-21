@@ -32,6 +32,7 @@ tasks:
                 - attributes
 
         run-on-tasks-for: ["github-pull-request"]
+        expires-after: "90 days"
         worker-type: succeed
 
         from-deps:

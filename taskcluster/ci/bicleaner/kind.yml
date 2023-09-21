@@ -47,6 +47,8 @@ task-defaults:
         substitution-fields:
             - run.command
 
+    expires-after: "90 days"
+
     worker:
         max-run-time: 86400
         env:
