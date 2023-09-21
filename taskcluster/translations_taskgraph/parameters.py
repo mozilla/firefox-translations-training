@@ -14,7 +14,7 @@ from voluptuous import Optional, Required
 def get_defaults(_):
     return {
         "training_config": {
-            "target-stage": "merge_mono",
+            "target-stage": "all",
             "experiment": {
                 "name": "ci",
                 "src": "ru",
