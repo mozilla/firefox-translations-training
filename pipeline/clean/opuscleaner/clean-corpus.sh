@@ -40,7 +40,8 @@ opuscleaner-clean \
   --parallel ${threads} \
   --batch-size=50000 \
   --input=- \
-  "${filter_path}" "${SRC}" "${TRG}" |
+  "${filter_path}" "${SRC}" "${TRG}" \
+  2> "${output_prefix}.opus_filter.log" |
   tee >(cut -f1 | ${COMPRESSION_CMD} >"${output_prefix}.${SRC}.${ARTIFACT_EXT}") |
         cut -f2 | ${COMPRESSION_CMD} >"${output_prefix}.${TRG}.${ARTIFACT_EXT}"
 
