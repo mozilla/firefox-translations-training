@@ -46,6 +46,7 @@ tasks:
                 - worker.env
         worker-type: b-linux-large-300gb
         dataset-config:
+            category: train
             substitution-fields:
                 - description
                 - name

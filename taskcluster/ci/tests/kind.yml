@@ -87,4 +87,4 @@ tasks:
       run-on-tasks-for: ["github-push", "github-pull-request"]
       run:
           command: >-
-              pip3 install -r taskcluster/requirements.txt && taskgraph full
+              make validate-taskgraph

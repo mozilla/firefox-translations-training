@@ -162,3 +162,6 @@ lint-fix:
 fix-all:
 	make black-fix
 	make lint-fix
+
+validate-taskgraph:
+	pip3 install -r taskcluster/requirements.txt && taskgraph full
