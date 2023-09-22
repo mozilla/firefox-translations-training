@@ -8,7 +8,7 @@ import os
 from typing import Dict, Optional
 
 
-def find_custom_filter(src, trg, dataset) -> Optional[Dict]:
+def find_custom_filter(src: str, trg: str, dataset: str) -> Optional[Dict]:
     # TODO: we'll likely need to move to a separate repo for those
     # TODO: to not include all filters for all languages in TC artifacts
 
@@ -33,6 +33,18 @@ def find_custom_filter(src, trg, dataset) -> Optional[Dict]:
     return None
 
 
+def build_default_config(src: str, trg: str) -> str:
+    # note: do not call the folder with default filters "filters" because it's a magic word for opuscleaner-clean
+    # and it starts processing such folder
+    # TODO: ideally "other" for "deescape-special-chars" should be replaced to <trg> for supported languages
+    with open("configs/default.filters.json") as f:
+        config_str = f.read()
+        config_str = config_str.replace("<src>", src).replace("<trg>", trg)
+        abs_path_patterns = os.path.abspath("configs/remove_frequent_patterns.txt")
+        config_str = config_str.replace("configs/remove_frequent_patterns.txt", abs_path_patterns)
+        return json.loads(config_str)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -55,17 +67,7 @@ def main() -> None:
         print("Using custom filter")
     else:
         # if a custom filter is not found, use defaults
-        # note: do not call the folder with default filters "filters" because it's a magic word for opuscleaner-clean
-        # and it starts processing such folder
-        # TODO: ideally "other" for "deescape-special-chars" should be replaced to <trg> for supported languages
-        with open("configs/default.filters.json") as f:
-            config_str = f.read()
-            config_str = config_str.replace("<src>", src).replace("<trg>", trg)
-            abs_path_patterns = os.path.abspath("configs/remove_frequent_patterns.txt")
-            config_str = config_str.replace(
-                "configs/remove_frequent_patterns.txt", abs_path_patterns
-            )
-            config = json.loads(config_str)
+        config = build_default_config(src, trg)
         print("Using filter default.filters.json")
 
     with open(output, "w") as f:
