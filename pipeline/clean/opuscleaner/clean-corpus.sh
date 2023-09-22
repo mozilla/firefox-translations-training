@@ -44,11 +44,16 @@ opuscleaner-clean \
   tee >(cut -f1 | ${COMPRESSION_CMD} >"${output_prefix}.${SRC}.${ARTIFACT_EXT}") |
         cut -f2 | ${COMPRESSION_CMD} >"${output_prefix}.${TRG}.${ARTIFACT_EXT}"
 
-echo "### Checking that the files are not empty"
+echo "### Checking length of the files"
 test -s "${output_prefix}.${SRC}.${ARTIFACT_EXT}" || exit 1
 test -s "${output_prefix}.${TRG}.${ARTIFACT_EXT}" || exit 1
-[[ $(${COMPRESSION_CMD} -dc "${output_prefix}.${SRC}.${ARTIFACT_EXT}" | wc -l) -ge 1 ]] || exit 1
-[[ $(${COMPRESSION_CMD} -dc "${output_prefix}.${TRG}.${ARTIFACT_EXT}" | wc -l) -ge 1 ]] || exit 1
+new_len_src="$(${COMPRESSION_CMD} -dc "${output_prefix}.${SRC}.${ARTIFACT_EXT}" | wc -l)"
+new_len_trg="$(${COMPRESSION_CMD} -dc "${output_prefix}.${TRG}.${ARTIFACT_EXT}" | wc -l)"
+orig_len_src="$(${COMPRESSION_CMD} -dc "${input_prefix}.${SRC}.${ARTIFACT_EXT}" | wc -l)"
+[[ ${new_len_src} -ge 1 ]] || exit 1
+[[ ${new_len_trg} -ge 1 ]] || exit 1
+[[ "${new_len_src}" = "${new_len_trg}" ]] || exit 1
+echo "### Filtered length: ${new_len_src} / ${orig_len_src}"
 
 echo "### Clean ${input_prefix} is written to  ${output_prefix}"
 
