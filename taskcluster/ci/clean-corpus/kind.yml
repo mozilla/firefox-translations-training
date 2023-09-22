@@ -79,7 +79,7 @@ tasks:
                 - bash
                 - -c
                 - >-
-                    pip install -r pipeline/clean/requirements/clean.txt &&
+                    pip install -r $VCS_PATH/pipeline/clean/requirements/clean.txt &&
                     if [ ${USE_OPUSCLEANER} = "true" ]; then dir="clean/opuscleaner"; else dir="clean"; fi &&
                     $VCS_PATH/pipeline/${dir}/clean-corpus.sh $MOZ_FETCHES_DIR/{dataset_sanitized} /builds/worker/artifacts/{dataset_sanitized} auto {dataset}
         dependencies:
