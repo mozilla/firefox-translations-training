@@ -124,11 +124,12 @@ tasks:
                     {dataset}
                     /builds/worker/artifacts/{dataset_sanitized}
 
-    news-crawl:
-        description: Fetch news-crawl dataset
-        label: dataset-news-crawl-{dataset_sanitized}-{src_locale}-{trg_locale}
+    news-crawl-{src_locale}:
+        description: Fetch news-crawl dataset for {src_locale}
+        label: dataset-news-crawl-{dataset_sanitized}-{src_locale}
         dataset-config:
             provider: news-crawl
+            category: mono-src
         attributes:
             cache:
                 resources:
@@ -137,14 +138,10 @@ tasks:
                 from-parameters:
                     max_sent_src:
                         - training_config.experiment.mono-max-sentences-src
-                    max_sent_trg:
-                        - training_config.experiment.mono-max-sentences-trg
         task-context:
             from-parameters:
                 max_sent_src:
                     - training_config.experiment.mono-max-sentences-src
-                max_sent_trg:
-                    - training_config.experiment.mono-max-sentences-trg
             substitution-fields:
                 - run.command
         run:
@@ -156,7 +153,33 @@ tasks:
                     {dataset}
                     {src_locale}
                     {max_sent_src}
-                    /builds/worker/artifacts/{dataset_sanitized}.{src_locale}.zst &&
+                    /builds/worker/artifacts/{dataset_sanitized}.{src_locale}.zst
+
+    news-crawl-{trg_locale}:
+        description: Fetch news-crawl dataset for {trg_locale}
+        label: dataset-news-crawl-{dataset_sanitized}-{trg_locale}
+        dataset-config:
+            provider: news-crawl
+            category: mono-trg
+        attributes:
+            cache:
+                resources:
+                    - pipeline/data/importers/mono/news-crawl.sh
+                    - pipeline/data/download-mono.sh
+                from-parameters:
+                    max_sent_trg:
+                        - training_config.experiment.mono-max-sentences-trg
+        task-context:
+            from-parameters:
+                max_sent_trg:
+                    - training_config.experiment.mono-max-sentences-trg
+            substitution-fields:
+                - run.command
+        run:
+            command:
+                - bash
+                - -c
+                - >-
                     $VCS_PATH/pipeline/data/download-mono.sh
                     {dataset}
                     {trg_locale}

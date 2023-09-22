@@ -18,7 +18,6 @@ task-defaults:
     description: split mono for {locale}
     attributes:
         stage: split-mono
-        src_locale: "{src_locale}"
         trg_locale: "{trg_locale}"
         cache:
             type: split-mono
@@ -33,7 +32,6 @@ task-defaults:
         from-parameters:
             split_length: training_config.experiment.split-length
             split_chunks: training_config.taskcluster.split-chunks
-            src_locale: training_config.experiment.src
             trg_locale: training_config.experiment.trg
         substitution-fields:
             - description
@@ -81,7 +79,7 @@ task-defaults:
 
 tasks:
     trg:
-        label: split-mono-trg-{src_locale}-{trg_locale}
+        label: split-mono-trg-{trg_locale}
         attributes:
             dataset-category: mono-trg
 
@@ -90,7 +88,7 @@ tasks:
                 locale: training_config.experiment.trg
 
         dependencies:
-            merge-mono-trg: merge-mono-trg-{src_locale}-{trg_locale}
+            merge-mono-trg: merge-mono-trg-{trg_locale}
 
         fetches:
             merge-mono-trg:

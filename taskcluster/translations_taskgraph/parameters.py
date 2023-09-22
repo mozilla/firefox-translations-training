@@ -104,7 +104,7 @@ def get_defaults(_):
                     "news-crawl_news.2008",
                 ],
                 "mono-trg": [
-                    "news-crawl_news.2008",
+                    "news-crawl_news.2007",
                 ],
             },
             # Taskcluster-specific configuration
