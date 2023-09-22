@@ -36,7 +36,7 @@ tasks:
                     - pipeline/clean/opuscleaner/clean-corpus.sh
                     - pipeline/clean/opuscleaner/configs/remove_frequent_patterns.txt
                     - pipeline/clean/opuscleaner/configs/default.filters.json
-                    - pipeline/clean/opuscleaner/configs/en-ru/ELRC-3075-wikipedia_health-v1.en-ru.filters.json
+                    - pipeline/clean/opuscleaner/configs/en-ru/mtdata_ELRC-3075-wikipedia_health-v1.en-ru.filters.json
                     - pipeline/clean/requirements/clean.txt
         task-context:
             from-parameters:
