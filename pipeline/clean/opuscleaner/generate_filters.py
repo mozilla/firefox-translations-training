@@ -24,6 +24,8 @@ def main() -> None:
     output = args.output
 
     # look whether there are filters produced by OpusCleaner UI first
+    # TODO: we'll likely need to move to a separate repo for those
+    # TODO: to not include all filters for all languages in TC artifacts
     custom_filter = f"configs/{src}-{trg}/{dataset}.{src}-{trg}.filters.json"
     # workaround: we use "_" to separate the dataset version for OPUS datasets and OpusCleaner uses "-"
     custom_filter_opus = None
@@ -41,9 +43,10 @@ def main() -> None:
             config = json.load(f)
             print(f"Using filter {custom_filter}")
     else:
-        # if custom filter is not found, use defaults
-        # note: do not call the folder with default filters "filters" because it's a magic work for opuscleaner-clean
+        # if a custom filter is not found, use defaults
+        # note: do not call the folder with default filters "filters" because it's a magic word for opuscleaner-clean
         # and it starts processing such folder
+        # TODO: ideally "other" for "deescape-special-chars" should be replaced to <trg> for supported languages
         with open("configs/default.filters.json") as f:
             config_str = f.read()
             config_str = config_str.replace("<src>", src).replace("<trg>", trg)
