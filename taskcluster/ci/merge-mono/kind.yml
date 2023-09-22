@@ -47,7 +47,7 @@ task-defaults:
             - "{dataset_sanitized}.{locale}.zst"
 
     worker-type: b-linux-large
-
+    expires-after: "90 days"
     worker:
         docker-image: { "in-tree": "train" }
         max-run-time: 86400
