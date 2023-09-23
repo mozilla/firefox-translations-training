@@ -1,0 +1,11 @@
+name: bicleaner-ai
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - pip==21.2.2
+  - cmake=3.21.1
+  - pip:
+    - bicleaner-ai==2.2.1
+    - tensorflow-rocm==2.10.0.520    

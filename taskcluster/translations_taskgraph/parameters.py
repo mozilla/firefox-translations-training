@@ -137,6 +137,7 @@ extend_parameters_schema(
                 Required("vocab"): str,
                 Required("mono-max-sentences-trg"): int,
                 Required("mono-max-sentences-src"): int,
+                Optional("parallel-max-sentences"): int,
                 Required("split-length"): int,
                 Required("spm-sample-size"): int,
                 Optional("spm-vocab-size"): int,

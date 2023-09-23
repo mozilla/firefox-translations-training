@@ -1,5 +1,6 @@
 import yaml
 import os
+import glob
 
 from snakemake.utils import min_version
 from pipeline.bicleaner import packs
@@ -13,48 +14,72 @@ min_version("6.6.1")
 
 ### configuration
 
-container: 'Singularity.sif'
+containerized: config.get('image', 'Singularity.sif')
 
 install_deps = config['deps'] == 'true'
-data_root_dir = config['root']
-cuda_dir = config['cuda']
-cudnn_dir = config['cudnn']
+data_root_dir = config.get('root', srcdir("../data"))
+cuda_dir = config.get('cuda', os.environ.get("CUDA_INSTALL_ROOT",""))
+cudnn_dir = config.get('cudnn', os.environ.get("CUDNN_INSTALL_ROOT",""))
+rocm_dir = config.get('rocm',os.environ.get("ROCM_PATH",""))
+
 gpus_num = config['numgpus']
 # marian occupies all GPUs on a machine if `gpus` are not specified
 gpus = config['gpus'] if config['gpus'] else ' '.join([str(n) for n in range(int(gpus_num))])
 workspace = config['workspace']
 marian_cmake = config['mariancmake']
+marian_version = config.get('marianversion','marian-dev')
 
 # experiment
 src = config['experiment']['src']
 trg = config['experiment']['trg']
+src_three_letter = config['experiment'].get('src_three_letter')
+trg_three_letter = config['experiment'].get('trg_three_letter')
 experiment = config['experiment']['name']
 
-mono_max_sent_src = config['experiment']['mono-max-sentences-src']
-mono_max_sent_trg = config['experiment']['mono-max-sentences-trg']
-bicl_default_threshold = config['experiment']['bicleaner']['default-threshold']
-bicl_dataset_thresholds = config['experiment']['bicleaner']['dataset-thresholds']
-backward_pretrained = config['experiment']['backward-model']
-vocab_pretrained = config['experiment']['vocab']
+mono_max_sent_src = config['experiment'].get('mono-max-sentences-src')
+mono_max_sent_trg = config['experiment'].get('mono-max-sentences-trg')
+parallel_max_sents = config['experiment'].get('parallel-max-sentences',"inf")
+
+
+
+backward_pretrained = config['experiment'].get('backward-model')
+backward_pretrained_vocab = config['experiment'].get('backward-vocab')
+vocab_pretrained = config['experiment'].get('vocab')
+forward_pretrained = config['experiment'].get('forward-model')
 
 experiment_dir=f"{data_root_dir}/experiments/{src}-{trg}/{experiment}"
 
 # override marian cofings
 marian_args = {name: ' '.join([f'--{k} {v}' for k,v in conf.items() ])
-               for name, conf in config['marian-args'].items()}
+               for name, conf in config.get('marian-args',{}).items()}
+
+# There can be multiple opus teachers, but a single teacher can also be provided
+# as string, so convert it to list here
+opusmt_teacher = config['experiment'].get('opusmt-teacher')
+if opusmt_teacher and not isinstance(opusmt_teacher,list):
+    opusmt_teacher = [opusmt_teacher]
+
+opusmt_backward = config['experiment'].get('opusmt-backward')
+
+# if no target language token specified, use src (they might be different in rare cases)
+target_language_token = config['experiment'].get('target-language-token',trg)
+
+#this is for reverse scoring with multilingual model
+source_language_token = config['experiment'].get('target-language-token',src)
 
 # datasets
 train_datasets = config['datasets']['train']
 valid_datasets = config['datasets']['devtest']
 eval_datasets = config['datasets']['test']
-mono_src_datasets = config['datasets']['mono-src']
-mono_trg_datasets = config['datasets']['mono-trg']
+mono_src_datasets = config['datasets'].get('mono-src')
+mono_trg_datasets = config['datasets'].get('mono-trg')
 mono_datasets = {src: mono_src_datasets, trg: mono_trg_datasets}
 mono_max_sent = {src: mono_max_sent_src, trg: mono_max_sent_trg}
 
 # parallelization
 
-ensemble = list(range(config['experiment']['teacher-ensemble']))
+ensemble = list(range(config['experiment'].get('teacher-ensemble',0)))
+
 split_length = config['experiment']['split-length']
 
 # logging
@@ -64,14 +89,19 @@ reports_dir = f"{data_root_dir}/reports/{src}-{trg}/{experiment}"
 # binaries
 cwd = os.getcwd()
 third_party_dir = f'{cwd}/3rd_party'
-marian_dir = f'{third_party_dir}/marian-dev/build'
+
+if marian_version == 'lumi-marian':
+    marian_dir = f'{third_party_dir}/lumi-marian/build/'
+else:
+    marian_dir = f'{third_party_dir}/marian-dev/build/'
+
 bmt_marian_dir = f'{third_party_dir}/browsermt-marian-dev/build'
-trainer = f'{marian_dir}/marian'
-decoder = f'{marian_dir}/marian-decoder'
-scorer = f'{marian_dir}/marian-scorer'
-spm_encoder = f'{marian_dir}/spm_encode'
-spm_trainer = f'{marian_dir}/spm_train'
-spm_exporter = f'{marian_dir}/spm_export_vocab'
+trainer = f'{marian_dir}marian'
+decoder = f'{marian_dir}marian-decoder'
+scorer = f'{marian_dir}marian-scorer'
+spm_encoder = f'{marian_dir}spm_encode'
+spm_trainer = f'{marian_dir}spm_train'
+spm_exporter = f'{marian_dir}spm_export_vocab'
 bmt_decoder = f'{bmt_marian_dir}/marian-decoder'
 bmt_converter = f'{bmt_marian_dir}/marian-conv'
 
@@ -105,9 +135,23 @@ exported_dir = f"{models_dir}/exported"
 best_model_metric = config['experiment']['best-model']
 best_model = f"final.model.npz.best-{best_model_metric}.npz"
 backward_dir = f'{models_dir}/backward'
-spm_sample_size=config['experiment']['spm-sample-size']
+spm_sample_size=config['experiment'].get('spm-sample-size')
 spm_vocab_size=config['experiment'].get('spm-vocab-size',"32000")
-vocab_path=vocab_pretrained or f"{models_dir}/vocab/vocab.spm"
+
+#forward pretrained models are trained with sentencepiece integration, the value is a path to the directory
+if forward_pretrained:
+    teacher_base_dir = forward_pretrained
+    #this means that the when the model dirs are expanded, the result is only the teacher_base_dir
+    ensemble = [""]
+
+
+#default vocab path used with base ftt
+vocab_path = vocab_pretrained or f"{models_dir}/vocab/vocab.spm"
+
+if opusmt_backward:
+   backward_vocab = f"{backward_dir}/vocab.yml"
+else:
+   backward_vocab = vocab_path
 
 #evaluation
 eval_data_dir = f"{original}/eval"
@@ -120,7 +164,7 @@ eval_teacher_ens_dir = f'{eval_res_dir}/teacher-ensemble'
 
 # set common environment variables
 envs = f'''SRC={src} TRG={trg} MARIAN="{marian_dir}" BMT_MARIAN="{bmt_marian_dir}" GPUS="{gpus}" WORKSPACE={workspace} \
-BIN="{bin}" CUDA_DIR="{cuda_dir}" CUDNN_DIR="{cudnn_dir}" '''
+BIN="{bin}" CUDA_DIR="{cuda_dir}" CUDNN_DIR="{cudnn_dir}" ROCM_PATH="{rocm_dir}" COMPRESSION_CMD=pigz ARTIFACT_EXT=gz'''
 # CUDA_VISIBLE_DEVICES is used by bicleaner ai. slurm sets this variable
 # it can be overriden manually by 'gpus' config setting to split GPUs in local mode
 if config['gpus']:
@@ -128,15 +172,19 @@ if config['gpus']:
 
 ### workflow options
 
-results = [f'{exported_dir}/model.{src}{trg}.intgemm.alphas.bin.gz',
-           f'{exported_dir}/lex.50.50.{src}{trg}.s2t.bin.gz',
-           f'{exported_dir}/vocab.{src}{trg}.spm.gz',
-           f'{experiment_dir}/config.yml',
-           *expand(f'{eval_res_dir}/teacher-base{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=eval_datasets),
-           *expand(f'{eval_student_dir}/{{dataset}}.metrics', dataset=eval_datasets),
-           *expand(f'{eval_student_finetuned_dir}/{{dataset}}.metrics', dataset=eval_datasets),
-           *expand(f'{eval_speed_dir}/{{dataset}}.metrics', dataset=eval_datasets)
-           ]
+results = [
+    f'{exported_dir}/model.{src}{trg}.intgemm.alphas.bin.gz',
+    f'{exported_dir}/lex.50.50.{src}{trg}.s2t.bin.gz',
+    f'{exported_dir}/vocab.{src}{trg}.spm.gz',
+    f'{experiment_dir}/config.yml',
+    *expand(f'{eval_student_dir}/{{dataset}}.metrics',dataset=eval_datasets),
+    *expand(f'{eval_student_finetuned_dir}/{{dataset}}.metrics',dataset=eval_datasets),
+    *expand(f'{eval_speed_dir}/{{dataset}}.metrics',dataset=eval_datasets)
+    ]
+
+#don't evaluate opus mt teachers or pretrained teachers (TODO: fix sp issues with opusmt teacher evaluation)
+if not (opusmt_teacher or forward_pretrained):
+    results.extend(expand(f'{eval_res_dir}/teacher-base0-{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=eval_datasets))
 
 if len(ensemble) > 1:
     results.extend(expand(f'{eval_teacher_ens_dir}/{{dataset}}.metrics', dataset=eval_datasets))
@@ -144,18 +192,35 @@ if len(ensemble) > 1:
 if install_deps:
     results.append("/tmp/flags/setup.done")
 
-if not backward_pretrained:
+#three options for backward model: pretrained path, url to opus-mt, or train backward
+if backward_pretrained:
+    do_train_backward = False
+    backward_dir = backward_pretrained
+elif opusmt_backward:
+    do_train_backward = False
+else:
     # don't evaluate pretrained model
     results.extend(expand(f'{eval_backward_dir}/{{dataset}}.metrics',dataset=eval_datasets))
     do_train_backward=True
-else:
-    do_train_backward = False
-    backward_dir = backward_pretrained
 
 # bicleaner
 
-bicleaner_type = packs.find(src, trg)
-bicleaner_env = "envs/bicleaner-ai.yml" if bicleaner_type == 'bicleaner-ai' else 'envs/bicleaner.yml'
+
+if 'bicleaner' in config['experiment']:
+    bicl_default_threshold = config['experiment']['bicleaner']['default-threshold']
+    bicl_dataset_thresholds = config['experiment']['bicleaner']['dataset-thresholds']
+
+    bicleaner_type = packs.find(src, trg)
+else:
+    bicleaner_type = None
+
+if bicleaner_type == 'bicleaner-ai':
+    if marian_version == 'lumi-marian':
+        bicleaner_env = 'envs/bicleaner-ai-lumi.yml'
+    else:
+        bicleaner_env = 'envs/bicleaner-ai.yml'
+else:
+    bicleaner_env = 'envs/bicleaner.yml'
 
 if bicleaner_type:
     clean_corpus_prefix = f'{biclean}/corpus'
@@ -172,11 +237,11 @@ clean_corpus_trg = f'{clean_corpus_prefix}.{trg}.gz'
 
 # augmentation
 
-if mono_trg_datasets:
+if mono_trg_datasets and not (opusmt_teacher or forward_pretrained):
     teacher_corpus = f'{augmented}/corpus'
     augment_corpus = True
     final_teacher_dir = teacher_finetuned_dir
-    results.extend(expand(f'{eval_res_dir}/teacher-finetuned{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=eval_datasets))
+    results.extend(expand(f'{eval_res_dir}/teacher-finetuned0-{{ens}}/{{dataset}}.metrics',ens=ensemble, dataset=eval_datasets))
 else:
     augment_corpus = False
     final_teacher_dir = teacher_base_dir
@@ -193,7 +258,6 @@ def dataset_norm(name: str):
 
 def get_args(section):
     return marian_args.get(section) or ""
-
 
 ### rules
 
@@ -243,8 +307,8 @@ rule marian:
         spm_trainer=protected(f'{third_party_dir}/{{marian_type}}/build/spm_train'),
         spm_encoder=protected(f'{third_party_dir}/{{marian_type}}/build/spm_encode'),
         spm_exporter=protected(f'{third_party_dir}/{{marian_type}}/build/spm_export_vocab')
-    params: build_dir=f'{third_party_dir}/{{marian_type}}/build'
-    shell: 'bash pipeline/setup/compile-marian.sh {params.build_dir} {threads} {marian_cmake} >> {log} 2>&1'
+    params: build_dir=f'{third_party_dir}/{{marian_type}}/build',marian_type=f'{{marian_type}}'
+    shell: 'bash pipeline/setup/compile-{params.marian_type}.sh {params.build_dir} {threads} {marian_cmake} >> {log} 2>&1'
 
 rule fast_align:
     message: "Compiling fast align"
@@ -274,6 +338,19 @@ rule extract_lex:
     shell: 'bash pipeline/setup/compile-extract-lex.sh {extract_lex_build} {threads} >> {log} 2>&1'
 
 # data downloading
+# TODO: Tatoeba data has dev, test and train in same big tar, make a rule producing them all,
+# and use snakemake ruleorder to prioritize it over this
+ruleorder: download_tatoeba_corpus > download_corpus
+
+rule download_tatoeba_corpus:
+    message: "Downloading Tatoeba corpus"
+    log: f"{log_dir}/download_corpus/corpus_devset_test/tc_{{version}}.log"
+    conda: "envs/base.yml"
+    threads: 1
+#    group: 'data'
+    output: multiext(f"{original}/corpus/tc_{{version}}", f".{src}.gz", f".{trg}.gz"),multiext(f"{original}/devset/tc_{{version}}", f".{src}.gz", f".{trg}.gz"),multiext(f"{original}/eval/tc_{{version}}", f".{src}.gz", f".{trg}.gz")
+    params: prefix=f"{original}", version="{version}",max_sents=parallel_max_sents
+    shell: 'bash pipeline/data/download-tc-data.sh {src_three_letter} {trg_three_letter} {src} {trg} {params.prefix} {params.version} {params.max_sents}  >> {log} 2>&1'
 
 rule download_corpus:
     message: "Downloading parallel corpus"
@@ -356,7 +433,7 @@ if use_bicleaner:
         conda: bicleaner_env
 #       group: "bicleaner"
         threads: gpus_num * 2 if bicleaner_type == "bicleaner-ai" else workflow.cores
-        resources: gpu=gpus_num if bicleaner_type == "bicleaner-ai" else 0
+        resources: gpu=gpus_num if bicleaner_type == "bicleaner-ai" else 0, mem_mb=128000
         input: ancient(rules.kenlm.output), multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz"),
                 pack_dir=rules.bicleaner_pack.output
         output: multiext(f"{biclean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
@@ -369,6 +446,7 @@ if use_bicleaner:
                     "{params.prefix_input}" "{params.prefix_output}" {params.threshold} {bicleaner_type} {threads} \
                     "{input.pack_dir}" >> {log} 2>&1'''
 
+
 rule merge_corpus:
     message: "Merging clean parallel datasets"
     log: f"{log_dir}/merge_corpus.log"
@@ -378,8 +456,10 @@ rule merge_corpus:
     input:  expand(f"{clean_corpus_prefix}/{{dataset}}.{{lang}}.gz", dataset=train_datasets, lang=[src, trg]),
             bin=ancient(deduper)
     output: src=clean_corpus_src,trg=clean_corpus_trg
-    params: prefix_output=clean_corpus_prefix, prefixes=expand(f"{clean_corpus_prefix}/{{dataset}}", dataset=train_datasets)
-    shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
+    params: prefix_output=clean_corpus_prefix,
+            prefixes=expand(f"{clean_corpus_prefix}/{{dataset}}", dataset=train_datasets),
+            max_sents=parallel_max_sents
+    shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.max_sents} {params.prefixes} >> {log} 2>&1'''
 
 rule merge_devset:
     message: "Merging devsets"
@@ -391,7 +471,7 @@ rule merge_devset:
             bin=ancient(deduper)
     output: multiext(f"{original}/devset", f".{src}.gz", f".{trg}.gz")
     params: prefix_output=f"{original}/devset", prefixes=expand(f"{original}/devset/{{dataset}}", dataset=valid_datasets)
-    shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" {params.prefixes} >> {log} 2>&1'''
+    shell: '''bash pipeline/clean/merge-corpus.sh "{params.prefix_output}" inf {params.prefixes} >> {log} 2>&1'''
 
 rule merge_mono:
     message: "Merging clean monolingual datasets"
@@ -419,9 +499,12 @@ if not vocab_pretrained:
         output: vocab_path
         params: prefix_train=clean_corpus_prefix,prefix_test=f"{original}/devset"
         shell: '''bash pipeline/train/spm-vocab.sh "{input.corpus_src}" "{input.corpus_trg}" "{output}" {spm_sample_size} \
-                    {threads} {spm_vocab_size} >> {log} 2>&1'''
+                   {threads} {spm_vocab_size} >> {log} 2>&1'''
 
 if do_train_backward:
+    mono_trg_file = f'{translated}/mono_trg/file.{{part}}'
+    deseg_mono_trg_outfile = f'{mono_trg_file}.out'
+
     rule train_backward:
         message: "Training backward model"
         log: f"{log_dir}/train_backward.log"
@@ -439,6 +522,19 @@ if do_train_backward:
                     backward train {trg} {src} "{params.prefix_train}" "{params.prefix_test}" "{backward_dir}" \
                     "{input.vocab}" "{best_model_metric}" {params.args} >> {log} 2>&1'''
 
+elif opusmt_backward:
+    mono_trg_file = f'{translated}/mono_trg/file.{{part}}.{{model_index}}.opusmt'
+    deseg_mono_trg_outfile = f'{mono_trg_file}.out.deseg'
+
+    rule download_opusmt_backward:
+        message: "Downloading OPUS-MT backward model"
+        log: f"{log_dir}/download_backward.log"
+        conda: "envs/base.yml"
+        output:  model=f'{backward_dir}/{best_model}',vocab=f'{backward_dir}/vocab.yml', model_dir=directory({backward_dir})
+        shell: '''bash pipeline/opusmt/download-model.sh \
+                    "{opusmt_backward}" "{backward_dir}" "{best_model}" {trg_three_letter} {src_three_letter} >> {log} 2>&1'''
+
+
 if augment_corpus:
     checkpoint split_mono_trg:
         message: "Splitting monolingual trg dataset"
@@ -449,6 +545,8 @@ if augment_corpus:
         output: directory(f'{translated}/mono_trg')
         shell: 'bash pipeline/translate/split-mono.sh {input.corpora} {output} {split_length} >> {log} 2>&1'
 
+    #TODO: make it possible to use multiple backward models, add filtering for backtranslations
+    #TODO: add preprocessing and deseg for OPUS-MT backward model backtranslation, currently works only with trained backward model
     rule translate_mono_trg:
         message: "Translating monolingual trg dataset with backward model"
         log: f"{log_dir}/translate_mono_trg/{{part}}.log"
@@ -456,11 +554,11 @@ if augment_corpus:
         threads: gpus_num * 2
         resources: gpu=gpus_num
         input:
-            bin=ancient(decoder), file=f'{translated}/mono_trg/file.{{part}}',
+            bin=ancient(decoder), file=mono_trg_file,
             vocab=vocab_path, model=f'{backward_dir}/{best_model}'
-        output: f'{translated}/mono_trg/file.{{part}}.out'
+        output: file=f'{mono_trg_file}.out'
         params: args = get_args("decoding-backward")
-        shell: '''bash pipeline/translate/translate.sh "{input.file}" "{input.vocab}" {input.model} {params.args} \
+        shell: '''bash pipeline/translate/translate.sh "{input.file}" "{output.file}" "{input.vocab}" {input.model} {params.args} \
                 >> {log} 2>&1'''
 
     rule collect_mono_trg:
@@ -470,11 +568,11 @@ if augment_corpus:
         threads: 4
         #group 'mono_trg'
         input:
-            lambda wildcards: expand(f"{translated}/mono_trg/file.{{part}}.out",
+            lambda wildcards: expand(deseg_mono_trg_outfile,
                 part=find_parts(wildcards, checkpoints.split_mono_trg))
         output: f'{translated}/mono.{src}.gz'
         params: src_mono=f"{clean}/mono.{trg}.gz",dir=directory(f'{translated}/mono_trg')
-        shell: 'bash pipeline/translate/collect.sh "{params.dir}" "{output}" "{params.src_mono}" >> {log} 2>&1'
+        shell: 'bash pipeline/translate/collect.sh "{params.dir}" "{output}" "{params.src_mono}" "" >> {log} 2>&1'
 
     rule merge_augmented:
         message: "Merging augmented dataset"
@@ -483,52 +581,72 @@ if augment_corpus:
         threads: 4
         #group 'mono_trg'
         input:
-            src1=clean_corpus_src,src2=rules.collect_mono_trg.output,
-            trg1=clean_corpus_trg,trg2=rules.split_mono_trg.input,
+            src1=clean_corpus_src,
+            src2=rules.collect_mono_trg.output,
+            trg1=clean_corpus_trg,
+            trg2=rules.split_mono_trg.input.corpora,
             bin=ancient(deduper)
         output: res_src=f'{augmented}/corpus.{src}.gz',res_trg=f'{augmented}/corpus.{trg}.gz'
         shell: '''bash pipeline/translate/merge-corpus.sh \
-                    "{input.src1}" "{input.src2}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
+                    "{input.src1}" "{input.src2}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" "" \
                       >> {log} 2>&1'''
 
-rule train_teacher:
-    message: "Training teacher on all data"
-    log: f"{log_dir}/train_teacher{{ens}}.log"
-    conda: "envs/base.yml"
-    threads: gpus_num*2
-    resources: gpu=gpus_num
-    input:
-        rules.merge_devset.output, train_src=f'{teacher_corpus}.{src}.gz',train_trg=f'{teacher_corpus}.{trg}.gz',
-        bin=ancient(trainer), vocab=vocab_path
-    output: model=f'{teacher_base_dir}{{ens}}/{best_model}'
-    params: prefix_train=teacher_corpus, prefix_test=f"{original}/devset", dir=directory(f'{teacher_base_dir}{{ens}}'),
-            args=get_args("training-teacher-base")
-    shell: '''bash pipeline/train/train.sh \
-                teacher train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
-                "{input.vocab}" "{best_model_metric}" {params.args} >> {log} 2>&1'''
+# Three options for teacher: 1. download opus-mt model, 2. train teacher with pipeline, 3. path to pretrained teacher model
+# TODO: make it possible to combine any of the above options, i.e. use opus-mt, train and use
+# pretrained all in the same run. Probably should have a model list where you can define all the
+# models to use, and then prefixes (opusmt_, train_, pretrained_, nllb_ etc.) determine how the models are
+# created/used/connected to (in case of e.g. external APIs).
+if 'opusmt-teacher' in config['experiment']:
+    rule download_teacher_model:
+        message: "Downloading OPUS-MT teacher model"
+        log: f"{log_dir}/download_teacher{{model_index}}-{{ens}}.log"
+        conda: "envs/base.yml"
+        threads: 1
+        output: model=f'{teacher_base_dir}{{model_index}}-{{ens}}/{best_model}',vocab=f'{teacher_base_dir}{{model_index}}-{{ens}}/vocab.yml', model_dir=directory(f'{teacher_base_dir}{{model_index}}-{{ens}}')
+        params: teacher_dir=f'{teacher_base_dir}{{model_index}}-{{ens}}',
+                teacher_url=lambda wildcards: opusmt_teacher[int(wildcards.model_index)]
+        shell: '''bash pipeline/opusmt/download-model.sh \
+                    "{params.teacher_url}" "{params.teacher_dir}" "{best_model}" {src_three_letter} {trg_three_letter} >> {log} 2>&1'''
+elif not forward_pretrained:
+    rule train_teacher:
+        message: "Training teacher on all data"
+        log: f"{log_dir}/train_teacher{{model_index}}-{{ens}}.log"
+        conda: "envs/base.yml"
+        threads: gpus_num*2
+        resources: gpu=gpus_num
+        input:
+            rules.merge_devset.output, train_src=f'{teacher_corpus}.{src}.gz',train_trg=f'{teacher_corpus}.{trg}.gz',
+            bin=ancient(trainer), vocab=vocab_path
+        output: model=f'{teacher_base_dir}{{model_index}}-{{ens}}/{best_model}'
+        params: prefix_train=teacher_corpus,
+                prefix_test=f"{original}/devset",
+                dir=directory(f'{teacher_base_dir}{{model_index}}-{{ens}}'),
+                args=get_args("training-teacher-base")
+        shell: '''bash pipeline/train/train.sh \
+                    teacher train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
+                    "{input.vocab}" "{best_model_metric}" {params.args} >> {log} 2>&1'''
+
 
 if augment_corpus:
     rule finetune_teacher:
         message: "Finetune teacher on parallel corpus"
-        log: f"{log_dir}/finetune_teacher{{ens}}.log"
+        log: f"{log_dir}/finetune_teacher0-{{ens}}.log"
         conda: "envs/base.yml"
         threads: gpus_num * 2
         resources: gpu=gpus_num
         input:
-            rules.merge_devset.output, model=f'{teacher_base_dir}{{ens}}/{best_model}',
+            rules.merge_devset.output, model=f'{teacher_base_dir}0-{{ens}}/{best_model}',
             train_src=clean_corpus_src, train_trg=clean_corpus_trg,
             bin=ancient(trainer), vocab=vocab_path
-        output: model=f'{teacher_finetuned_dir}{{ens}}/{best_model}'
+        output: model=f'{teacher_finetuned_dir}0-{{ens}}/{best_model}'
         params: prefix_train=clean_corpus_prefix, prefix_test=f"{original}/devset",
-                dir=directory(f'{teacher_finetuned_dir}{{ens}}'),
+                dir=directory(f'{teacher_finetuned_dir}0-{{ens}}'),
                 args=get_args("training-teacher-finetuned")
         shell: '''bash pipeline/train/train.sh \
                     teacher train {src} {trg} "{params.prefix_train}" "{params.prefix_test}" "{params.dir}" \
                     "{input.vocab}" "{best_model_metric}" --pretrained-model "{input.model}" {params.args} >> {log} 2>&1'''
 
 ### translation with teacher
-
-# corpus
 
 checkpoint split_corpus:
     message: "Splitting the corpus to translate"
@@ -540,44 +658,102 @@ checkpoint split_corpus:
     shell: '''bash pipeline/translate/split-corpus.sh \
                 {input.corpus_src} {input.corpus_trg} {output} {split_length} >> {log} 2>&1'''
 
+if opusmt_teacher:
+    teacher_source_file = f'{translated}/corpus/file.{{part}}.{{model_index}}.opusmt'
+    teacher_target_file = f'{translated}/corpus/file.{{part}}.{{model_index}}.opusmt.nbest'
+    teacher_mono_source_file = f'{translated}/mono_src/file.{{part}}.{{model_index}}.opusmt'
+    teacher_mono_target_file = f'{translated}/mono_src/file.{{part}}.{{model_index}}.opusmt.out'
+    translated_mono_src_extension = "opusmt.out"
+    deseg_nbest_file = f'{teacher_target_file}.deseg'
+
+    rule opusmt_deseg_translation:
+        message: "Desegmenting OPUS-MT model translation"
+        log: f"{log_dir}/opusmt_deseg_mono_translation/{{part}}.{{model_index}}.log"
+        threads: 1
+        wildcard_constraints:
+            model_index="\d+"
+        input: f'{translated}/mono_src/file.{{part}}.{{model_index}}.opusmt.out'
+        output: f'{translated}/mono_src/file.{{part}}.{{model_index}}.out'
+        run:
+            with open(input[0], "rt", encoding="utf8") as infile,open(output[0], "wt", encoding="utf8") as outfile:
+                for line in infile:
+                    deseg_line = line.replace(" ","").replace("▁"," ")
+                    outfile.write(deseg_line)
+
+    #This is an optional rule that only applies when OPUS-MT model is used as teacher.
+    #Required due to OPUS-MT models not using the integrated SentencePiece in Marian
+    rule opusmt_preprocess_corpus:
+        message: "Preprocessing source file for OPUS-MT model"
+        log: f"{log_dir}/opusmt_preprocess_corpus/{{corpus}}.{{part}}.{{model_index}}.log"
+        conda: "envs/base.yml"
+        threads: 1
+        input:
+            file=f'{translated}/{{corpus}}/file.{{part}}',
+            teacher_model=f"{final_teacher_dir}{{model_index}}-0/{best_model}",
+            spm_encoder=ancient(spm_encoder)
+        output: f'{translated}/{{corpus}}/file.{{part}}.{{model_index}}.opusmt'
+        shell: '''bash pipeline/translate/opusmt-preprocess.sh \
+                    {input.file} {input.teacher_model} src "source.spm" {input.spm_encoder} {target_language_token} {wildcards.model_index} >> {log} 2>&1'''
+    rule opusmt_deseg_nbest:
+        message: "Desegmenting OPUS-MT model nbest list"
+        log: f"{log_dir}/opusmt_deseg_nbest/{{part}}.{{model_index}}.log"
+        threads: 1
+        input: nbest=f"{teacher_source_file}.nbest"
+        output: temp(deseg_nbest_file)
+        run:
+            with open(input[0], "rt", encoding="utf8") as infile,open(output[0], "wt", encoding="utf8") as outfile:
+                for line in infile:
+                    line_split = line.split(" ||| ")
+                    line_split[1] = line_split[1].replace(" ","").replace("▁"," ")
+                    outfile.write(" ||| ".join(line_split))
+else:
+    teacher_source_file = f'{translated}/corpus/file.{{part}}'
+    teacher_target_file = f'{translated}/corpus/file.{{part}}.{{model_index}}.nbest'
+    teacher_mono_source_file = f'{translated}/mono_src/file.{{part}}'
+    teacher_mono_target_file = f'{translated}/mono_src/file.{{part}}.{{model_index}}.out'
+    translated_mono_src_extension = ".out"
+    deseg_nbest_file = teacher_target_file
+
+
+
 rule translate_corpus:
     message: "Translating corpus with teacher"
-    log: f"{log_dir}/translate_corpus/{{part}}.log"
+    log: f"{log_dir}/translate_corpus/{{part}}.{{model_index}}.log"
     conda: "envs/base.yml"
     threads: gpus_num*2
     resources: gpu=gpus_num
     input:
         ancient(decoder),
-        file=f'{translated}/corpus/file.{{part}}',
+        file=teacher_source_file,
         vocab=vocab_path,
-        teacher_models=expand(f"{final_teacher_dir}{{ens}}/{best_model}",ens=ensemble)
-    output: f'{translated}/corpus/file.{{part}}.nbest'
+        teacher_models=expand(f"{final_teacher_dir}{{{{model_index}}}}-{{ens}}/{best_model}",ens=ensemble)
+    output: file=teacher_target_file
     params: args=get_args('decoding-teacher')
     shell: '''bash pipeline/translate/translate-nbest.sh \
-                "{input.file}" "{input.vocab}" {input.teacher_models} {params.args} >> {log} 2>&1'''
+                "{input.file}" "{output.file}" "{input.vocab}" {input.teacher_models} {params.args} >> {log} 2>&1'''
 
 rule extract_best:
     message: "Extracting best translations for the corpus"
-    log: f"{log_dir}/extract_best/{{part}}.log"
+    log: f"{log_dir}/extract_best/{{part}}.{{model_index}}.log"
     conda: "envs/base.yml"
     threads: 1
     #group 'translate_corpus'
-    input: nbest=f"{translated}/corpus/file.{{part}}.nbest", ref=f"{translated}/corpus/file.{{part}}.ref"
-    output: f"{translated}/corpus/file.{{part}}.nbest.out"
+    input: nbest=deseg_nbest_file, ref=f"{translated}/corpus/file.{{part}}.ref"
+    output: f"{translated}/corpus/file.{{part}}.nbest.{{model_index}}.out"
     shell: 'python pipeline/translate/bestbleu.py -i {input.nbest} -r {input.ref} -m bleu -o {output} >> {log} 2>&1'
+
+model_indices = list(range(len(opusmt_teacher))) if opusmt_teacher else [0]
 
 rule collect_corpus:
     message: "Collecting translated corpus"
-    log: f"{log_dir}/collect_corpus.log"
+    log: f"{log_dir}/collect_corpus_{{model_index}}.log"
     conda: "envs/base.yml"
     threads: 4
     #group 'translate_corpus'
-    input:
-        lambda wildcards: expand(f"{translated}/corpus/file.{{part}}.nbest.out",
-            part=find_parts(wildcards, checkpoints.split_corpus))
-    output: f'{translated}/corpus.{trg}.gz'
+    input: lambda wildcards: expand(f"{translated}/corpus/file.{{part}}.nbest.{wildcards.model_index}.out", part=find_parts(wildcards, checkpoints.split_corpus))
+    output: trg_corpus=f'{translated}/corpus.{{model_index}}.{trg}.gz'
     params: src_corpus=clean_corpus_src
-    shell: 'bash pipeline/translate/collect.sh {translated}/corpus {output} {params.src_corpus} >> {log} 2>&1'
+    shell: 'bash pipeline/translate/collect.sh {translated}/corpus {output} {params.src_corpus} {wildcards.model_index} >> {log} 2>&1'
 
 # mono
 
@@ -592,31 +768,58 @@ checkpoint split_mono_src:
 
 rule translate_mono_src:
     message: "Translating monolingual src dataset with teacher"
-    log: f"{log_dir}/translate_mono_src/{{part}}.log"
+    log: f"{log_dir}/translate_mono_src/{{part}}.{{model_index}}.log"
     conda: "envs/base.yml"
     threads: gpus_num*2
+    wildcard_constraints:
+        model_index="\d+"
     resources: gpu=gpus_num
     input:
-        file=f'{translated}/mono_src/file.{{part}}',vocab=vocab_path,
-        teacher_models=expand(f"{final_teacher_dir}{{ens}}/{best_model}",ens=ensemble),
+        file=teacher_mono_source_file,vocab=vocab_path,
+        teacher_models=expand(f"{final_teacher_dir}{{{{model_index}}}}-{{ens}}/{best_model}",ens=ensemble),
         bin=ancient(decoder)
-    output: f'{translated}/mono_src/file.{{part}}.out'
+    output: file=teacher_mono_target_file
     params: args=get_args('decoding-teacher')
-    shell: '''bash pipeline/translate/translate.sh "{input.file}" "{input.vocab}" {input.teacher_models} \
+    shell: '''bash pipeline/translate/translate.sh "{input.file}" "{output.file}" "{input.vocab}" {input.teacher_models} \
               {params.args} >> {log} 2>&1'''
 
-rule collect_mono_src:
-    message: "Collecting translated mono src dataset"
-    log: f"{log_dir}/collect_mono_src.log"
-    conda: "envs/base.yml"
-    threads: 4
-    #group 'mono_src'
-    input:
-       lambda wildcards: expand(f"{translated}/mono_src/file.{{part}}.out",
-           part=find_parts(wildcards, checkpoints.split_mono_src))
-    output: f'{translated}/mono.{trg}.gz'
-    params: src_mono=f"{clean}/mono.{src}.gz",dir=f'{translated}/mono_src'
-    shell: 'bash pipeline/translate/collect.sh "{params.dir}" "{output}" "{params.src_mono}" >> {log} 2>&1'
+#If there are no mono src datasets, create dummy output files, since the merge step
+#expects translated mono src files (TODO: separate deduping and shuffling from merge script
+#to remove the need for this workaround)
+if mono_src_datasets is None:
+    rule collect_mono_src_dummy:
+        message: "Collecting translated mono src dataset (dummy rule, used in case where no mono src datasets)"
+        log: f"{log_dir}/collect_mono_src.{{model_index}}.log"
+        conda: "envs/base.yml"
+        threads: 1
+        #group 'mono_src'
+        params: src_mono=f"{clean}/mono.{src}.gz",dir=f'{translated}/mono_src'
+        output: trg_mono=f'{translated}/mono.{{model_index}}.{trg}.gz'
+        shell: 'touch {output.trg_mono}  >> {log} 2>&1'
+    rule mono_src_dummy:
+        message: "Creating mono src dataset (dummy rule, used in case where no mono src datasets)"
+        log: f"{log_dir}/create_mono_src.log"
+        conda: "envs/base.yml"
+        threads: 1
+        #group 'mono_src'
+        params: src_mono=f"{clean}/mono.{src}.gz",dir=f'{translated}/mono_src'
+        output: src_mono=f"{clean}/mono.{src}.gz"
+        shell: 'touch {output.src_mono} >> {log} 2>&1'
+else:
+    rule collect_mono_src:
+        message: "Collecting translated mono src dataset"
+        log: f"{log_dir}/collect_mono_src.{{model_index}}.log"
+        conda: "envs/base.yml"
+        threads: 4
+        wildcard_constraints:
+           model_index="\d+"
+        #group 'mono_src'
+        input:
+           lambda wildcards: expand(f'{translated}/mono_src/file.{{part}}.{wildcards.model_index}.out',
+               part=find_parts(wildcards, checkpoints.split_mono_src))
+        output: f'{translated}/mono.{{model_index}}.{trg}.gz'
+        params: src_mono=f"{clean}/mono.{src}.gz",dir=f'{translated}/mono_src'
+        shell: 'bash pipeline/translate/collect-mono.sh "{params.dir}" "{output}" "{params.src_mono}" {wildcards.model_index} >> {log} 2>&1'
 
 # merge
 
@@ -625,17 +828,52 @@ rule merge_translated:
     log: f"{log_dir}/merge_translated.log"
     conda: "envs/base.yml"
     threads: 4
+    resources: mem_mb=64000
     #group 'mono_src'
     input:
-        src1=clean_corpus_src,src2=f"{clean}/mono.{src}.gz",
-        trg1=rules.collect_corpus.output,trg2=rules.collect_mono_src.output,
+        src1=clean_corpus_src,
+        src2=f"{clean}/mono.{src}.gz",
+        trg1=lambda wildcards: expand(f"{translated}/corpus.{{model_index}}.{trg}.gz",model_index=model_indices),
+        trg2=lambda wildcards: expand(f"{translated}/mono.{{model_index}}.{trg}.gz",model_index=model_indices),
         bin=ancient(deduper)
     output: res_src=f'{merged}/corpus.{src}.gz',res_trg=f'{merged}/corpus.{trg}.gz'
+    params:
+        trg1_template=f"{translated}/corpus.model_index.{trg}.gz",
+        trg2_template=f"{translated}/mono.model_index.{trg}.gz"
     shell: '''bash pipeline/translate/merge-corpus.sh \
-                "{input.src1}" "{input.src2}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
-                  >> {log} 2>&1'''
+                "{input.src1}" "{input.src2}" "{params.trg1_template}" "{params.trg2_template}" \
+                "{output.res_src}" "{output.res_trg}" {model_indices} >> {log} 2>&1'''
 
 # train student
+
+# preprocess source and target when scoring with opusmt model (note that deseg is not required, since
+# scoring produces just scores)
+if opusmt_backward:
+    score_source = f"{merged}/corpus.{src}.opusmt.gz"
+    score_target = f"{merged}/corpus.{trg}.opusmt.gz"
+else:
+    score_source = rules.merge_translated.output.res_src
+    score_target = rules.merge_translated.output.res_trg
+
+#preprocess corpus before scoring, note that since the scoring is done with the
+#backward model, source should be segmented with target.spm and vice versa
+rule opusmt_preprocess_for_scoring:
+    message: "Preprocessing source file for OPUS-MT model"
+    log: f"{log_dir}/opusmt_preprocess_corpus/preprocess_for_scoring.log"
+    conda: "envs/base.yml"
+    threads: 1
+    resources: mem_mb=64000
+    input:
+        res_src=rules.merge_translated.output.res_src,
+        res_trg=rules.merge_translated.output.res_trg,
+        model=f'{backward_dir}/{best_model}',
+        spm_encoder=ancient(spm_encoder)
+    output: opusmt_source=f"{merged}/corpus.{src}.opusmt.gz",
+            opusmt_target=f"{merged}/corpus.{trg}.opusmt.gz"
+    shell: '''bash pipeline/translate/opusmt-preprocess.sh \
+              {input.res_src} {input.model} src "target.spm" {input.spm_encoder} {target_language_token} && \
+              bash pipeline/translate/opusmt-preprocess.sh \
+              {input.res_trg} {input.model} trg "source.spm" {input.spm_encoder} {source_language_token} >> {log} 2>&1'''
 
 rule score:
     message: "Scoring"
@@ -645,12 +883,12 @@ rule score:
     resources: gpu=gpus_num
     input:
         ancient(scorer),
-        model=f'{backward_dir}/{best_model}', vocab=vocab_path,
-        src_corpus=rules.merge_translated.output.res_src, trg_corpus=rules.merge_translated.output.res_trg
+        model=f'{backward_dir}/{best_model}', vocab=backward_vocab,
+        src_corpus=score_source, trg_corpus=score_target
     output: f"{filtered}/scores.txt"
     params: input_prefix=f'{merged}/corpus'
     shell: '''bash pipeline/cefilter/score.sh \
-                "{input.model}" "{input.vocab}" "{params.input_prefix}" "{output}" >> {log} 2>&1'''
+                "{input.model}" "{input.vocab}" "{input.src_corpus}" "{input.trg_corpus}" "{output}" >> {log} 2>&1'''
 
 rule ce_filter:
     message: "Cross entropy filtering"
@@ -724,7 +962,7 @@ rule finetune_student:
 
 rule quantize:
     message: "Quantization"
-    log: f"{log_dir}/quntize.log"
+    log: f"{log_dir}/quantize.log"
     conda: "envs/base.yml"
     threads: 1
     input:
@@ -769,7 +1007,7 @@ rule evaluate:
         data=multiext(f'{eval_data_dir}/{{dataset}}',f".{src}.gz",f".{trg}.gz"),
         models=lambda wildcards: f'{models_dir}/{wildcards.model}/{best_model}'
                                     if wildcards.model != 'teacher-ensemble'
-                                    else [f'{final_teacher_dir}{ens}/{best_model}' for ens in ensemble]
+                                    else [f'{final_teacher_dir}0-{ens}/{best_model}' for ens in ensemble]
     output:
         report(f'{eval_res_dir}/{{model}}/{{dataset}}.metrics',
             category='evaluation', subcategory='{model}', caption='reports/evaluation.rst')
@@ -780,7 +1018,7 @@ rule evaluate:
         trg_lng=lambda wildcards: trg if wildcards.model != 'backward' else src,
         decoder_config=lambda wildcards: f'{models_dir}/{wildcards.model}/{best_model}.decoder.yml'
                             if wildcards.model != 'teacher-ensemble'
-                            else f'{final_teacher_dir}0/{best_model}.decoder.yml'
+                            else f'{final_teacher_dir}0-0/{best_model}.decoder.yml'
     shell: '''bash pipeline/eval/eval-gpu.sh "{params.res_prefix}" "{params.dataset_prefix}" \
              {params.src_lng} {params.trg_lng} "{params.decoder_config}" {input.models} >> {log} 2>&1'''
 

@@ -21,6 +21,6 @@ cmake .. -DKENLM_MAX_ORDER=7 -DCMAKE_INSTALL_PREFIX:PATH="${BIN}/kenlm"
 make -j "${threads}" install
 cd ..
 
-python -m pip install . --install-option="--max_order 7"
+python -m pip install --user . --install-option="--max_order 7"
 
 echo "###### Done: Installing kenlm"

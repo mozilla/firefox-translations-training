@@ -15,6 +15,7 @@ default-resources: "mem_mb=5980"
 use-singularity: true
 use-conda: true
 resources: gpu=8
+cluster-cancel: scancel
 cores: 48
 cache: false
 reason: true

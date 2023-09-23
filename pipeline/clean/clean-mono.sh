@@ -61,6 +61,7 @@ test -s "${output_prefix}.${lang}.langid.${ARTIFACT_EXT}" ||
   ${COMPRESSION_CMD} >"${output_prefix}.${lang}.langid.${ARTIFACT_EXT}"
 
 ######################################################################
+
 echo "### Rule-based filtering"
 
 ${COMPRESSION_CMD} -dc "${output_prefix}.${lang}.langid.${ARTIFACT_EXT}" |

@@ -15,7 +15,7 @@ ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
 
 echo "###### Downloading WMT newscrawl monolingual data"
 
-curl -L "http://data.statmt.org/news-crawl/${lang}/${dataset}.${lang}.shuffled.deduped.gz" | \
+wget -qO- "http://data.statmt.org/news-crawl/${lang}/${dataset}.${lang}.shuffled.deduped.gz" | \
     gunzip | ${COMPRESSION_CMD} -c > "${output_prefix}.${ARTIFACT_EXT}"
 
 echo "###### Done: Downloading WMT newscrawl monolingual data"
