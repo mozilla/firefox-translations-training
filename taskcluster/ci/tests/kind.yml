@@ -78,6 +78,7 @@ tasks:
         run-on-tasks-for: ["github-push", "github-pull-request"]
 
     lint-yaml:
+        expires-after: "90 days"
         worker-type: b-linux-large
         worker:
             max-run-time: 86400
