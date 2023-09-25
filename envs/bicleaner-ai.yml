@@ -1,10 +1,11 @@
 name: bicleaner-ai
 channels:
-  - conda-forge
-  - defaults
+    - conda-forge
+    - defaults
 dependencies:
-  - python=3.7
-  - pip==21.2.2
-  - cmake=3.21.1
-  - pip:
-    - bicleaner-ai==1.0.1
+    - python=3.7
+    - pip==21.2.2
+    - cmake=3.21.1
+    # yamllint disable rule:indentation
+    - pip:
+        - bicleaner-ai==1.0.1

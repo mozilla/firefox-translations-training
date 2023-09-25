@@ -1,7 +1,7 @@
 # https://discourse.translatelocally.com/t/marian-configuration-to-use/24
 disp-freq: 1000
-learn-rate: 0.0003 # Turn this down if you get a diverged model, maybe 0.0001
-optimizer-delay: 1 # Roughly GPU devices * optimizer-delay = 8, but keep as an integer
+learn-rate: 0.0003  # Turn this down if you get a diverged model, maybe 0.0001
+optimizer-delay: 1  # Roughly GPU devices * optimizer-delay = 8, but keep as an integer
 save-freq: 5000
 valid-freq: 3000
 valid-max-length: 300

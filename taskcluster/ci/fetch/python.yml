@@ -6,6 +6,7 @@ hunspell:
     description: Hunspell 0.5.5 source
     fetch:
         type: static-url
+        # yamllint disable-line rule:line-length
         url: https://files.pythonhosted.org/packages/e5/fe/cfc4dfd92c3a37c34d2806d5b84f9981bf3520db20149f8ee1a61f6fc69d/hunspell-0.5.5.tar.gz
         sha256: 0f830b68bd8c392f4d5b4e21c38e28809e14d64ec67bde48272c920b63686f53
         size: 34609

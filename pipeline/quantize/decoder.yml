@@ -2,6 +2,6 @@ beam-size: 1
 mini-batch: 32
 maxi-batch: 100
 maxi-batch-sort: src
-skip-cost: True
+skip-cost: true
 cpu-threads: 1
 workspace: 128

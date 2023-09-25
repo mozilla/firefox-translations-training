@@ -49,7 +49,7 @@ task-defaults:
     worker-type: b-linux-large
     expires-after: "90 days"
     worker:
-        docker-image: { "in-tree": "train" }
+        docker-image: {"in-tree": "train"}
         max-run-time: 86400
         artifacts:
             - name: public/build

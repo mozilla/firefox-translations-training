@@ -45,7 +45,7 @@ task-defaults:
     worker-type: b-linux-large
     expires-after: "90 days"
     worker:
-        docker-image: { "in-tree": "train" }
+        docker-image: {"in-tree": "train"}
         max-run-time: 86400
         artifacts:
             - name: public/build
@@ -64,7 +64,7 @@ task-defaults:
         command:
             - bash
             - -c
-              # TODO: move number of chunks elsewhere
+            # TODO: move number of chunks elsewhere
             - >-
                 export BIN=$MOZ_FETCHES_DIR &&
                 $VCS_PATH/taskcluster/scripts/pipeline/split-mono-taskcluster.sh

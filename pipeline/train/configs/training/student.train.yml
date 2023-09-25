@@ -5,14 +5,14 @@ cost-type: ce-mean-words
 disp-first: 10
 disp-freq: 1000
 early-stopping: 20
-exponential-smoothing: True
+exponential-smoothing: true
 learn-rate: 0.0003
 lr-decay-inv-sqrt: 32000
-lr-report: True
+lr-report: true
 lr-warmup: 16000
 max-length: 200
 maxi-batch: 1000
-mini-batch-fit: True
+mini-batch-fit: true
 mini-batch: 1000
 normalize: 1
 optimizer-delay: 2

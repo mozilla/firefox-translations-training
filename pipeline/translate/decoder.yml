@@ -7,4 +7,4 @@ maxi-batch-sort: src
 max-length: 200
 max-length-crop: true
 beam-size: 8
-quiet-translation: True
+quiet-translation: true

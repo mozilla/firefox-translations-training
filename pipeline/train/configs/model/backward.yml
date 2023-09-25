@@ -1,5 +1,5 @@
 # https://github.com/marian-nmt/marian-examples/tree/master/wmt2017-uedin
 dim-vocabs: [32000, 32000]
-layer-normalization: True
-tied-embeddings-all: True
+layer-normalization: true
+tied-embeddings-all: true
 type: s2s

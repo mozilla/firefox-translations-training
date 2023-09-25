@@ -3,4 +3,4 @@ dim-vocabs: [32000, 32000]
 type: transformer
 # tasks: https://github.com/marian-nmt/marian-dev/blob/master/src/common/aliases.cpp
 task: transformer-big
-#task: transformer-base  # use smaller model for low resource (<5M sentences)
+# task: transformer-base  # use smaller model for low resource (<5M sentences)

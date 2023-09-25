@@ -3,71 +3,71 @@
 ###
 
 experiment:
-  name: test
-  src: ru
-  trg: en
+    name: test
+    src: ru
+    trg: en
 
-  teacher-ensemble: 2
-  backward-model: ""
-  vocab: ""
+    teacher-ensemble: 2
+    backward-model: ""
+    vocab: ""
 
-  mono-max-sentences-src: 100000
-  mono-max-sentences-trg: 200000
-  split-length: 100000
-  spm-sample-size: 100000
+    mono-max-sentences-src: 100000
+    mono-max-sentences-trg: 200000
+    split-length: 100000
+    spm-sample-size: 100000
 
-  best-model: chrf
+    best-model: chrf
 
-  bicleaner:
-    default-threshold: 0.5
-    dataset-thresholds:
-      opus_ada83/v1: 0
-      mtdata_Neulab-tedtalks_train-1-eng-rus: 0.6
+    bicleaner:
+        default-threshold: 0.5
+        dataset-thresholds:
+            opus_ada83/v1: 0
+            mtdata_Neulab-tedtalks_train-1-eng-rus: 0.6
 
 marian-args:
-  training-backward:
-    disp-freq: 10
-    save-freq: 100
-    valid-freq: 100
-    after: 500u
-  training-teacher-base:
-    disp-freq: 10
-    save-freq: 100
-    valid-freq: 100
-    after: 500u
-  training-teacher-finetuned:
-    disp-freq: 10
-    save-freq: 100
-    valid-freq: 100
-    after: 500u
-  training-student:
-    disp-freq: 10
-    save-freq: 100
-    valid-freq: 100
-    after: 500u
-  training-student-finetuned:
-    disp-freq: 10
-    save-freq: 100
-    valid-freq: 100
-    after: 500u
-  decoding-backward:
-    mini-batch-words: 2000
-  decoding-teacher:
-    mini-batch-words: 1000
-    precision: float16
+    training-backward:
+        disp-freq: 10
+        save-freq: 100
+        valid-freq: 100
+        after: 500u
+    training-teacher-base:
+        disp-freq: 10
+        save-freq: 100
+        valid-freq: 100
+        after: 500u
+    training-teacher-finetuned:
+        disp-freq: 10
+        save-freq: 100
+        valid-freq: 100
+        after: 500u
+    training-student:
+        disp-freq: 10
+        save-freq: 100
+        valid-freq: 100
+        after: 500u
+    training-student-finetuned:
+        disp-freq: 10
+        save-freq: 100
+        valid-freq: 100
+        after: 500u
+    decoding-backward:
+        mini-batch-words: 2000
+    decoding-teacher:
+        mini-batch-words: 1000
+        precision: float16
 
 datasets:
-  train:
-    - opus_ada83/v1
-    - opus_GNOME/v1
-    - mtdata_Neulab-tedtalks_train-1-eng-rus
-  devtest:
-    - flores_dev
-    - sacrebleu_wmt19
-  test:
-    - flores_devtest
-    - sacrebleu_wmt20
-  mono-src:
-    - news-crawl_news.2020
-  mono-trg:
-    - news-crawl_news.2020
+    train:
+        - opus_ada83/v1
+        - opus_GNOME/v1
+        - mtdata_Neulab-tedtalks_train-1-eng-rus
+    devtest:
+        - flores_dev
+        - sacrebleu_wmt19
+    test:
+        - flores_devtest
+        - sacrebleu_wmt20
+    mono-src:
+        - news-crawl_news.2020
+    mono-trg:
+        - news-crawl_news.2020

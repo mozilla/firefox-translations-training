@@ -52,16 +52,19 @@ tasks:
                 TRG: "{trg_locale}"
                 COMPRESSION_CMD: zstdmt
                 ARTIFACT_EXT: zst
-    
+
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
-    
+
         run:
             using: run-task
             command:
                 - bash
                 - -c
-                - $VCS_PATH/pipeline/clean/clean-corpus.sh $MOZ_FETCHES_DIR/{dataset_sanitized} /builds/worker/artifacts/{dataset_sanitized} auto {dataset}
+                - $VCS_PATH/pipeline/clean/clean-corpus.sh \
+                  $MOZ_FETCHES_DIR/{dataset_sanitized} \
+                  /builds/worker/artifacts/{dataset_sanitized} \
+                  auto {dataset}
         dependencies:
             "{provider}": dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
         fetches:

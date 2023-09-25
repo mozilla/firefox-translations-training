@@ -23,11 +23,11 @@ reason: true
 # singularity-args: "--bind $(SHARED_ROOT),/tmp --nv --containall"
 singularity-args: "--bind /data/rw/evgeny,/usr/local/cuda-11.5,/usr/lib/x86_64-linux-gnu:/cudnn,/tmp --nv --containall"
 config:
-  - deps=false
-  - root=/data/rw/evgeny
-  - cuda=/usr/local/cuda-11.5
-  - cudnn=/cudnn
-  - workspace=8000
-  - numgpus=8
-  - mariancmake=""
-  - gpus=""
+    - deps=false
+    - root=/data/rw/evgeny
+    - cuda=/usr/local/cuda-11.5
+    - cudnn=/cudnn
+    - workspace=8000
+    - numgpus=8
+    - mariancmake=""
+    - gpus=""

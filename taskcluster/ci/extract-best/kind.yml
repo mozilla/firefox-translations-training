@@ -24,7 +24,7 @@ tasks:
         description: extract best {src_locale}-{trg_locale} {{this_chunk}}/{{total_chunks}}
         attributes:
             dataset-category: train
-            stage: extract-best 
+            stage: extract-best
             src_locale: "{src_locale}"
             trg_locale: "{trg_locale}"
             cache:
@@ -68,7 +68,7 @@ tasks:
                   type: directory
             env:
                 COMPRESSION_CMD: zstdmt
-    
+
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
 

@@ -1,10 +1,11 @@
 ---
 extends: default
 rules:
-  line-length:
-    max: 120
-  indentation:
-    spaces: 2
+    line-length:
+        max: 120
+    indentation:
+        spaces: 4
+    document-start: disable
 ignore:
-  - 3rd_party
-  - .taskcluster.yml
+    - 3rd_party
+    - .taskcluster.yml

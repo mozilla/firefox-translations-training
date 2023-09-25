@@ -3,10 +3,10 @@ beam-size: 12
 cost-type: ce-mean-words
 disp-freq: 1000
 early-stopping: 5
-exponential-smoothing: True
+exponential-smoothing: true
 max-length: 100
 maxi-batch: 1000
-mini-batch-fit: True
+mini-batch-fit: true
 normalize: 1
 save-freq: 10000
 valid-freq: 10000
