@@ -15,6 +15,9 @@ black = "^23.7.0"
 [tool.poetry.group.lint.dependencies]
 ruff = "^0.0.287"
 
+[tool.poetry.group.opuscleaner.dependencies]
+opuscleaner = "^0.3.1"
+
 [tool.poetry.group.utils.dependencies]
 sacrebleu="2.0.0"
 mtdata="0.3.2"

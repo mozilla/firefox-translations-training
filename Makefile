@@ -116,18 +116,9 @@ tensorboard:
 	tensorboard --logdir=$(MODELS) --host=0.0.0.0 &
 	python utils/tb_log_parser.py --prefix=
 
-
-install-opuscleaner:
-	$(CONDA_ACTIVATE) base
-	conda env create -f envs/opuscleaner.yml
-
 opuscleaner-ui:
-	$(CONDA_ACTIVATE) opuscleaner
+	poetry install --only opuscleaner
 	opuscleaner-server serve --host=0.0.0.0 --port=8000
-
-update-opuscleaner:
-	$(CONDA_ACTIVATE) opuscleaner
-	conda env update -f envs/opuscleaner.yml --prune
 
 # Black is a code formatter for Python files. Running this command will check that
 # files are correctly formatted, but not fix them.
