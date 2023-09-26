@@ -99,7 +99,6 @@ def get_defaults(_):
                 ],
                 "test": [
                     "flores_devtest",
-                    "sacrebleu_wmt20",
                 ],
                 "mono-src": [
                     "news-crawl_news.2008",

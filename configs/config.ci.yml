@@ -74,7 +74,6 @@ datasets:
     - sacrebleu_wmt19
   test:
     - flores_devtest
-    - sacrebleu_wmt20
   mono-src:
     - news-crawl_news.2008
   mono-trg:
