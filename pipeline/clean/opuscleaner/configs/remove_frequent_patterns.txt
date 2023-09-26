@@ -1,3 +1,6 @@
+#
+# This file was copied as is from https://github.com/hplt-project/OpusCleaner/blob/main/opuscleaner/filters/remove_frequent_patterns.txt
+#
 # Starting text in a lot of rows in OpenSubtitles, not everytime in both source and targets
 ^ -	
 # Text in Czech Bible translations that is not in the source

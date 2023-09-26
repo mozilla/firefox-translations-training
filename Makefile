@@ -116,6 +116,8 @@ tensorboard:
 	tensorboard --logdir=$(MODELS) --host=0.0.0.0 &
 	python utils/tb_log_parser.py --prefix=
 
+# OpusCleaner is a data cleaner for training corpus
+# More details are in docs/opus-cleaner.md
 opuscleaner-ui:
 	poetry install --only opuscleaner
 	opuscleaner-server serve --host=0.0.0.0 --port=8000
