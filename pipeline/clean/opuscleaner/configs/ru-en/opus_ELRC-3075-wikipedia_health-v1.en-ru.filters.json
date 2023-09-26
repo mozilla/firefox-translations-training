@@ -70,8 +70,8 @@
     {
       "filter": "alpha_ratio",
       "parameters": {
-        "LANG1": "en",
-        "LANG2": "ru",
+        "LANG1": "ru",
+        "LANG2": "en",
         "SRCWORDRAT": 0.4,
         "TRGWORDRAT": 0.4,
         "SRCALPHARAT": 0.5,
@@ -84,8 +84,8 @@
       "filter": "fasttext_filter",
       "parameters": {
         "FASTTEXT_MODEL_TYPE": "large",
-        "LANG1": "en",
-        "LANG2": "ru"
+        "LANG1": "ru",
+        "LANG2": "en"
       },
       "language": null
     },
