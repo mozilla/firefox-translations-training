@@ -12,8 +12,8 @@ def find_custom_filter(src: str, trg: str, dataset: str) -> Optional[Dict]:
     # TODO: we'll likely need to move to a separate repo for those
     # TODO: to not include all filters for all languages in TC artifacts
 
-    # workaround: we use "_" to separate the dataset version for OPUS datasets and OpusCleaner uses "-"
-    idx = dataset.rfind("_")
+    # workaround: we use "_" or "/" to separate the dataset version for OPUS datasets and OpusCleaner uses "-"
+    idx = dataset.rfind("/") if "/" in dataset else dataset.rfind("_")
     dataset_opus = f"{dataset[:idx]}-{dataset[idx + 1:]}" if idx else ""
 
     paths = [
