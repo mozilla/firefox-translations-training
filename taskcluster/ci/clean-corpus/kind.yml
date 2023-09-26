@@ -76,13 +76,14 @@ tasks:
             using: run-task
             # We're going to migrate to OpusCleaner in the long term so we can use a simple 'if' in the command
             # for now without introducing an extra step and complexity
+            # TODO: should redirection of stderr to stdout be done automatically for all TaskCluster tasks?
             command:
                 - bash
                 - -c
                 - >-
                     pip install -r $VCS_PATH/pipeline/clean/requirements/clean.txt &&
                     if [ ${USE_OPUSCLEANER} = "true" ]; then dir="clean/opuscleaner"; else dir="clean"; fi &&
-                    $VCS_PATH/pipeline/${dir}/clean-corpus.sh $MOZ_FETCHES_DIR/{dataset_sanitized} /builds/worker/artifacts/{dataset_sanitized} auto {dataset}
+                    $VCS_PATH/pipeline/${dir}/clean-corpus.sh $MOZ_FETCHES_DIR/{dataset_sanitized} /builds/worker/artifacts/{dataset_sanitized} auto {dataset} 2>&1
         dependencies:
             "{provider}": dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
         fetches:
