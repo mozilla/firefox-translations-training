@@ -30,11 +30,12 @@ def get_defaults(_):
                 "spm-sample-size": 10000,
                 "spm-vocab-size": 1000,
                 "best-model": "chrf",
+                "use-opuscleaner": "true",
                 "bicleaner": {
                     "default-threshold": 0.5,
                     "dataset-thresholds": {
                         "opus_ada83/v1": 0.0,
-                        "mtdata_ELRC-wikipedia_health-1-eng-rus": 0.6,
+                        "opus_ELRC-3075-wikipedia_health/v1": 0.6,
                     },
                 },
             },
@@ -90,7 +91,7 @@ def get_defaults(_):
             "datasets": {
                 "train": [
                     "opus_ada83/v1",
-                    "mtdata_ELRC-wikipedia_health-1-eng-rus",
+                    "opus_ELRC-3075-wikipedia_health/v1",
                 ],
                 "devtest": [
                     "flores_dev",
@@ -98,7 +99,6 @@ def get_defaults(_):
                 ],
                 "test": [
                     "flores_devtest",
-                    "sacrebleu_wmt20",
                 ],
                 "mono-src": [
                     "news-crawl_news.2008",
@@ -141,6 +141,7 @@ extend_parameters_schema(
                 Required("spm-sample-size"): int,
                 Optional("spm-vocab-size"): int,
                 Required("best-model"): str,
+                Required("use-opuscleaner"): str,
                 Required("bicleaner"): {
                     Required("default-threshold"): float,
                     Optional("dataset-thresholds"): {

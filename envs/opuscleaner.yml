@@ -1,0 +1,14 @@
+name: opuscleaner
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - pip
+  - pip:
+    # update to a normal pypi version when released
+    - git+https://github.com/hplt-project/OpusCleaner.git@e8408fd5c0ea2753486c5cab061cbd3b675c8fbe
+    - fasttext==0.9.2
+    - sacremoses==0.0.53
+    - more_itertools==10.1.0
+    - requests==2.31.0
