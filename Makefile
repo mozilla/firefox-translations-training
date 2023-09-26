@@ -3,6 +3,10 @@
 .ONESHELL:
 SHELL=/bin/bash
 
+################################################
+### Snakemake
+################################################
+
 ### 1. change these settings or override with env variables
 CONFIG?=configs/config.prod.yml
 CONDA_PATH?=../mambaforge
@@ -116,6 +120,10 @@ tensorboard:
 	tensorboard --logdir=$(MODELS) --host=0.0.0.0 &
 	python utils/tb_log_parser.py --prefix=
 
+################################################
+### Local utils and CI
+################################################
+
 # OpusCleaner is a data cleaner for training corpus
 # More details are in docs/opus-cleaner.md
 opuscleaner-ui:
@@ -156,5 +164,6 @@ fix-all:
 	make black-fix
 	make lint-fix
 
+# Validates Task Cluster task graph locally
 validate-taskgraph:
 	pip3 install -r taskcluster/requirements.txt && taskgraph full
