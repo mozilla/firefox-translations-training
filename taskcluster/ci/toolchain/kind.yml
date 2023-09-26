@@ -14,6 +14,7 @@ transforms:
 
 task-defaults:
     worker-type: b-linux-large
+    expires-after: "90 days"
     worker:
         docker-image: {"in-tree": "toolchain-build"}
         max-run-time: 3600

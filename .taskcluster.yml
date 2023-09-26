@@ -63,10 +63,7 @@ tasks:
               || (isPullRequest && pullRequestAction in ["opened", "reopened", "synchronize"])
           then:
               $let:
-                  level:
-                      $if: 'tasks_for in ["github-push", "cron", "action"] && repoUrl == "https://github.com/mozilla/firefox-translations-training"'
-                      then: 3
-                      else: 1
+                  level: 1
               in:
                   taskId: {$if: 'tasks_for != "action"', then: '${ownTaskId}'}
                   taskGroupId:
@@ -85,7 +82,7 @@ tasks:
                             source: "${repoUrl}/raw/${head_sha}/.taskcluster.yml"
                           - $switch:
                                 'tasks_for == "github-push" || isPullRequest':
-                                    name: "Decision Task"
+                                    name: "Decision Task (${tasks_for[7:]})" # strip out "github-" from tasks_for
                                     description: 'The task that creates all of the other tasks in the task graph'
                                 'tasks_for == "action"':
                                     name: "Action: ${action.title}"

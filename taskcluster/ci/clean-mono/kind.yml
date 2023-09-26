@@ -54,6 +54,7 @@ task-defaults:
             - dependencies
             - fetches
             - run.command
+    expires-after: "90 days"
     worker:
         docker-image: {"in-tree": "train"}
         max-run-time: 86400
@@ -75,22 +76,22 @@ task-defaults:
             - -c
             - $VCS_PATH/pipeline/clean/clean-mono.sh {locale} $MOZ_FETCHES_DIR/{dataset_sanitized} /builds/worker/artifacts/{dataset_sanitized} auto {dataset}
     dependencies:
-        "{provider}": dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
+        "{provider}-{locale}": dataset-{provider}-{dataset_sanitized}-{locale}
     fetches:
-        "{provider}":
+        "{provider}-{locale}":
             - artifact: "{dataset_sanitized}.{locale}.zst"
               extract: false
 
 tasks:
-    "{provider}-{dataset_sanitized}-mono-src-{src_locale}-{trg_locale}":
-        description: Clean {provider} {dataset_sanitized} dataset mono-src {locale}
+    "{provider}-{src_locale}-{dataset_sanitized}-mono-src":
+        description: Clean {provider} {dataset_sanitized} dataset mono-src {src_locale}
         attributes:
             dataset-category: mono-src
         dataset-config:
             category: mono-src
 
-    "{provider}-{dataset_sanitized}-mono-trg-{src_locale}-{trg_locale}":
-        description: Clean {provider} {dataset_sanitized} dataset mono-trg {locale}
+    "{provider}-{trg_locale}-{dataset_sanitized}-mono-trg":
+        description: Clean {provider} {dataset_sanitized} dataset mono-trg {trg_locale}
         attributes:
             dataset-category: mono-trg
         dataset-config:

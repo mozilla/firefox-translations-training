@@ -122,9 +122,17 @@ defaults = get_defaults("")["training_config"]
                         "type": "number",
                         "description": "vocabularly training sample size",
                     },
+                    "spm-vocab-size": {
+                        "type": "number",
+                        "description": "size of the vocabularly, can be reduced for testing",
+                    },
                     "best-model": {
                         "type": "string",
                         "description": "best model to use for training",
+                    },
+                    "use-opuscleaner": {
+                        "type": "string",
+                        "description": "use OpusCleaner to clean corpus",
                     },
                     "bicleaner": {
                         "properties": {

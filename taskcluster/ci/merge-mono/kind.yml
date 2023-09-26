@@ -47,7 +47,7 @@ task-defaults:
             - "{dataset_sanitized}.{locale}.zst"
 
     worker-type: b-linux-large
-
+    expires-after: "90 days"
     worker:
         docker-image: { "in-tree": "train" }
         max-run-time: 86400
@@ -84,7 +84,7 @@ task-defaults:
 
 tasks:
     src:
-        label: merge-mono-src-{src_locale}-{trg_locale}
+        label: merge-mono-src-{src_locale}
         attributes:
             dataset-category: mono-src
             cache:
@@ -101,7 +101,7 @@ tasks:
                 dataset-category: mono-src
 
     trg:
-        label: merge-mono-trg-{src_locale}-{trg_locale}
+        label: merge-mono-trg-{trg_locale}
         attributes:
             dataset-category: mono-trg
             cache:

@@ -7,12 +7,16 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+pip-tools = "^7.3.0"
 
 [tool.poetry.group.black.dependencies]
 black = "^23.7.0"
 
 [tool.poetry.group.lint.dependencies]
 ruff = "^0.0.287"
+
+[tool.poetry.group.opuscleaner.dependencies]
+opuscleaner = "^0.3.1"
 
 [tool.poetry.group.utils.dependencies]
 sacrebleu="2.0.0"
