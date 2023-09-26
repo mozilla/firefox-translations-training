@@ -35,7 +35,7 @@ def get_defaults(_):
                     "default-threshold": 0.5,
                     "dataset-thresholds": {
                         "opus_ada83/v1": 0.0,
-                        "mtdata_ELRC-wikipedia_health-1-eng-rus": 0.6,
+                        "opus_ELRC-3075-wikipedia_health/v1": 0.6,
                     },
                 },
             },
@@ -91,7 +91,7 @@ def get_defaults(_):
             "datasets": {
                 "train": [
                     "opus_ada83/v1",
-                    "mtdata_ELRC-wikipedia_health-1-eng-rus",
+                    "opus_ELRC-3075-wikipedia_health/v1",
                 ],
                 "devtest": [
                     "flores_dev",
