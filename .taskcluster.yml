@@ -63,7 +63,10 @@ tasks:
               || (isPullRequest && pullRequestAction in ["opened", "reopened", "synchronize"])
           then:
               $let:
-                  level: 1
+                  level:
+                      $if: 'tasks_for in ["github-push", "cron", "action"] && repoUrl == "https://github.com/mozilla/firefox-translations-training"'
+                      then: 3
+                      else: 1
               in:
                   taskId: {$if: 'tasks_for != "action"', then: '${ownTaskId}'}
                   taskGroupId:
