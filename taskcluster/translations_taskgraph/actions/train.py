@@ -151,6 +151,13 @@ defaults = get_defaults("")["training_config"]
                             "default-threshold",
                         ],
                     },
+                    # We are using urls because pretrained-models should be flexible enough
+                    # to point at model (ensembles) that are not in taskcluster.
+                    # Models could be in a long-term storage bucket, or we may use
+                    # pretrained models hosted elsewhere.
+                    "pretrained-models": {
+                        "type": "object",
+                    },
                 },
                 "required": [
                     "name",
