@@ -37,6 +37,9 @@ def get_defaults(_):
                         "mtdata_ELRC-wikipedia_health-1-eng-rus": 0.6,
                     },
                 },
+                "pretrained-models": {
+                    "teacher-base": "PuI6mYZPTUqAfyZMTgeUng",  # index train decisions by run date?
+                }
             },
             "marian-args": {
                 "training-backward": {
@@ -147,6 +150,9 @@ extend_parameters_schema(
                         str: float,
                     },
                 },
+                Optional("pretrained-models"): {
+                    Optional("teacher-base"): list(str),
+                }
             },
             Optional("datasets"): {
                 str: [str],
