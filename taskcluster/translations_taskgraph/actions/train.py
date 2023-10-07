@@ -56,7 +56,6 @@ defaults = get_defaults("")["training_config"]
                     "merge-augmented",
                     "train-teacher",
                     "evaluate-teacher",
-                    "finetune-teacher",
                     "evaluate-finetuned-teacher",
                     "translate-corpus",
                     "extract-best",

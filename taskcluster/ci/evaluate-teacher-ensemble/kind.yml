@@ -15,7 +15,7 @@ transforms:
 
 kind-dependencies:
     - dataset
-    - finetune-teacher
+    - train-teacher
     - train-vocab
     - alignments
     - toolchain
@@ -109,10 +109,10 @@ tasks:
             set-name: false
             unique-kinds: false
             kinds:
-                - finetune-teacher
+                - train-teacher
                 - train-vocab
             fetches:
-                finetune-teacher:
+                train-teacher:
                     - artifact: final.model.npz.best-{best_model}.npz
                       dest: model{this_chunk}
                     - artifact: final.model.npz.best-chrf.npz.decoder.yml
