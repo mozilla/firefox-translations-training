@@ -53,10 +53,12 @@ tasks:
             stage: train-teacher
             src_locale: "{src_locale}"
             trg_locale: "{trg_locale}"
+            best_model: "{best_model}"
             cache:
                 type: train-teacher
                 resources:
                     - pipeline/train/configs/model/teacher.yml
+                    - pipeline/train/configs/opustrainer/teacher.yml
                     - pipeline/train/configs/training/teacher.train.yml
                     - pipeline/train/train.sh
                 from-parameters:

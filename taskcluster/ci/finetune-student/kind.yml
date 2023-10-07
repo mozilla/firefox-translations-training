@@ -44,6 +44,7 @@ tasks:
                 type: finetune-student
                 resources:
                     - pipeline/train/configs/model/student.yml
+                    - pipeline/train/configs/opustrainer/student.yml
                     - pipeline/train/configs/training/student.train.yml
                     - pipeline/train/train.sh
                 from-parameters:
