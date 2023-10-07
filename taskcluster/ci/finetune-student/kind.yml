@@ -78,6 +78,7 @@ tasks:
                 - bash
                 - -c
                 - >-
+                    pip install -r $VCS_PATH/pipeline/train/requirements/train.txt &&
                     export MARIAN=$MOZ_FETCHES_DIR &&
                     $VCS_PATH/pipeline/train/train-student.sh
                     $MOZ_FETCHES_DIR/corpus.aln.zst
