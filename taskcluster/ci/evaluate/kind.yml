@@ -60,7 +60,7 @@ task-defaults:
             SRC: "{src_locale}"
             TRG: "{trg_locale}"
             GPUS: "0"
-            WORKSPACE: "8000"
+            WORKSPACE: "12000"
             COMPRESSION_CMD: zstdmt
             ARTIFACT_EXT: zst
 
