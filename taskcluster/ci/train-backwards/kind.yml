@@ -77,7 +77,8 @@ tasks:
                 - bash
                 - -c
                 - >-
-                    pip install -r $VCS_PATH/pipeline/train/requirements/train.txt &&
+                    pip3 install --upgrade pip setuptools &&
+                    pip3 install -r $VCS_PATH/pipeline/train/requirements/train.txt &&
                     export MARIAN=$MOZ_FETCHES_DIR &&
                     $VCS_PATH/pipeline/train/train.sh
                     backward
