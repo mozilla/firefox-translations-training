@@ -15,7 +15,7 @@ mono_path=$3
 COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 
 echo "### Collecting translations"
-cat "${dir}"/*.out | ${COMPRESSION_CMD} >"${output_path}"
+find "${dir}" -name '*.out' | sort -t '.' -k2,2n | xargs cat | ${COMPRESSION_CMD} >"${output_path}"
 
 echo "### Comparing number of sentences in source and artificial target files"
 src_len=$(${COMPRESSION_CMD} -dc "${mono_path}" | wc -l)
