@@ -16,6 +16,8 @@ experiment:
   split-length: 100000
   spm-sample-size: 100000
 
+  parallel-max-sentences: 100000
+
   best-model: chrf
 
   use-opuscleaner: false

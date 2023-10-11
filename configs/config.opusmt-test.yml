@@ -1,0 +1,85 @@
+####
+# Example of a production config
+# Change language pair, experiment name, datasets and other settings if needed
+# Training low resource languages might require more tuning of pipeline/training/configs
+###
+
+image: Ftt.sif
+
+experiment:
+  name: opusmt
+  src: en
+  trg: fi
+  src_three_letter: eng
+  trg_three_letter: fin
+
+  #OPUS models are not ensembled, they have different vocabs anyway
+  teacher-ensemble: 1
+
+  #URL to the OPUS-MT model to use as the teacher
+  opusmt-teacher: "best"
+  #URL to the OPUS-MT model to use as the backward model
+  opusmt-backward: "best" 
+
+  # path to a pretrained backward model (optional)
+  backward-model: ""
+  
+  # limits per downloaded dataset
+  mono-max-sentences-src: 100000000
+  mono-max-sentences-trg: 20000000
+
+  parallel-max-sentences: 100000
+ 
+  # split corpus to parallelize translation
+  split-length: 2000000
+  
+  best-model: perplexity
+  bicleaner:
+    default-threshold: 0.5
+    dataset-thresholds:
+      opus_GNOME/v1: 0.5
+
+marian-args:
+  training-backward:
+    disp-freq: 10
+    save-freq: 100
+    valid-freq: 100
+    after: 500u
+  training-teacher-base:
+    disp-freq: 10
+    save-freq: 100
+    valid-freq: 100
+    after: 500u
+  training-teacher-finetuned:
+    disp-freq: 10
+    save-freq: 100
+    valid-freq: 100
+    after: 500u
+  training-student:
+    disp-freq: 10
+    save-freq: 100
+    valid-freq: 100
+    after: 500u
+  training-student-finetuned:
+    disp-freq: 10
+    save-freq: 100
+    valid-freq: 100
+    after: 500u
+  decoding-backward:
+    mini-batch-words: 2000
+  decoding-teacher:
+    mini-batch-words: 1000
+
+#marian-args:
+#  decoding-teacher:
+    # 2080ti or newer
+    precision: float16
+
+#TODO: extract this info straight from the OPUS model yml info file
+datasets:
+  train:
+    - opus_GNOME/v1
+  devtest:
+    - sacrebleu_wmt19
+  test:
+    - sacrebleu_wmt19

@@ -1,0 +1,7 @@
+# CSC Puhti
+single-gpu-partition: gpu
+multi-gpu-partition: gpu
+cpu-partition: small
+cpu-account: project_2006944
+gpu-account: project_2006944
+time-limit: "06:00:00"

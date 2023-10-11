@@ -1,0 +1,19 @@
+verbose: false
+jobs: 1
+use-conda: true
+resources: gpu=8
+cores: 1
+cache: false
+reason: true
+use-singularity: true
+singularity-args: "--bind /home/tommi/greennlp/data/,/home/tommi/greennlp/data/temp/:/tmp --containall"
+config:
+  - deps=true
+  - root=/home/tommi/greennlp/data
+  - workspace=12000
+  - cuda=/cuda
+  - cudnn=/cudnn
+  - numgpus=8
+  - mariancmake=""
+  # (optional) override available GPU ids, example gpus=0 2 5 6
+  - gpus=""

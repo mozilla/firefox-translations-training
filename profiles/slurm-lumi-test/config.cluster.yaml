@@ -1,0 +1,7 @@
+# CSC Puhti
+single-gpu-partition: dev-g
+multi-gpu-partition: dev-g
+cpu-partition: debug
+cpu-account: project_462000088
+gpu-account: project_462000088
+time-limit: "00:30:00"

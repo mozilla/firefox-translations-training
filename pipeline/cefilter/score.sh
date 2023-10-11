@@ -16,17 +16,17 @@ test -v WORKSPACE
 
 model=$1
 vocab=$2
-corpus_prefix=$3
-output=$4
+#note that target will be used as source, since scoring is done with backward model
+source_path=$3
+target_path=$4
+output=$5
 
 ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
-
 if [ "${ARTIFACT_EXT}" = "zst" ]; then
-  zstdmt --rm -d "${corpus_prefix}.${SRC}.${ARTIFACT_EXT}"
-  zstdmt --rm -d "${corpus_prefix}.${TRG}.${ARTIFACT_EXT}"
-  ARTIFACT_EXT=""
-else
-  ARTIFACT_EXT=".gz"
+  zstdmt --rm -d "${source_path}.${SRC}.${ARTIFACT_EXT}"
+  zstdmt --rm -d "${target_path}.${TRG}.${ARTIFACT_EXT}"
+  source_path="${source_path}.${SRC}"
+  target_path="${target_path}.${TRG}"
 fi
 
 dir=$(dirname "${output}")
@@ -35,7 +35,7 @@ mkdir -p "${dir}"
 "${MARIAN}/marian-scorer" \
   -m "${model}" \
   -v "${vocab}" "${vocab}" \
-  -t "${corpus_prefix}.${TRG}${ARTIFACT_EXT}" "${corpus_prefix}.${SRC}${ARTIFACT_EXT}" \
+  -t "${target_path}" "${source_path}" \
   --mini-batch 32 \
   --mini-batch-words 1500 \
   --maxi-batch 1000 \

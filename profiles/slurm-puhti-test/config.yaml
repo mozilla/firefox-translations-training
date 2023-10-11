@@ -1,0 +1,31 @@
+cluster: "submit.py"
+cluster-status: "status.py"
+jobscript: "jobscript.sh"
+jobs: 1
+restart-times: 0
+immediate-submit: false
+verbose: false
+max-jobs-per-second: 1
+max-status-checks-per-second: 1
+local-cores: 1
+latency-wait: 60
+rerun-incomplete: true  # recomended for cluster submissions
+keep-going: false
+default-resources: "mem_mb=64000"
+use-singularity: true
+use-conda: true
+resources: gpu=1
+cores: 8
+cache: false
+reason: true
+singularity-args: "--bind $PWD/../data,$CUDA_INSTALL_ROOT,$CUDNN_INSTALL_ROOT,$PWD/../data/tmp:/tmp --nv --containall"
+config:
+  - deps=false
+  # These config values are now set in Snakefile, default values can be overwritten here
+  #- root=/scratch/project_2006944/multiteacher_pipeline/data
+  #- cuda=/appl/spack/v018/install-tree/gcc-9.4.0/cuda-11.1.1-lfaa3j
+  #- cudnn=/appl/spack/v018/install-tree/gcc-9.4.0/cudnn-8.0.5.39-11.1-5cnrmz
+  - workspace=10000
+  - numgpus=1
+  - mariancmake=""
+  - gpus=""
