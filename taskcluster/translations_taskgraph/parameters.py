@@ -95,7 +95,7 @@ def get_defaults(_):
                 ],
                 "devtest": [
                     "flores_dev",
-                    "sacrebleu_wmt19",
+                    "sacrebleu_aug-mix_wmt19",
                 ],
                 "test": [
                     "flores_devtest",

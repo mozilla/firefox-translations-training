@@ -65,7 +65,7 @@ fi
 echo "### Training ${model_dir}"
 
 # OpusTrainer reads the datasets, shuffles, augments them and feeds to stdin of Marian
-"opustrainer-train" \
+opustrainer-train \
   --config "${new_config}" \
   --log-file "${model_dir}/opustrainer.log" \
   "${MARIAN}/marian" \

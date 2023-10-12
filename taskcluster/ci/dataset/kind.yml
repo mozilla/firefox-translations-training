@@ -57,14 +57,18 @@ tasks:
                 resources:
                     - pipeline/data/importers/corpus/flores.sh
                     - pipeline/data/download-corpus.sh
+                    - pipeline/data/dataset_importer.py
         run:
             command:
                 - bash
                 - -c
                 - >-
-                    $VCS_PATH/pipeline/data/download-corpus.sh
-                    {dataset}
-                    /builds/worker/artifacts/{dataset_sanitized}
+                    pip3 install --upgrade pip setuptools &&
+                    pip3 install -r $VCS_PATH/pipeline/data/requirements/data.txt &&
+                    $VCS_PATH/pipeline/data/dataset_importer.py
+                    --type corpus
+                    --dataset {dataset}
+                    --output_prefix /builds/worker/artifacts/{dataset_sanitized}
 
     sacrebleu:
         description: Fetch sacrebleu dataset
@@ -76,14 +80,18 @@ tasks:
                 resources:
                     - pipeline/data/importers/corpus/sacrebleu.sh
                     - pipeline/data/download-corpus.sh
+                    - pipeline/data/dataset_importer.py
         run:
             command:
                 - bash
                 - -c
                 - >-
-                    $VCS_PATH/pipeline/data/download-corpus.sh
-                    {dataset}
-                    /builds/worker/artifacts/{dataset_sanitized}
+                    pip3 install --upgrade pip setuptools &&
+                    pip3 install -r $VCS_PATH/pipeline/data/requirements/data.txt &&
+                    $VCS_PATH/pipeline/data/dataset_importer.py
+                    --type corpus
+                    --dataset {dataset}
+                    --output_prefix /builds/worker/artifacts/{dataset_sanitized}
 
     opus:
         description: Fetch opus dataset
@@ -96,14 +104,18 @@ tasks:
                 resources:
                     - pipeline/data/importers/corpus/opus.sh
                     - pipeline/data/download-corpus.sh
+                    - pipeline/data/dataset_importer.py                    -
         run:
             command:
                 - bash
                 - -c
                 - >-
-                    $VCS_PATH/pipeline/data/download-corpus.sh
-                    {dataset}
-                    /builds/worker/artifacts/{dataset_sanitized}
+                    pip3 install --upgrade pip setuptools &&
+                    pip3 install -r $VCS_PATH/pipeline/data/requirements/data.txt &&
+                    $VCS_PATH/pipeline/data/dataset_importer.py
+                    --type corpus
+                    --dataset {dataset}
+                    --output_prefix /builds/worker/artifacts/{dataset_sanitized}
 
     mtdata:
         description: Fetch mtdata dataset
@@ -115,14 +127,18 @@ tasks:
                 resources:
                     - pipeline/data/importers/corpus/mtdata.sh
                     - pipeline/data/download-corpus.sh
+                    - pipeline/data/dataset_importer.py
         run:
             command:
                 - bash
                 - -c
                 - >-
-                    $VCS_PATH/pipeline/data/download-corpus.sh
-                    {dataset}
-                    /builds/worker/artifacts/{dataset_sanitized}
+                    pip3 install --upgrade pip setuptools &&
+                    pip3 install -r $VCS_PATH/pipeline/data/requirements/data.txt &&
+                    $VCS_PATH/pipeline/data/dataset_importer.py
+                    --type corpus
+                    --dataset {dataset}
+                    --output_prefix /builds/worker/artifacts/{dataset_sanitized}
 
     news-crawl-{src_locale}:
         description: Fetch news-crawl dataset for {src_locale}
