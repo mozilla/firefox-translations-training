@@ -37,7 +37,7 @@ We use [TaskCluster taskgraph](https://taskcluster-taskgraph.readthedocs.io/en/l
 
 ## Checking the status of training
 
-1. Look at the scheduled tasks. They should be visible under in the Train action.
+1. Look at the scheduled tasks. They should be visible under the Train action.
 
 ![Action tasks](img/tc-train-action-tasks.png)
 

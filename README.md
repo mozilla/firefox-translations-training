@@ -17,7 +17,7 @@ Some settings, especially low resource languages might require extra tuning.
 
 We use fast translation engine [Marian](https://marian-nmt.github.io).
 
-You can find more details for the pipeline steps in the [documentation](docs/pipeline-steps.md).
+You can find more details about the pipeline steps in the [documentation](docs/pipeline-steps.md).
 
 ## Orchestrators
 
