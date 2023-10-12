@@ -58,6 +58,7 @@ tasks:
                     - pipeline/data/importers/corpus/flores.sh
                     - pipeline/data/download-corpus.sh
                     - pipeline/data/dataset_importer.py
+                    - pipeline/data/requirements/data.txt
         run:
             command:
                 - bash
@@ -81,6 +82,7 @@ tasks:
                     - pipeline/data/importers/corpus/sacrebleu.sh
                     - pipeline/data/download-corpus.sh
                     - pipeline/data/dataset_importer.py
+                    - pipeline/data/requirements/data.txt
         run:
             command:
                 - bash
@@ -104,7 +106,8 @@ tasks:
                 resources:
                     - pipeline/data/importers/corpus/opus.sh
                     - pipeline/data/download-corpus.sh
-                    - pipeline/data/dataset_importer.py                    -
+                    - pipeline/data/dataset_importer.py
+                    - pipeline/data/requirements/data.txt
         run:
             command:
                 - bash
@@ -128,6 +131,7 @@ tasks:
                     - pipeline/data/importers/corpus/mtdata.sh
                     - pipeline/data/download-corpus.sh
                     - pipeline/data/dataset_importer.py
+                    - pipeline/data/requirements/data.txt
         run:
             command:
                 - bash
