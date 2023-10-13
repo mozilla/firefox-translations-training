@@ -4,7 +4,7 @@ First of all, choose a language pair to train.
 
 ## Configuration
 Clone the repo and follow the instructions that correspond to the workflow manager you will be using 
-([TaskCluster](task-cluster.md), [Snakemake](snakemake.md)).
+([Taskcluster](task-cluster.md), [Snakemake](snakemake.md)).
 
 The Marian workspace is usually safe to set to about 3/4 of available GPU memory 
 (in a [profile for Snakemake](/pipeline/train/train.sh) and throughout the ci steps in Task cluster).

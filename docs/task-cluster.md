@@ -1,10 +1,10 @@
-# TaskCluster
+# Taskcluster
 
-[TaskCluster](https://taskcluster.net/) is a Mozilla task execution framework. It powers Firefox CI and
+[Taskcluster](https://taskcluster.net/) is a Mozilla task execution framework. It powers Firefox CI and
 provides access to the hybrid cloud workers (GCP or on-prem) 
 which increases scalability and observability compared to [Snakemake](snakemake.md). 
 
-We use [TaskCluster taskgraph](https://taskcluster-taskgraph.readthedocs.io/en/latest/) to define the DAG 
+We use [Taskcluster taskgraph](https://taskcluster-taskgraph.readthedocs.io/en/latest/) to define the DAG 
 (Directly Acyclic Graph) of the pipeline steps.
 
 ## Running training
@@ -12,7 +12,7 @@ We use [TaskCluster taskgraph](https://taskcluster-taskgraph.readthedocs.io/en/l
 1. Create a new branch in the git repo and push. 
    It is useful to experiment with code and also not to get the caches invalidated if you need to restart training and some new changes were landed in the main branch.
     
-2. Go to Github CI for the commit you want to run training for and find a DecisionTask
+2. Go to Github CI for the commit you want to run training for and find a Decision Task
 
 ![Find CI](img/github-tc-ci.png)
 
@@ -74,8 +74,18 @@ so it's better to be careful with that when experimenting with the later stages 
 
 ## Running up to a specific step
 
-Change `target-stage: all` in the training config to a stage that corresponds to another TC step. For example:
+Change `target-stage: all` in the training config to a stage that corresponds to another TC step. 
+For example, to download, clean and merge the training corpus use:
 ```
 target-stage: merge-corpus
 ```
-to download, clean and merge the training corpus
+that corresponds to `stage: merge-corpus` in [/taskcluster/ci/merge-corpus/kind.yml](taskcluster/ci/merge-corpus/kind.yml):
+```
+tasks:
+    merge-corpus:
+        label: merge-corpus-{src_locale}-{trg_locale}
+        description: merge corpus for {src_locale}-{trg_locale}
+        attributes:
+            dataset-category: train
+            stage: merge-corpus
+```

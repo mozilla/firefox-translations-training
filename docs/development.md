@@ -7,7 +7,7 @@ It allows writing the steps in any language (currently it's historically mostly 
 represent the pipeline as a directed acyclic graph (DAG).
 
 The DAG of tasks can be launched using any workflow manager 
-(currently we support [Snakemake](snakemake.md) and [TaskCluster](task-cluster.md)).
+(currently we support [Snakemake](snakemake.md) and [Taskcluster](task-cluster.md)).
 The workflow manager integration code should not include any training specific logic but rather implement it as a script
 in the `pipeline` directory.
 
@@ -18,7 +18,7 @@ Set up a local [poetry](https://python-poetry.org/) environment.
 
 Make sure to run linter with `make fix-all`.
 
-For changes in the TaskCluster graph run `TASKCLUSTER_ROOT_URL="" make validate-taskgraph` to validate the graph locally.
+For changes in the Taskcluster graph run `TASKCLUSTER_ROOT_URL="" make validate-taskgraph` to validate the graph locally.
 
 
 ## CI

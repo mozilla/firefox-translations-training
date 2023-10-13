@@ -23,11 +23,11 @@ You can find more details about the pipeline steps in the [documentation](docs/p
 
 An orchestrator is responsible for workflow management and parallelization.
 
-- [TaskCluster](https://taskcluster.net/) - Mozilla task execution framework. It is also used for Firefox CI. 
+- [Taskcluster](https://taskcluster.net/) - Mozilla task execution framework. It is also used for Firefox CI. 
   It provides access to the hybrid cloud workers (GCP + on-prem) with increased scalability and observability. 
   [Usage instructions](docs/task-cluster.md).
 - [Snakemake](https://snakemake.github.io/) - a file based orchestrator that can be used to run the pipeline locally or on a Slurm cluster. 
-  [Usage instructions](docs/snakemake.md). (The integration will not be actively maintained, since Mozilla is switching to TaskCluster)
+  [Usage instructions](docs/snakemake.md). (The integration will not be actively maintained, since Mozilla is switching to Taskcluster)
 
 ## Learning resources
 
