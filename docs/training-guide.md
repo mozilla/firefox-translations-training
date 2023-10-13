@@ -36,7 +36,7 @@ marian-args:
 
 ## Mozilla Slurm cluster
 
-I usually set just one GPU partition per run in the [cluster config](https://github.com/mozilla/firefox-translations-training/blob/main/pipeline/train/train.sh). It simplifies configuration and monitoring.
+I usually set just one GPU partition per run in the [cluster config](/pipeline/train/train.sh). It simplifies configuration and monitoring.
 
 Make sure to not set `precision: float16` on `txp` partition.
 
@@ -49,7 +49,7 @@ Make sure to not set `precision: float16` on `txp` partition.
 2. Go to [paracrawl](https://paracrawl.eu/) and see if it's available there
 3. Go to [statmt22](https://www.statmt.org/wmt22/translation-task.html), [statmt21](https://www.statmt.org/wmt21/translation-task.html) etc. and check if the language pair participated in the competition. If yes, there's a good chance some data is available for training.
 4. It's hard to say how much data is required to train something useful. My guess would be at least 10 million sentences. Ideally 100M+.
-5. Use [find-corpus](https://github.com/mozilla/firefox-translations-training/blob/main/pipeline/utils/find-corpus.py) tool to get opus datasets and copy to `datasets.train` section in the [prod config](https://github.com/mozilla/firefox-translations-training/blob/main/configs/config.prod.yml).
+5. Use [find-corpus](/utils/find-corpus.py) tool to get opus datasets and copy to `datasets.train` section in the [prod config](/configs/config.prod.yml).
 Example:
 ```
 conda env create -f envs/corpus.yml 
@@ -80,11 +80,11 @@ It is also possible to use manually downloaded datasets with prefix `custom_<pat
 
 ## Cleaning
 
-Make sure the language is present in [clean_parallel](https://github.com/mozilla/firefox-translations-training/blob/main/pipeline/clean/tools/clean_parallel.py#L19) script.
+Make sure the language is present in [clean_parallel](/pipeline/clean/tools/clean_parallel.py#L19) script.
 
 It is recommended to use bicleaner for noisy data like OpenSubtitles. Check that the bicleaner model is available and add `opus_OpenSubtitles/v2018: 0.8` to `experiment.bicleaner.dataset-thresholds` section of the prod config. Set to 0 to skip cleaning explicitly, for example for ParaCrawl that comes already cleaned.
 
-You can also add some dataset specific fixes like detokenizaiton [here](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/clean/fixes).
+You can also add some dataset specific fixes like detokenizaiton [here](/pipeline/clean/fixes).
 
 ## Running (Snakemake)
 
@@ -123,4 +123,4 @@ Also, check `models/<lang-pair>/<experiment>/evaluation` folder to see BLEU and 
 
 ### Out-of-memory issues
 
-Usually, by the time we train the student, it's so much data that it might not fit in 128 GB of RAM. For very high-resource languages like French it can happen in a teacher training state. The workaround is to remove `--shuffle-in-ram` from the [training script](https://github.com/mozilla/firefox-translations-training/blob/main/pipeline/train/train.sh) and add `--shuffle batches` to the student [training script](https://github.com/mozilla/firefox-translations-training/blob/main/pipeline/train/train.sh). More details in the [issue](https://github.com/mozilla/firefox-translations-training/issues/21).
+Usually, by the time we train the student, it's so much data that it might not fit in 128 GB of RAM. For very high-resource languages like French it can happen in a teacher training state. The workaround is to remove `--shuffle-in-ram` from the [training script](/pipeline/train/train.sh) and add `--shuffle batches` to the student [training script](/pipeline/train/train.sh). More details in the [issue](https://github.com/mozilla/firefox-translations-training/issues/21).

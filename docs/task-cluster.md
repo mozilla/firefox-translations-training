@@ -79,7 +79,7 @@ For example, to download, clean and merge the training corpus use:
 ```
 target-stage: merge-corpus
 ```
-that corresponds to `stage: merge-corpus` in [/taskcluster/ci/merge-corpus/kind.yml](taskcluster/ci/merge-corpus/kind.yml):
+that corresponds to `stage: merge-corpus` in [/taskcluster/ci/merge-corpus/kind.yml](/taskcluster/ci/merge-corpus/kind.yml):
 ```
 tasks:
     merge-corpus:
