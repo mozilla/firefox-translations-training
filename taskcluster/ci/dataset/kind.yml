@@ -86,14 +86,15 @@ tasks:
         run:
             command:
                 - bash
-                - -c
+                - -cx
                 - >-
                     pip3 install --upgrade pip setuptools &&
                     pip3 install -r $VCS_PATH/pipeline/data/requirements/data.txt &&
-                    python3 $VCS_PATH/pipeline/data/dataset_importer.py
+                    chmod +x $VCS_PATH/pipeline/data/dataset_importer.py &&
+                    python3 -u $VCS_PATH/pipeline/data/dataset_importer.py
                     --type corpus
                     --dataset {dataset}
-                    --output_prefix /builds/worker/artifacts/{dataset_sanitized}
+                    --output_prefix /builds/worker/artifacts/{dataset_sanitized} 2>&1
 
     opus:
         description: Fetch opus dataset
