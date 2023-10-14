@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """
 Downloads a dataset and runs augmentation if needed
+
+Example:
+    SRC=ru TRG=en python pipeline/data/dataset_importer.py \
+        --type=corpus \
+        --dataset=sacrebleu_aug-mix_wmt19 \
+        --output_prefix=$(pwd)/test_data/augtest
 """
 
 import argparse
@@ -61,6 +67,7 @@ def augment(output_prefix: str, aug_modifer: str):
 
     modifer = modifier_map[aug_modifer]
 
+    # these envs are standard across the pipeline
     src = os.environ["SRC"]
     trg = os.environ["TRG"]
     comp_cmd = os.getenv("COMPRESSION_CMD", "pigz")
@@ -94,6 +101,8 @@ def augment(output_prefix: str, aug_modifer: str):
 
 
 def run_import(type: str, dataset: str, output_prefix: str):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
     if type == "corpus":
         match = re.search(r"^(\w*)_(aug-[a-z]*)?_?(.+)$", dataset)
 
@@ -107,14 +116,14 @@ def run_import(type: str, dataset: str, output_prefix: str):
         no_aug_id = f"{importer}_{name}"
 
         print("Downloading parallel dataset")
-        run_cmd(["./download-corpus.sh", no_aug_id, output_prefix])
+        run_cmd([os.path.join(current_dir, "download-corpus.sh"), no_aug_id, output_prefix])
         if aug_modifer:
             print("Running augmentation")
             augment(output_prefix, aug_modifer)
 
     elif type == "mono":
         print("Downloading mono dataset")
-        run_cmd(["./download-mono.sh", dataset, output_prefix])
+        run_cmd([os.path.join(current_dir, "download-mono.sh"), dataset, output_prefix])
     else:
         raise ValueError(f"Invalid dataset type: {type}. Allowed values: mono, corpus")
 
