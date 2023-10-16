@@ -55,6 +55,7 @@ done
 
 # Marian doesn't support zst natively; we need to decompress before passing them along.
 if [ "${ARTIFACT_EXT}" = "zst" ]; then
+  echo "### Decompressing validation sets"
   zstdmt --rm -d "${valid_set_prefix}.${src}.${ARTIFACT_EXT}"
   zstdmt --rm -d "${valid_set_prefix}.${trg}.${ARTIFACT_EXT}"
   ARTIFACT_EXT=""
