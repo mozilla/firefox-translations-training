@@ -79,6 +79,10 @@ def augment(output_prefix: str, aug_modifer: str):
     compressed_src = f"{output_prefix}.{src}.{comp_ext}"
     compressed_trg = f"{output_prefix}.{trg}.{comp_ext}"
 
+    if os.path.isfile(uncompressed_src):
+        os.remove(uncompressed_src)
+    if os.path.isfile(uncompressed_trg):
+        os.remove(uncompressed_trg)
     run_cmd([comp_cmd, "-d", compressed_src])
     run_cmd([comp_cmd, "-d", compressed_trg])
 
@@ -97,8 +101,12 @@ def augment(output_prefix: str, aug_modifer: str):
     with open(uncompressed_trg, "w") as f:
         f.writelines(modified_trg)
 
+    os.remove(compressed_src)
+    os.remove(compressed_trg)
     run_cmd([comp_cmd, uncompressed_src])
     run_cmd([comp_cmd, uncompressed_trg])
+    os.remove(uncompressed_src)
+    os.remove(uncompressed_trg)
 
 
 def run_import(type: str, dataset: str, output_prefix: str):
