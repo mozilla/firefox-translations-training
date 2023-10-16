@@ -29,7 +29,7 @@ Copy JSON files for the produced filters `data/train-parts/*.filter.json` to
 ## Default config
 
 If no custom config was specifed for the dataset, 
-the [default config template](pipeline/clean/opuscleaner/configs/default.filters.json) will be used.
+the [default config template](/pipeline/clean/opuscleaner/configs/default.filters.json) will be used.
 
 Modify if needed. Some rules require specifying source or target language. 
 The `<src>` and `<trg>` in the template will be automatically replaced with the trained language pair.
@@ -44,4 +44,4 @@ experiment:
   use-opuscleaner: true
 ```
 
-Run the pipeline as usual. OpusCleaner will replace the default [clean-corpus](pipeline/clean/clean-corpus.sh) script.
+Run the pipeline as usual. OpusCleaner will replace the default [clean-corpus](/pipeline/clean/clean-corpus.sh) script.

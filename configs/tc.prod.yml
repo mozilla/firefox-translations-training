@@ -1,4 +1,4 @@
-# Example of a production config for TaskCluster
+# Example of a production config for Taskcluster
 datasets:
   devtest:
     - flores_dev

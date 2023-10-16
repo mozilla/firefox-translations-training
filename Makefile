@@ -130,6 +130,10 @@ opuscleaner-ui:
 	poetry install --only opuscleaner
 	opuscleaner-server serve --host=0.0.0.0 --port=8000
 
+# Utils to find corpus etc
+install utils:
+	poetry install --only utils
+
 # Black is a code formatter for Python files. Running this command will check that
 # files are correctly formatted, but not fix them.
 black:
