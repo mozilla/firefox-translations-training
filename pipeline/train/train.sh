@@ -72,7 +72,6 @@ opustrainer-train \
   "${MARIAN}/marian" \
     --model "${model_dir}/model.npz" \
     -c "configs/model/${model_type}.yml" "configs/training/${model_type}.${training_type}.yml" \
-    --train-sets "${train_set_prefix}".{"${src}","${trg}"}${ARTIFACT_EXT} \
     -T "${model_dir}/tmp" \
     --shuffle batches \
     --sentencepiece-alphas 0.1 \
