@@ -84,8 +84,7 @@ tasks:
                     pip3 install -r $VCS_PATH/pipeline/train/requirements/train.txt &&
                     export PATH="$HOME/.local/bin:$PATH" &&
                     export MARIAN=$MOZ_FETCHES_DIR &&
-                    $VCS_PATH/pipeline/train/train-student.sh
-                    $MOZ_FETCHES_DIR/corpus.aln.zst
+                    $VCS_PATH/pipeline/train/train.sh
                     student
                     finetune
                     {src_locale}
@@ -95,6 +94,7 @@ tasks:
                     $TASK_WORKDIR/artifacts
                     $MOZ_FETCHES_DIR/vocab.spm
                     {best_model}
+                    $MOZ_FETCHES_DIR/corpus.aln.zst
                     --pretrained-model
                     $MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz
                     {marian_args}

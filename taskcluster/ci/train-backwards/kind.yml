@@ -91,6 +91,7 @@ tasks:
                     $TASK_WORKDIR/artifacts
                     $MOZ_FETCHES_DIR/vocab.spm
                     {best_model}
+                    None
                     {marian_args}
 
         dependencies:

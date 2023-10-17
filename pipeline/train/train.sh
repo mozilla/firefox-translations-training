@@ -18,7 +18,8 @@ valid_set_prefix=$6
 model_dir=$7
 vocab=$8
 best_model_metric=$9
-extra_params=( "${@:10}" )
+alignments=${10}
+extra_params=( "${@:11}" )
 
 COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
@@ -59,6 +60,16 @@ valid_tsv_dataset="${valid_set_prefix}.${src}${trg}.tsv"
 paste <(${COMPRESSION_CMD} -dc "${valid_set_prefix}.${src}.${ARTIFACT_EXT}") \
       <(${COMPRESSION_CMD} -dc "${valid_set_prefix}.${trg}.${ARTIFACT_EXT}") \
       >"${valid_tsv_dataset}"
+
+# Add alignments to tsv if provided
+# when using tsv, marian requires --guided-alignments argument to be an index of the alignments in the tsv file
+if [ "${alignments}" != "None" ] ; then
+  echo "### Adding alignments ${alignments} to the training dataset"
+  paste "${tsv_dataset}" <(${COMPRESSION_CMD} -dc "${alignments}") > corpus_with_alignments.tsv
+  rm "${tsv_dataset}"
+  tsv_dataset=corpus_with_alignments.tsv
+  extra_params+=("--guided-alignments" "2")
+fi
 
 echo "### Training ${model_dir}"
 # OpusTrainer reads the datasets, shuffles, augments them and feeds to stdin of Marian
