@@ -87,6 +87,7 @@ opustrainer-train \
     --quiet-translation \
     --overwrite \
     --keep-best \
+    --tsv \
     --valid-log "${model_dir}/valid.log" \
     "${extra_params[@]}"
 
