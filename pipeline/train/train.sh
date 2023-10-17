@@ -32,7 +32,7 @@ mkdir -p "${model_dir}/tmp"
 
 all_model_metrics=(chrf ce-mean-words bleu-detok)
 
-echo "### Preparing datasets and config"
+echo "### Preparing tsv datasets and config"
 
 # Generate a new OpusTrainer config based on a template to fill paths of the datasets
 new_config="${model_dir}/config.opustrainer.yml"
@@ -53,19 +53,16 @@ for index in "${!elements[@]}"; do
     sed -i -e "s#<dataset${index}>#${tsv_dataset}#g" "${new_config}"
 done
 
-# Marian doesn't support zst natively; we need to decompress before passing them along.
-if [ "${ARTIFACT_EXT}" = "zst" ]; then
-  echo "### Decompressing validation sets"
-  zstdmt --rm -d "${valid_set_prefix}.${src}.${ARTIFACT_EXT}"
-  zstdmt --rm -d "${valid_set_prefix}.${trg}.${ARTIFACT_EXT}"
-  ARTIFACT_EXT=""
-else
-  ARTIFACT_EXT=".gz"
-fi
+# if the training set is a tsv, validation set also has to be a tsv
+echo "### Converting validation sets to tsv"
+valid_tsv_dataset="${valid_set_prefix}.${src}${trg}.tsv"
+paste <(${COMPRESSION_CMD} -dc "${valid_set_prefix}.${src}.${ARTIFACT_EXT}") \
+      <(${COMPRESSION_CMD} -dc "${valid_set_prefix}.${trg}.${ARTIFACT_EXT}") \
+      >"${valid_tsv_dataset}"
 
 echo "### Training ${model_dir}"
-
 # OpusTrainer reads the datasets, shuffles, augments them and feeds to stdin of Marian
+# TODO: opustrainer complains on Marian --log option
 opustrainer-train \
   --config "${new_config}" \
   --log-file "${model_dir}/opustrainer.log" \
@@ -73,22 +70,23 @@ opustrainer-train \
     --model "${model_dir}/model.npz" \
     -c "configs/model/${model_type}.yml" "configs/training/${model_type}.${training_type}.yml" \
     -T "${model_dir}/tmp" \
-    --shuffle batches \
-    --sentencepiece-alphas 0.1 \
-    --no-restore-corpus true \
     --vocabs "${vocab}" "${vocab}" \
     -w "${WORKSPACE}" \
     --devices ${GPUS} \
+    --valid-metrics "${best_model_metric}" ${all_model_metrics[@]/$best_model_metric} \
+    --valid-sets "${valid_tsv_dataset}" \
+    --valid-translation-output "${model_dir}/devset.out" \
+    --valid-log "${model_dir}/valid.log" \
+    --shuffle batches \
+    --sentencepiece-alphas 0.1 \
+    --no-restore-corpus \
     --sharding local \
     --sync-sgd \
-    --valid-metrics "${best_model_metric}" ${all_model_metrics[@]/$best_model_metric} \
-    --valid-sets "${valid_set_prefix}".{"${src}","${trg}"}${ARTIFACT_EXT} \
-    --valid-translation-output "${model_dir}/devset.out" \
     --quiet-translation \
     --overwrite \
+    --no-restore-corpus \
     --keep-best \
     --tsv \
-    --valid-log "${model_dir}/valid.log" \
     "${extra_params[@]}"
 
 cp "${model_dir}/model.npz.best-${best_model_metric}.npz" "${model_dir}/final.model.npz.best-${best_model_metric}.npz"
