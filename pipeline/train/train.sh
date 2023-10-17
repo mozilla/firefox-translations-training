@@ -46,8 +46,8 @@ for index in "${!elements[@]}"; do
     train_set_prefix="${elements[index]}"
     tsv_dataset="${train_set_prefix}.${src}${trg}.tsv"
     # OpusTrainer supports only tsv
-    paste <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${src}${ARTIFACT_EXT}") \
-          <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${trg}${ARTIFACT_EXT}") \
+    paste <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${src}.${ARTIFACT_EXT}") \
+          <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${trg}.${ARTIFACT_EXT}") \
           >"${tsv_dataset}"
     # replace the dataset path in the template in place
     sed -i -e "s#<dataset${index}>#${tsv_dataset}#g" "${new_config}"
