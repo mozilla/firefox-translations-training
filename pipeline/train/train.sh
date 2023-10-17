@@ -84,7 +84,6 @@ opustrainer-train \
     --sync-sgd \
     --quiet-translation \
     --overwrite \
-    --no-restore-corpus \
     --keep-best \
     --tsv \
     "${extra_params[@]}"

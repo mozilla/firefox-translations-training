@@ -77,6 +77,7 @@ tasks:
                 # GPUs. it should _always_ be aligned with the # of GPUs on the intsance
                 GPUS: "0 1 2 3"
                 ARTIFACT_EXT: zst
+                COMPRESSION_CMD: zstdmt
             artifacts:
                 - name: public/build
                   path: artifacts
