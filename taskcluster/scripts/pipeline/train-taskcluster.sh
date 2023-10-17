@@ -39,7 +39,7 @@ case "$pretrained_model_mode" in
         echo "The training mode is 'use', using existing model without further training."
         exit 0
         ;;
-    "continue"|"init"|"*")
+    "continue"|"init"|"None")
         if [ "$pretrained_model_mode" == "init" ]; then
             extra_params+=("--pretrained-model" "./artifacts/final.model.npz.best-chrf.npz")
         fi
