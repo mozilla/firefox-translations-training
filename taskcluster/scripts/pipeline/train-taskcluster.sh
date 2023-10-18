@@ -41,9 +41,8 @@ case "$pretrained_model_mode" in
         ;;
     "continue"|"init"|"None")
         if [ "$pretrained_model_mode" == "init" ]; then
-            extra_params+=("--pretrained-model" "./artifacts/final.model.npz.best-chrf.npz")
+            extra_params+=("--pretrained-model" "./artifacts/final.model.npz.best-$best_model_metric.npz")
         fi
-        
         $VCS_PATH/pipeline/train/train.sh \
         "$model_type" \
         "$training_type" \
@@ -55,5 +54,8 @@ case "$pretrained_model_mode" in
         "$vocab" \
         "$best_model_metric" \
         "${extra_params[@]}"
+        if [ "$pretrained_model_mode" == "None" ]; then
+            cp "$vocab" "$model_dir"
+        fi
         ;;
 esac
