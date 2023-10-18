@@ -168,7 +168,41 @@ defaults = get_defaults("")["training_config"]
                                     },
                                 },
                                 "required": ["urls", "mode", "type"],
-                            }
+                            },
+                            "teacher-finetuned": {
+                                "type": "object",
+                                "properties": {
+                                    "urls": {
+                                        "type": "array",
+                                        "items": {"type": "string", "format": "uri"},
+                                        "minItems": 1,
+                                    },
+                                    "mode": {
+                                        "type": "string",
+                                        "enum": ["continue", "init", "use"],
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": ["default", "opusmt"],
+                                    },
+                                },
+                                "required": ["urls", "mode", "type"],
+                            },
+                            "backward": {
+                                "type": "object",
+                                "properties": {
+                                    "url": {"type": "string", "format": "uri"},
+                                    "mode": {
+                                        "type": "string",
+                                        "enum": ["continue", "init", "use"],
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": ["default", "opusmt"],
+                                    },
+                                },
+                                "required": ["url", "mode", "type"],
+                            },
                         },
                     },
                 },

@@ -20,10 +20,6 @@ def get_defaults(_):
                 "src": "ru",
                 "trg": "en",
                 "teacher-ensemble": 1,
-                # Used for providing a pretrained backward model. We do not support this yet.
-                "backward-model": "NOT-YET-SUPPORTED",
-                # Used for providing a pretrained vocab. We do not support this yet.
-                "vocab": "NOT-YET-SUPPORTED",
                 "mono-max-sentences-trg": 10000,
                 "mono-max-sentences-src": 10000,
                 "split-length": 5000,
@@ -133,8 +129,6 @@ extend_parameters_schema(
                 Required("src"): str,
                 Required("trg"): str,
                 Required("teacher-ensemble"): int,
-                Required("backward-model"): str,
-                Required("vocab"): str,
                 Required("mono-max-sentences-trg"): int,
                 Required("mono-max-sentences-src"): int,
                 Required("split-length"): int,
@@ -151,6 +145,16 @@ extend_parameters_schema(
                 Optional("pretrained-models"): {
                     Optional("teacher-base"): {
                         Required("urls"): [str],
+                        Required("mode"): str,
+                        Required("type"): str,
+                    },
+                    Optional("teacher-finetuned"): {
+                        Required("urls"): [str],
+                        Required("mode"): str,
+                        Required("type"): str,
+                    },
+                    Optional("backwards"): {
+                        Required("url"): str,
                         Required("mode"): str,
                         Required("type"): str,
                     }
