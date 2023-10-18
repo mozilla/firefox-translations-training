@@ -54,8 +54,13 @@ def training_continuation(config, jobs):
             yield job
     else:
         model_config = pretrained_models.get("teacher-base")
-        jobs = list(jobs)
-        assert len(jobs) == len(model_config["urls"])
+        teacher_ensemble = config.params["training_config"]["experiment"]["teacher-ensemble"]
+        if len(model_config["urls"]) != teacher_ensemble:
+            raise Exception(
+                f"The experiment's 'teacher-ensemble' ({teacher_ensemble}) "
+                f"does not match the number of provided model 'urls' ({len(model_config['urls'])}) "
+                f"for the pretrained 'teacher-base' ensemble."
+            )
         model_training_artifact_mounts = get_artifact_mounts(
             model_config["urls"], "./artifacts", MODEL_TRAINING_ARTIFACT_NAMES
         )
