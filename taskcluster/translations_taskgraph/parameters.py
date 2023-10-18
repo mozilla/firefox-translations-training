@@ -157,7 +157,7 @@ extend_parameters_schema(
                         Required("url"): str,
                         Required("mode"): str,
                         Required("type"): str,
-                    }
+                    },
                 },
             },
             Optional("datasets"): {
