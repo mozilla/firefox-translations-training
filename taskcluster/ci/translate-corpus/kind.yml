@@ -17,7 +17,7 @@ transforms:
 kind-dependencies:
     - split-corpus
     - finetune-teacher
-    - train-teacher
+    - train-vocab
     - toolchain
 
 tasks:
@@ -59,12 +59,12 @@ tasks:
             kinds:
                 - finetune-teacher
                 - split-corpus
-                - train-teacher
+                - train-vocab
             fetches:
                 split-corpus:
                     - artifact: src-file.{this_chunk}.zst
                       extract: true
-                train-teacher:
+                train-vocab:
                     - artifact: vocab.spm
                       extract: false
                 finetune-teacher:
