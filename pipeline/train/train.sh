@@ -66,8 +66,7 @@ paste <(${COMPRESSION_CMD} -dc "${valid_set_prefix}.${src}.${ARTIFACT_EXT}") \
 if [ "${alignments}" != "None" ] ; then
   echo "### Adding alignments ${alignments} to the training dataset"
   paste "${tsv_dataset}" <(${COMPRESSION_CMD} -dc "${alignments}") > corpus_with_alignments.tsv
-  rm "${tsv_dataset}"
-  tsv_dataset=corpus_with_alignments.tsv
+  mv corpus_with_alignments.tsv "${tsv_dataset}"
   extra_params+=("--guided-alignments" "2")
 fi
 
