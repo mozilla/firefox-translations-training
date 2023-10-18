@@ -67,15 +67,17 @@ if [ "${alignments}" != "None" ] ; then
   echo "### Adding alignments ${alignments} to the training dataset"
   paste "${tsv_dataset}" <(${COMPRESSION_CMD} -dc "${alignments}") > corpus_with_alignments.tsv
   mv corpus_with_alignments.tsv "${tsv_dataset}"
-  extra_params+=("--guided-alignments" "2")
+  extra_params+=("--guided-alignment" "2")
 fi
 
 echo "### Training ${model_dir}"
 # OpusTrainer reads the datasets, shuffles, augments them and feeds to stdin of Marian
+# suppress logging warnings for empty fields
 # TODO: opustrainer complains on Marian --log option
 opustrainer-train \
   --config "${new_config}" \
   --log-file "${model_dir}/opustrainer.log" \
+  --log-level ERROR \
   "${MARIAN}/marian" \
     --model "${model_dir}/model.npz" \
     -c "configs/model/${model_type}.yml" "configs/training/${model_type}.${training_type}.yml" \

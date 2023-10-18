@@ -14,3 +14,5 @@ modifiers:
 - Typos: 0.05
 
 seed: 1111
+# parallel sentences + token alignments
+num_fields: 3
