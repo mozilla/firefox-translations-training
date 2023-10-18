@@ -109,7 +109,6 @@ tasks:
                     {marian_args}
 
         dependencies:
-            train-vocab: train-vocab-{src_locale}-{trg_locale}
             merge-devset: merge-devset-{src_locale}-{trg_locale}
             merge-corpus: merge-corpus-{src_locale}-{trg_locale}
             # double curly braces are used for the chunk substitutions because
@@ -119,9 +118,6 @@ tasks:
         fetches:
             toolchain:
                 - marian
-            train-vocab:
-                - artifact: vocab.spm
-                  extract: false
             merge-devset:
                 - artifact: devset.{src_locale}.zst
                   extract: false
@@ -134,4 +130,6 @@ tasks:
                   extract: false
             train-teacher:
                 - artifact: final.model.npz.best-{best_model}.npz
+                  extract: false
+                - artifact: vocab.spm
                   extract: false
