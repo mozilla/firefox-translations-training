@@ -98,14 +98,6 @@ defaults = get_defaults("")["training_config"]
                         "type": "number",
                         "description": "Number of teachers to train",
                     },
-                    "backward-model": {
-                        "type": "string",
-                        "description": "???",
-                    },
-                    "vocab": {
-                        "type": "string",
-                        "description": "???",
-                    },
                     "mono-max-sentences-src": {
                         "type": "number",
                         "description": "limits per downloaded src dataset",
@@ -157,6 +149,27 @@ defaults = get_defaults("")["training_config"]
                     # pretrained models hosted elsewhere.
                     "pretrained-models": {
                         "type": "object",
+                        "properties": {
+                            "teacher-base": {
+                                "type": "object",
+                                "properties": {
+                                    "urls": {
+                                        "type": "array",
+                                        "items": {"type": "string", "format": "uri"},
+                                        "minItems": 1,
+                                    },
+                                    "mode": {
+                                        "type": "string",
+                                        "enum": ["continue", "init", "use"],
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": ["default", "opusmt"],
+                                    },
+                                },
+                                "required": ["urls", "mode", "type"],
+                            }
+                        },
                     },
                 },
                 "required": [

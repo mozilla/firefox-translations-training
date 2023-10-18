@@ -144,7 +144,13 @@ extend_parameters_schema(
                         str: float,
                     },
                 },
-                Optional()
+                Optional("pretrained-models"): {
+                    Optional("teacher-base"): {
+                        Required("urls"): [str],
+                        Required("mode"): str,
+                        Required("type"): str,
+                    }
+                },
             },
             Optional("datasets"): {
                 str: [str],
