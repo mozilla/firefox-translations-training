@@ -18,7 +18,6 @@ kind-dependencies:
     - merge-corpus
     - merge-devset
     - train-teacher
-    - train-vocab
     - toolchain
 
 tasks:
