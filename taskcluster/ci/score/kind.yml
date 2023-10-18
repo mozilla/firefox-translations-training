@@ -13,7 +13,6 @@ transforms:
 
 kind-dependencies:
     - train-backwards
-    - train-vocab
     - merge-translated
     - toolchain
 
@@ -83,7 +82,6 @@ tasks:
 
         dependencies:
             train-backwards: train-backwards-{src_locale}-{trg_locale}
-            train-vocab: train-vocab-{src_locale}-{trg_locale}
             merge-translated: merge-translated-{src_locale}-{trg_locale}
 
         fetches:
@@ -92,7 +90,6 @@ tasks:
             train-backwards:
                 - artifact: final.model.npz.best-{best_model}.npz
                   extract: false
-            train-vocab:
                 - artifact: vocab.spm
                   extract: false
             merge-translated:

@@ -29,15 +29,19 @@ tasks:
                 type: train-backwards
                 resources:
                     - pipeline/train/train.sh
+                    - taskcluster/scripts/pipeline/train-taskcluster.sh
                     - pipeline/train/configs/model/backward.yml
                     - pipeline/train/configs/training/backward.train.yml
                 from-parameters:
                     marian_args: training_config.marian-args.training-backward
+                    pretrained_backward: training_config.experiment.pretrained-models.backward
         task-context:
             from-parameters:
                 best_model: training_config.experiment.best-model
                 src_locale: training_config.experiment.src
                 trg_locale: training_config.experiment.trg
+                pretrained_backward_mode: training_config.experiment.pretrained-models.backward.mode
+                pretrained_backward_type: training_config.experiment.pretrained-models.backward.type
             substitution-fields:
                 - description
                 - name
@@ -76,8 +80,7 @@ tasks:
                 - bash
                 - -c
                 - >-
-                    export MARIAN=$MOZ_FETCHES_DIR &&
-                    $VCS_PATH/pipeline/train/train.sh
+                    $VCS_PATH/taskcluster/scripts/pipeline/train-taskcluster.sh
                     backward
                     train
                     {trg_locale}
@@ -85,8 +88,9 @@ tasks:
                     $MOZ_FETCHES_DIR/corpus
                     $MOZ_FETCHES_DIR/devset
                     $TASK_WORKDIR/artifacts
-                    $MOZ_FETCHES_DIR/vocab.spm
                     {best_model}
+                    {pretrained_backward_mode}
+                    {pretrained_backward_type}
                     {marian_args}
 
         dependencies:

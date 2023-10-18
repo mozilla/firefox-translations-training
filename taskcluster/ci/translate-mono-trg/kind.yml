@@ -16,7 +16,6 @@ transforms:
 kind-dependencies:
     - split-mono-trg
     - train-backwards
-    - train-vocab
     - toolchain
 
 task-defaults:
@@ -84,13 +83,13 @@ task-defaults:
                 {marian_args}
 
     dependencies:
-        train-vocab: train-vocab-{src_locale}-{trg_locale}
+        train-backwards: train-backwards-{src_locale}-{trg_locale}
 
     fetches:
         toolchain:
             - marian
             - cuda-toolkit
-        train-vocab:
+        train-backwards:
             - artifact: vocab.spm
               extract: false
 
