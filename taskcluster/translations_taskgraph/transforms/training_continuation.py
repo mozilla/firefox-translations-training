@@ -19,6 +19,7 @@ MODEL_TRAINING_ARTIFACT_NAMES = (
     "model.npz.yml",
     "train.log",
     "valid.log",
+    "vocab.spm",
 )
 
 
@@ -58,10 +59,6 @@ def training_continuation(config, jobs):
         model_training_artifact_mounts = get_artifact_mounts(
             model_config["urls"], "./artifacts", MODEL_TRAINING_ARTIFACT_NAMES
         )
-        vocabulary_training_artifact_mounts = get_artifact_mount(
-            model_config["vocab"]["url"], "./artifacts", "vocab.spm"
-        )
         for job, job_mounts in zip(jobs, model_training_artifact_mounts):
             job["task"]["payload"]["mounts"].extend(job_mounts)
-            job["task"]["payload"]["mounts"].append(vocabulary_training_artifact_mounts)
             yield job
