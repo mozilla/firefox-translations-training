@@ -24,7 +24,8 @@ MODEL_TRAINING_ARTIFACT_NAMES = (
 
 
 def get_artifact_mount(url, directory, artifact_name):
-    artifact_url = urljoin(url, artifact_name)
+    normalized_url = f"{url}/" if not url.endswith("/") else url
+    artifact_url = urljoin(normalized_url, artifact_name)
     return {
         "content": {
             "url": artifact_url,
