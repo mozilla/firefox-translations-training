@@ -4,8 +4,6 @@ import os
 
 MODEL_TRAINING_ARTIFACT_NAMES = (
     "devset.out",
-    "final.model.npz.best-chrf.npz",
-    "final.model.npz.best-chrf.npz.decoder.yml",
     "model.npz",
     "model.npz.best-bleu-detok.npz",
     "model.npz.best-bleu-detok.npz.decoder.yml",
