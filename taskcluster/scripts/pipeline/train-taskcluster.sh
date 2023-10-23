@@ -40,6 +40,9 @@ case "$pretrained_model_mode" in
         exit 0
         ;;
     "continue"|"init"|"None")
+        if [ "$pretrained_model_mode" != "None" ]; then
+            extra_params+=("--no-restore-corpus")
+        fi
         if [ "$pretrained_model_mode" == "init" ]; then
             extra_params+=("--pretrained-model" "$TASK_WORKDIR/artifacts/model.npz.best-$best_model_metric.npz")
         fi
