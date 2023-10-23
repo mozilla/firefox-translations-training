@@ -26,7 +26,7 @@ extra_params=( "${@:11}" )
 if [ "$pretrained_model_mode" == "None" ]; then
     vocab="$MOZ_FETCHES_DIR/vocab.spm"
 else
-    vocab="./artifacts/vocab.spm"
+    vocab="$TASK_WORKDIR/artifacts/vocab.spm"
 fi
 
 echo "$pretrained_model_mode"
@@ -41,7 +41,7 @@ case "$pretrained_model_mode" in
         ;;
     "continue"|"init"|"None")
         if [ "$pretrained_model_mode" == "init" ]; then
-            extra_params+=("--pretrained-model" "./artifacts/model.npz.best-$best_model_metric.npz")
+            extra_params+=("--pretrained-model" "$TASK_WORKDIR/artifacts/model.npz.best-$best_model_metric.npz")
         fi
         $VCS_PATH/pipeline/train/train.sh \
         "$model_type" \
