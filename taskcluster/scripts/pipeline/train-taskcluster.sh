@@ -29,9 +29,6 @@ else
     vocab="$TASK_WORKDIR/artifacts/vocab.spm"
 fi
 
-echo "$pretrained_model_mode"
-echo "$pretrained_model_type"
-
 export MARIAN=$MOZ_FETCHES_DIR
 
 case "$pretrained_model_mode" in
