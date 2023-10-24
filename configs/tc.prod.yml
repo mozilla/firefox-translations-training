@@ -1,0 +1,160 @@
+# Example of a production config for Taskcluster
+datasets:
+  devtest:
+    - flores_dev
+    - sacrebleu_wmt08
+    - mtdata_Neulab-tedtalks_dev-1-eng-hun
+  mono-src:
+    - news-crawl_news.2021
+    - news-crawl_news.2020
+    - news-crawl_news.2019
+    - news-crawl_news.2018
+    - news-crawl_news.2017
+    - news-crawl_news.2016
+    - news-crawl_news.2015
+    - news-crawl_news.2014
+    - news-crawl_news.2013
+    - news-crawl_news.2012
+    - news-crawl_news.2011
+    - news-crawl_news.2010
+    - news-crawl_news.2009
+    - news-crawl_news.2008
+    - news-crawl_news.2007
+  mono-trg:
+    - news-crawl_news.2021
+    - news-crawl_news.2020
+    - news-crawl_news.2019
+    - news-crawl_news.2018
+    - news-crawl_news.2017
+    - news-crawl_news.2016
+    - news-crawl_news.2015
+    - news-crawl_news.2014
+    - news-crawl_news.2013
+    - news-crawl_news.2012
+    - news-crawl_news.2011
+    - news-crawl_news.2010
+    - news-crawl_news.2009
+    - news-crawl_news.2008
+    - news-crawl_news.2007
+  test:
+    - flores_devtest
+    - sacrebleu_wmt09
+    - mtdata_Neulab-tedtalks_test-1-eng-hun
+  train:
+    - opus_Books/v1
+    - opus_CCAligned/v1
+    - opus_CCMatrix/v1
+    - opus_DGT/v2019
+    - opus_ECB/v1
+    - opus_ECDC/v2016-03-16
+    - opus_ELITR-ECA/v1
+    - opus_ELRC-2019-EUIPO_2017/v1
+    - opus_ELRC-2715-EMEA/v1
+    - opus_ELRC-2744-vaccination/v1
+    - opus_ELRC-2876-EU_publications_medi/v1
+    - opus_ELRC-3064-wikipedia_health/v1
+    - opus_ELRC-3203-antibiotic/v1
+    - opus_ELRC-3294-EUROPARL_covid/v1
+    - opus_ELRC-3465-EC_EUROPA_covid/v1
+    - opus_ELRC-3566-EUR_LEX_covid/v1
+    - opus_ELRC-3607-presscorner_covid/v1
+    - opus_ELRC-5067-SciPar/v1
+    - opus_ELRC-EC_EUROPA/v1
+    - opus_ELRC-EMEA/v1
+    - opus_ELRC-EUIPO_2017/v1
+    - opus_ELRC-EUROPARL_covid/v1
+    - opus_ELRC-EUR_LEX/v1
+    - opus_ELRC-EU_publications/v1
+    - opus_ELRC-antibiotic/v1
+    - opus_ELRC-presscorner_covid/v1
+    - opus_ELRC-vaccination/v1
+    - opus_ELRC-wikipedia_health/v1
+    - opus_ELRC_2922/v1
+    - opus_ELRC_2923/v1
+    - opus_ELRC_3382/v1
+    - opus_EMEA/v3
+    - opus_EUbookshop/v2
+    - opus_EUconst/v1
+    - opus_Europarl/v8
+    - opus_GNOME/v1
+    - opus_GlobalVoices/v2018q4
+    - opus_JRC-Acquis/v3.0
+    - opus_KDE4/v2
+    - opus_LinguaTools-WikiTitles/v2014
+    - opus_NeuLab-TedTalks/v1
+    - opus_OpenSubtitles/v2018
+    - opus_PHP/v1
+    - opus_ParaCrawl/v9
+    - opus_QED/v2.0a
+    - opus_TED2020/v1
+    - opus_Tatoeba/v2022-03-03
+    - opus_TildeMODEL/v2018
+    - opus_Ubuntu/v14.10
+    - opus_WikiMatrix/v1
+    - opus_Wikipedia/v1.0
+    - opus_XLEnt/v1.2
+    - opus_bible-uedin/v1
+    - opus_wikimedia/v20210402
+    - mtdata_ELRC-antibiotic-1-eng-hun
+    - mtdata_ELRC-ec_europa_covid-1-eng-hun
+    - mtdata_ELRC-emea-1-eng-hun
+    - mtdata_ELRC-eu_publications_medical_v2-1-eng-hun
+    - mtdata_ELRC-euipo_2017-1-eng-hun
+    - mtdata_ELRC-eur_lex_covid-1-eng-hun
+    - mtdata_ELRC-presscorner_covid-1-eng-hun
+    - mtdata_ELRC-vaccination-1-eng-hun
+    - mtdata_ELRC-wikipedia_health-1-eng-hun
+    - mtdata_EU-dcep-1-eng-hun
+    - mtdata_EU-eac_forms-1-eng-hun
+    - mtdata_EU-eac_reference-1-eng-hun
+    - mtdata_EU-ecdc-1-eng-hun
+    - mtdata_LinguaTools-wikititles-2014-eng-hun
+    - mtdata_Neulab-tedtalks_train-1-eng-hun
+    - mtdata_Tilde-ecb-2017-eng-hun
+    - mtdata_Tilde-eesc-2017-eng-hun
+    - mtdata_Tilde-ema-2016-eng-hun
+    - mtdata_Tilde-rapid-2016-eng-hun
+    - mtdata_Lindat-khresmoi_summary_dev-2-eng-hun
+    - mtdata_Lindat-khresmoi_summary_test-2-eng-hun
+experiment:
+  backward-model: NOT-YET-SUPPORTED
+  best-model: chrf
+  bicleaner:
+    dataset-thresholds:
+      opus_CCAligned/v1: 0.7
+      opus_LinguaTools-WikiTitles/v2014: 0.7
+      opus_OpenSubtitles/v2018: 0.8
+      opus_ParaCrawl/v9: 0.0
+      opus_WikiMatrix/v1: 0.7
+      opus_bible-uedin/v1: 0.7
+    default-threshold: 0.5
+  mono-max-sentences-src: 100000000
+  mono-max-sentences-trg: 20000000
+  name: baseline_enhu
+  split-length: 2000000
+  spm-sample-size: 10000000
+  src: en
+  teacher-ensemble: 2
+  trg: hu
+  vocab: NOT-YET-SUPPORTED
+marian-args:
+  decoding-backward:
+    beam-size: '12'
+    mini-batch-words: '2000'
+  decoding-teacher:
+    mini-batch-words: '4000'
+    precision: float16
+  training-backward:
+    after: 10e
+  training-teacher-base:
+    after: 2e
+    early-stopping: '40'
+  training-student:
+    early-stopping: '20'
+  training-student-finetuned:
+    early-stopping: '20'
+  training-teacher-finetuned:
+    early-stopping: '40'
+target-stage: all
+taskcluster:
+  split-chunks: 10
