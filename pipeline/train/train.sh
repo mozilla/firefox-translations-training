@@ -54,6 +54,9 @@ for index in "${!elements[@]}"; do
     sed -i -e "s#<dataset${index}>#${tsv_dataset}#g" "${new_config}"
 done
 
+# Replace the path to vocab (required for alignments to work)
+sed -i -e "s#<vocab>#${vocab}#g" "${new_config}"
+
 # if the training set is a tsv, validation set also has to be a tsv
 echo "### Converting validation sets to tsv"
 valid_tsv_dataset="${valid_set_prefix}.${src}${trg}.tsv"
@@ -73,7 +76,8 @@ fi
 echo "### Training ${model_dir}"
 # OpusTrainer reads the datasets, shuffles, augments them and feeds to stdin of Marian
 # suppress logging warnings for empty fields
-# TODO: opustrainer complains on Marian --log option
+# TODO: add --log "${model_dir}/valid.log" back
+# TODO  opustrainer complains on Marian --log option https://github.com/hplt-project/OpusTrainer/issues/39
 opustrainer-train \
   --config "${new_config}" \
   --log-file "${model_dir}/opustrainer.log" \
