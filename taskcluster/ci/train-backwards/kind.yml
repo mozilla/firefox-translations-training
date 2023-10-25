@@ -40,7 +40,6 @@ tasks:
                 best_model: training_config.experiment.best-model
                 src_locale: training_config.experiment.src
                 trg_locale: training_config.experiment.trg
-                pretrained_backward_mode: training_config.experiment.pretrained-models.backward.mode
                 pretrained_backward_type: training_config.experiment.pretrained-models.backward.type
             substitution-fields:
                 - description
@@ -89,7 +88,7 @@ tasks:
                     $MOZ_FETCHES_DIR/devset
                     $TASK_WORKDIR/artifacts
                     {best_model}
-                    {pretrained_backward_mode}
+                    use
                     {pretrained_backward_type}
                     {marian_args}
 

@@ -192,16 +192,12 @@ defaults = get_defaults("")["training_config"]
                                 "type": "object",
                                 "properties": {
                                     "url": {"type": "string", "format": "uri"},
-                                    "mode": {
-                                        "type": "string",
-                                        "enum": ["continue", "init", "use"],
-                                    },
                                     "type": {
                                         "type": "string",
                                         "enum": ["default", "opusmt"],
                                     },
                                 },
-                                "required": ["url", "mode", "type"],
+                                "required": ["url", "type"],
                             },
                         },
                     },
