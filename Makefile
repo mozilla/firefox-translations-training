@@ -169,7 +169,7 @@ validate-taskgraph:
 # Downloads Marian training logs for a Taskcluster task group
 download-logs:
 	poetry install --only taskcluster
-	python utils/tc_marian_logs.py --output=logs --task-group-id=$(LOGS_TASK_GROUP)
+	python utils/tc_marian_logs.py --output=$$(pwd)/logs --task-group-id=$(LOGS_TASK_GROUP)
 
 # Runs Tensorboard for Marian training logs in ./logs directory
 # then go to http://localhost:6006

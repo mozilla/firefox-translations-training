@@ -4,9 +4,9 @@ Downloads Marian training logs for a Taskcluster task group
 
 import argparse
 import os
-import urllib.request
 
 import taskcluster
+from taskcluster.download import downloadArtifactToFile
 
 
 def donwload_logs(group_id, output):
@@ -25,21 +25,20 @@ def donwload_logs(group_id, output):
         task_id = task["status"]["taskId"]
 
         task_obj = queue.task(task_id)
-        run_id = task["status"]["runs"][-1]["runId"]
+        task["status"]["runs"][-1]["runId"]
         task_obj_label = task_obj["tags"]["label"].replace("/", "_")
 
         os.makedirs(output, exist_ok=True)
         output_path = os.path.join(output, f"{task_obj_label}.log")
-        # requires authentication
-        # with open(output_path, 'w') as f:
-        #     downloadArtifactToFile(f,
-        #                            taskId=task['status']['taskId'],
-        #                            name='train.log',
-        #                            queueService=queue)
 
-        url = f"https://firefoxci.taskcluster-artifacts.net/{task_id}/{run_id}/public/build/train.log"
-        print(f"Downloading {url} to {output_path}")
-        urllib.request.urlretrieve(url, output_path)
+        print(f"Downloading {output_path}")
+        with open(output_path, "wb") as f:
+            downloadArtifactToFile(
+                f,
+                taskId=task["status"]["taskId"],
+                name="public/build/train.log",
+                queueService=queue,
+            )
 
 
 def main() -> None:
