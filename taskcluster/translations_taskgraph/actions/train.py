@@ -206,7 +206,7 @@ defaults = get_defaults("")["training_config"]
                                         "enum": ["default", "opusmt"],
                                     },
                                 },
-                                "required": ["url", "mode", "type"],
+                                "required": ["urls", "mode", "type"],
                             },
                         },
                     },
