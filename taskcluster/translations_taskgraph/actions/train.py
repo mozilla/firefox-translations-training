@@ -191,7 +191,12 @@ defaults = get_defaults("")["training_config"]
                             "backward": {
                                 "type": "object",
                                 "properties": {
-                                    "url": {"type": "string", "format": "uri"},
+                                    "urls": {
+                                        "type": "array",
+                                        "items": {"type": "string", "format": "uri"},
+                                        "minItems": 1,
+                                        "maxItems": 1,
+                                    },
                                     "mode": {
                                         "type": "string",
                                         "enum": ["continue", "init", "use"],
