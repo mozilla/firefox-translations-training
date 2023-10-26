@@ -35,6 +35,7 @@ case "$pretrained_model_mode" in
     "use")
         echo "The training mode is 'use', using existing model without further training."
         cp "$TASK_WORKDIR/artifacts/model.npz.best-$best_model_metric.npz" "$TASK_WORKDIR/artifacts/final.model.npz.best-$best_model_metric.npz"
+        cp "$TASK_WORKDIR/artifacts/model.npz.best-$best_model_metric.npz.decoder.yml" "$TASK_WORKDIR/artifacts/final.model.npz.best-$best_model_metric.npz.decoder.yml"
         exit 0
         ;;
     "continue"|"init"|"None")
