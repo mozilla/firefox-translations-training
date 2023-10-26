@@ -33,36 +33,53 @@ def get_artifact_mount(url, directory, artifact_name):
 
 
 def get_artifact_mounts(urls, directory, artifact_names):
-    ret = []
     for url in urls:
         artifact_mounts = []
         for artifact_name in artifact_names:
             artifact_mounts.append(get_artifact_mount(url, directory, artifact_name))
-        ret.append(artifact_mounts)
-    return ret
+        yield artifact_mounts
 
 
 transforms = TransformSequence()
 
 
-@transforms.add
-def training_continuation(config, jobs):
+def validate_pretrained_models(config):
     pretrained_models = config.params["training_config"]["experiment"].get("pretrained-models", {})
-    if not any(pretrained_models):
-        for job in jobs:
-            yield job
-    else:
-        model_config = pretrained_models.get("teacher-base")
+    train_teacher = pretrained_models.get("train-teacher")
+    if train_teacher:
         teacher_ensemble = config.params["training_config"]["experiment"]["teacher-ensemble"]
-        if len(model_config["urls"]) != teacher_ensemble:
+        if len(train_teacher["urls"]) != teacher_ensemble:
             raise Exception(
                 f"The experiment's 'teacher-ensemble' ({teacher_ensemble}) "
-                f"does not match the number of provided model 'urls' ({len(model_config['urls'])}) "
-                f"for the pretrained 'teacher-base' ensemble."
+                f"does not match the number of provided model 'urls' ({len(train_teacher['urls'])}) "
+                f"for the pretrained 'train-teacher' ensemble."
             )
-        model_training_artifact_mounts = get_artifact_mounts(
-            model_config["urls"], "./artifacts", MODEL_TRAINING_ARTIFACT_NAMES
+    train_backwards = pretrained_models.get("train-backwards")
+    if train_backwards:
+        if len(train_backwards["urls"]) != 1:
+            raise Exception(
+                f"The experiment's 'pretrained-models.backward.urls' ({len(train_backwards['urls'])}) "
+                f"must be equal to one (1). "
+                f"The pipeline's backward model is _not_ an ensemble."
+            )
+    return pretrained_models
+
+
+@transforms.add
+def mount_pretrained_model_training_artifacts(config, jobs):
+    pretrained_models = validate_pretrained_models(config)
+    for job in jobs:
+        pretrained_models_training_artifact_mounts = {
+            pretrained_model: get_artifact_mounts(
+                pretrained_models[pretrained_model]["urls"],
+                "./artifacts",
+                MODEL_TRAINING_ARTIFACT_NAMES,
+            )
+            for pretrained_model in pretrained_models
+        }
+        kind = job["task"]["tags"]["kind"]
+        pretrained_model_training_artifact_mounts = next(
+            pretrained_models_training_artifact_mounts.get(kind, iter(()))
         )
-        for job, job_mounts in zip(jobs, model_training_artifact_mounts):
-            job["task"]["payload"]["mounts"].extend(job_mounts)
-            yield job
+        job["task"]["payload"]["mounts"].extend(pretrained_model_training_artifact_mounts)
+        yield job

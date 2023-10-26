@@ -143,17 +143,17 @@ extend_parameters_schema(
                     },
                 },
                 Optional("pretrained-models"): {
-                    Optional("teacher-base"): {
+                    Optional("train-teacher"): {
                         Required("urls"): [str],
                         Required("mode"): str,
                         Required("type"): str,
                     },
-                    Optional("teacher-finetuned"): {
+                    Optional("finetune-teacher"): {
                         Required("urls"): [str],
                         Required("mode"): str,
                         Required("type"): str,
                     },
-                    Optional("backwards"): {
+                    Optional("train-backwards"): {
                         Required("urls"): [str],
                         Required("mode"): str,
                         Required("type"): str,

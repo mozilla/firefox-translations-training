@@ -150,7 +150,7 @@ defaults = get_defaults("")["training_config"]
                     "pretrained-models": {
                         "type": "object",
                         "properties": {
-                            "teacher-base": {
+                            "train-teacher": {
                                 "type": "object",
                                 "properties": {
                                     "urls": {
@@ -169,7 +169,7 @@ defaults = get_defaults("")["training_config"]
                                 },
                                 "required": ["urls", "mode", "type"],
                             },
-                            "teacher-finetuned": {
+                            "finetune-teacher": {
                                 "type": "object",
                                 "properties": {
                                     "urls": {
@@ -188,14 +188,13 @@ defaults = get_defaults("")["training_config"]
                                 },
                                 "required": ["urls", "mode", "type"],
                             },
-                            "backward": {
+                            "train-backwards": {
                                 "type": "object",
                                 "properties": {
                                     "urls": {
                                         "type": "array",
                                         "items": {"type": "string", "format": "uri"},
                                         "minItems": 1,
-                                        "maxItems": 1,
                                     },
                                     "mode": {
                                         "type": "string",
