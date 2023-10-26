@@ -32,12 +32,16 @@ class CompositeModifier:
         return batch
 
 
+NOISE_RATE = 0.1  # 10% noise by default
+
 modifier_map = {
-    "aug-typos": TypoModifier(1.0),
-    "aug-title": TitleCaseModifier(1.0),
-    "aug-upper": UpperCaseModifier(1.0),
+    "aug-typos": TypoModifier(NOISE_RATE),
+    "aug-title": TitleCaseModifier(NOISE_RATE),
+    "aug-title-strict": TitleCaseModifier(1.0),
+    "aug-upper": UpperCaseModifier(NOISE_RATE),
+    "aug-upper-strict": UpperCaseModifier(1.0),
     "aug-mix": CompositeModifier(
-        [TypoModifier(0.3), UpperCaseModifier(0.3), TitleCaseModifier(0.3)]
+        [TypoModifier(NOISE_RATE), UpperCaseModifier(NOISE_RATE), TitleCaseModifier(NOISE_RATE)]
     ),
 }
 
