@@ -79,7 +79,8 @@ def mount_pretrained_model_training_artifacts(config, jobs):
         }
         kind = job["task"]["tags"]["kind"]
         pretrained_model_training_artifact_mounts = next(
-            pretrained_models_training_artifact_mounts.get(kind, iter(()))
+            pretrained_models_training_artifact_mounts.get(kind, iter((None,)))
         )
-        job["task"]["payload"]["mounts"].extend(pretrained_model_training_artifact_mounts)
+        if pretrained_model_training_artifact_mounts:
+            job["task"]["payload"]["mounts"].extend(pretrained_model_training_artifact_mounts)
         yield job
