@@ -76,13 +76,10 @@ fi
 echo "### Training ${model_dir}"
 # OpusTrainer reads the datasets, shuffles, augments them and feeds to stdin of Marian
 # suppress logging warnings for empty fields
-# TODO: add --log "${model_dir}/valid.log" back
-# TODO  opustrainer complains on Marian --log option https://github.com/hplt-project/OpusTrainer/issues/39
 opustrainer-train \
   --config "${new_config}" \
   --log-file "${model_dir}/opustrainer.log" \
-  --log-level ERROR \
-  "${MARIAN}/marian" \
+  --log-level INFO -- "${MARIAN}/marian" \
     --model "${model_dir}/model.npz" \
     -c "configs/model/${model_type}.yml" "configs/training/${model_type}.${training_type}.yml" \
     -T "${model_dir}/tmp" \
@@ -93,6 +90,7 @@ opustrainer-train \
     --valid-sets "${valid_tsv_dataset}" \
     --valid-translation-output "${model_dir}/devset.out" \
     --valid-log "${model_dir}/valid.log" \
+    --log "${model_dir}/train.log" \
     --shuffle batches \
     --sentencepiece-alphas 0.1 \
     --no-restore-corpus \

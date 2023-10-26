@@ -8,7 +8,7 @@ click==8.1.7
     # via sacremoses
 joblib==1.3.2
     # via sacremoses
-opustrainer @ git+https://github.com/hplt-project/OpusTrainer.git@6c93fb667726504cad1cf5ab1aba140b99110f9d
+opustrainer @ git+https://github.com/mozilla/OpusTrainer.git@f99a6ac37d7563ad030edcf615db155c17120568
     # via -r pipeline/train/requirements/train.in
 pyyaml==6.0
     # via opustrainer
