@@ -13,8 +13,8 @@ transforms:
 kind-dependencies:
     - export
     - evaluate
-    - evaluate-quantized
-    - evaluate-teacher-ensemble
+#    - evaluate-quantized
+#    - evaluate-teacher-ensemble
 
 tasks:
     all:
