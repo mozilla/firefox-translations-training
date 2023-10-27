@@ -117,7 +117,7 @@ def run_import(type: str, dataset: str, output_prefix: str):
     current_dir = os.path.dirname(os.path.abspath(__file__))
 
     if type == "corpus":
-        match = re.search(r"^(\w*)_(aug-[a-z]*)?_?(.+)$", dataset)
+        match = re.search(r"^(\w*)_(aug[a-z\-]*)?_?(.+)$", dataset)
 
         if not match:
             raise ValueError(f"Invalid dataset name: {dataset}")
