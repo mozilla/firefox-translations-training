@@ -47,7 +47,6 @@ marian-args:
     # change based on available training data
     after: 10e
   training-teacher-base:
-    # remove for low resource languages or if training without augmentation
     after: 2e
 # these configs override pipeline/translate/decoder.yml
   decoding-backward:
@@ -141,7 +140,6 @@ datasets:
     - news-crawl_news.2012
     - news-crawl_news.2011
   # to be translated by the backward model to augment teacher corpus with back-translations
-  # leave empty to skip augmentation step (high resource languages)
   mono-trg:
     - news-crawl_news.2020
     - news-crawl_news.2019
