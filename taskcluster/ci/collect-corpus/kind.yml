@@ -53,7 +53,7 @@ tasks:
                 merge-corpus:
                     - artifact: corpus.{trg_locale}.zst
 
-        worker-type: b-linux-large
+        worker-type: b-linux-large-300gb
         expires-after: "90 days"
         worker:
             docker-image: {"in-tree": "train"}

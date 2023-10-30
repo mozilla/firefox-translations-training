@@ -39,7 +39,7 @@ tasks:
                 - dependencies
                 - worker.env
                 - attributes
-        worker-type: b-linux-large
+        worker-type: b-linux-large-300gb
         expires-after: "90 days"
         worker:
             docker-image: {"in-tree": "train"}
