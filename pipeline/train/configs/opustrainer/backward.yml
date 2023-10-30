@@ -11,7 +11,7 @@ train:
 modifiers:
 - UpperCase: 0.05 # Apply randomly to 5% of sentences
 - TitleCase: 0.05
-- Typos: 0.05
+#- Typos: 0.05
 
 seed: 1111
 num_fields: 2
