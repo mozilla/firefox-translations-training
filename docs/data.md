@@ -40,34 +40,3 @@ Make sure to check licenses of the datasets before using them.
 
 Just add a shell script to [corpus](/pipeline/data/importers/corpus) or [mono](/pipeline/data/importers/mono) which is named as `<prefix>.sh` 
 and accepts the same parameters as the other scripts from the same folder.
-
-## Dataset fixing
-
-Some datasets require fixes like detokenization. Dataset and language specific fixes are implemented in [pipeline/clean/fixes](/pipeline/clean/fixes).
-Naming convention: 
-- `<dataset_name>.sh` for parallel dataset cleaning
-- `<dataset_name>.<lang>.sh` for language specific cleaning of parallel or monolingual dataset
-- `/` in dataset name should be replaced with `_`
-
-## Dataset cleaning
-Some parallel datasets require more aggressive filtering.
-Dataset specific Bicleaner thresholds can be set in config. 
-`0` means skipping filtering entirely (useful for Paracrawl).
-
-Example:
-
-```
-experiment:
-...
-  bicleaner:
-    default-threshold: 0.5
-    dataset-thresholds:
-      opus_ParaCrawl/v8: 0
-      mtdata_neulab_tedtalksv1_train: 0.6
-```
-
-### OpusCleaner
-
-Another option is to use an all-in-one cleaning tool [OpusCleaner](https://github.com/hplt-project/OpusCleaner) by HPLT project.
-
-See more details in the [dedicated doc](opus-cleaner.md).

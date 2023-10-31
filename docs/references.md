@@ -15,7 +15,6 @@ Lisboa, Portugal: European Association for Machine Translation, November 2020
    
 3. Mölder F, Jablonski KP, Letcher B, et al. [Sustainable data analysis with Snakemake](https://pubmed.ncbi.nlm.nih.gov/34035898/). F1000Res. 2021;10:33. Published 2021 Jan 18. doi:10.12688/f1000research.29032.2
 
-
 4. [Edinburgh’s Submissions to the 2020 Machine Translation Efficiency Task](https://aclanthology.org/2020.ngt-1.26) (Bogoychev et al., NGT 2020)
 
 5. [From Research to Production and Back: Ludicrously Fast Neural Machine Translation](https://aclanthology.org/D19-5632) (Kim et al., EMNLP 2019)

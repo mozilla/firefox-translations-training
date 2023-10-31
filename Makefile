@@ -125,13 +125,13 @@ tensorboard:
 ################################################
 
 # OpusCleaner is a data cleaner for training corpus
-# More details are in docs/opus-cleaner.md
+# More details are in docs/cleaning.md
 opuscleaner-ui:
 	poetry install --only opuscleaner
 	opuscleaner-server serve --host=0.0.0.0 --port=8000
 
 # Utils to find corpus etc
-install utils:
+install-utils:
 	poetry install --only utils
 
 # Black is a code formatter for Python files. Running this command will check that
