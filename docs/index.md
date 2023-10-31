@@ -1,4 +1,3 @@
-# Firefox Translations training
 Training pipelines for Firefox Translations machine translation models.
 
 [Training guide](training-guide.md)
