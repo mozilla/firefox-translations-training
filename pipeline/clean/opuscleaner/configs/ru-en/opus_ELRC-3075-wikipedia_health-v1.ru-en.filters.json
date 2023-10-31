@@ -83,7 +83,7 @@
     {
       "filter": "fasttext_filter",
       "parameters": {
-        "FASTTEXT_MODEL_TYPE": "large",
+        "FASTTEXT_MODEL_TYPE": "small",
         "LANG1": "ru",
         "LANG2": "en"
       },
