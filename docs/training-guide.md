@@ -222,9 +222,36 @@ Make sure to not set `precision: float16` on `txp` partition.
 
 ## 6. Monitor progress
 
-You can check training logs to see Marian output or run Tensorboard to look at training curves (currently requires restarting after a new model was added, because the tool that converts Marian logs to Tensorboard doesn't do it automatically). 
+It is possible to look at the training graphs in Tensorboard.
 
-Also, check `models/<lang-pair>/<experiment>/evaluation` folder to see BLEU and chrF numbers on evaluation datasets.
+#### Taskcluster
+When the training run is completed, provide a Task group id and download the training logs to a directory. 
+For example for [this task group](https://firefox-ci-tc.services.mozilla.com/tasks/groups/DClbX0cjSCeQuoE1fW-Ehw):
+```
+LOGS_TASK_GROUP=DClbX0cjSCeQuoE1fW-Ehw make download-logs
+```
+##### Snakemake
+Adjust the path to match the model directories in makefile `tensorboard`  command and remove `--offline` to automtically update while training.
+
+#### Tensorboard
+
+Run Tensorboard
+```
+make tensorboard
+```
+
+Then go to `http://localhost:6006` in the browser
+
+![Find CI](img/tensorboard.png)
+
+Known issue: the [marian-tensorboard](https://github.com/marian-nmt/marian-tensorboard) tool we're using 
+parses the trainig logs only for the student models and validation logs for all models for some reason.
+
+#### Metrics
+
+Check logs or output of `evaluate` steps to see the BLEU and chrF metrics for evaluation datasets.
+
+For Snakemake check `models/<lang-pair>/<experiment>/evaluation` folder.
 
 
 ## Troubleshooting

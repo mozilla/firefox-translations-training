@@ -17,6 +17,7 @@ TARGET=
 REPORTS?=../reports
 # for tensorboard
 MODELS?=../models
+LOGS_TASK_GROUP?=
 
 ###
 
@@ -110,15 +111,8 @@ dag:
 	  --dag \
 	  | dot -Tpdf > DAG.pdf
 
-install-tensorboard:
-	$(CONDA_ACTIVATE) base
-	conda env create -f envs/tensorboard.yml
 
-tensorboard:
-	$(CONDA_ACTIVATE) tensorboard
-	ls -d $(MODELS)/*/*/* > tb-monitored-jobs
-	tensorboard --logdir=$(MODELS) --host=0.0.0.0 &
-	python utils/tb_log_parser.py --prefix=
+
 
 ################################################
 ### Local utils and CI
@@ -171,3 +165,14 @@ fix-all:
 # Validates Task Cluster task graph locally
 validate-taskgraph:
 	pip3 install -r taskcluster/requirements.txt && taskgraph full
+
+# Downloads Marian training logs for a Taskcluster task group
+download-logs:
+	poetry install --only taskcluster
+	python utils/tc_marian_logs.py --output=$$(pwd)/logs --task-group-id=$(LOGS_TASK_GROUP)
+
+# Runs Tensorboard for Marian training logs in ./logs directory
+# then go to http://localhost:6006
+tensorboard:
+	poetry install --only tensorboard
+	marian-tensorboard --offline -f logs/*.log
