@@ -13,7 +13,7 @@ Considerations:
 - The size of the parallel corpus on [OPUS](https://opus.nlpl.eu/)
 - Availability of monolingual data. The pipeline requires monolingual data in both source and target languages. 
   Currently we support automatic donwloading only for [news crawl](https://data.statmt.org/news-crawl/)
-- Availability of [bicleaner-ai models](https://object.pouta.csc.fi/OPUS-ELRC-3069-wikipedia_health)
+- Availability of [bicleaner-ai models](https://github.com/bitextor/bicleaner-ai-data/releases)
 
 Set the language pair and a name of the experiment in the config:
 ```
@@ -65,6 +65,7 @@ python utils/find-corpus.py en ru sacrebleu
 ```
 - Use some datasets for validation while training (`datasets.devtest` section) and others for evaluation (`datasets.test`).
 - Flores dataset is available for 100 languages, so it's always a good idea to add `flores_dev` for validation and `flores_devtest` for the final evaluation of the model.
+- Some OPUS and mtdata datasets provide dev and devtest versions, so it's a good idea to add them to evaluation.
 - Make sure that training, validation and evaluation datasets are different.
 
 ```
@@ -81,11 +82,14 @@ python utils/find-corpus.py en ru sacrebleu
 ```
 
 ### Monolingual corpus
-It's almost always a good idea to use back-translations to augment training data and to use monolingual corpus to augment data for decoding by the teachers, especially for low-resource languages. The only limitation is probably available computational resources.
+It is recommended to always use back-translations to augment training data and to use 
+monolingual corpus to augment data for decoding by the teachers, even for high resource lanugages.
+It will be especially useful for low-resource ones though. 
+The only limitation is probably available computational resources.
 
 Find monolingual data and add it to `datasets.mono-src` and `datasets.mono-trg`. 
 I usually use [News Crawl](https://data.statmt.org/news-crawl/) datasets from statmt 
-because thye are relatively clean and we have an automatic downloading for them.
+because they are relatively clean and we have an automatic downloading for them.
 ```
   # to be translated by the ensemble of teacher models
   mono-src:
@@ -107,17 +111,17 @@ Find more details about the supported dataset importers [here](data.md).
 
 ## 3. Configure data cleaning
 
-To use the default data cleaining pipline set:
+To use the default data cleaning pipeline set:
 ```
   use-opuscleaner: false
 ```
 Make sure the language is present in [clean_parallel](/pipeline/clean/tools/clean_parallel.py#L19) script.
 
-For more advanced cleaning and using OpusCleaner look at the [Data cleaning](cleaning.md) doc.
+For more advanced cleaning and for using OpusCleaner look at the [Data cleaning](cleaning.md) doc.
 
 ### Bicleaner
 It is recommended to use Bicleaner ML models to filter noisy data. 
-Check that the bicleaner-ai model is [available](https://object.pouta.csc.fi/OPUS-ELRC-3069-wikipedia_health) 
+Check that the bicleaner-ai model is [available](https://github.com/bitextor/bicleaner-ai-data/releases) 
 and add filtering thresholds to the config. 
 
 - `0.5` should be a good default value.
@@ -140,8 +144,8 @@ The pipeline supports overriding the default [Marian settings](https://marian-nm
 
 ### Model training
 I often increase early stopping for teachers to make sure the training converges.
-However, this depends on language and might not bring much benefit but will make the training longer.
-So, you can start with `early-stopping: 20`, monitor the training and increase if it stop too early.
+However, it depends on the language and might not bring much benefit but will make the training longer.
+So, you can start with `early-stopping: 20`, monitor the training and increase it if the model stops training too early.
 ```
 marian-args:
 # these configs override pipeline/train/configs
@@ -159,7 +163,7 @@ marian-args:
 ### Decoding (translation)
 
 `mini-batch-words` can be set depending on available GPU memory and the number of teachers. 
-It affects the batch size and decoding speed.
+It affects the batch size and decoding speed for the `traslate` steps.
 ```
 marian-args:
 ...
@@ -174,7 +178,7 @@ marian-args:
 #### Half precision decoding
 
 Make sure to use it only for teacher models and on GPUs that support it.
-Is speed up decoding but can slighly decrease quality
+It speeds up decoding but can slightly decrease quality.
 ```
 marian-args:
 ...
@@ -188,17 +192,20 @@ marian-args:
 Follow the instructions that correspond to the workflow manager you will be using 
 ([Taskcluster](task-cluster.md), [Snakemake](snakemake.md)).
 
-### Hardware specific configuaiton
+Find the full description of the pipeline steps [here](pipeline-steps.md).
+
+### Cluster specific configuaiton
 
 The Marian workspace is usually safe to set to about 3/4 of available GPU memory 
 (in a [profile for Snakemake](/pipeline/train/train.sh) and throughout the ci steps in Task cluster).
-
+Setting a higher value speeds up training but might lead to out of GPU memory error.
 
 ### Taskcluster
 
 Follow [this guide](task-cluster.md) to run the pipeline on Taskcluster.
 
-You can run it up to a specific step using the config setting:
+You can run it up to a specific step using a config setting. 
+For example to only train the teacher model:
 ```
 target-stage: train-teacher
 ```
@@ -222,6 +229,20 @@ Make sure to not set `precision: float16` on `txp` partition.
 
 ## 6. Monitor progress
 
+### Logs
+
+Look at the logs of the pipeline steps and 
+specifically at `train.log` for the training steps (`train-...`, `finetune-...`).
+
+### Metrics
+
+Check logs or output files `*.metrics` for `evaluate` steps to see the BLEU and chrF metrics calculated on evaluation datasets.
+
+For Snakemake check `models/<lang-pair>/<experiment>/evaluation` folder.
+
+
+### Tensorboard
+
 It is possible to look at the training graphs in Tensorboard.
 
 #### Taskcluster
@@ -233,9 +254,8 @@ LOGS_TASK_GROUP=DClbX0cjSCeQuoE1fW-Ehw make download-logs
 ##### Snakemake
 Adjust the path to match the model directories in makefile `tensorboard`  command and remove `--offline` to automtically update while training.
 
-#### Tensorboard
+#### Run server
 
-Run Tensorboard
 ```
 make tensorboard
 ```
@@ -247,12 +267,17 @@ Then go to `http://localhost:6006` in the browser
 Known issue: the [marian-tensorboard](https://github.com/marian-nmt/marian-tensorboard) tool we're using 
 parses the trainig logs only for the student models and validation logs for all models for some reason.
 
-#### Metrics
+## 7. Download the final model
 
-Check logs or output of `evaluate` steps to see the BLEU and chrF metrics for evaluation datasets.
+The small quantized model is available in bergamot-translator compatible format as an output of the `export` step.
+It includes three files: model, vocab and shortlist.
 
-For Snakemake check `models/<lang-pair>/<experiment>/evaluation` folder.
-
+For example:
+```
+model.ruen.intgemm.alphas.bin.gz
+lex.50.50.ruen.s2t.bin.gz
+vocab.ruen.spm.gz
+```
 
 ## Troubleshooting
 
@@ -268,7 +293,7 @@ Taskcluster retries automatically.
 Usually, by the time we train the student, it's so much data that it might not fit in 128 GB of RAM. 
 For very high-resource languages like French it can happen even earlier, on the backward/teacher training stage. 
 The workaround is to remove `--shuffle-in-ram` from the [training script](/pipeline/train/train.sh) 
-and add `--shuffle batches` to the student [training script](/pipeline/train/train.sh). 
+and add `--shuffle batches`  instead.
 More details in the [issue](https://github.com/mozilla/firefox-translations-training/issues/21).
 
 

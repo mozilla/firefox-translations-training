@@ -1,8 +1,4 @@
-# Data
-
-This section includes instructions on how to find and configure datasets and cleaning procedures.
-
-## Dataset importers
+# Dataset importers
 
 Dataset importers can be used in `datasets` sections of the [training config](/configs/config.test.yml).
 
@@ -36,7 +32,7 @@ python utils/find-corpus.py en ru sacrebleu
 ```
 Make sure to check licenses of the datasets before using them.
 
-### Adding a new importer
+## Adding a new importer
 
 Just add a shell script to [corpus](/pipeline/data/importers/corpus) or [mono](/pipeline/data/importers/mono) which is named as `<prefix>.sh` 
 and accepts the same parameters as the other scripts from the same folder.
