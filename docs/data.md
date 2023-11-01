@@ -6,7 +6,7 @@ nav_order: 4
 
 # Dataset importers
 
-Dataset importers can be used in `datasets` sections of the [training config](/tree/main/configs/config.test.yml).
+Dataset importers can be used in `datasets` sections of the [training config](https://github.com/mozilla/firefox-translations-training/tree/main/configs/config.test.yml).
 
 Example:
 ```

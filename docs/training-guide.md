@@ -9,7 +9,9 @@ nav_order: 2
 A step-by-step guide on how to train a translation model. 
 
 The configuration of the training run happens mostly in the training configuration file. 
-Look at the examples of the full production configs for [Taskcluster](/tree/main/configs/tc.prod.yml) and [Snakemake](/tree/main/configs/config.prod.yml).
+Look at the examples of the full production configs for
+[Taskcluster](https://github.com/mozilla/firefox-translations-training/tree/main/configs/tc.prod.yml) and 
+[Snakemake](https://github.com/mozilla/firefox-translations-training/tree/main/configs/config.prod.yml).
 
 ## 1. Choose a language
 
@@ -36,7 +38,7 @@ experiment:
 2. Go to [statmt22](https://www.statmt.org/wmt22/translation-task.html), [statmt21](https://www.statmt.org/wmt21/translation-task.html) etc. 
    and check if the language pair participated in a competition. 
    If yes, there's a good chance some extra data is available for training.
-3. Use [find-corpus](/utils/find-corpus.py) tool to get OPUS datasets.
+3. Use [find-corpus](https://github.com/mozilla/firefox-translations-training/tree/main/utils/find-corpus.py) tool to get OPUS datasets.
 Install [poetry](https://python-poetry.org/) first, then run:
 ```
 make install-utils

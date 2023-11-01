@@ -37,7 +37,7 @@ We use [Taskcluster taskgraph](https://taskcluster-taskgraph.readthedocs.io/en/l
 
 ![Choose action](img/tc-train-action.png)
 
-6. Copy a config prepared in advance and press "train". See the example TC config [here](/tree/main/configs/tc.prod.yml). 
+6. Copy a config prepared in advance and press "train". See the example TC config [here](https://github.com/mozilla/firefox-translations-training/tree/main/configs/tc.prod.yml). 
    You can find directions on how to configure training in the [Model training guide](training-guide.md).
 
 ![Start training](img/tc-train.png)
