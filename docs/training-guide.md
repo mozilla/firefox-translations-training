@@ -9,7 +9,7 @@ nav_order: 2
 A step-by-step guide on how to train a translation model. 
 
 The configuration of the training run happens mostly in the training configuration file. 
-Look at the examples of the full production configs for [Taskcluster](/configs/tc.prod.yml) and [Snakemake](/configs/config.prod.yml).
+Look at the examples of the full production configs for [Taskcluster](/tree/main/configs/tc.prod.yml) and [Snakemake](/tree/main/configs/config.prod.yml).
 
 ## 1. Choose a language
 
@@ -121,7 +121,7 @@ To use the default data cleaning pipeline set:
 ```
   use-opuscleaner: false
 ```
-Make sure the language is present in [clean_parallel](https://github.com/mozilla/firefox-translations-training/pipeline/clean/tools/clean_parallel.py#L19) script.
+Make sure the language is present in [clean_parallel](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/clean/tools/clean_parallel.py#L19) script.
 
 For more advanced cleaning and for using OpusCleaner look at the [Data cleaning](cleaning.md) doc.
 
@@ -203,7 +203,7 @@ Find the full description of the pipeline steps [here](pipeline-steps.md).
 ### Cluster specific configuaiton
 
 The Marian workspace is usually safe to set to about 3/4 of available GPU memory 
-(in a [profile for Snakemake](https://github.com/mozilla/firefox-translations-training/pipeline/train/train.sh) and throughout the ci steps in Task cluster).
+(in a [profile for Snakemake](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/train.sh) and throughout the ci steps in Task cluster).
 Setting a higher value speeds up training but might lead to out of GPU memory error.
 
 ### Taskcluster
@@ -229,7 +229,7 @@ Find more details in the [Snakemake doc](snakemake.md).
 
 #### Mozilla Slurm cluster
 
-I usually set just one GPU partition per run in the [cluster config](https://github.com/mozilla/firefox-translations-training/pipeline/train/train.sh). It simplifies configuration and monitoring.
+I usually set just one GPU partition per run in the [cluster config](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/train.sh). It simplifies configuration and monitoring.
 
 Make sure to not set `precision: float16` on `txp` partition.
 
@@ -298,7 +298,7 @@ Taskcluster retries automatically.
 
 Usually, by the time we train the student, it's so much data that it might not fit in 128 GB of RAM. 
 For very high-resource languages like French it can happen even earlier, on the backward/teacher training stage. 
-The workaround is to remove `--shuffle-in-ram` from the [training script](https://github.com/mozilla/firefox-translations-training/pipeline/train/train.sh) 
+The workaround is to remove `--shuffle-in-ram` from the [training script](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/train.sh) 
 and add `--shuffle batches`  instead.
 More details in the [issue](https://github.com/mozilla/firefox-translations-training/issues/21).
 
