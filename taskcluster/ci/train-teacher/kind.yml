@@ -64,7 +64,7 @@ tasks:
                 from-parameters:
                     marian_args: training_config.marian-args.training-teacher-base
                     teacher-ensemble: training_config.experiment.teacher-ensemble
-        worker-type: b-linux-v100-gpu-4
+        worker-type: b-linux-v100-gpu-4-300gb
         expires-after: "90 days"
         worker:
             max-run-time: 2592000

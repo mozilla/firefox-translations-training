@@ -46,7 +46,7 @@ tasks:
                 - dependencies
                 - attributes
                 - run.command
-        worker-type: b-linux-v100-gpu-4
+        worker-type: b-linux-v100-gpu-4-300gb
         expires-after: "90 days"
         worker:
             max-run-time: 2592000
