@@ -3,6 +3,7 @@ remote_theme: just-the-docs/just-the-docs
 title: Firefox Translations Training
 description: Documentaiton for the Firefox Translations training pipelines
 heading_anchors: true
+# doesn't work
 favicon_ico: "img/logo.svg"
 # Aux links for the upper right navigation
 aux_links:

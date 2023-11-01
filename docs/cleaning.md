@@ -19,7 +19,7 @@ Config setting:
 ### Dataset fixing
 
 Some datasets require fixes like detokenization. 
-Dataset and language specific fixes are implemented in [/pipeline/clean/fixes](/pipeline/clean/fixes).
+Dataset and language specific fixes are implemented in [https://github.com/mozilla/firefox-translations-training/pipeline/clean/fixes](https://github.com/mozilla/firefox-translations-training/pipeline/clean/fixes).
 Naming convention: 
 - `<dataset_name>.sh` for parallel dataset cleaning
 - `<dataset_name>.<lang>.sh` for language specific cleaning of parallel or monolingual dataset
@@ -27,7 +27,7 @@ Naming convention:
 
 ### Cleaning scripts
 
-Make sure the language is present in [clean_parallel](/pipeline/clean/tools/clean_parallel.py#L19) script.
+Make sure the language is present in [clean_parallel](https://github.com/mozilla/firefox-translations-training/pipeline/clean/tools/clean_parallel.py#L19) script.
 
 
 ### Bicleaner
@@ -86,7 +86,7 @@ Copy JSON files for the produced filters `data/train-parts/*.filter.json` to
 ### Default config
 
 If no custom config was specifed for the dataset, 
-the [default config template](/pipeline/clean/opuscleaner/configs/default.filters.json) will be used.
+the [default config template](https://github.com/mozilla/firefox-translations-training/pipeline/clean/opuscleaner/configs/default.filters.json) will be used.
 
 Modify if needed. Some rules require specifying source or target language. 
 The `<src>` and `<trg>` in the template will be automatically replaced with the trained language pair.
@@ -95,4 +95,4 @@ The generated default config will be copied to the target dataset cleaning direc
 ### Running 
 
 Enable OpusCleaner in the training pipeline config and run the pipeline as usual. 
-OpusCleaner will replace the default [clean-corpus](/pipeline/clean/clean-corpus.sh) script.
+OpusCleaner will replace the default [clean-corpus](https://github.com/mozilla/firefox-translations-training/pipeline/clean/clean-corpus.sh) script.
