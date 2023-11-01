@@ -1,3 +1,9 @@
+---
+layout: default
+title: Datasets
+nav_order: 4
+---
+
 # Dataset importers
 
 Dataset importers can be used in `datasets` sections of the [training config](/configs/config.test.yml).

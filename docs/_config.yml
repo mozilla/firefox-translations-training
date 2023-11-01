@@ -2,3 +2,8 @@ remote_theme: just-the-docs/just-the-docs
 #color_scheme: dark
 title: Firefox Translations Training
 description: Training pipelines for Firefox Translations
+# Aux links for the upper right navigation
+aux_links:
+  "GitHub":
+    - "https://github.com/mozilla/firefox-translations-training"
+

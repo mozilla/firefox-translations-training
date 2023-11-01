@@ -1,3 +1,9 @@
+---
+layout: default
+title: References
+nav_order: 8
+---
+
 # References
 
 Here is a list of selected publications on which the training pipeline is based. 

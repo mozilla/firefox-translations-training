@@ -1,3 +1,10 @@
+---
+layout: default
+title: Model training guide
+nav_order: 2
+has_toc: true
+---
+
 # Model training guide
 
 A step-by-step guide on how to train a translation model. 

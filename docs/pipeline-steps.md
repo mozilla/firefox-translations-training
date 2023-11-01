@@ -1,3 +1,8 @@
+---
+layout: default
+title: Pipeline steps
+nav_order: 3
+---
 
 # Pipeline steps
 
