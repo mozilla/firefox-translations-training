@@ -284,16 +284,3 @@ The main directories inside `SHARED_ROOT` are:
     │   └ ru-en
     │      └ test
     │         └ clean_corpus.log
-
-
-## Utilities
-
-### Tensorboard
-
-To see training graphs run tensorboard:
-
-```
-make install-tensorboard
-make tensorboard
-```
-Then port forward 6006.
