@@ -1,5 +1,6 @@
 import yaml
 import os
+import subprocess
 
 from snakemake.utils import min_version
 from pipeline.bicleaner import packs
@@ -17,7 +18,7 @@ container: 'Singularity.sif'
 
 install_deps = config['deps'] == 'true'
 data_root_dir = config['root']
-cuda_dir = config['cuda']
+cuda_dir = config.get('cuda', os.path.dirname(os.path.dirname(subprocess.check_output('which nvcc', shell=True).decode().strip())))
 cudnn_dir = config['cudnn']
 gpus_num = config['numgpus']
 # marian occupies all GPUs on a machine if `gpus` are not specified
