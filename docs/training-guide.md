@@ -231,7 +231,7 @@ Find more details in the [Snakemake doc](snakemake.md).
 
 #### Mozilla Slurm cluster
 
-I usually set just one GPU partition per run in the [cluster config](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/train.sh). It simplifies configuration and monitoring.
+I usually set just one GPU partition per run in the [cluster config](https://github.com/mozilla/firefox-translations-training/tree/main/profiles/slurm-moz/config.cluster.yaml). It simplifies configuration and monitoring.
 
 Make sure to not set `precision: float16` on `txp` partition.
 
@@ -259,7 +259,7 @@ For example for [this task group](https://firefox-ci-tc.services.mozilla.com/tas
 ```
 LOGS_TASK_GROUP=DClbX0cjSCeQuoE1fW-Ehw make download-logs
 ```
-##### Snakemake
+#### Snakemake
 Adjust the path to match the model directories in makefile `tensorboard`  command and remove `--offline` to automtically update while training.
 
 #### Run server
