@@ -52,7 +52,7 @@ for index in "${!elements[@]}"; do
           >"${tsv_dataset}"
     # free disk space
     rm "${train_set_prefix}.${src}.${ARTIFACT_EXT}"
-    rm"${train_set_prefix}.${trg}.${ARTIFACT_EXT}"
+    rm "${train_set_prefix}.${trg}.${ARTIFACT_EXT}"
     # replace the dataset path in the template in place
     sed -i -e "s#<dataset${index}>#${tsv_dataset}#g" "${new_config}"
 done
