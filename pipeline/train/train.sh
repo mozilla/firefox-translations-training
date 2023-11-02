@@ -50,6 +50,9 @@ for index in "${!elements[@]}"; do
     paste <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${src}.${ARTIFACT_EXT}") \
           <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${trg}.${ARTIFACT_EXT}") \
           >"${tsv_dataset}"
+    # free disk space
+    rm "${train_set_prefix}.${src}.${ARTIFACT_EXT}"
+    rm"${train_set_prefix}.${trg}.${ARTIFACT_EXT}"
     # replace the dataset path in the template in place
     sed -i -e "s#<dataset${index}>#${tsv_dataset}#g" "${new_config}"
 done
@@ -69,6 +72,7 @@ paste <(${COMPRESSION_CMD} -dc "${valid_set_prefix}.${src}.${ARTIFACT_EXT}") \
 if [ "${alignments}" != "None" ] ; then
   echo "### Adding alignments ${alignments} to the training dataset"
   paste "${tsv_dataset}" <(${COMPRESSION_CMD} -dc "${alignments}") > corpus_with_alignments.tsv
+  rm "${alignments}"
   mv corpus_with_alignments.tsv "${tsv_dataset}"
   extra_params+=("--guided-alignment" "2")
 fi
