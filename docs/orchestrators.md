@@ -10,7 +10,7 @@ has_toc: false
 
 An orchestrator is responsible for workflow management and parallelization.
 
-Currently supported orchestrators:
+Supported orchestrators:
 
 - [Taskcluster](https://taskcluster.net/) - Mozilla task execution framework. It is also used for Firefox CI. 
   It provides access to the hybrid cloud workers (GCP + on-prem) with increased scalability and observability. 
