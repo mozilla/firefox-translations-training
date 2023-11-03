@@ -137,7 +137,7 @@ and add filtering thresholds to the config.
 
 - `0.5` should be a good default value.
 - Noisier datasets like OpenSubtitles should have higher threshold. 
-- Set the threshold to `0` to skip cleaning entirely, for example for ParaCrawl dataset that comes already cleaned.
+- Set the threshold to `0` to skip cleaning entirely, for example for ParaCrawl dataset that comes already cleaned by bicleaner.
 
 ```
   bicleaner:
