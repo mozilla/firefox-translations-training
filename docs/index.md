@@ -21,7 +21,7 @@ The pipeline is capable of training a translation model for a language pair end 
 Translation quality depends on the chosen datasets, data cleaning procedures and hyperparameters. 
 Some settings, especially low resource languages might require extra tuning.
 
-We use fast translation engine [Marian](https://marian-nmt.github.io).
+We use [Marian](https://marian-nmt.github.io), the fast neural machine translation engine .
 
 ## Learning resources
 
