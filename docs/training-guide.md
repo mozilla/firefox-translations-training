@@ -23,7 +23,10 @@ Considerations:
   Currently we support automatic donwloading only for [news crawl](https://data.statmt.org/news-crawl/)
 - Availability of [bicleaner-ai models](https://github.com/bitextor/bicleaner-ai-data/releases)
 
-Set the language pair and a name of the experiment in the config:
+
+Copy the [example config](https://github.com/mozilla/firefox-translations-training/tree/main/configs/tc.prod.yml) from the `/configs` directory to modify.
+
+Then change the language pair and the name of the experiment:
 ```
 experiment:
   name: test-quality
@@ -142,7 +145,7 @@ and add filtering thresholds to the config.
     dataset-thresholds:
       opus_CCAligned/v1: 0.7
       opus_OpenSubtitles/v2018: 0.8
-      opus_ParaCrawl/v8: 0
+      opus_ParaCrawl/v9: 0
       ...
 ```
 
