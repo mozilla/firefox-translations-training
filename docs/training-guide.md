@@ -65,7 +65,7 @@ datasets:
     ...
 ```
 It's hard to say how much data is required to train something useful. 
-My guess would be at least 10 million sentences. Ideally 100M+.
+Probably, at least 10 million sentences. Ideally 100M+ to get the best quality.
 
 
 ### Evaluation datasets
