@@ -104,8 +104,8 @@ Those techniques are useful even for high-resource languages but especially usef
 The only limitation is probably available computational resources.
 
 Find monolingual data and add it to `datasets.mono-src` and `datasets.mono-trg`. 
-I usually use [News Crawl](https://data.statmt.org/news-crawl/) datasets from statmt 
-because they are relatively clean and we have an automatic downloading for them.
+Using [News Crawl](https://data.statmt.org/news-crawl/) datasets from statmt is preferable
+because they are relatively clean, and the pipeline supports automatic downloading for them.
 ```
   # to be translated by the ensemble of teacher models
   mono-src:
@@ -140,7 +140,7 @@ It is recommended to use [Bicleaner](https://github.com/bitextor/bicleaner-ai) M
 Bicleaner classifier scores parallel sentences from 0 to 1 where 0 means a very noisy translation and 1 is a good translation.
 Most of the scores will be between 0 and 1.
 
-Check that the bicleaner-ai model is [available](https://github.com/bitextor/bicleaner-ai-data/releases) for you language pair
+Check that the bicleaner-ai model is [available](https://github.com/bitextor/bicleaner-ai-data/releases) for your language pair
 and add filtering thresholds to the config.
 
 - `0.5` should be a [good default value](https://github.com/bitextor/bicleaner-ai/wiki/How-to-train-your-Bicleaner-AI#bicleaning-a-corpus).
