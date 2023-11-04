@@ -161,6 +161,9 @@ and add filtering thresholds to the config.
 ## 4. Set hyperparameters
 
 The pipeline supports overriding the default [Marian settings](https://marian-nmt.github.io/docs/cmd/marian/) in the training config.
+The default settings are in the `pipeline/train/configs` directory, 
+for example [teacher.train.yml](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/training/teacher.train.yml) 
+and in the [train.sh](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/train.sh) script.
 
 ### Model training
 I often increase early stopping for teachers to make sure the training converges.
