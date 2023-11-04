@@ -135,9 +135,10 @@ It is recommended to use Bicleaner ML models to filter noisy data.
 Check that the bicleaner-ai model is [available](https://github.com/bitextor/bicleaner-ai-data/releases) 
 and add filtering thresholds to the config. 
 
-- `0.5` should be a good default value.
+- `0.5` should be a [good default value](https://github.com/bitextor/bicleaner-ai/wiki/How-to-train-your-Bicleaner-AI#bicleaning-a-corpus).
 - Noisier datasets like OpenSubtitles should have higher threshold. 
-- Set the threshold to `0` to skip cleaning entirely, for example for ParaCrawl dataset that comes already cleaned by bicleaner.
+- Set the threshold to `0` to skip cleaning entirely, for example for ParaCrawl dataset that comes already cleaned by bicleaner 
+  (see [Bicleaner AI: Bicleaner Goes Neural](https://aclanthology.org/2022.lrec-1.87.pdf), section 4.2.2).
 
 ```
   bicleaner:

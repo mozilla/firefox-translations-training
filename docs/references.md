@@ -37,3 +37,4 @@ Lisboa, Portugal: European Association for Machine Translation, November 2020
 14. Chris Dyer, Victor Chahuneau, and Noah A. Smith. (2013). [A Simple, Fast, and Effective Reparameterization of IBM Model 2](http://www.ark.cs.cmu.edu/cdyer/fast_valign.pdf). In Proc. of NAACL.
 15. [Neural Machine Translation of Rare Words with Subword Units](https://aclanthology.org/P16-1162) (Sennrich et al., ACL 2016)
 16. [Subword Regularization: Improving Neural Network Translation Models with Multiple Subword Candidates](https://arxiv.org/abs/1804.10959) (Taku Kudo, 2018)
+17. [Bicleaner AI: Bicleaner Goes Neural](https://aclanthology.org/2022.lrec-1.87.pdf) (Zaragoza-Bernabeu et al., LREC 2022)
