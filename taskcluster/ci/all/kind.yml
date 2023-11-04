@@ -8,6 +8,7 @@ loader: taskgraph.loader.transform:loader
 transforms:
     - taskgraph.transforms.task_context
     - taskgraph.transforms.from_deps
+    - translations_taskgraph.transforms.dependency_dummies
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
