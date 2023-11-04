@@ -38,3 +38,4 @@ Lisboa, Portugal: European Association for Machine Translation, November 2020
 15. [Neural Machine Translation of Rare Words with Subword Units](https://aclanthology.org/P16-1162) (Sennrich et al., ACL 2016)
 16. [Subword Regularization: Improving Neural Network Translation Models with Multiple Subword Candidates](https://arxiv.org/abs/1804.10959) (Taku Kudo, 2018)
 17. [Bicleaner AI: Bicleaner Goes Neural](https://aclanthology.org/2022.lrec-1.87.pdf) (Zaragoza-Bernabeu et al., LREC 2022)
+18. [Sequence-Level Knowledge Distillation](https://arxiv.org/abs/1606.07947) (Yoon Kim, Alexander M. Rush, EMNLP 2016)

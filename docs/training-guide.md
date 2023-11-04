@@ -93,9 +93,14 @@ python utils/find-corpus.py en ru sacrebleu
 ```
 
 ### Monolingual corpus
-It is recommended to always use back-translations to augment training data and to use 
-monolingual corpus to augment data for decoding by the teachers, even for high resource lanugages.
-It will be especially useful for low-resource ones though. 
+It is recommended to use back-translations to augment training data by training a model in reversed direction and then 
+translating a monolingual corpus in target language to the source language
+(see [Improving Neural Machine Translation Models with Monolingual Data](https://aclanthology.org/P16-1009.pdf)).
+
+It is also important to use monolingual corpus in source language to augment data for decoding by the teachers 
+to improve teacher-student knowledge distillation (see [Sequence-Level Knowledge Distillation](https://arxiv.org/abs/1606.07947)).
+
+Those techniques are useful even for high-resource languages but especially useful for low-resource ones. 
 The only limitation is probably available computational resources.
 
 Find monolingual data and add it to `datasets.mono-src` and `datasets.mono-trg`. 
@@ -131,13 +136,16 @@ Make sure the language is present in [clean_parallel](https://github.com/mozilla
 For more advanced cleaning and for using OpusCleaner look at the [Data cleaning](cleaning.md) doc.
 
 ### Bicleaner
-It is recommended to use Bicleaner ML models to filter noisy data. 
-Check that the bicleaner-ai model is [available](https://github.com/bitextor/bicleaner-ai-data/releases) 
-and add filtering thresholds to the config. 
+It is recommended to use [Bicleaner](https://github.com/bitextor/bicleaner-ai) ML models to filter noisy data. 
+Bicleaner classifier scores parallel sentences from 0 to 1 where 0 means a very noisy translation and 1 is a good translation.
+Most of the scores will be between 0 and 1.
+
+Check that the bicleaner-ai model is [available](https://github.com/bitextor/bicleaner-ai-data/releases) for you language pair
+and add filtering thresholds to the config.
 
 - `0.5` should be a [good default value](https://github.com/bitextor/bicleaner-ai/wiki/How-to-train-your-Bicleaner-AI#bicleaning-a-corpus).
 - Noisier datasets like OpenSubtitles should have higher threshold. 
-- Set the threshold to `0` to skip cleaning entirely, for example for ParaCrawl dataset that comes already cleaned by bicleaner 
+- Set the threshold to `0` to skip cleaning entirely, for example for ParaCrawl dataset that comes already cleaned by Bicleaner 
   (see [Bicleaner AI: Bicleaner Goes Neural](https://aclanthology.org/2022.lrec-1.87.pdf), section 4.2.2).
 
 ```
