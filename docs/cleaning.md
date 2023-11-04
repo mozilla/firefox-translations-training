@@ -33,22 +33,8 @@ Make sure the language is present in [clean_parallel](https://github.com/mozilla
 ### Bicleaner
 
 It is recommended to use Bicleaner ML models to filter noisy data. 
-Check that the bicleaner-ai model is [available](https://object.pouta.csc.fi/OPUS-ELRC-3069-wikipedia_health) 
-and add filtering thresholds to the config. 
+See more details on how to configure it in the [Model training guide, Bicleaner section](training-guide.md/#bicleaner).
 
-- `0.5` should be a good default value.
-- Noisier datasets like OpenSubtitles should have higher threshold. 
-- Set the threshold to `0` to skip cleaning entirely, for example for ParaCrawl dataset that comes already cleaned.
-
-```
-  bicleaner:
-    default-threshold: 0.5
-    dataset-thresholds:
-      opus_CCAligned/v1: 0.7
-      opus_OpenSubtitles/v2018: 0.8
-      opus_ParaCrawl/v8: 0
-      ...
-```
 
 ## OpusCleaner
 
