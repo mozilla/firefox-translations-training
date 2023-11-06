@@ -1,3 +1,9 @@
+---
+layout: default
+title: References
+nav_order: 8
+---
+
 # References
 
 Here is a list of selected publications on which the training pipeline is based. 
@@ -15,7 +21,6 @@ Lisboa, Portugal: European Association for Machine Translation, November 2020
    
 3. Mölder F, Jablonski KP, Letcher B, et al. [Sustainable data analysis with Snakemake](https://pubmed.ncbi.nlm.nih.gov/34035898/). F1000Res. 2021;10:33. Published 2021 Jan 18. doi:10.12688/f1000research.29032.2
 
-
 4. [Edinburgh’s Submissions to the 2020 Machine Translation Efficiency Task](https://aclanthology.org/2020.ngt-1.26) (Bogoychev et al., NGT 2020)
 
 5. [From Research to Production and Back: Ludicrously Fast Neural Machine Translation](https://aclanthology.org/D19-5632) (Kim et al., EMNLP 2019)
@@ -32,3 +37,5 @@ Lisboa, Portugal: European Association for Machine Translation, November 2020
 14. Chris Dyer, Victor Chahuneau, and Noah A. Smith. (2013). [A Simple, Fast, and Effective Reparameterization of IBM Model 2](http://www.ark.cs.cmu.edu/cdyer/fast_valign.pdf). In Proc. of NAACL.
 15. [Neural Machine Translation of Rare Words with Subword Units](https://aclanthology.org/P16-1162) (Sennrich et al., ACL 2016)
 16. [Subword Regularization: Improving Neural Network Translation Models with Multiple Subword Candidates](https://arxiv.org/abs/1804.10959) (Taku Kudo, 2018)
+17. [Bicleaner AI: Bicleaner Goes Neural](https://aclanthology.org/2022.lrec-1.87.pdf) (Zaragoza-Bernabeu et al., LREC 2022)
+18. [Sequence-Level Knowledge Distillation](https://arxiv.org/abs/1606.07947) (Yoon Kim, Alexander M. Rush, EMNLP 2016)

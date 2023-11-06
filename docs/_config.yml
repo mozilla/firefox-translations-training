@@ -1,0 +1,12 @@
+remote_theme: just-the-docs/just-the-docs
+#color_scheme: dark
+title: Firefox Translations Training
+description: Documentation for the Firefox Translations training pipelines
+heading_anchors: true
+# doesn't work
+favicon_ico: "img/logo.svg"
+# Aux links for the upper right navigation
+aux_links:
+  "GitHub":
+    - "https://github.com/mozilla/firefox-translations-training"
+

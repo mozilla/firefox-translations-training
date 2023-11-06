@@ -1,3 +1,9 @@
+---
+layout: default
+title: Development
+nav_order: 7
+---
+
 # Development
 
 ## Architecture

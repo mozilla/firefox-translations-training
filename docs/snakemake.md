@@ -1,3 +1,10 @@
+---
+layout: default
+title: Snakemake
+nav_order: 2
+parent: Orchestrators
+---
+
 # Snakemake
 
 This section included the instructions on how to run the pipeline 
@@ -284,16 +291,3 @@ The main directories inside `SHARED_ROOT` are:
     │   └ ru-en
     │      └ test
     │         └ clean_corpus.log
-
-
-## Utilities
-
-### Tensorboard
-
-To see training graphs run tensorboard:
-
-```
-make install-tensorboard
-make tensorboard
-```
-Then port forward 6006.
