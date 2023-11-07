@@ -44,7 +44,7 @@ tasks:
                     - pipeline/train/configs/model/student.yml
                     - pipeline/train/configs/opustrainer/student.yml
                     - pipeline/train/configs/training/student.train.yml
-                    - pipeline/train/train.sh
+                    - pipeline/train/train2.sh
                 from-parameters:
                     marian_args: training_config.marian-args.training-student
         worker-type: b-linux-v100-gpu-4-300gb
@@ -81,7 +81,7 @@ tasks:
                     pip3 install -r $VCS_PATH/pipeline/train/requirements/train.txt &&
                     export PATH="$HOME/.local/bin:$PATH" &&
                     export MARIAN=$MOZ_FETCHES_DIR &&
-                    $VCS_PATH/pipeline/train/train.sh
+                    $VCS_PATH/pipeline/train/train2.sh
                     student
                     train
                     {src_locale}
