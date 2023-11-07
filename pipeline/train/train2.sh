@@ -49,7 +49,8 @@ IFS=',' read -ra alns <<< "${alignments}"
 for index in "${!datasets[@]}"; do
     train_set_prefix="${datasets[index]}"
     # OpusTrainer supports only tsv and gzip
-    tsv_dataset="${train_set_prefix}.${src}${trg}.tsv.gz"
+    # TODO: pigz is not found
+    tsv_dataset="${train_set_prefix}.${src}${trg}.tsv" #.gz"
 
     if [ "${alignments}" != "None" ] ; then
       train_aln="${alns[index]}"
@@ -58,7 +59,8 @@ for index in "${!datasets[@]}"; do
       paste <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${src}.${ARTIFACT_EXT}") \
             <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${trg}.${ARTIFACT_EXT}") \
             <(${COMPRESSION_CMD} -dc "${train_aln}") \
-            | pigz -c >"${tsv_dataset}"
+            >"${tsv_dataset}"
+#            | pigz -c >"${tsv_dataset}"
       rm "${train_aln}"
       # when using tsv, marian requires --guided-alignments argument to be an index of the alignments in the tsv file
       extra_params+=("--guided-alignment" "2")
@@ -67,7 +69,8 @@ for index in "${!datasets[@]}"; do
       # OpusTrainer supports only tsv and gzip
       paste <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${src}.${ARTIFACT_EXT}") \
             <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${trg}.${ARTIFACT_EXT}") \
-            | pigz -c >"${tsv_dataset}"
+            >"${tsv_dataset}"
+#            | pigz -c >"${tsv_dataset}"
     fi
     # free disk space
     rm "${train_set_prefix}.${src}.${ARTIFACT_EXT}"
