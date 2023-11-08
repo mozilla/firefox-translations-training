@@ -1,23 +1,31 @@
 datasets:
   original: <dataset0> # Original parallel corpus
-#  backtranslated: <dataset1> # Back-translated data
+  backtranslated: <dataset1> # Back-translated data
 
 stages:
-#  - pretrain
-  - finetune
+  - start
+  - mid
+  - end
 
-#pretrain:
-#  - original 0.5
-#  - backtranslated 0.5
-#  - until original 2 # General training until 2 epochs of original
-
-finetune:
+ # One epoch of only original high-quality data to warm up the model
+start:
   - original 1.0
-  - until original inf # Fine-tuning only on original until the early stopping
+  - until original 1
+
+# Add back-translations to the mix
+mid:
+  - original 0.5
+  - backtranslated 0.5
+  - until backtranslated 2
+
+# Fine-tuning only on original clean corpus until the early stopping
+end:
+  - original 1.0
+  - until original inf
 
 
 modifiers:
-- UpperCase: 0.1 # Apply randomly to 5% of sentences
+- UpperCase: 0.1 # Apply randomly to 10% of sentences
 - TitleCase: 0.1
 # TODO: enable typos, issue https://github.com/hplt-project/OpusTrainer/issues/40
 #- Typos: 0.05
