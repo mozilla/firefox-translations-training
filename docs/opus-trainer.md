@@ -42,7 +42,7 @@ OpusTrainer configuration files for the trained models are located in
 
 See more details on configuration in the OpusTrainer [readme](https://github.com/hplt-project/OpusTrainer).
 
-Example config:
+Example OpusTrainer config:
 ```yaml
 datasets:
   original: <dataset0> # Original parallel corpus
@@ -76,3 +76,49 @@ seed: 1111
 # parallel sentences + token alignments
 num_fields: 3
 ```
+
+
+## Evaluation
+
+To test the effects of the data augmentation on the trained models, the data downloader supports augmentation of the evaluation datasets.
+It allows running the validation while training and the final evaluation on an augmented datasets.
+
+Add an augmentation modifier to any dataset in the training config in the following format:
+
+`<dataset-importer>_<augmentation-modifier>_<dataset-name>`
+
+For example:
+
+`flores_aug-title-strict_devtest`
+
+
+### Supported modifiers
+
+`aug-typos` - applies typos with probability 0.1
+
+`aug-title` - applies title case with probability 0.1
+
+`aug-title-strict` - applies title case to all sentences
+
+`aug-upper` -  applies upper case with probability 0.1
+
+`aug-upper-strict` - applies upper case to all sentences
+
+`aug-mix` - applies, title case and upper case sequentially with 0.1 probability each
+
+### Example training config
+```yaml
+  devtest:
+    - flores_aug-mix_dev
+    - sacrebleu_aug-mix_wmt19/dev
+  # datasets for evaluation
+  test:
+    - flores_devtest
+    - flores_aug-mix_devtest
+    - flores_aug-title_devtest
+    - flores_aug-title-strict_devtest
+    - flores_aug-upper_devtest
+    - flores_aug-upper-strict_devtest
+    - flores_aug-typos_devtest
+```
+
