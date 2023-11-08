@@ -1,19 +1,18 @@
 datasets:
   original: <dataset0> # Original parallel corpus
-  backtranslated: <dataset1> # Back-translated data
+#  backtranslated: <dataset1> # Back-translated data
 
 stages:
-  - pretrain
+#  - pretrain
   - finetune
 
-pretrain:
-  - original 0.5
-  - backtranslated 0.5
-  - until original 2 # General training until 2 epochs of original
+#pretrain:
+#  - original 0.5
+#  - backtranslated 0.5
+#  - until original 2 # General training until 2 epochs of original
 
 finetune:
   - original 1.0
-  - backtranslated 0.0
   - until original inf # Fine-tuning only on original until the early stopping
 
 
