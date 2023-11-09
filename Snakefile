@@ -90,7 +90,7 @@ biclean = f"{data_dir}/biclean"
 cache_dir = f"{data_dir}/cache"
 original = f"{data_dir}/original"
 translated = f"{data_dir}/translated"
-augmented = f"{data_dir}/augmented"
+backtranslated = f"{data_dir}/backtranslated"
 merged = f"{data_dir}/merged"
 filtered = f'{data_dir}/filtered'
 align_dir = f"{data_dir}/alignment"
@@ -469,20 +469,24 @@ rule collect_mono_trg:
     params: src_mono=f"{clean}/mono.{trg}.gz",dir=directory(f'{translated}/mono_trg')
     shell: 'bash pipeline/translate/collect.sh "{params.dir}" "{output}" "{params.src_mono}" >> {log} 2>&1'
 
-rule merge_augmented:
-    message: "Merging augmented dataset"
-    log: f"{log_dir}/merge_augmented.log"
+
+rule copy_backtranslated:
+    message: "Copy back-translated dataset"
+    log: f"{log_dir}/rule copy_backtranslated.log"
     conda: "envs/base.yml"
     threads: 4
-    #group 'mono_trg'
     input:
-        src1=clean_corpus_src,src2=rules.collect_mono_trg.output,
-        trg1=clean_corpus_trg,trg2=rules.split_mono_trg.input,
-        bin=ancient(deduper)
-    output: res_src=f'{augmented}/corpus.{src}.gz',res_trg=f'{augmented}/corpus.{trg}.gz'
-    shell: '''bash pipeline/translate/merge-corpus.sh \
-                "{input.src1}" "{input.src2}" "{input.trg1}" "{input.trg2}" "{output.res_src}" "{output.res_trg}" \
-                  >> {log} 2>&1'''
+        src=rules.collect_mono_trg.output,
+        trg=rules.split_mono_trg.input
+    output:
+        src=f'{backtranslated}/corpus.{src}.gz',
+        trg=f'{backtranslated}/corpus.{trg}.gz'
+    params: dir=backtranslated,
+    shell: '''
+            mkdir -p {params.dir}
+            cp {input.src} {output.src}
+            cp {input.trg} {output.trg}
+            '''
 
 rule train_teacher:
     message: "Training teacher on all data"
@@ -492,15 +496,18 @@ rule train_teacher:
     resources: gpu=gpus_num
     input:
         rules.merge_devset.output,
-        rules.merge_augmented.output.res_src, rules.merge_augmented.output.res_trg,
+        rules.copy_backtranslated.output.src, rules.copy_backtranslated.output.trg,
         train_src=clean_corpus_src, train_trg=clean_corpus_trg,
-        bin=ancient(trainer), vocab=vocab_path
+        bin=ancient(trainer),
+        vocab=vocab_path
     output: model=f'{teacher_base_dir}{{ens}}/{best_model}'
-    params: prefix_clean=clean_corpus_prefix, prefix_augmented=augmented, prefix_test=f"{original}/devset",
+    params: prefix_clean=clean_corpus_prefix,
+            prefix_backtranslated=backtranslated,
+            prefix_test=f"{original}/devset",
             dir=directory(f'{teacher_base_dir}{{ens}}'),
             args=get_args("training-teacher")
     shell: '''bash pipeline/train/train.sh \
-                teacher train {src} {trg} "{params.prefix_augmented},{params.prefix_clean}" "{params.prefix_test}" "{params.dir}" \
+                teacher train {src} {trg} "{params.prefix_clean},{params.prefix_backtranslated}," "{params.prefix_test}" "{params.dir}" \
                 "{input.vocab}" "{best_model_metric}" None {params.args} >> {log} 2>&1'''
 
 
