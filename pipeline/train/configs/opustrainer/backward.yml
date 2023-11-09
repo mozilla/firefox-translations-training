@@ -6,7 +6,7 @@ stages:
 
 train:
   - original 1.0
-  - until original inf # General training until marian early stops
+  - until original 10 # Train for 10 epochs. Only OpusTrainer can control epochs, it's all one big epoch for Marian
 
 modifiers:
 - UpperCase: 0.1 # Apply randomly to 5% of sentences
