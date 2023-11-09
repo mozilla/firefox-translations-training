@@ -60,7 +60,7 @@ tasks:
                     - pipeline/train/configs/model/teacher.yml
                     - pipeline/train/configs/opustrainer/teacher.yml
                     - pipeline/train/configs/training/teacher.train.yml
-                    - pipeline/train/train2.sh
+                    - pipeline/train/train.sh
                 from-parameters:
                     marian_args: training_config.marian-args.training-teacher-base
                     teacher-ensemble: training_config.experiment.teacher-ensemble
@@ -99,7 +99,7 @@ tasks:
                     pip3 install -r $VCS_PATH/pipeline/train/requirements/train.txt &&
                     export PATH="$HOME/.local/bin:$PATH" &&
                     export MARIAN=$MOZ_FETCHES_DIR &&
-                    $VCS_PATH/pipeline/train/train2.sh
+                    $VCS_PATH/pipeline/train/train.sh
                     teacher
                     train
                     {src_locale}

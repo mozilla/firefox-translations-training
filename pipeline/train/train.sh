@@ -18,6 +18,8 @@ valid_set_prefix=$6
 model_dir=$7
 vocab=$8
 best_model_metric=$9
+# comma separated alignment paths that correspond to each training dataset
+# or None to train without alignments
 alignments=${10}
 extra_params=( "${@:11}" )
 
@@ -41,15 +43,35 @@ cp "configs/opustrainer/${model_type}.yml" "${new_config}"
 
 # Iterate over the training sets
 # split the input string into an array
-IFS=',' read -ra elements <<< "${train_set_prefixes}"
+IFS=',' read -ra datasets <<< "${train_set_prefixes}"
+IFS=',' read -ra alns <<< "${alignments}"
 # loop through the array and get both value and index
-for index in "${!elements[@]}"; do
-    train_set_prefix="${elements[index]}"
-    tsv_dataset="${train_set_prefix}.${src}${trg}.tsv"
-    # OpusTrainer supports only tsv
-    paste <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${src}.${ARTIFACT_EXT}") \
-          <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${trg}.${ARTIFACT_EXT}") \
-          >"${tsv_dataset}"
+for index in "${!datasets[@]}"; do
+    train_set_prefix="${datasets[index]}"
+    # OpusTrainer supports only tsv and gzip
+    # TODO: pigz is not found
+    tsv_dataset="${train_set_prefix}.${src}${trg}.tsv" #.gz"
+
+    if [ "${alignments}" != "None" ] ; then
+      train_aln="${alns[index]}"
+      # alignments are currently used only for student that uses one stage of training
+      echo "### Generating tsv dataset with alignments ${alignments}"
+      paste <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${src}.${ARTIFACT_EXT}") \
+            <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${trg}.${ARTIFACT_EXT}") \
+            <(${COMPRESSION_CMD} -dc "${train_aln}") \
+            >"${tsv_dataset}"
+#            | pigz -c >"${tsv_dataset}"
+      rm "${train_aln}"
+      # when using tsv, marian requires --guided-alignments argument to be an index of the alignments in the tsv file
+      extra_params+=("--guided-alignment" "2")
+    else
+      echo "### Generating tsv dataset"
+      # OpusTrainer supports only tsv and gzip
+      paste <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${src}.${ARTIFACT_EXT}") \
+            <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${trg}.${ARTIFACT_EXT}") \
+            >"${tsv_dataset}"
+#            | pigz -c >"${tsv_dataset}"
+    fi
     # free disk space
     rm "${train_set_prefix}.${src}.${ARTIFACT_EXT}"
     rm "${train_set_prefix}.${trg}.${ARTIFACT_EXT}"
@@ -67,22 +89,11 @@ paste <(${COMPRESSION_CMD} -dc "${valid_set_prefix}.${src}.${ARTIFACT_EXT}") \
       <(${COMPRESSION_CMD} -dc "${valid_set_prefix}.${trg}.${ARTIFACT_EXT}") \
       >"${valid_tsv_dataset}"
 
-# Add alignments to tsv if provided
-# when using tsv, marian requires --guided-alignments argument to be an index of the alignments in the tsv file
-if [ "${alignments}" != "None" ] ; then
-  echo "### Adding alignments ${alignments} to the training dataset"
-  paste "${tsv_dataset}" <(${COMPRESSION_CMD} -dc "${alignments}") > corpus_with_alignments.tsv
-  rm "${alignments}"
-  mv corpus_with_alignments.tsv "${tsv_dataset}"
-  extra_params+=("--guided-alignment" "2")
-fi
 
 echo "### Training ${model_dir}"
 # OpusTrainer reads the datasets, shuffles, augments them and feeds to stdin of Marian
-# suppress logging warnings for empty fields
 opustrainer-train \
   --config "${new_config}" \
-  --log-file "${model_dir}/opustrainer.log" \
   --log-level INFO \
   "${MARIAN}/marian" \
     --model "${model_dir}/model.npz" \
@@ -99,6 +110,7 @@ opustrainer-train \
     --shuffle batches \
     --sentencepiece-alphas 0.1 \
     --no-restore-corpus \
+    --valid-reset-stalled \
     --sharding local \
     --sync-sgd \
     --quiet-translation \
