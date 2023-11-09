@@ -6,20 +6,28 @@ stages:
   - start
   - mid
   - end
+  - finetune
 
  # One epoch of only original high-quality data to warm up the model
 start:
   - original 1.0
   - until original 1
 
-# Add back-translations to the mix
+# Gradually add back-translations to the mix
+# Back-translated corpus can vary a lot in size, so we can try using original to count epochs
 mid:
-  - original 0.5
-  - backtranslated 0.5
-  - until backtranslated 2
+  - original 0.7
+  - backtranslated 0.3
+  - until original 1
+
+# Expand back-translations
+end:
+  - original 0.6
+  - backtranslated 0.4
+  - until original 1
 
 # Fine-tuning only on original clean corpus until the early stopping
-end:
+finetune:
   - original 1.0
   - until original inf
 
