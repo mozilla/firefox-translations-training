@@ -1,3 +1,10 @@
+---
+layout: default
+title: Taskcluster
+nav_order: 1
+parent: Orchestrators
+---
+
 # Taskcluster
 
 [Taskcluster](https://taskcluster.net/) is a Mozilla task execution framework. It powers Firefox CI and
@@ -30,7 +37,7 @@ We use [Taskcluster taskgraph](https://taskcluster-taskgraph.readthedocs.io/en/l
 
 ![Choose action](img/tc-train-action.png)
 
-6. Copy a config prepared in advance and press "train". See the example TC config [here](/configs/tc.prod.yml). 
+6. Copy a config prepared in advance and press "train". See the example TC config [here](https://github.com/mozilla/firefox-translations-training/tree/main/configs/tc.prod.yml). 
    You can find directions on how to configure training in the [Model training guide](training-guide.md).
 
 ![Start training](img/tc-train.png)
@@ -79,7 +86,7 @@ For example, to download, clean and merge the training corpus use:
 ```
 target-stage: merge-corpus
 ```
-that corresponds to `stage: merge-corpus` in [/taskcluster/ci/merge-corpus/kind.yml](/taskcluster/ci/merge-corpus/kind.yml):
+that corresponds to `stage: merge-corpus` in [/taskcluster/ci/merge-corpus/kind.yml](https://github.com/mozilla/firefox-translations-training/taskcluster/ci/merge-corpus/kind.yml):
 ```
 tasks:
     merge-corpus:

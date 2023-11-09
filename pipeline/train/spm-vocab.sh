@@ -15,6 +15,11 @@ sample_size=$4
 threads=$5
 vocab_size="${6:-32000}"
 
+if (( vocab_size % 8 != 0 )); then
+  echo "Error: vocab_size must be a multiple of 8 (https://github.com/mozilla/firefox-translations-training/issues/249)"
+  exit 1
+fi
+
 if [ "$threads" = "auto" ]; then
   threads=$(nproc)
 fi
