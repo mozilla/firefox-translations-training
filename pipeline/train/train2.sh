@@ -112,7 +112,6 @@ opustrainer-train \
     --sentencepiece-alphas 0.1 \
     --no-restore-corpus \
     --valid-reset-stalled \
-    --valid-reset-all \
     --sharding local \
     --sync-sgd \
     --quiet-translation \
