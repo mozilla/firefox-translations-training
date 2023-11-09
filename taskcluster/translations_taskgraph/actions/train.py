@@ -168,13 +168,7 @@ defaults = get_defaults("")["training_config"]
                             "type": "string",
                         },
                     },
-                    "training-teacher-base": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "string",
-                        },
-                    },
-                    "training-teacher-finetuned": {
+                    "training-teacher": {
                         "type": "object",
                         "additionalProperties": {
                             "type": "string",

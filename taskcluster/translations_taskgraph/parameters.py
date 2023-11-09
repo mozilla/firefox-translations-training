@@ -47,15 +47,7 @@ def get_defaults(_):
                     "after": "10u",
                     "dim-vocabs": "1000 1000",
                 },
-                "training-teacher-base": {
-                    "disp-freq": "1",
-                    "save-freq": "5",
-                    "valid-freq": "10",
-                    "after": "10u",
-                    "dim-vocabs": "1000 1000",
-                    "task": "transformer-base",
-                },
-                "training-teacher-finetuned": {
+                "training-teacher": {
                     "disp-freq": "1",
                     "save-freq": "5",
                     "valid-freq": "10",
@@ -121,8 +113,7 @@ extend_parameters_schema(
             Required("target-stage"): str,
             Required("marian-args"): {
                 Optional("training-backward"): {str: str},
-                Optional("training-teacher-base"): {str: str},
-                Optional("training-teacher-finetuned"): {str: str},
+                Optional("training-teacher"): {str: str},
                 Optional("training-student"): {str: str},
                 Optional("training-student-finetuned"): {str: str},
                 Optional("decoding-backward"): {str: str},

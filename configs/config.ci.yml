@@ -33,14 +33,7 @@ marian-args:
     valid-freq: "10"
     after: 10u
     dim-vocabs: "1000 1000"
-  training-teacher-base:
-    disp-freq: "1"
-    save-freq: "5"
-    valid-freq: "10"
-    after: 10u
-    dim-vocabs: "1000 1000"
-    task: transformer-base
-  training-teacher-finetuned:
+  training-teacher:
     disp-freq: "1"
     save-freq: "5"
     valid-freq: "10"

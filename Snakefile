@@ -498,7 +498,7 @@ rule train_teacher:
     output: model=f'{teacher_base_dir}{{ens}}/{best_model}'
     params: prefix_clean=clean_corpus_prefix, prefix_augmented=augmented, prefix_test=f"{original}/devset",
             dir=directory(f'{teacher_base_dir}{{ens}}'),
-            args=get_args("training-teacher-base")
+            args=get_args("training-teacher")
     shell: '''bash pipeline/train/train.sh \
                 teacher train {src} {trg} "{params.prefix_augmented},{params.prefix_clean}" "{params.prefix_test}" "{params.dir}" \
                 "{input.vocab}" "{best_model_metric}" None {params.args} >> {log} 2>&1'''

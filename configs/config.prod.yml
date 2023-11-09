@@ -43,11 +43,11 @@ experiment:
 
 marian-args:
 # these configs override pipeline/train/configs
-  training-backward:
-    # change based on available training data
-    after: 10e
-  training-teacher-base:
-    after: 2e
+#  training-backward:
+#    # change based on available training data
+#    after: 10e
+  training-teacher:
+    early-stopping: 30
 # these configs override pipeline/translate/decoder.yml
   decoding-backward:
     # 12 Gb GPU, s2s model

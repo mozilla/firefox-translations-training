@@ -145,16 +145,13 @@ marian-args:
     mini-batch-words: '4000'
     precision: float16
   training-backward:
-    after: 10e
-  training-teacher-base:
-    after: 2e
-    early-stopping: '40'
+    early-stopping: '5'
+  training-teacher:
+    early-stopping: '30'
   training-student:
     early-stopping: '20'
   training-student-finetuned:
     early-stopping: '20'
-  training-teacher-finetuned:
-    early-stopping: '40'
 target-stage: all
 taskcluster:
   split-chunks: 10

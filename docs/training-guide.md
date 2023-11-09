@@ -173,14 +173,9 @@ So, you can start with `early-stopping: 20`, monitor the training and increase i
 marian-args:
 # these configs override pipeline/train/configs
   training-backward:
-    # change based on available training data
-    after: 10e
-  training-teacher-base:
-    # remove for low resource languages or if training without augmentation
-    after: 2e
+    early-stopping: 5
+  training-teacher:
     early-stopping: 20
-  training-teacher-finetuned:
-    early-stopping: 40
 ```
 
 ### Decoding (translation)
