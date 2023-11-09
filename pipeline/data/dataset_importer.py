@@ -32,16 +32,20 @@ class CompositeModifier:
         return batch
 
 
-NOISE_RATE = 0.1  # 10% noise by default
+MIX_PROB = 0.1  # 10% will be augmented in the mix
 
 modifier_map = {
-    "aug-typos": TypoModifier(NOISE_RATE),
-    "aug-title": TitleCaseModifier(NOISE_RATE),
+    "aug-typos": TypoModifier(MIX_PROB),
+    "aug-title": TitleCaseModifier(MIX_PROB),
     "aug-title-strict": TitleCaseModifier(1.0),
-    "aug-upper": UpperCaseModifier(NOISE_RATE),
+    "aug-upper": UpperCaseModifier(MIX_PROB),
     "aug-upper-strict": UpperCaseModifier(1.0),
     "aug-mix": CompositeModifier(
-        [TypoModifier(NOISE_RATE), UpperCaseModifier(NOISE_RATE), TitleCaseModifier(NOISE_RATE)]
+        [
+        # TODO: enable typos, issue https://github.com/hplt-project/OpusTrainer/issues/40
+        # TypoModifier(NOISE_RATE),
+         TitleCaseModifier(MIX_PROB),
+         UpperCaseModifier(MIX_PROB), ]
     ),
 }
 
