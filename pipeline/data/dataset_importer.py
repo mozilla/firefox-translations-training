@@ -42,10 +42,11 @@ modifier_map = {
     "aug-upper-strict": UpperCaseModifier(1.0),
     "aug-mix": CompositeModifier(
         [
-        # TODO: enable typos, issue https://github.com/hplt-project/OpusTrainer/issues/40
-        # TypoModifier(NOISE_RATE),
-         TitleCaseModifier(MIX_PROB),
-         UpperCaseModifier(MIX_PROB), ]
+            # TODO: enable typos, issue https://github.com/hplt-project/OpusTrainer/issues/40
+            # TypoModifier(NOISE_RATE),
+            TitleCaseModifier(MIX_PROB),
+            UpperCaseModifier(MIX_PROB),
+        ]
     ),
 }
 
