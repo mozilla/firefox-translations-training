@@ -43,9 +43,8 @@ experiment:
 
 marian-args:
 # these configs override pipeline/train/configs
-#  training-backward:
-#    # change based on available training data
-#    after: 10e
+  training-backward:
+    early-stopping: 5
   training-teacher:
     early-stopping: 30
 # these configs override pipeline/translate/decoder.yml
