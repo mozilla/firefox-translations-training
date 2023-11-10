@@ -1,3 +1,9 @@
+---
+layout: default
+title: OpusTrainer
+nav_order: 7
+---
+
 # OpusTrainer
 
 
@@ -31,12 +37,12 @@ Ability to split training into multiples stages. Each stage is configurable to u
 
 We use it to pretrain the teacher model on the augmented dataset that includes the original parallel corpus and 
 back-translaitons and then continue training on the original parallel corpus only
-(see [teacher config](/pipeline/train/configs/opustrainer/teacher.yml)).
+(see [teacher config](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/opustrainer/teacher.yml)).
 
 ## Configuration
 
 OpusTrainer configuration files for the trained models are located in 
-[/pipeline/train/configs/opustrainer/](/pipeline/train/configs/opustrainer/) directory.
+[/pipeline/train/configs/opustrainer/](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/opustrainer/) directory.
 
 `<dataset0>`, `<dataset1>` and `<vocab>` will be replaced by the training datasets passed in `trains.sh` script.
 

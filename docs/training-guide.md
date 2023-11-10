@@ -205,6 +205,14 @@ marian-args:
     precision: float16
 ```
 
+### Data augmentation and curriculum learning
+
+You can adjust data augmentation settings to increase robustness of the translation and 
+tune how to mix back-translated corpus with the original one in the 
+[OpusTrainer configs](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/opustrainer/).
+
+See [OpusTrainer docs](opus-trainer.md) for more details.
+
 ## 5. Run the pipeline
 
 Follow the instructions that correspond to the workflow manager you will be using 
