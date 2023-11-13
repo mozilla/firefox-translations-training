@@ -2,7 +2,7 @@ from taskgraph.transforms.base import TransformSequence
 from urllib.parse import urljoin
 import os
 
-MODEL_TRAINING_ARTIFACT_NAMES = (
+CONTINUE_TRAINING_ARTIFACTS = (
     "devset.out",
     "model.npz",
     "model.npz.best-bleu-detok.npz",
@@ -18,6 +18,12 @@ MODEL_TRAINING_ARTIFACT_NAMES = (
     "train.log",
     "valid.log",
     "vocab.spm",
+)
+
+INITIALIZE_MODEL_ARTIFACTS = (
+    "model.npz.best-bleu-detok.npz",
+    "model.npz.best-ce-mean-words.npz",
+    "model.npz.best-chrf.npz",
 )
 
 
@@ -73,7 +79,9 @@ def mount_pretrained_model_training_artifacts(config, jobs):
             pretrained_model: get_artifact_mounts(
                 pretrained_models[pretrained_model]["urls"],
                 "./artifacts",
-                MODEL_TRAINING_ARTIFACT_NAMES,
+                INITIALIZE_MODEL_ARTIFACTS
+                if pretrained_models[pretrained_model]["mode"] == "init"
+                else CONTINUE_TRAINING_ARTIFACTS,
             )
             for pretrained_model in pretrained_models
         }
