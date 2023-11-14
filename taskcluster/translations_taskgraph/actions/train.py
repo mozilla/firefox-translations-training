@@ -53,7 +53,6 @@ defaults = get_defaults("")["training_config"]
                     "split-mono",
                     "translate-mono-trg",
                     "collect-mono-trg",
-                    "merge-augmented",
                     "train-teacher",
                     "evaluate-teacher",
                     "evaluate-finetuned-teacher",
