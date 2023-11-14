@@ -93,8 +93,6 @@ tasks:
       optimization:
         skip-unless-changed:
             - pipeline/**
-            - envs/**
-            - configs/**
             - taskcluster/**
       run:
           command: >-
