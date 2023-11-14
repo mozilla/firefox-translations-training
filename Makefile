@@ -109,7 +109,7 @@ dag:
 	  --profile=profiles/$(PROFILE) \
 	  --configfile $(CONFIG) \
 	  --dag \
-	  | dot -Tpdf > DAG.pdf
+	  | dot -Tsvg > DAG.svg
 
 
 
