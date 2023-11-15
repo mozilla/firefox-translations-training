@@ -157,7 +157,7 @@ def main() -> None:
     )
 
     args = parser.parse_args()
-    print("Starting dataset import")
+    print("Starting dataset import and augmentation.")
     run_import(args.type, args.dataset, args.output_prefix)
     print("Finished")
 
