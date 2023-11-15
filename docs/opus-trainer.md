@@ -8,7 +8,7 @@ nav_order: 7
 
 
 [OpusTrainer](https://github.com/hplt-project/OpusTrainer) is a training tool developed by the HPLT project. 
-It feeds training data to Marian and provides ability to do useful manipulations with the data, 
+It feeds training data to Marian and provides the ability to do useful manipulations with the data, 
 such as shuffling, mixing multiple datasets in the specified proportion, splitting training into multiple stages and augmentation.
 
 ## Data augmentation
