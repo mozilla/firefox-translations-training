@@ -44,7 +44,7 @@ back-translaitons and then continue training on the original parallel corpus onl
 OpusTrainer configuration files for the trained models are located in 
 [/pipeline/train/configs/opustrainer/](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/opustrainer/) directory.
 
-`<dataset0>`, `<dataset1>` and `<vocab>` will be replaced by the training datasets passed in `trains.sh` script.
+`<dataset0>`, `<dataset1>` and `<vocab>` will be replaced by the training datasets passed in `pipeline/train/train.sh` script.
 
 See more details on configuration in the OpusTrainer [readme](https://github.com/hplt-project/OpusTrainer).
 
