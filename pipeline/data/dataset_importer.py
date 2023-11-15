@@ -184,7 +184,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--type", metavar="TYPE", type=str, help="Dataset type: mono or corpus")
-    parser.add_argument("--dataset", metavar="DATASET", type=str, help="Full dataset identifier")
+    parser.add_argument("--dataset", metavar="DATASET", type=str, help="Full dataset identifier. For example, sacrebleu_aug-upper-strict_wmt19 ")
     parser.add_argument(
         "--output_prefix",
         metavar="OUTPUT_PREFIX",
