@@ -25,6 +25,11 @@ tasks:
       max-run-time: 3600
       docker-image: {in-tree: test}
     run-on-tasks-for: ["github-push", "github-pull-request"]
+    optimization:
+        skip-unless-changed:
+            - pipeline/**
+            - envs/**
+            - configs/**
     run:
       command:
         - bash
@@ -85,6 +90,10 @@ tasks:
           max-run-time: 3600
       description: "Test the full `translations_taskgraph` to validate the latest changes"
       run-on-tasks-for: ["github-push", "github-pull-request"]
+      optimization:
+        skip-unless-changed:
+            - pipeline/**
+            - taskcluster/**
       run:
           command: >-
               make validate-taskgraph
