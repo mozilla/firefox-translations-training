@@ -90,7 +90,6 @@ tasks:
                 - >-
                     pip3 install --upgrade pip setuptools &&
                     pip3 install -r $VCS_PATH/pipeline/data/requirements/data.txt &&
-                    chmod +x $VCS_PATH/pipeline/data/dataset_importer.py &&
                     python3 -u $VCS_PATH/pipeline/data/dataset_importer.py
                     --type corpus
                     --dataset {dataset}
