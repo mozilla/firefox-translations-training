@@ -28,6 +28,10 @@ COMP_EXT = os.getenv("ARTIFACT_EXT", "gz")
 
 
 class CompositeModifier:
+    """
+    Composite modifier runs several modifiers one after another
+    """
+
     def __init__(self, modifiers: List[Modifier]):
         self._modifiers = modifiers
 
@@ -184,7 +188,12 @@ def main() -> None:
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--type", metavar="TYPE", type=str, help="Dataset type: mono or corpus")
-    parser.add_argument("--dataset", metavar="DATASET", type=str, help="Full dataset identifier. For example, sacrebleu_aug-upper-strict_wmt19 ")
+    parser.add_argument(
+        "--dataset",
+        metavar="DATASET",
+        type=str,
+        help="Full dataset identifier. For example, sacrebleu_aug-upper-strict_wmt19 ",
+    )
     parser.add_argument(
         "--output_prefix",
         metavar="OUTPUT_PREFIX",
