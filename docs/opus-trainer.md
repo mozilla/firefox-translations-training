@@ -15,7 +15,7 @@ such as shuffling, mixing multiple datasets in the specified proportion, splitti
 
 Data augmentation helps make translation models more robust, which is especially useful for usage with noisy internet pages.
 
-OpusTrainer augments data on the fly, which means it will generate unique data for each epoch of training. 
+OpusTrainer augments data on the fly, meaning it will generate unique data for each epoch of training.
 
 Supported augmentations:
 - **Upper case** - make some sentences from the dataset upper case
