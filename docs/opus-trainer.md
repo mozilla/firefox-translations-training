@@ -13,7 +13,7 @@ such as shuffling, mixing multiple datasets in the specified proportion, splitti
 
 ## Data augmentation
 
-Data augmentation helps with making translation models more robust which is especially useful for usage with the noisy internet pages.
+Data augmentation helps make translation models more robust, which is especially useful for usage with noisy internet pages.
 
 OpusTrainer augments data on the fly, which means it will generate unique data for each epoch of training. 
 
