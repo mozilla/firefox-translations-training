@@ -36,7 +36,7 @@ modifiers:
 Ability to split training into multiples stages. Each stage is configurable to use a mix of different datasets.
 
 We use it to pretrain the teacher model on the augmented dataset that includes the original parallel corpus and 
-back-translaitons and then continue training on the original parallel corpus only
+back-translations and then continue training on the original parallel corpus only
 (see [teacher config](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/opustrainer/teacher.yml)).
 
 ## Configuration
