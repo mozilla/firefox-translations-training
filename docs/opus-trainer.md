@@ -99,7 +99,7 @@ For example:
 
 ### Supported modifiers
 
-`aug-typos` - applies typos with probability 0.1
+`aug-typos` - applies typos with a probability of 0.1
 
 `aug-title` - applies title case with probability 0.1
 
