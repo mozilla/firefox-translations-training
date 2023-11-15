@@ -122,6 +122,12 @@ def run_import(type: str, dataset: str, output_prefix: str):
     current_dir = os.path.dirname(os.path.abspath(__file__))
 
     if type == "corpus":
+        # Parse a dataset identifier to extract importer, augmentation type and dataset name
+        # Examples:
+        # opus_wikimedia/v20230407
+        # mtdata_EU-eac_forms-1-eng-lit
+        # flores_aug-title_devtest
+        # sacrebleu_aug-upper-strict_wmt19
         match = re.search(r"^(\w*)_(aug[a-z\-]*)?_?(.+)$", dataset)
 
         if not match:
