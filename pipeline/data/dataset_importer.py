@@ -159,7 +159,8 @@ def main() -> None:
     parser.add_argument("--type", metavar="TYPE", type=str, help="Dataset type: mono or corpus")
     parser.add_argument("--dataset", metavar="DATASET", type=str, help="Full dataset identifier")
     parser.add_argument(
-        "--output_prefix", metavar="OUTPUT_PREFIX", type=str, help="Write dataset here"
+        "--output_prefix", metavar="OUTPUT_PREFIX", type=str,
+        help="Write output dataset to a path with this prefix"
     )
 
     args = parser.parse_args()
