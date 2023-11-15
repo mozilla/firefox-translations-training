@@ -20,6 +20,12 @@ from opustrainer.modifiers.surface import TitleCaseModifier, UpperCaseModifier
 from opustrainer.modifiers.typos import TypoModifier
 from opustrainer.types import Modifier
 
+# these envs are standard across the pipeline
+SRC = os.environ["SRC"]
+TRG = os.environ["TRG"]
+COMP_CMD = os.getenv("COMPRESSION_CMD", "pigz")
+COMP_EXT = os.getenv("ARTIFACT_EXT", "gz")
+
 
 class CompositeModifier:
     def __init__(self, modifiers: List[Modifier]):
@@ -72,36 +78,55 @@ def run_cmd(cmd: List[str]):
 
 # we plan to use it only for small evaluation datasets
 def augment(output_prefix: str, aug_modifer: str):
+    """
+    Augment corpus on disk using the OpusTrainer modifier
+    """
     if aug_modifer not in modifier_map:
         raise ValueError(f"Invalid modifier {aug_modifer}. Allowed values: {modifier_map.keys()}")
 
     modifer = modifier_map[aug_modifer]
 
-    # these envs are standard across the pipeline
-    src = os.environ["SRC"]
-    trg = os.environ["TRG"]
-    comp_cmd = os.getenv("COMPRESSION_CMD", "pigz")
-    comp_ext = os.getenv("ARTIFACT_EXT", "gz")
+    # file paths for compressed and uncompressed corpus
+    uncompressed_src = f"{output_prefix}.{SRC}"
+    uncompressed_trg = f"{output_prefix}.{TRG}"
+    compressed_src = f"{output_prefix}.{SRC}.{COMP_EXT}"
+    compressed_trg = f"{output_prefix}.{TRG}.{COMP_EXT}"
 
-    uncompressed_src = f"{output_prefix}.{src}"
-    uncompressed_trg = f"{output_prefix}.{trg}"
-    compressed_src = f"{output_prefix}.{src}.{comp_ext}"
-    compressed_trg = f"{output_prefix}.{trg}.{comp_ext}"
+    corpus = read_corpus_tsv(compressed_src, compressed_trg, uncompressed_src, uncompressed_trg)
+    modified = list(modifer(corpus))
+    write_modified(modified, uncompressed_src, uncompressed_trg)
 
+
+def read_corpus_tsv(
+    compressed_src: str, compressed_trg: str, uncompressed_src: str, uncompressed_trg: str
+) -> List[str]:
+    """
+    Decompress corpus and read to TSV
+    """
     if os.path.isfile(uncompressed_src):
         os.remove(uncompressed_src)
     if os.path.isfile(uncompressed_trg):
         os.remove(uncompressed_trg)
-    run_cmd([comp_cmd, "-d", compressed_src])
-    run_cmd([comp_cmd, "-d", compressed_trg])
+
+    # decompress the original corpus
+    run_cmd([COMP_CMD, "-d", compressed_src])
+    run_cmd([COMP_CMD, "-d", compressed_trg])
+    os.remove(compressed_src)
+    os.remove(compressed_trg)
 
     with open(uncompressed_src) as f:
         corpus_src = [line.rstrip("\n") for line in f]
     with open(uncompressed_trg) as f:
         corpus_trg = [line.rstrip("\n") for line in f]
 
-    corpus = [f"{src_sent}\t{trg_sent}" for src_sent, trg_sent in zip(corpus_src, corpus_trg)]
-    modified = list(modifer(corpus))
+    corpus_tsv = [f"{src_sent}\t{trg_sent}" for src_sent, trg_sent in zip(corpus_src, corpus_trg)]
+    return corpus_tsv
+
+
+def write_modified(modified: List[str], uncompressed_src: str, uncompressed_trg: str):
+    """
+    Split the modified TSV corpus, write back and compress
+    """
     modified_src = "\n".join([line.split("\t")[0] for line in modified]) + "\n"
     modified_trg = "\n".join([line.split("\t")[1] for line in modified]) + "\n"
 
@@ -110,10 +135,9 @@ def augment(output_prefix: str, aug_modifer: str):
     with open(uncompressed_trg, "w") as f:
         f.writelines(modified_trg)
 
-    os.remove(compressed_src)
-    os.remove(compressed_trg)
-    run_cmd([comp_cmd, uncompressed_src])
-    run_cmd([comp_cmd, uncompressed_trg])
+    # compress corpus back
+    run_cmd([COMP_CMD, uncompressed_src])
+    run_cmd([COMP_CMD, uncompressed_trg])
     os.remove(uncompressed_src)
     os.remove(uncompressed_trg)
 
