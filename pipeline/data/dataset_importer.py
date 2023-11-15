@@ -131,7 +131,8 @@ def run_import(type: str, dataset: str, output_prefix: str):
         match = re.search(r"^(\w*)_(aug[a-z\-]*)?_?(.+)$", dataset)
 
         if not match:
-            raise ValueError(f"Invalid dataset name: {dataset}")
+            raise ValueError(f"Invalid dataset name: {dataset}. "
+                             f"Use the following format: <importer>_<name> or <importer>_<augmentation>_<name>.")
 
         importer = match.group(1)
         aug_modifer = match.group(2)
