@@ -67,7 +67,6 @@ finetune:
   - original 1.0
   - until original inf # Fine-tuning only on original until the early stopping
 
-
 modifiers:
 - UpperCase: 0.1 # Apply randomly to 10% of sentences
 - TitleCase: 0.1
