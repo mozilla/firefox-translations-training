@@ -60,7 +60,6 @@ for index in "${!datasets[@]}"; do
             <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${trg}.${ARTIFACT_EXT}") \
             <(${COMPRESSION_CMD} -dc "${train_aln}") \
             >"${tsv_dataset}"
-#            | pigz -c >"${tsv_dataset}"
       rm "${train_aln}"
       # when using tsv, marian requires --guided-alignments argument to be an index of the alignments in the tsv file
       extra_params+=("--guided-alignment" "2")
@@ -70,7 +69,6 @@ for index in "${!datasets[@]}"; do
       paste <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${src}.${ARTIFACT_EXT}") \
             <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${trg}.${ARTIFACT_EXT}") \
             >"${tsv_dataset}"
-#            | pigz -c >"${tsv_dataset}"
     fi
     # free disk space
     rm "${train_set_prefix}.${src}.${ARTIFACT_EXT}"
