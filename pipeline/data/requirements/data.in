@@ -1,2 +1,3 @@
-git+https://github.com/hplt-project/OpusTrainer.git@6c93fb667726504cad1cf5ab1aba140b99110f9d
+# use the latest main, switch to PyPi when released
+git+https://github.com/hplt-project/OpusTrainer.git@9133e1525c7ee37f53ea14ee6a180152bf7ea192
 
