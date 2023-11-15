@@ -33,7 +33,7 @@ modifiers:
 
 ## Curriculum learning
 
-Ability to split training into multiples stages. Each stage is configurable to use a mix of different datasets.
+Ability to split training into multiple stages. Each stage is configurable to use a mix of different datasets.
 
 We use it to pretrain the teacher model on the augmented dataset that includes the original parallel corpus and 
 back-translations and then continue training on the original parallel corpus only
