@@ -6,8 +6,8 @@
 set -x
 set -euo pipefail
 
-test -v SRC
-test -v TRG
+[[ -z "${SRC}" ]] && echo "SRC is empty"
+[[ -z "${TRG}" ]] && echo "TRG is empty"
 
 
 dataset=$1
