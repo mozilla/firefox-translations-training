@@ -162,6 +162,11 @@ fix-all:
 	make black-fix
 	make lint-fix
 
+# Run unit tests
+run-tests:
+	poetry install --only utils
+	PYTHONPATH=$$(pwd) pytest tests
+
 # Validates Task Cluster task graph locally
 validate-taskgraph:
 	pip3 install -r taskcluster/requirements.txt && taskgraph full
