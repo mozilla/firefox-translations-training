@@ -13,6 +13,7 @@ training_type=$2
 src=$3
 trg=$4
 # comma separated prefixes to datasets for curriculum learning
+# for example path1/corpus,path2/mono
 train_set_prefixes=$5
 valid_set_prefix=$6
 model_dir=$7
@@ -49,7 +50,7 @@ IFS=',' read -ra alns <<< "${alignments}"
 for index in "${!datasets[@]}"; do
     train_set_prefix="${datasets[index]}"
     # OpusTrainer supports only tsv and gzip
-    # TODO: pigz is not found
+    # TODO: pigz is not installed on the generic Taskcluster worker, so we use datasets in decompressed mode for now
     tsv_dataset="${train_set_prefix}.${src}${trg}.tsv" #.gz"
 
     if [ "${alignments}" != "None" ] ; then
