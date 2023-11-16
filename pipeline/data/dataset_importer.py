@@ -120,6 +120,8 @@ def read_corpus_tsv(
     if os.path.isfile(compressed_trg):
         os.remove(compressed_trg)
 
+    # Since this is only used on small evaluation sets, it's fine to load the entire dataset
+    # and augmentation into memory rather than streaming it.
     with open(uncompressed_src) as f:
         corpus_src = [line.rstrip("\n") for line in f]
     with open(uncompressed_trg) as f:
