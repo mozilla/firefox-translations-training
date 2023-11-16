@@ -115,8 +115,10 @@ def read_corpus_tsv(
     # decompress the original corpus
     run_cmd([COMP_CMD, "-d", compressed_src])
     run_cmd([COMP_CMD, "-d", compressed_trg])
-    os.remove(compressed_src)
-    os.remove(compressed_trg)
+    if os.path.isfile(compressed_src):
+        os.remove(compressed_src)
+    if os.path.isfile(compressed_trg):
+        os.remove(compressed_trg)
 
     with open(uncompressed_src) as f:
         corpus_src = [line.rstrip("\n") for line in f]
@@ -142,8 +144,10 @@ def write_modified(modified: List[str], uncompressed_src: str, uncompressed_trg:
     # compress corpus back
     run_cmd([COMP_CMD, uncompressed_src])
     run_cmd([COMP_CMD, uncompressed_trg])
-    os.remove(uncompressed_src)
-    os.remove(uncompressed_trg)
+    if os.path.isfile(uncompressed_src):
+        os.remove(uncompressed_src)
+    if os.path.isfile(uncompressed_trg):
+        os.remove(uncompressed_trg)
 
 
 def run_import(type: str, dataset: str, output_prefix: str):
@@ -177,8 +181,7 @@ def run_import(type: str, dataset: str, output_prefix: str):
             augment(output_prefix, aug_modifer)
 
     elif type == "mono":
-        print("Downloading mono dataset")
-        run_cmd([os.path.join(current_dir, "download-mono.sh"), dataset, output_prefix])
+        raise ValueError("Downloading mono data is not supported yet")
     else:
         raise ValueError(f"Invalid dataset type: {type}. Allowed values: mono, corpus")
 
