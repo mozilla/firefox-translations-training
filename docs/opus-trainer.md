@@ -94,7 +94,11 @@ Add an augmentation modifier to any dataset in the training config in the follow
 
 For example:
 
-`flores_aug-title-strict_devtest`
+```yaml
+- flores_aug-title-strict_devtest
+- sacrebleu_aug-mix_wmt19/dev
+- opus_aug-typos_ada83/v1
+```
 
 
 ### Supported modifiers
