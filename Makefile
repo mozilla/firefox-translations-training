@@ -165,7 +165,7 @@ fix-all:
 # Run unit tests
 run-tests:
 	poetry install --only utils
-	PYTHONPATH=$$(pwd) pytest tests
+	PYTHONPATH=$$(pwd) python3 -m pytest tests
 
 # Validates Task Cluster task graph locally
 validate-taskgraph:
