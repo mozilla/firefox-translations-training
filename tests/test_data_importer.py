@@ -17,7 +17,7 @@ from pipeline.data.dataset_importer import run_import
 
 OUTPUT_DIR = "tests_data"
 # the augmentation is probabilistic, here is a range for 0.1 probability
-AUG_MAX_RATE = 0.20
+AUG_MAX_RATE = 0.3
 AUG_MIN_RATE = 0.01
 
 
