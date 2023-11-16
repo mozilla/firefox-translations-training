@@ -190,7 +190,11 @@ def run_import(type: str, dataset: str, output_prefix: str):
 
 def main() -> None:
     print(f"Running with arguments: {sys.argv}")
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        # Preserves whitespace in the help text.
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
 
     parser.add_argument("--type", metavar="TYPE", type=str, help="Dataset type: mono or corpus")
     parser.add_argument(
