@@ -97,6 +97,12 @@ tasks:
             pip install poetry &&
             make run-tests
     run-on-tasks-for: ["github-push", "github-pull-request"]
+    optimization:
+      skip-unless-changed:
+        - pipeline/**
+        - tests/**
+        - poetry.*
+        - Makefile
 
   taskgraph-definition:
       expires-after: "90 days"
