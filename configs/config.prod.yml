@@ -44,11 +44,9 @@ experiment:
 marian-args:
 # these configs override pipeline/train/configs
   training-backward:
-    # change based on available training data
-    after: 10e
-  training-teacher-base:
-    # remove for low resource languages or if training without augmentation
-    after: 2e
+    early-stopping: 5
+  training-teacher:
+    early-stopping: 30
 # these configs override pipeline/translate/decoder.yml
   decoding-backward:
     # 12 Gb GPU, s2s model
@@ -141,7 +139,6 @@ datasets:
     - news-crawl_news.2012
     - news-crawl_news.2011
   # to be translated by the backward model to augment teacher corpus with back-translations
-  # leave empty to skip augmentation step (high resource languages)
   mono-trg:
     - news-crawl_news.2020
     - news-crawl_news.2019

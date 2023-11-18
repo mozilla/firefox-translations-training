@@ -53,10 +53,8 @@ defaults = get_defaults("")["training_config"]
                     "split-mono",
                     "translate-mono-trg",
                     "collect-mono-trg",
-                    "merge-augmented",
                     "train-teacher",
                     "evaluate-teacher",
-                    "finetune-teacher",
                     "evaluate-finetuned-teacher",
                     "translate-corpus",
                     "extract-best",
@@ -169,13 +167,7 @@ defaults = get_defaults("")["training_config"]
                             "type": "string",
                         },
                     },
-                    "training-teacher-base": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "string",
-                        },
-                    },
-                    "training-teacher-finetuned": {
+                    "training-teacher": {
                         "type": "object",
                         "additionalProperties": {
                             "type": "string",

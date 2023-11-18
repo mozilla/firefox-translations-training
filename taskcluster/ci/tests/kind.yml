@@ -82,6 +82,28 @@ tasks:
             make lint
     run-on-tasks-for: ["github-push", "github-pull-request"]
 
+  test:
+    # Run unit tests
+    expires-after: "90 days"
+    worker-type: b-linux-large
+    worker:
+      max-run-time: 3600
+      docker-image: {in-tree: test}
+    run:
+      command:
+        - bash
+        - -c
+        - >-
+            pip install poetry &&
+            make run-tests
+    run-on-tasks-for: ["github-push", "github-pull-request"]
+    optimization:
+      skip-unless-changed:
+        - pipeline/**
+        - tests/**
+        - poetry.*
+        - Makefile
+
   taskgraph-definition:
       expires-after: "90 days"
       worker-type: b-linux-large

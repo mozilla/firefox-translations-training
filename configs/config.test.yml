@@ -31,12 +31,7 @@ marian-args:
     save-freq: 100
     valid-freq: 100
     after: 500u
-  training-teacher-base:
-    disp-freq: 10
-    save-freq: 100
-    valid-freq: 100
-    after: 500u
-  training-teacher-finetuned:
+  training-teacher:
     disp-freq: 10
     save-freq: 100
     valid-freq: 100

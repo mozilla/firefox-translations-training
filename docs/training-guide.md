@@ -173,14 +173,9 @@ So, you can start with `early-stopping: 20`, monitor the training and increase i
 marian-args:
 # these configs override pipeline/train/configs
   training-backward:
-    # change based on available training data
-    after: 10e
-  training-teacher-base:
-    # remove for low resource languages or if training without augmentation
-    after: 2e
+    early-stopping: 5
+  training-teacher:
     early-stopping: 20
-  training-teacher-finetuned:
-    early-stopping: 40
 ```
 
 ### Decoding (translation)
@@ -209,6 +204,14 @@ marian-args:
     # 2080ti or newer
     precision: float16
 ```
+
+### Data augmentation and curriculum learning
+
+You can adjust data augmentation settings to increase robustness of the translation and 
+tune how to mix back-translated corpus with the original one in the 
+[OpusTrainer configs](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/opustrainer/).
+
+See [OpusTrainer docs](opus-trainer.md) for more details.
 
 ## 5. Run the pipeline
 

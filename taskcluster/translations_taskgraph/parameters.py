@@ -42,39 +42,31 @@ def get_defaults(_):
             "marian-args": {
                 "training-backward": {
                     "disp-freq": "1",
-                    "save-freq": "5",
-                    "valid-freq": "10",
-                    "after": "10u",
+                    "save-freq": "25",
+                    "valid-freq": "50",
+                    "after": "50u",
                     "dim-vocabs": "1000 1000",
                 },
-                "training-teacher-base": {
+                "training-teacher": {
                     "disp-freq": "1",
-                    "save-freq": "5",
-                    "valid-freq": "10",
-                    "after": "10u",
-                    "dim-vocabs": "1000 1000",
-                    "task": "transformer-base",
-                },
-                "training-teacher-finetuned": {
-                    "disp-freq": "1",
-                    "save-freq": "5",
-                    "valid-freq": "10",
-                    "after": "10u",
+                    "save-freq": "25",
+                    "valid-freq": "50",
+                    "after": "50u",
                     "dim-vocabs": "1000 1000",
                     "task": "transformer-base",
                 },
                 "training-student": {
                     "disp-freq": "1",
-                    "save-freq": "5",
-                    "valid-freq": "10",
-                    "after": "10u",
+                    "save-freq": "25",
+                    "valid-freq": "50",
+                    "after": "50u",
                     "dim-vocabs": "1000 1000",
                 },
                 "training-student-finetuned": {
                     "disp-freq": "1",
-                    "save-freq": "5",
-                    "valid-freq": "10",
-                    "after": "10u",
+                    "save-freq": "25",
+                    "valid-freq": "50",
+                    "after": "50u",
                     "dim-vocabs": "1000 1000",
                 },
                 "decoding-backward": {
@@ -95,7 +87,7 @@ def get_defaults(_):
                 ],
                 "devtest": [
                     "flores_dev",
-                    "sacrebleu_wmt19",
+                    "sacrebleu_aug-mix_wmt19",
                 ],
                 "test": [
                     "flores_devtest",
@@ -121,8 +113,7 @@ extend_parameters_schema(
             Required("target-stage"): str,
             Required("marian-args"): {
                 Optional("training-backward"): {str: str},
-                Optional("training-teacher-base"): {str: str},
-                Optional("training-teacher-finetuned"): {str: str},
+                Optional("training-teacher"): {str: str},
                 Optional("training-student"): {str: str},
                 Optional("training-student-finetuned"): {str: str},
                 Optional("decoding-backward"): {str: str},

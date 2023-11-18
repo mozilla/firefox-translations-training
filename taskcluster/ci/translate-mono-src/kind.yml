@@ -15,7 +15,7 @@ transforms:
 
 kind-dependencies:
     - split-mono-src
-    - finetune-teacher
+    - train-teacher
     - train-vocab
     - toolchain
 
@@ -112,7 +112,7 @@ tasks:
             set-name: false
             unique-kinds: false
             kinds:
-                - finetune-teacher
+                - train-teacher
                 - split-mono-src
                 - train-vocab
             fetches:
@@ -122,6 +122,6 @@ tasks:
                 train-vocab:
                     - artifact: vocab.spm
                       extract: false
-                finetune-teacher:
+                train-teacher:
                     - artifact: final.model.npz.best-{best_model}.npz
                       dest: model{this_chunk}

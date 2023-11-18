@@ -42,12 +42,12 @@ tasks:
                 type: train-student
                 resources:
                     - pipeline/train/configs/model/student.yml
+                    - pipeline/train/configs/opustrainer/student.yml
                     - pipeline/train/configs/training/student.train.yml
                     - pipeline/train/train.sh
-                    - pipeline/train/train-student.sh
                 from-parameters:
                     marian_args: training_config.marian-args.training-student
-        worker-type: b-linux-v100-gpu-4-300gb
+        worker-type: b-linux-v100-gpu-4-1tb
         expires-after: "90 days"
         worker:
             max-run-time: 2592000
@@ -60,6 +60,7 @@ tasks:
                 # GPUs. it should _always_ be aligned with the # of GPUs on the intsance
                 GPUS: "0 1 2 3"
                 ARTIFACT_EXT: zst
+                COMPRESSION_CMD: zstdmt
             artifacts:
                 - name: public/build
                   path: artifacts
@@ -74,11 +75,13 @@ tasks:
             using: run-task
             command:
                 - bash
-                - -c
+                - -cx
                 - >-
+                    pip3 install --upgrade pip setuptools &&
+                    pip3 install -r $VCS_PATH/pipeline/train/requirements/train.txt &&
+                    export PATH="$HOME/.local/bin:$PATH" &&
                     export MARIAN=$MOZ_FETCHES_DIR &&
-                    $VCS_PATH/pipeline/train/train-student.sh
-                    $MOZ_FETCHES_DIR/corpus.aln.zst
+                    $VCS_PATH/pipeline/train/train.sh
                     student
                     train
                     {src_locale}
@@ -88,6 +91,7 @@ tasks:
                     $TASK_WORKDIR/artifacts
                     $MOZ_FETCHES_DIR/vocab.spm
                     {best_model}
+                    $MOZ_FETCHES_DIR/corpus.aln.zst
                     {marian_args}
 
         dependencies:

@@ -19,50 +19,43 @@ experiment:
 
   best-model: chrf
 
-  use-opuscleaner: true
+  use-opuscleaner: "true"
   bicleaner:
     default-threshold: 0.5
     dataset-thresholds:
-      opus_ada83/v1: 0
+      opus_ada83/v1: 0.0
       opus_ELRC-3075-wikipedia_health/v1: 0.6
 
 marian-args:
   training-backward:
-    disp-freq: 1
-    save-freq: 5
-    valid-freq: 10
+    disp-freq: "1"
+    save-freq: "5"
+    valid-freq: "10"
     after: 10u
     dim-vocabs: "1000 1000"
-  training-teacher-base:
-    disp-freq: 1
-    save-freq: 5
-    valid-freq: 10
-    after: 10u
-    dim-vocabs: "1000 1000"
-    task: transformer-base
-  training-teacher-finetuned:
-    disp-freq: 1
-    save-freq: 5
-    valid-freq: 10
+  training-teacher:
+    disp-freq: "1"
+    save-freq: "5"
+    valid-freq: "10"
     after: 10u
     dim-vocabs: "1000 1000"
     task: transformer-base
   training-student:
-    disp-freq: 1
-    save-freq: 5
-    valid-freq: 10
+    disp-freq: "1"
+    save-freq: "5"
+    valid-freq: "10"
     after: 10u
     dim-vocabs: "1000 1000"
   training-student-finetuned:
-    disp-freq: 1
-    save-freq: 5
-    valid-freq: 10
+    disp-freq: "1"
+    save-freq: "5"
+    valid-freq: "10"
     after: 10u
     dim-vocabs: "1000 1000"
   decoding-backward:
-    mini-batch-words: 2000
+    mini-batch-words: "2000"
   decoding-teacher:
-    mini-batch-words: 1000
+    mini-batch-words: "1000"
     precision: float16
 
 datasets:
@@ -72,6 +65,7 @@ datasets:
   devtest:
     - flores_dev
     - sacrebleu_wmt19
+    - sacrebleu_aug-mix_wmt19
   test:
     - flores_devtest
   mono-src:
@@ -79,4 +73,7 @@ datasets:
   mono-trg:
     - news-crawl_news.2007
 
+target-stage: all
+taskcluster:
+  split-chunks: 2
 

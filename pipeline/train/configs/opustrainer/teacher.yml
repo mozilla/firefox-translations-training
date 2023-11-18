@@ -1,0 +1,42 @@
+datasets:
+  original: <dataset0> # Original parallel corpus
+  backtranslated: <dataset1> # Back-translated data
+
+stages:
+  - start
+  - mid
+  - end
+  - finetune
+
+ # One epoch of only original high-quality data to warm up the model
+start:
+  - original 1.0
+  - until original 1
+
+# Gradually add back-translations to the mix
+# Back-translated corpus can vary a lot in size, so we can try using original to count epochs
+mid:
+  - original 0.7
+  - backtranslated 0.3
+  - until original 1
+
+# Expand back-translations
+end:
+  - original 0.6
+  - backtranslated 0.4
+  - until original 1
+
+# Fine-tuning only on original clean corpus until the early stopping
+finetune:
+  - original 1.0
+  - until original inf
+
+
+modifiers:
+- UpperCase: 0.1 # Apply randomly to 10% of sentences
+- TitleCase: 0.1
+# TODO: enable typos, issue https://github.com/mozilla/firefox-translations-training/issues/262
+#- Typos: 0.05
+
+seed: 1111
+num_fields: 2

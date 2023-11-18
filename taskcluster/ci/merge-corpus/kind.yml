@@ -51,7 +51,7 @@ task-defaults:
         upstream-artifacts:
             - "{dataset_sanitized}.{src_locale}.zst"
             - "{dataset_sanitized}.{trg_locale}.zst"
-    worker-type: b-linux-large
+    worker-type: b-linux-large-300gb
     expires-after: "90 days"
     worker:
         docker-image: {"in-tree": "train"}

@@ -109,7 +109,7 @@ dag:
 	  --profile=profiles/$(PROFILE) \
 	  --configfile $(CONFIG) \
 	  --dag \
-	  | dot -Tpdf > DAG.pdf
+	  | dot -Tsvg > DAG.svg
 
 
 
@@ -161,6 +161,11 @@ lint-fix:
 fix-all:
 	make black-fix
 	make lint-fix
+
+# Run unit tests
+run-tests:
+	poetry install --only tests
+	PYTHONPATH=$$(pwd) poetry run pytest tests
 
 # Validates Task Cluster task graph locally
 validate-taskgraph:

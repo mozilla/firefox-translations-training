@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Development
-nav_order: 7
+nav_order: 8
 ---
 
 # Development
@@ -26,6 +26,12 @@ Make sure to run linter with `make fix-all`.
 
 For changes in the Taskcluster graph run `TASKCLUSTER_ROOT_URL="" make validate-taskgraph` to validate the graph locally.
 
+## Tests
+
+To run unit tests locally:
+```
+make run-tests
+```
 
 ## CI
 
