@@ -18,7 +18,6 @@ kind-dependencies:
     - dataset
     - train-backwards
     - train-teacher
-    - train-vocab
     - train-student
     - finetune-student
     - alignments
@@ -112,7 +111,6 @@ tasks:
         dependencies:
             dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
             train-backwards: train-backwards-{src_locale}-{trg_locale}
-            train-vocab: train-vocab-{src_locale}-{trg_locale}
         fetches:
             dataset:
                 - artifact: "{dataset_sanitized}.{src_locale}.zst"
@@ -124,7 +122,6 @@ tasks:
                   extract: false
                 - artifact: final.model.npz.best-{best_model}.npz.decoder.yml
                   extract: false
-            train-vocab:
                 - artifact: vocab.spm
                   extract: false
             toolchain:
@@ -162,7 +159,6 @@ tasks:
         dependencies:
             dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
             train-teacher: train-teacher-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}
-            train-vocab: train-vocab-{src_locale}-{trg_locale}
         fetches:
             dataset:
                 - artifact: "{dataset_sanitized}.{src_locale}.zst"
@@ -174,7 +170,6 @@ tasks:
                   extract: false
                 - artifact: final.model.npz.best-{best_model}.npz.decoder.yml
                   extract: false
-            train-vocab:
                 - artifact: vocab.spm
                   extract: false
             toolchain:
@@ -201,7 +196,6 @@ tasks:
         dependencies:
             dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
             train-student: train-student-{src_locale}-{trg_locale}
-            train-vocab: train-vocab-{src_locale}-{trg_locale}
         fetches:
             dataset:
                 - artifact: "{dataset_sanitized}.{src_locale}.zst"
@@ -213,7 +207,6 @@ tasks:
                   extract: false
                 - artifact: final.model.npz.best-{best_model}.npz.decoder.yml
                   extract: false
-            train-vocab:
                 - artifact: vocab.spm
                   extract: false
             toolchain:
@@ -240,7 +233,6 @@ tasks:
         dependencies:
             dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
             finetune-student: finetune-student-{src_locale}-{trg_locale}
-            train-vocab: train-vocab-{src_locale}-{trg_locale}
         fetches:
             dataset:
                 - artifact: "{dataset_sanitized}.{src_locale}.zst"
@@ -252,7 +244,6 @@ tasks:
                   extract: false
                 - artifact: final.model.npz.best-{best_model}.npz.decoder.yml
                   extract: false
-            train-vocab:
                 - artifact: vocab.spm
                   extract: false
             toolchain:

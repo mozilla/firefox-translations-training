@@ -16,7 +16,6 @@ transforms:
 kind-dependencies:
     - dataset
     - train-teacher
-    - train-vocab
     - alignments
     - toolchain
 
@@ -110,13 +109,11 @@ tasks:
             unique-kinds: false
             kinds:
                 - train-teacher
-                - train-vocab
             fetches:
                 train-teacher:
                     - artifact: final.model.npz.best-{best_model}.npz
                       dest: model{this_chunk}
                     - artifact: final.model.npz.best-chrf.npz.decoder.yml
-                train-vocab:
                     - artifact: vocab.spm
                       extract: false
 
