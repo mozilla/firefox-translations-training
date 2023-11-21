@@ -8,7 +8,7 @@ train:
   - original 1.0
   - until original inf # General training until marian early stops
 
-# TODO: augment corpus before decoding or reduce augmentation rat
+# TODO: augment corpus before decoding or reduce augmentation rate
 # TODO: https://github.com/mozilla/firefox-translations-training/issues/272
 #modifiers:
 #- UpperCase: 0.1 # Apply randomly to 5% of sentences
