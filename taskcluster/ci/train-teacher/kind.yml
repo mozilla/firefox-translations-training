@@ -112,7 +112,6 @@ tasks:
                     $MOZ_FETCHES_DIR/corpus,$MOZ_FETCHES_DIR/mono
                     $MOZ_FETCHES_DIR/devset
                     $TASK_WORKDIR/artifacts
-                    $MOZ_FETCHES_DIR/vocab.spm
                     {best_model}
                     None
                     {pretrained_teacher_mode}
