@@ -167,9 +167,21 @@ run-tests:
 	poetry install --only tests
 	PYTHONPATH=$$(pwd) poetry run pytest tests
 
-# Validates Task Cluster task graph locally
+# Validates Taskcluster task graph locally
 validate-taskgraph:
 	pip3 install -r taskcluster/requirements.txt && taskgraph full
+
+# Generates diffs of the full taskgraph against $BASE_REV. Any parameters that were
+# different between the current code and $BASE_REV will have their diffs logged to $OUTPUT_DIR.
+diff-taskgraph:
+ifndef OUTPUT_DIR
+	$(error OUTPUT_DIR must be defined)
+endif
+ifndef BASE_REV
+	$(error BASE_REV must be defined)
+endif
+	pip3 install -r taskcluster/requirements.txt
+	taskgraph full -p "taskcluster/test/params" -o "$(OUTPUT_DIR)" --diff "$(BASE_REV)" -J
 
 # Downloads Marian training logs for a Taskcluster task group
 download-logs:
