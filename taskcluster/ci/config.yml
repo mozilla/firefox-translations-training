@@ -61,3 +61,26 @@ workers:
             implementation: docker-worker
             os: linux
             worker-type: '{alias}-gcp'
+
+# Keys are worker type, and align with the `worker-type` entries in the
+# `worker.aliases` above.
+worker-configuration:
+    b-linux-v100-gpu:
+        env:
+            GPUS: "0"
+            WORKSPACE: "12000"
+
+    b-linux-v100-gpu-4:
+        env:
+            GPUS: "0 1 2 3"
+            WORKSPACE: "12000"
+
+    b-linux-v100-gpu-4-300gb:
+        env:
+            GPUS: "0 1 2 3"
+            WORKSPACE: "12000"
+
+    b-linux-v100-gpu-4-1tb:
+        env:
+            GPUS: "0 1 2 3"
+            WORKSPACE: "12000"

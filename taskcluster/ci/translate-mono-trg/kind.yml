@@ -6,6 +6,7 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.marian_args:transforms
+    - translations_taskgraph.transforms.worker_env
     - taskgraph.transforms.task_context
     - translations_taskgraph.transforms.cast_to
     - taskgraph.transforms.chunking
@@ -57,8 +58,6 @@ task-defaults:
               path: artifacts
               type: directory
         env:
-            GPUS: "0 1 2 3"
-            WORKSPACE: "12000"
             CUDA_DIR: fetches/cuda-toolkit
             CUDNN_DIR: fetches/cuda-toolkit
 
