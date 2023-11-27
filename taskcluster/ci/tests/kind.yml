@@ -6,11 +6,17 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
+    - taskgraph.transforms.task_context
     - taskgraph.transforms.job:transforms
     - taskgraph.transforms.task:transforms
 
 task-defaults:
   description: "Run tests"
+  task-context:
+    from-parameters:
+      base_rev: base_rev
+    substitution-fields:
+      - run.command
   run:
     using: run-task
     cwd: '{checkout}'
@@ -119,3 +125,18 @@ tasks:
       run:
           command: >-
               make validate-taskgraph
+
+  taskgraph-diff:
+      expires-after: "90 days"
+      worker-type: b-linux-large
+      worker:
+          docker-image: {in-tree: base}
+          max-run-time: 1200
+      description: "Create diffs of taskgraphs vs. base revision."
+      run-on-tasks-for: ["github-push", "github-pull-request"]
+      optimization:
+        skip-unless-changed:
+            - taskcluster/**
+      run:
+          command: >-
+              make diff-taskgraph BASE_REV={base_rev} OUTPUT_DIR=/builds/worker/artifacts
