@@ -88,7 +88,7 @@ tasks:
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
 
-        worker-type: b-linux-v100-gpu-4-1tb
+        worker-type: b-largegpu-xlargedisk
         expires-after: "90 days"
         worker:
             max-run-time: 2592000

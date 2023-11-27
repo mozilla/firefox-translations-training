@@ -13,7 +13,7 @@ transforms:
     - taskgraph.transforms.task:transforms
 
 task-defaults:
-    worker-type: b-linux-large
+    worker-type: b-cpu
     expires-after: "90 days"
     worker:
         docker-image: {"in-tree": "toolchain-build"}
@@ -36,7 +36,7 @@ tasks:
 
     marian:
         description: Marian
-        worker-type: b-linux-large
+        worker-type: b-cpu
         run:
             script: build-marian.sh
             resources:
@@ -51,7 +51,7 @@ tasks:
 
     browsermt-marian:
         description: Browsermt Marian
-        worker-type: b-linux-large
+        worker-type: b-cpu
         run:
             script: build-marian.sh
             arguments:

@@ -43,7 +43,7 @@ tasks:
                 - dependencies
                 - attributes
                 - run.command
-        worker-type: b-linux-large
+        worker-type: b-cpu
         expires-after: "90 days"
         worker:
             docker-image: {"in-tree": "train"}

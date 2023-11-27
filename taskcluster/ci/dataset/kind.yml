@@ -16,7 +16,7 @@ transforms:
     - taskgraph.transforms.task:transforms
 
 task-defaults:
-    worker-type: b-linux-large
+    worker-type: b-cpu
     attributes:
         cache:
             type: dataset
