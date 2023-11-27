@@ -37,11 +37,22 @@ tasks:
                   'tasks_for == "github-push"': ${event.ref}
                   'tasks_for == "github-release"': '${event.release.target_commitish}'
                   'tasks_for in ["action", "cron"]': '${push.branch}'
+          base_ref:
+              $switch:
+                  'tasks_for[:19] == "github-pull-request"': ${event.pull_request.base.ref}
+                  'tasks_for == "github-push" && event.base_ref': ${event.base_ref}
+                  'tasks_for == "github-push"': ${event.ref}
+                  'tasks_for in ["cron", "action"]': '${push.branch}'
           head_ref:
               $switch:
                   'tasks_for[:19] == "github-pull-request"': ${event.pull_request.head.ref}
                   'tasks_for == "github-push"': ${event.ref}
                   'tasks_for in ["cron", "action"]': '${push.branch}'
+          base_sha:
+              $switch:
+                  'tasks_for == "github-push"': '${event.before}'
+                  'tasks_for[:19] == "github-pull-request"': '${event.pull_request.base.sha}'
+                  'tasks_for in ["cron", "action"]': '${push.revision}'
           head_sha:
               $switch:
                   'tasks_for == "github-push"': '${event.after}'
@@ -169,6 +180,8 @@ tasks:
                               # `taskgraph decision` are all on the command line.
                               $merge:
                                   - ${normProjectUpper}_BASE_REPOSITORY: '${baseRepoUrl}'
+                                    ${normProjectUpper}_BASE_REF: '${base_ref}'
+                                    ${normProjectUpper}_BASE_REV: '${base_sha}'
                                     ${normProjectUpper}_HEAD_REPOSITORY: '${repoUrl}'
                                     ${normProjectUpper}_HEAD_REF: '${head_ref}'
                                     ${normProjectUpper}_HEAD_REV: '${head_sha}'
@@ -222,6 +235,8 @@ tasks:
                                         --repository-type=git
                                         --tasks-for='${tasks_for}'
                                         --base-repository='${baseRepoUrl}'
+                                        --base-ref='${base_ref}'
+                                        --base-rev='${base_sha}'
                                         --head-repository='${repoUrl}'
                                         --head-ref='${head_ref}'
                                         --head-rev='${head_sha}'
