@@ -1,0 +1,166 @@
+base_ref: origin/main
+base_repository: https://github.com/mozilla/firefox-translations-training
+base_rev: 4f473253edd61a39505ca001262e518b68b5d0b7
+build_date: 1699579179
+build_number: 1
+do_not_optimize: []
+enable_always_target: true
+existing_tasks: {}
+filters:
+- target_tasks_method
+head_ref: refs/heads/opustrainer
+head_repository: https://github.com/mozilla/firefox-translations-training
+head_rev: 22c54949df5e53079e0aecb8585ce3b6b60f87aa
+head_tag: ''
+level: '1'
+moz_build_date: '20231110011939'
+next_version: null
+optimize_strategies: null
+optimize_target_tasks: true
+owner: pavlov89@gmail.com
+project: firefox-translations-training
+pushdate: 0
+pushlog_id: '0'
+repository_type: git
+target_tasks_method: train-target-tasks
+tasks_for: action
+training_config:
+  datasets:
+    devtest:
+    - flores_aug-mix_dev
+    - sacrebleu_aug-mix_wmt19/dev
+    - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-lit
+    mono-src:
+    - news-crawl_news.2022
+    - news-crawl_news.2021
+    - news-crawl_news.2020
+    - news-crawl_news.2019
+    - news-crawl_news.2018
+    mono-trg:
+    - news-crawl_news.2022
+    - news-crawl_news.2021
+    - news-crawl_news.2020
+    - news-crawl_news.2019
+    - news-crawl_news.2018
+    - news-crawl_news.2017
+    - news-crawl_news.2016
+    test:
+    - flores_devtest
+    - flores_aug-mix_devtest
+    - flores_aug-title_devtest
+    - flores_aug-title-strict_devtest
+    - flores_aug-upper_devtest
+    - flores_aug-upper-strict_devtest
+    - flores_aug-typos_devtest
+    - sacrebleu_wmt19
+    - sacrebleu_aug-mix_wmt19
+    - sacrebleu_aug-title_wmt19
+    - sacrebleu_aug-title-strict_wmt19
+    - sacrebleu_aug-upper_wmt19
+    - sacrebleu_aug-upper-strict_wmt19
+    - sacrebleu_aug-typos_wmt19
+    - mtdata_Neulab-tedtalks_test-1-eng-lit
+    - mtdata_aug-mix_Neulab-tedtalks_test-1-eng-lit
+    train:
+    - opus_CCAligned/v1
+    - opus_DGT/v2019
+    - opus_ECB/v1
+    - opus_ECDC/v2016-03-16
+    - opus_ELITR-ECA/v1
+    - opus_ELRA-W0160/v1
+    - opus_ELRC-2021-EUIPO_2017/v1
+    - opus_ELRC-2717-EMEA/v1
+    - opus_ELRC-2740-vaccination/v1
+    - opus_ELRC-2878-EU_publications_medi/v1
+    - opus_ELRC-3205-antibiotic/v1
+    - opus_ELRC-3296-EUROPARL_covid/v1
+    - opus_ELRC-3467-EC_EUROPA_covid/v1
+    - opus_ELRC-3568-EUR_LEX_covid/v1
+    - opus_ELRC-3609-presscorner_covid/v1
+    - opus_ELRC-405-President_Lithuania/v1
+    - opus_ELRC-425-Lithuanian_legislati/v1
+    - opus_ELRC-4270-NTEU_TierA/v1
+    - opus_ELRC-5067-SciPar/v1
+    - opus_ELRC-590-www.lrs.lt/v1
+    - opus_ELRC-591-www.lb.lt/v1
+    - opus_ELRC-592-kam.lt/v1
+    - opus_ELRC-EC_EUROPA/v1
+    - opus_ELRC-EMEA/v1
+    - opus_ELRC-EUIPO_2017/v1
+    - opus_ELRC-EUROPARL_covid/v1
+    - opus_ELRC-EUR_LEX/v1
+    - opus_ELRC-EU_publications/v1
+    - opus_ELRC-antibiotic/v1
+    - opus_ELRC-presscorner_covid/v1
+    - opus_ELRC-vaccination/v1
+    - opus_ELRC-wikipedia_health/v1
+    - opus_ELRC_2922/v1
+    - opus_ELRC_2923/v1
+    - opus_ELRC_3382/v1
+    - opus_EMEA/v3
+    - opus_EUbookshop/v2
+    - opus_EUconst/v1
+    - opus_Europarl/v8
+    - opus_GNOME/v1
+    - opus_JRC-Acquis/v3.0
+    - opus_KDE4/v2
+    - opus_NLLB/v1
+    - opus_NeuLab-TedTalks/v1
+    - opus_OpenSubtitles/v2018
+    - opus_ParaCrawl/v9
+    - opus_QED/v2.0a
+    - opus_TED2020/v1
+    - opus_Tatoeba/v2023-04-12
+    - opus_TildeMODEL/v2018
+    - opus_Ubuntu/v14.10
+    - opus_WikiMatrix/v1
+    - opus_XLEnt/v1.2
+    - opus_bible-uedin/v1
+    - opus_wikimedia/v20230407
+    - mtdata_EU-dcep-1-eng-lit
+    - mtdata_EU-eac_forms-1-eng-lit
+    - mtdata_EU-eac_reference-1-eng-lit
+    - mtdata_EU-ecdc-1-eng-lit
+    - mtdata_Statmt-wiki_titles-1-lit-eng
+  experiment:
+    backward-model: NOT-YET-SUPPORTED
+    best-model: chrf
+    bicleaner:
+      dataset-thresholds:
+        mtdata_Statmt-wiki_titles-1-lit-eng: 0.7
+        opus_CCAligned/v1: 0.7
+        opus_OpenSubtitles/v2018: 0.8
+        opus_ParaCrawl/v9: 0.0
+        opus_WikiMatrix/v1: 0.7
+        opus_bible-uedin/v1: 0.7
+      default-threshold: 0.5
+    mono-max-sentences-src: 500000000
+    mono-max-sentences-trg: 500000000
+    name: opustrainer
+    split-length: 2000000
+    spm-sample-size: 10000000
+    spm-vocab-size: 32000
+    src: lt
+    teacher-ensemble: 2
+    trg: en
+    use-opuscleaner: 'false'
+    vocab: NOT-YET-SUPPORTED
+  marian-args:
+    decoding-backward:
+      beam-size: '12'
+      mini-batch-words: '2000'
+    decoding-teacher:
+      mini-batch-words: '4000'
+      precision: float16
+    training-backward:
+      early-stopping: '5'
+    training-student:
+      early-stopping: '20'
+    training-student-finetuned:
+      early-stopping: '20'
+    training-teacher:
+      early-stopping: '30'
+  target-stage: all
+  taskcluster:
+    split-chunks: 10
+version: null
