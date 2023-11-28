@@ -9,7 +9,9 @@ CONTINUE_TRAINING_ARTIFACTS = (
     "model.npz.best-bleu-detok.npz.decoder.yml",
     "model.npz.best-ce-mean-words.npz",
     "model.npz.best-ce-mean-words.npz.decoder.yml",
+    "final.model.npz.best-chrf.npz",
     "model.npz.best-chrf.npz",
+    "final.model.npz.best-chrf.npz.decoder.yml",
     "model.npz.best-chrf.npz.decoder.yml",
     "model.npz.decoder.yml",
     "model.npz.optimizer.npz",
@@ -23,6 +25,7 @@ CONTINUE_TRAINING_ARTIFACTS = (
 INITIALIZE_MODEL_ARTIFACTS = (
     "model.npz.best-bleu-detok.npz",
     "model.npz.best-ce-mean-words.npz",
+    "final.model.npz.best-chrf.npz",
     "model.npz.best-chrf.npz",
 )
 
