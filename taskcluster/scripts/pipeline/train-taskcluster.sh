@@ -35,13 +35,13 @@ export MARIAN=$MOZ_FETCHES_DIR
 case "$pretrained_model_mode" in
     "use")
         echo "The training mode is 'use', using existing model without further training."
-        cp "$TASK_WORKDIR/artifacts/model.npz.best-$best_model_metric.npz" "$TASK_WORKDIR/artifacts/final.model.npz.best-$best_model_metric.npz"
-        cp "$TASK_WORKDIR/artifacts/model.npz.best-$best_model_metric.npz.decoder.yml" "$TASK_WORKDIR/artifacts/final.model.npz.best-$best_model_metric.npz.decoder.yml"
+        cp "$TASK_WORKDIR/artifacts/final.model.npz.best-"*.npz "$TASK_WORKDIR/artifacts/"
+        cp "$TASK_WORKDIR/artifacts/final.model.npz.best-"*.npz.decoder.yml "$TASK_WORKDIR/artifacts/"
         exit 0
         ;;
     "continue"|"init"|"None")
         if [ "$pretrained_model_mode" == "init" ]; then
-            extra_params+=("--pretrained-model" "$TASK_WORKDIR/artifacts/model.npz.best-$best_model_metric.npz" "--no-restore-corpus")
+            extra_params+=("--pretrained-model" "$TASK_WORKDIR/artifacts/final.model.npz.best-$best_model_metric.npz" "--no-restore-corpus")
         fi
         $VCS_PATH/pipeline/train/train.sh \
         "$model_type" \
