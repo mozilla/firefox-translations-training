@@ -29,6 +29,7 @@ marian-tensorboard = "^0.2.1"
 sacrebleu="2.0.0"
 mtdata="0.3.2"
 requests="2.26.0"
+humanize = "^4.9.0"
 
 [tool.poetry.group.tests.dependencies]
 sacrebleu="2.0.0"
