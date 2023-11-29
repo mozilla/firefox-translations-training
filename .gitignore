@@ -136,3 +136,5 @@ dmypy.json
 .models
 .bin
 .snakemake
+
+tests_data
