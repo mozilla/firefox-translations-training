@@ -24,6 +24,7 @@ tar -cf $UPLOAD_DIR/marian.tar \
   "marian-decoder" \
   "marian-scorer" \
   "marian-conv" \
+  "marian-vocab" \
   "spm_train" \
   "spm_encode" \
   "spm_export_vocab"
