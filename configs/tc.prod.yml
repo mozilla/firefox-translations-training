@@ -114,14 +114,6 @@ datasets:
 
   # Monolingual data sources for the source language.
   mono-src:
-    # Provide some mono lingual data as well. I'm not sure on the quality of the sentence
-    # pairs here, but my theory is that it would be nice to at least have some monolingual
-    # data to augment the translations.
-    # There are 3,130,523 sentence pairs.
-    - opus_MaCoCu/v2
-
-  # Monolingual data sources for the target language.
-  mono-trg:
     - news-crawl_news.2021
     - news-crawl_news.2020
     - news-crawl_news.2019
@@ -137,6 +129,14 @@ datasets:
     - news-crawl_news.2009
     - news-crawl_news.2008
     - news-crawl_news.2007
+
+  # Monolingual data sources for the target language.
+  mono-trg:
+    # Provide some mono lingual data as well. I'm not sure on the quality of the sentence
+    # pairs here, but my theory is that it would be nice to at least have some monolingual
+    # data to augment the translations.
+    # There are 3,130,523 sentence pairs.
+    - opus_MaCoCu/v2
 
 # Arguments that are provided to Marian, the underlying machine learning system used
 # to train language.
