@@ -39,7 +39,7 @@ experiment:
   # New language releases are added to: taskcluster/ci/fetch/bicleaner.yml
   bicleaner:
     default-threshold: 0.0 # Disable bicleaner
-    dataset-thresholds:
+    dataset-thresholds: {}
 
   # Limits the maximum sentences use in the monolingual data for both the source and target
   # languages.
