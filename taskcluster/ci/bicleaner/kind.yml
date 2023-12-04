@@ -143,6 +143,10 @@ tasks:
                   trg: ru
                 - src: ru
                   trg: en
+                - src: en
+                  trg: ca
+                - src: ca
+                  trg: en
         attributes:
             cleaning-type: bicleaner-ai
             cache:

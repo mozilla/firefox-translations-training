@@ -126,7 +126,9 @@ def jobs_for_mono_datasets(config, jobs):
 
             subjob = copy.deepcopy(job)
 
-            if category == "mono-src":
+            if dataset_provider == "opus":
+                locale = f"{src}-{trg}"
+            elif category == "mono-src":
                 locale = src
             elif category == "mono-trg":
                 locale = trg
