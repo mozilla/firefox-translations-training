@@ -77,10 +77,6 @@ task-defaults:
             - $VCS_PATH/pipeline/clean/clean-mono.sh {locale} $MOZ_FETCHES_DIR/{dataset_sanitized} /builds/worker/artifacts/{dataset_sanitized} auto {dataset}
     dependencies:
         "{provider}-{locale}": dataset-{provider}-{dataset_sanitized}-{locale}
-    fetches:
-        "{provider}-{locale}":
-            - artifact: "{dataset_sanitized}.{locale}.zst"
-              extract: false
 
 tasks:
     "{provider}-{src_locale}-{dataset_sanitized}-mono-src":
@@ -89,6 +85,10 @@ tasks:
             dataset-category: mono-src
         dataset-config:
             category: mono-src
+        fetches:
+            "{provider}-{locale}":
+                - artifact: "{dataset_sanitized}.{src_locale}.zst"
+                  extract: false
 
     "{provider}-{trg_locale}-{dataset_sanitized}-mono-trg":
         description: Clean {provider} {dataset_sanitized} dataset mono-trg {trg_locale}
@@ -96,3 +96,7 @@ tasks:
             dataset-category: mono-trg
         dataset-config:
             category: mono-trg
+        fetches:
+            "{provider}-{locale}":
+                - artifact: "{dataset_sanitized}.{trg_locale}.zst"
+                  extract: false
