@@ -4,7 +4,10 @@ set -x
 set -euo pipefail
 
 [[ -v MOZ_FETCHES_DIR ]] || { echo "MOZ_FETCHES_DIR is not set"; exit 1; }
-[[ -v VCS_PATH ]] || { echo "VCS_PATH is not set"; exit 1; }
+
+pushd `dirname $0`/../../.. &>/dev/null
+VCS_ROOT=$(pwd)
+popd &>/dev/null
 
 if [ "$#" -lt 10 ]; then
     echo "Usage: $0 <model_type> <training_type> <src_locale> <trg_locale> <train_set_prefix> <valid_set_prefix> <model_dir> <best_model_metric> <alignments> <pretrained_model_mode> <pretrained_model_type> [extra_params...]"
@@ -41,7 +44,7 @@ case "$pretrained_model_mode" in
         if [ "$pretrained_model_mode" == "init" ]; then
             extra_params+=("--pretrained-model" "$TASK_WORKDIR/artifacts/final.model.npz.best-$best_model_metric.npz" "--no-restore-corpus")
         fi
-        $VCS_PATH/pipeline/train/train.sh \
+        $VCS_ROOT/pipeline/train/train.sh \
         "$model_type" \
         "$training_type" \
         "$src" \
