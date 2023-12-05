@@ -52,31 +52,9 @@ def get_artifact_mounts(urls, directory, artifact_names):
 transforms = TransformSequence()
 
 
-def validate_pretrained_models(config):
-    pretrained_models = config.params["training_config"]["experiment"].get("pretrained-models", {})
-    train_teacher = pretrained_models.get("train-teacher")
-    if train_teacher:
-        teacher_ensemble = config.params["training_config"]["experiment"]["teacher-ensemble"]
-        if len(train_teacher["urls"]) != teacher_ensemble:
-            raise Exception(
-                f"The experiment's 'teacher-ensemble' ({teacher_ensemble}) "
-                f"does not match the number of provided model 'urls' ({len(train_teacher['urls'])}) "
-                f"for the pretrained 'train-teacher' ensemble."
-            )
-    train_backwards = pretrained_models.get("train-backwards")
-    if train_backwards:
-        if len(train_backwards["urls"]) != 1:
-            raise Exception(
-                f"The experiment's 'pretrained-models.backward.urls' ({len(train_backwards['urls'])}) "
-                f"must be equal to one (1). "
-                f"The pipeline's backward model is _not_ an ensemble."
-            )
-    return pretrained_models
-
-
 @transforms.add
 def add_pretrained_model_mounts(config, jobs):
-    pretrained_models = validate_pretrained_models(config)
+    pretrained_models = config.params["training_config"]["experiment"].get("pretrained-models", {})
     for job in jobs:
         pretrained_models_training_artifact_mounts = {
             pretrained_model: get_artifact_mounts(

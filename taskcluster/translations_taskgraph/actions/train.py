@@ -21,6 +21,27 @@ def can_train(parameters):
 defaults = get_defaults("")["training_config"]
 
 
+def validate_pretrained_models(params):
+    pretrained_models = params["training_config"]["experiment"].get("pretrained-models", {})
+    train_teacher = pretrained_models.get("train-teacher")
+    if train_teacher:
+        teacher_ensemble = params["training_config"]["experiment"]["teacher-ensemble"]
+        if len(train_teacher["urls"]) != teacher_ensemble:
+            raise Exception(
+                f"The experiment's 'teacher-ensemble' ({teacher_ensemble}) "
+                f"does not match the number of provided model 'urls' ({len(train_teacher['urls'])}) "
+                f"for the pretrained 'train-teacher' ensemble."
+            )
+    train_backwards = pretrained_models.get("train-backwards")
+    if train_backwards:
+        if len(train_backwards["urls"]) != 1:
+            raise Exception(
+                f"The experiment's 'pretrained-models.backward.urls' ({len(train_backwards['urls'])}) "
+                f"must be equal to one (1). "
+                f"The pipeline's backward model is _not_ an ensemble."
+            )
+
+
 @register_callback_action(
     name="train",
     title="Train",
@@ -329,6 +350,8 @@ def train_action(parameters, graph_config, input, task_group_id, task_id):
     parameters["optimize_target_tasks"] = True
     parameters["tasks_for"] = "action"
     parameters["training_config"] = input
+
+    validate_pretrained_models(parameters)
 
     parameters = Parameters(**parameters)
     taskgraph_decision({"root": graph_config.root_dir}, parameters=parameters)
