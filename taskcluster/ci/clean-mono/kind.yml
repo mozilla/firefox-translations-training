@@ -69,12 +69,6 @@ task-defaults:
     # Don't run unless explicitly scheduled
     run-on-tasks-for: []
 
-    run:
-        using: run-task
-        command:
-            - bash
-            - -c
-            - $VCS_PATH/pipeline/clean/clean-mono.sh {locale} $MOZ_FETCHES_DIR/{dataset_sanitized} /builds/worker/artifacts/{dataset_sanitized} auto {dataset}
     dependencies:
         "{provider}-{locale}": dataset-{provider}-{dataset_sanitized}-{locale}
 
@@ -89,6 +83,19 @@ tasks:
             "{provider}-{locale}":
                 - artifact: "{dataset_sanitized}.{src_locale}.zst"
                   extract: false
+        run:
+            using: run-task
+            command:
+                - bash
+                - -c
+                - >-
+                    $VCS_PATH/pipeline/clean/clean-mono.sh
+                    {src_locale}
+                    $MOZ_FETCHES_DIR/{dataset_sanitized}
+                    /builds/worker/artifacts/{dataset_sanitized}
+                    auto
+                    {dataset}
+
 
     "{provider}-{trg_locale}-{dataset_sanitized}-mono-trg":
         description: Clean {provider} {dataset_sanitized} dataset mono-trg {trg_locale}
@@ -100,3 +107,15 @@ tasks:
             "{provider}-{locale}":
                 - artifact: "{dataset_sanitized}.{trg_locale}.zst"
                   extract: false
+        run:
+            using: run-task
+            command:
+                - bash
+                - -c
+                - >-
+                    $VCS_PATH/pipeline/clean/clean-mono.sh
+                    {trg_locale}
+                    $MOZ_FETCHES_DIR/{dataset_sanitized}
+                    /builds/worker/artifacts/{dataset_sanitized}
+                    auto
+                    {dataset}
