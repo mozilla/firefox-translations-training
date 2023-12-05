@@ -22,6 +22,9 @@ experiment:
   # See: https://github.com/marian-nmt/marian/blob/65bf82ffce52f4854295d8b98482534f176d494e/src/common/config_parser.cpp#L588-L592
   best-model: chrf
 
+  # Disable opus cleaner since this is a baseline run.
+  use-opuscleaner: "false"
+
   # Bicleaner is a tool that aims at detecting noisy sentence pairs in a parallel corpus.
   # It indicates the likelihood of a pair of sentences being mutual translations (with a
   # value near to 1) or not (with a value near to 0). Sentence pairs considered very
