@@ -75,7 +75,7 @@ def validate_pretrained_models(config):
 
 
 @transforms.add
-def mount_pretrained_model_training_artifacts(config, jobs):
+def add_pretrained_model_mounts(config, jobs):
     pretrained_models = validate_pretrained_models(config)
     for job in jobs:
         pretrained_models_training_artifact_mounts = {
