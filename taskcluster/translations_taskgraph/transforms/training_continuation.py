@@ -70,5 +70,9 @@ def add_pretrained_model_mounts(config, jobs):
             pretrained_models_training_artifact_mounts.get(config.kind, iter((None,)))
         )
         if pretrained_model_training_artifact_mounts:
-            job["task"]["payload"]["mounts"].extend(pretrained_model_training_artifact_mounts)
+            mounts = job["worker"].get("mounts", [])
+            mounts.extend(pretrained_model_training_artifact_mounts)
+            job["worker"]["mounts"] = mounts
+            job["dependencies"].pop("train-vocab")
+            job["fetches"].pop("train-vocab")
         yield job
