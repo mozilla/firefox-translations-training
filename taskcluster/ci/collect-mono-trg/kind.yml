@@ -51,6 +51,10 @@ task-defaults:
 
     run:
         using: run-task
+        # Arguments:
+        #   1) chunks_dir
+        #   2) output_path
+        #   3) mono_path
         command:
             - bash
             - -c
