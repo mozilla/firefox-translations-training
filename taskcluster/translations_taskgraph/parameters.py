@@ -28,7 +28,7 @@ def get_defaults(_):
                 "mono-max-sentences-src": 10000,
                 "split-length": 5000,
                 "spm-sample-size": 10000,
-                "spm-vocab-size": 1000,
+                "spm-vocab-size": 32000,
                 "best-model": "chrf",
                 "use-opuscleaner": "true",
                 "bicleaner": {
