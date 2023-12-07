@@ -57,6 +57,29 @@ experiment:
   # tokenization training.
   spm-sample-size: 10_000_000
 
+  # How big the vocab will be. The vocab is shared between the source and the
+  # target languages.
+  #
+  # In "Finding the Optimal Vocabulary Size for Neural Machine Translation", the
+  # researchers tests vocab sizes between 500 and 64,000. A general value table
+  # depends on the vocabulary size.
+  #
+  # | Corpus Size | Optimal vocab size |
+  # | ----------- | ------------------ |
+  # |   4,500,000 |    32,000 - 64,000 |
+  # |   1,000,000 |              8,000 |
+  # |     500,000 |     4,000 - 16,000 |
+  # |      30,000 |              1,000 |
+  #
+  # See section 4 for their conclusions.
+  #   https://aclanthology.org/2020.findings-emnlp.352.pdf
+  #
+  # The larger the vocab, the slower the training and the inference will be as each
+  # token in the vocab contributes to the amount of probabilities that will need
+  # to be generated when making a token prediction. This is a trade off on the quality
+  # of the translation, and the performance.
+  spm-vocab-size: 32_000
+
   # Determine how many teachers to train. The teachers will be identical except they
   # will be initialized with different random seeds. This has been shown to improve
   # the performance during student distillation, as the translation probabilities will
