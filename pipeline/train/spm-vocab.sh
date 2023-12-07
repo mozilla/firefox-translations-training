@@ -35,7 +35,11 @@ sample_size=$4
 # The thread count, either "auto" or an int.
 threads=$5
 # The size of the final vocab. Defaults to 32000.
-vocab_size="${6:-32000}"
+vocab_size=$6
+
+if [ -z "$vocab_size" ] || [ "$vocab_size" == "None" ]; then
+  vocab_size=32000
+fi
 
 if (( vocab_size % 8 != 0 )); then
   echo "Error: vocab_size must be a multiple of 8 (https://github.com/mozilla/firefox-translations-training/issues/249)"
