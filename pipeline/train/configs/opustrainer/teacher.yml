@@ -16,14 +16,14 @@ start:
 # Gradually add back-translations to the mix
 # Back-translated corpus can vary a lot in size, so we can try using original to count epochs
 mid:
-  - original 0.7
-  - backtranslated 0.3
+  - original 0.9
+  - backtranslated 0.1
   - until original 1
 
 # Expand back-translations
 end:
-  - original 0.6
-  - backtranslated 0.4
+  - original 0.8
+  - backtranslated 0.2
   - until original 1
 
 # Fine-tuning only on original clean corpus until the early stopping
