@@ -138,3 +138,4 @@ dmypy.json
 .snakemake
 /data
 /tests_data
+/logdir
