@@ -1,9 +1,154 @@
 # Example of a production config for Taskcluster
+#
+# See the training guide for more information:
+#   https://mozilla.github.io/firefox-translations-training/training-guide.html
+#
+# The defaults for these parameters are available at:
+#   taskcluster/translations_taskgraph/parameters.py
+
+# An "experiment" is an individual training run.
+experiment:
+  # Provide an identifiable name for your experiment.
+  name: baseline_en_ru
+
+  # The source and target languages. This is the language tag part of the
+  # BCP 47 locale identifier.
+  src: en
+  trg: ru
+
+  # The metric to use for computing the best model validation.
+  #   cross-entropy, ce-mean-words, perplexity, valid-script, translation, bleu,
+  #   bleu-segmented, chrf
+  # See: https://github.com/marian-nmt/marian/blob/65bf82ffce52f4854295d8b98482534f176d494e/src/common/config_parser.cpp#L588-L592
+  best-model: chrf
+
+  # Use the Opus Cleaner tool on the data cleaning step.
+  # https://github.com/hplt-project/OpusCleaner
+  use-opuscleaner: "true"
+
+  # Bicleaner is a tool that aims at detecting noisy sentence pairs in a parallel corpus.
+  # It indicates the likelihood of a pair of sentences being mutual translations (with a
+  # value near to 1) or not (with a value near to 0). Sentence pairs considered very
+  # noisy are scored with 0. Bicleaner AI will be used first if the language is
+  # available, otherwise it will fallback to the original non-AI Bicleaner.
+  #
+  # See:
+  #   https://github.com/bitextor/bicleaner-ai
+  #   https://github.com/bitextor/bicleaner
+  #
+  # For supported languages see:
+  #   https://github.com/bitextor/bicleaner-ai-data/releases
+  #   https://github.com/bitextor/bicleaner-data/releases
+  #
+  # New language releases are added to: taskcluster/ci/fetch/bicleaner.yml
+  bicleaner:
+    default-threshold: 0.5
+    dataset-thresholds:
+      opus_CCAligned/v1: 0.7
+      opus_LinguaTools-WikiTitles/v2014: 0.7
+      opus_OpenSubtitles/v2018: 0.8             # Example of a higher filtering level.
+      opus_ParaCrawl/v9: 0.0                    # Example of cleaning being disabled.
+      opus_WikiMatrix/v1: 0.7
+      opus_bible-uedin/v1: 0.7
+
+  # Limits the maximum sentences use in the monolingual data for both the source and target
+  # languages.
+  mono-max-sentences-src: 100_000_000
+  mono-max-sentences-trg: 20_000_000
+
+  # The number of sentences split out into separate files for the monolingual data.
+  # Also see taskcluster.split-chunks below.
+  split-length: 2_000_000
+
+  # How many bytes of the corpus are sampled to be used in SentencePiece
+  # tokenization training.
+  spm-sample-size: 10_000_000
+
+  # How big the vocab will be. The vocab is shared between the source and the
+  # target languages.
+  #
+  # In "Finding the Optimal Vocabulary Size for Neural Machine Translation", the
+  # researchers tests vocab sizes between 500 and 64,000. A general value table
+  # depends on the vocabulary size.
+  #
+  # | Corpus Size | Optimal vocab size |
+  # | ----------- | ------------------ |
+  # |   4,500,000 |    32,000 - 64,000 |
+  # |   1,000,000 |              8,000 |
+  # |     500,000 |     4,000 - 16,000 |
+  # |      30,000 |              1,000 |
+  #
+  # See section 4 for their conclusions.
+  #   https://aclanthology.org/2020.findings-emnlp.352.pdf
+  #
+  # The larger the vocab, the slower the training and the inference will be as each
+  # token in the vocab contributes to the amount of probabilities that will need
+  # to be generated when making a token prediction. This is a trade off on the quality
+  # of the translation, and the performance.
+  spm-vocab-size: 32_000
+
+  # Determine how many teachers to train. The teachers will be identical except they
+  # will be initialized with different random seeds. This has been shown to improve
+  # the performance during student distillation, as the translation probabilities will
+  # be combined from both models.
+  #
+  # While our current implementation only changes seeds, it's also possible to have
+  # ensembles that use different configurations or are trained on different datasets.
+  #
+  # Recommendations information from: https://nbogoychev.com/efficient-machine-translation/#ensembling
+  #
+  #   One very easy way to improve translation quality of the teacher is to produce an
+  #   ensemble of systems that produce translation together. This is done by training
+  #   identical systems, initialising them with different random seed. The more systems,
+  #   the better, although returns are diminishing.
+  #
+  #   For example, if we want to have an ensemble of two systems, we need to separate
+  #   configuration files for training, where the seed parameter is different.
+  #   Configuration one would have seed: 1111, whereas configuration two would have
+  #   seed: 2222.
+  teacher-ensemble: 2
+
+  # Path to a pretrained backward model (optional).
+  backward-model: NOT-YET-SUPPORTED
+
+  # Path to a pretrained vocabulary (optional).
+  vocab: NOT-YET-SUPPORTED
+
+# The lists of datasets. Each dataset is defined by a corpus key. This key is formed
+# by "{IMPORTER}_{DATASET}". These datasets and their corpus key can be found through
+#
+# TODO(docs) - Document augmentation in corpus keys.
+#
+# To find datasets run:
+#  poetry run utils/find_corpus.py en ru
 datasets:
+  # The datasets used for validation while training. These should not be the same
+  # ones used in test or train. This is what is used to determine when to stop training.
   devtest:
     - flores_dev
     - sacrebleu_wmt08
     - mtdata_Neulab-tedtalks_dev-1-eng-hun
+
+  # The datasets used for the final evaluation to determine the quality of the trained
+  # model.
+  test:
+    - flores_devtest
+    - sacrebleu_wmt09
+    - mtdata_Neulab-tedtalks_test-1-eng-hun
+
+  # The parallel training data.
+  train:
+    - opus_Books/v1
+    - opus_CCAligned/v1
+    - opus_CCMatrix/v1
+    - opus_DGT/v2019
+    - opus_ECB/v1
+    - opus_ECDC/v2016-03-16
+    - opus_ELITR-ECA/v1
+    - opus_ELRC-2019-EUIPO_2017/v1
+    - opus_ELRC-2715-EMEA/v1
+
+  # Monolingual data sources for the source language.
   mono-src:
     - news-crawl_news.2021
     - news-crawl_news.2020
@@ -20,6 +165,8 @@ datasets:
     - news-crawl_news.2009
     - news-crawl_news.2008
     - news-crawl_news.2007
+
+  # Monolingual data sources for the target language.
   mono-trg:
     - news-crawl_news.2021
     - news-crawl_news.2020
@@ -36,107 +183,10 @@ datasets:
     - news-crawl_news.2009
     - news-crawl_news.2008
     - news-crawl_news.2007
-  test:
-    - flores_devtest
-    - sacrebleu_wmt09
-    - mtdata_Neulab-tedtalks_test-1-eng-hun
-  train:
-    - opus_Books/v1
-    - opus_CCAligned/v1
-    - opus_CCMatrix/v1
-    - opus_DGT/v2019
-    - opus_ECB/v1
-    - opus_ECDC/v2016-03-16
-    - opus_ELITR-ECA/v1
-    - opus_ELRC-2019-EUIPO_2017/v1
-    - opus_ELRC-2715-EMEA/v1
-    - opus_ELRC-2744-vaccination/v1
-    - opus_ELRC-2876-EU_publications_medi/v1
-    - opus_ELRC-3064-wikipedia_health/v1
-    - opus_ELRC-3203-antibiotic/v1
-    - opus_ELRC-3294-EUROPARL_covid/v1
-    - opus_ELRC-3465-EC_EUROPA_covid/v1
-    - opus_ELRC-3566-EUR_LEX_covid/v1
-    - opus_ELRC-3607-presscorner_covid/v1
-    - opus_ELRC-5067-SciPar/v1
-    - opus_ELRC-EC_EUROPA/v1
-    - opus_ELRC-EMEA/v1
-    - opus_ELRC-EUIPO_2017/v1
-    - opus_ELRC-EUROPARL_covid/v1
-    - opus_ELRC-EUR_LEX/v1
-    - opus_ELRC-EU_publications/v1
-    - opus_ELRC-antibiotic/v1
-    - opus_ELRC-presscorner_covid/v1
-    - opus_ELRC-vaccination/v1
-    - opus_ELRC-wikipedia_health/v1
-    - opus_ELRC_2922/v1
-    - opus_ELRC_2923/v1
-    - opus_ELRC_3382/v1
-    - opus_EMEA/v3
-    - opus_EUbookshop/v2
-    - opus_EUconst/v1
-    - opus_Europarl/v8
-    - opus_GNOME/v1
-    - opus_GlobalVoices/v2018q4
-    - opus_JRC-Acquis/v3.0
-    - opus_KDE4/v2
-    - opus_LinguaTools-WikiTitles/v2014
-    - opus_NeuLab-TedTalks/v1
-    - opus_OpenSubtitles/v2018
-    - opus_PHP/v1
-    - opus_ParaCrawl/v9
-    - opus_QED/v2.0a
-    - opus_TED2020/v1
-    - opus_Tatoeba/v2022-03-03
-    - opus_TildeMODEL/v2018
-    - opus_Ubuntu/v14.10
-    - opus_WikiMatrix/v1
-    - opus_Wikipedia/v1.0
-    - opus_XLEnt/v1.2
-    - opus_bible-uedin/v1
-    - opus_wikimedia/v20210402
-    - mtdata_ELRC-antibiotic-1-eng-hun
-    - mtdata_ELRC-ec_europa_covid-1-eng-hun
-    - mtdata_ELRC-emea-1-eng-hun
-    - mtdata_ELRC-eu_publications_medical_v2-1-eng-hun
-    - mtdata_ELRC-euipo_2017-1-eng-hun
-    - mtdata_ELRC-eur_lex_covid-1-eng-hun
-    - mtdata_ELRC-presscorner_covid-1-eng-hun
-    - mtdata_ELRC-vaccination-1-eng-hun
-    - mtdata_ELRC-wikipedia_health-1-eng-hun
-    - mtdata_EU-dcep-1-eng-hun
-    - mtdata_EU-eac_forms-1-eng-hun
-    - mtdata_EU-eac_reference-1-eng-hun
-    - mtdata_EU-ecdc-1-eng-hun
-    - mtdata_LinguaTools-wikititles-2014-eng-hun
-    - mtdata_Neulab-tedtalks_train-1-eng-hun
-    - mtdata_Tilde-ecb-2017-eng-hun
-    - mtdata_Tilde-eesc-2017-eng-hun
-    - mtdata_Tilde-ema-2016-eng-hun
-    - mtdata_Tilde-rapid-2016-eng-hun
-    - mtdata_Lindat-khresmoi_summary_dev-2-eng-hun
-    - mtdata_Lindat-khresmoi_summary_test-2-eng-hun
-experiment:
-  backward-model: NOT-YET-SUPPORTED
-  best-model: chrf
-  bicleaner:
-    dataset-thresholds:
-      opus_CCAligned/v1: 0.7
-      opus_LinguaTools-WikiTitles/v2014: 0.7
-      opus_OpenSubtitles/v2018: 0.8
-      opus_ParaCrawl/v9: 0.0
-      opus_WikiMatrix/v1: 0.7
-      opus_bible-uedin/v1: 0.7
-    default-threshold: 0.5
-  mono-max-sentences-src: 100000000
-  mono-max-sentences-trg: 20000000
-  name: baseline_enhu
-  split-length: 2000000
-  spm-sample-size: 10000000
-  src: en
-  teacher-ensemble: 2
-  trg: hu
-  vocab: NOT-YET-SUPPORTED
+
+# Arguments that are provided to Marian, the underlying machine learning system used
+# to train language.
+# https://marian-nmt.github.io/docs/cmd/marian/
 marian-args:
   decoding-backward:
     beam-size: '12'
@@ -152,6 +202,14 @@ marian-args:
     early-stopping: '20'
   training-student-finetuned:
     early-stopping: '20'
+
+# Run all of the training pipeline with "all", or run a specific stage such as
+# "merge-corpus". For more information see:
+#
+# https://mozilla.github.io/firefox-translations-training/task-cluster.html#running-up-to-a-specific-step
 target-stage: all
+
 taskcluster:
+  # After the parallel corpora are merged and de-duplicated, the combined file is
+  # then split into an even number of chunks.
   split-chunks: 10
