@@ -1,6 +1,13 @@
 # https://discourse.translatelocally.com/t/marian-configuration-to-use/24
 dim-vocabs: [32000, 32000]
 type: transformer
+
+# Per recommendations from: https://nbogoychev.com/efficient-machine-translation/
+#
+#   You could train your teacher with two separate configuration prefixes:
+#   Either task: transformer-base or task: transformer-big. As a rule of thumb,
+#   if you have a high resource language >5M sentence pairs, you will likely see
+#   gains from using transformer-big.
+#
 # tasks: https://github.com/marian-nmt/marian-dev/blob/master/src/common/aliases.cpp
 task: transformer-big
-#task: transformer-base  # use smaller model for low resource (<5M sentences)
