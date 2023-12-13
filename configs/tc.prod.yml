@@ -177,7 +177,7 @@ marian-args:
   training-backward:
     early-stopping: '5'
   training-teacher:
-    early-stopping: '30'
+    early-stopping: '600Ku'
   training-student:
     early-stopping: '20'
   training-student-finetuned:
