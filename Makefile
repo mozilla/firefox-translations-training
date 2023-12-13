@@ -193,3 +193,16 @@ download-logs:
 tensorboard:
 	poetry install --only tensorboard
 	marian-tensorboard --offline -f logs/*.log
+
+# Run the GitHub pages Jekyll theme locally.
+serve-docs:
+	echo "This command requires"
+	echo "  rbenv: https://github.com/rbenv/rbenv"
+	echo "  rbenv install 3.2.2"
+
+	cd docs                         \
+	&& eval "$$(rbenv init - make)" \
+	&& rbenv local 3.2.2            \
+	&& rbenv shell                  \
+	&& bundle install               \
+	&& bundle exec jekyll serve
