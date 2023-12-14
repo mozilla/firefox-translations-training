@@ -5,6 +5,10 @@
 # Support for running tasks that download remote content and re-export
 # it as task artifacts.
 
+# This is almost a pure clone of upstream Taskgraph's `fetch` transform,
+# but with support for overriding `expires-after` in kinds. It should be
+# removed after https://github.com/taskcluster/taskgraph/issues/392 is fixed.
+
 
 import os
 import re
