@@ -7,6 +7,7 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.from_datasets:per_dataset
+    - translations_taskgraph.transforms.worker_env
     - taskgraph.transforms.task_context
     - translations_taskgraph.transforms.cast_to
     - taskgraph.transforms.chunking
@@ -47,7 +48,7 @@ task-defaults:
             src_locale: training_config.experiment.src
             trg_locale: training_config.experiment.trg
             split_chunks: training_config.experiment.teacher-ensemble
-    worker-type: b-linux-v100-gpu
+    worker-type: b-gpu
     expires-after: "90 days"
     worker:
         artifacts:
@@ -58,8 +59,6 @@ task-defaults:
         env:
             SRC: "{src_locale}"
             TRG: "{trg_locale}"
-            GPUS: "0"
-            WORKSPACE: "12000"
             COMPRESSION_CMD: zstdmt
             ARTIFACT_EXT: zst
 

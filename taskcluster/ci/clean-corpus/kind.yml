@@ -44,7 +44,7 @@ tasks:
             substitution-fields:
                 - description
                 - worker.env
-        worker-type: b-linux-large-300gb
+        worker-type: b-cpu-largedisk
         dataset-config:
             category: train
             substitution-fields:

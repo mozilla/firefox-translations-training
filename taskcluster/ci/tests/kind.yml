@@ -26,7 +26,7 @@ tasks:
     # Ensure that the snakemake workflow is still executing correctly, even though
     # taskcluster is the preferred execution environment.
     expires-after: "90 days"
-    worker-type: b-linux-large
+    worker-type: b-cpu
     worker:
       max-run-time: 3600
       docker-image: {in-tree: test}
@@ -59,7 +59,7 @@ tasks:
   black:
     # Run python's black formatter, which formats python files.
     expires-after: "90 days"
-    worker-type: b-linux-large
+    worker-type: b-cpu
     worker:
       max-run-time: 3600
       docker-image: {in-tree: test}
@@ -75,7 +75,7 @@ tasks:
   lint:
     # Run ruff, a python linter.
     expires-after: "90 days"
-    worker-type: b-linux-large
+    worker-type: b-cpu
     worker:
       max-run-time: 3600
       docker-image: {in-tree: test}
@@ -91,7 +91,7 @@ tasks:
   test:
     # Run unit tests
     expires-after: "90 days"
-    worker-type: b-linux-large
+    worker-type: b-cpu
     worker:
       max-run-time: 3600
       docker-image: {in-tree: test}
@@ -112,7 +112,7 @@ tasks:
 
   taskgraph-definition:
       expires-after: "90 days"
-      worker-type: b-linux-large
+      worker-type: b-cpu
       worker:
           docker-image: {in-tree: base}
           max-run-time: 3600
@@ -128,7 +128,7 @@ tasks:
 
   taskgraph-diff:
       expires-after: "90 days"
-      worker-type: b-linux-large
+      worker-type: b-cpu
       worker:
           docker-image: {in-tree: base}
           max-run-time: 1200

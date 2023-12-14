@@ -5,6 +5,7 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
+    - translations_taskgraph.transforms.worker_env
     - taskgraph.transforms.task_context
     - translations_taskgraph.transforms.cast_to
     - taskgraph.transforms.chunking
@@ -41,7 +42,7 @@ task-defaults:
             - worker.env
             - attributes
 
-    worker-type: b-linux-v100-gpu-4
+    worker-type: b-largegpu
     expires-after: "90 days"
     worker:
         max-run-time: 2592000
@@ -50,8 +51,6 @@ task-defaults:
               path: artifacts
               type: directory
         env:
-            GPUS: "0 1 2 3"
-            WORKSPACE: "12000"
             CUDA_DIR: fetches/cuda-toolkit
             CUDNN_DIR: fetches/cuda-toolkit
 

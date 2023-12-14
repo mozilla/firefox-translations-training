@@ -34,7 +34,7 @@ task-defaults:
             - dependencies
             - fetches
             - attributes
-    worker-type: b-linux-large-300gb
+    worker-type: b-cpu-largedisk
     expires-after: "90 days"
     worker:
         docker-image: {"in-tree": "train"}

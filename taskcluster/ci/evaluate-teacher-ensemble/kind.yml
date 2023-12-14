@@ -7,6 +7,7 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.from_datasets:per_dataset
+    - translations_taskgraph.transforms.worker_env
     - taskgraph.transforms.from_deps
     - taskgraph.transforms.task_context
     - taskgraph.transforms.job:transforms
@@ -42,7 +43,7 @@ task-defaults:
             best_model: training_config.experiment.best-model
             src_locale: training_config.experiment.src
             trg_locale: training_config.experiment.trg
-    worker-type: b-linux-v100-gpu
+    worker-type: b-gpu
     expires-after: "90 days"
     worker:
         artifacts:
@@ -53,8 +54,6 @@ task-defaults:
         env:
             SRC: "{src_locale}"
             TRG: "{trg_locale}"
-            GPUS: "0"
-            WORKSPACE: "8000"
             COMPRESSION_CMD: zstdmt
             ARTIFACT_EXT: zst
 
