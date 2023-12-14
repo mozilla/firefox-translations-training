@@ -139,3 +139,5 @@ dmypy.json
 /data
 /tests_data
 /logdir
+/logs
+/docs/_site
