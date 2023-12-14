@@ -96,3 +96,32 @@ tasks:
             dataset-category: train
             stage: merge-corpus
 ```
+
+## Interactive Tasks
+
+Taskcluster allows authorized users to run so-called [interactive tasks](https://docs.taskcluster.net/docs/reference/workers/docker-worker/features#feature-interactive). These tasks allow users to gain a shell in the same environment that a pipeline step runs in. This can often be useful for quicker debugging or testing of ideas.
+
+To start an interactive task, follow these steps:
+
+1. Go to the task you want an interactive version of, eg: https://firefox-ci-tc.services.mozilla.com/tasks/DZvVQ-VUTPSyPBBS13Bwfg
+
+2. Click the "Edit" button in the three dots menu
+
+3. Click "Edit" on the modal that pops up
+
+4. Click the "Interactive" toggle in the top left
+
+5. Reduce the maxRunTime to a best guess at how long you'll need the task and worker running for. (We pay for every minute a worker runs - so they should not be kept running, eg: overnight.)
+
+6. Adjust the payload to simply run bash (instead of a full pipeline step). Eg:
+```
+     command:
+    - /usr/local/bin/run-task
+    - '--firefox_translations_training-checkout=/builds/worker/checkouts/vcs/'
+    - '--'
+    - bash
+```
+
+7. Click "Create Task"
+
+After a few minutes you should be able to get a shell (a link will show up in the tab when it's ready).
