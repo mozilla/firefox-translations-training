@@ -1,7 +1,7 @@
-from taskgraph.target_tasks import _target_task
+from taskgraph.target_tasks import register_target_task
 
 
-@_target_task("train-target-tasks")
+@register_target_task("train-target-tasks")
 def train_target_tasks(full_task_graph, parameters, graph_config):
     training_config = parameters["training_config"]
     stage = training_config["target-stage"]
