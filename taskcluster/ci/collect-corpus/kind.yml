@@ -27,7 +27,8 @@ tasks:
             cache:
                 type: collect-corpus
                 resources:
-                    - pipeline/translate/collect.sh
+                    - pipeline/translate/collect2.sh
+                    - pipeline/translate/sort_files.py
 
         task-context:
             from-parameters:
@@ -71,7 +72,7 @@ tasks:
                 - bash
                 - -c
                 - >-
-                    $VCS_PATH/pipeline/translate/collect.sh
+                    $VCS_PATH/pipeline/translate/collect2.sh
                     fetches
                     artifacts/corpus.{trg_locale}.zst
                     $MOZ_FETCHES_DIR/corpus.{trg_locale}.zst

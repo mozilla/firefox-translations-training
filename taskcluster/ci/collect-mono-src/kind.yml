@@ -22,7 +22,8 @@ task-defaults:
         trg_locale: "{trg_locale}"
         cache:
             resources:
-                - pipeline/translate/collect.sh
+                - pipeline/translate/collect2.sh
+                - pipeline/translate/sort_files.py
     task-context:
         from-parameters:
             src_locale: training_config.experiment.src
@@ -56,7 +57,7 @@ task-defaults:
             - -c
             - >-
                 zstd -d --rm $MOZ_FETCHES_DIR/out-file* &&
-                $VCS_PATH/pipeline/translate/collect.sh
+                $VCS_PATH/pipeline/translate/collect2.sh
                 fetches
                 artifacts/mono.{trg_locale}.zst
                 $MOZ_FETCHES_DIR/mono.{src_locale}.zst
