@@ -2,7 +2,6 @@ import copy
 
 from taskgraph import MAX_DEPENDENCIES
 from taskgraph.transforms.base import TransformSequence
-from taskgraph.util.treeherder import add_suffix
 
 transforms = TransformSequence()
 
@@ -11,8 +10,6 @@ def yield_job(orig_job, deps, count):
     job = copy.deepcopy(orig_job)
     job["dependencies"] = deps
     job["name"] = "{}-{}".format(orig_job["name"], count)
-    if "treeherder" in job:
-        job["treeherder"]["symbol"] = add_suffix(job["treeherder"]["symbol"], f"-{count}")
 
     return job
 
