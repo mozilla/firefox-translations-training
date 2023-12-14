@@ -1,0 +1,98 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.from_datasets:mono
+    - taskgraph.transforms.run:transforms
+    - translations_taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - dataset
+
+task-defaults:
+    attributes:
+        cleaning-type: clean-mono
+        stage: clean-mono
+        cache:
+            type: clean-mono
+            resources:
+                by-provider:
+                    mtdata:
+                        - pipeline/clean/fixes/detok.sh
+                        - pipeline/clean/fixes/mtdata_JW300.mt.sh
+                        - pipeline/clean/fixes/mtdata_JW300.sh
+                        - pipeline/clean/fixes/mtdata_neulab_tedtalksv1_train.ro.sh
+                        - pipeline/clean/fixes/mtdata_neulab_tedtalksv1_train.sh
+                        - pipeline/clean/fixes/mtdata_OPUS_DOGC_v2.ca.sh
+                        - pipeline/clean/fixes/mtdata_OPUS_DOGC_v2.es.sh
+                        - pipeline/clean/fixes/mtdata_OPUS_DOGC_v2.sh
+                        - pipeline/clean/fixes/mtdata_OPUS_ECB_v1.sh
+                        - pipeline/clean/fixes/mtdata_OPUS_SETIMES_v2.sh
+                        - pipeline/clean/fixes/mtdata_OPUS_UNPC_v1_0.en.sh
+                        - pipeline/clean/fixes/mtdata_OPUS_UNPC_v1_0.fr.sh
+                        - pipeline/clean/clean-mono.sh
+                        - pipeline/clean/tools/deescape-special-chars.perl
+                        - pipeline/clean/tools/remove-non-printing-char.perl
+                        - pipeline/clean/tools/clean_mono.py
+                        - pipeline/clean/tools/langid_fasttext.py
+                    default:
+                        - pipeline/clean/clean-mono.sh
+                        - pipeline/clean/tools/deescape-special-chars.perl
+                        - pipeline/clean/tools/remove-non-printing-char.perl
+                        - pipeline/clean/tools/clean_mono.py
+                        - pipeline/clean/tools/langid_fasttext.py
+    worker-type: b-cpu-largedisk
+    dataset-config:
+        substitution-fields:
+            - description
+            - name
+            - dependencies
+            - fetches
+            - run.command
+    expires-after: "90 days"
+    worker:
+        docker-image: {"in-tree": "train"}
+        max-run-time: 86400
+        artifacts:
+            - name: public/build
+              path: /builds/worker/artifacts
+              type: directory
+        env:
+            COMPRESSION_CMD: zstdmt
+            ARTIFACT_EXT: zst
+
+    # Don't run unless explicitly scheduled
+    run-on-tasks-for: []
+
+    run:
+        using: run-task
+        command:
+            - bash
+            - -c
+            - $VCS_PATH/pipeline/clean/clean-mono.sh {locale} $MOZ_FETCHES_DIR/{dataset_sanitized} /builds/worker/artifacts/{dataset_sanitized} auto {dataset}
+    dependencies:
+        "{provider}-{locale}": dataset-{provider}-{dataset_sanitized}-{locale}
+    fetches:
+        "{provider}-{locale}":
+            - artifact: "{dataset_sanitized}.{locale}.zst"
+              extract: false
+
+tasks:
+    "{provider}-{src_locale}-{dataset_sanitized}-mono-src":
+        description: Clean {provider} {dataset_sanitized} dataset mono-src {src_locale}
+        attributes:
+            dataset-category: mono-src
+        dataset-config:
+            category: mono-src
+
+    "{provider}-{trg_locale}-{dataset_sanitized}-mono-trg":
+        description: Clean {provider} {dataset_sanitized} dataset mono-trg {trg_locale}
+        attributes:
+            dataset-category: mono-trg
+        dataset-config:
+            category: mono-trg

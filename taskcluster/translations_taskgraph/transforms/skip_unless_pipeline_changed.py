@@ -4,7 +4,7 @@ from pathlib import Path
 from taskgraph import files_changed
 from taskgraph.transforms.base import TransformSequence
 
-KIND_DIR = Path(__file__).parent.parent.parent / "ci"
+KIND_DIR = Path(__file__).parent.parent.parent / "kinds"
 
 # Kinds are slightly special - there are some kinds that don't affect the pipeline,
 # and changing them shouldn't force the pipeline to run.
