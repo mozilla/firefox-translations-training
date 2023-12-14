@@ -12,9 +12,9 @@ EXCLUDE_KINDS = ["test"]
 # Touching any file in any of these directories is considered a pipeline change
 PIPELINE_DIRS = [
     "pipeline/**",
-    "taskcluster/docker/**"
-    "taskcluster/requirements.txt"
-    "taskcluster/scripts/**"
+    "taskcluster/docker/**",
+    "taskcluster/requirements.txt",
+    "taskcluster/scripts/**",
     "taskcluster/translations_taskgraph/**",
 ]
 PIPELINE_DIRS.extend(
