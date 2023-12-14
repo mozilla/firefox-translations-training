@@ -178,6 +178,7 @@ marian-args:
     early-stopping: '5'
   training-teacher:
     after: 600000u
+    early-stopping: '0' # Disable early stopping.
   training-student:
     early-stopping: '20'
   training-student-finetuned:
