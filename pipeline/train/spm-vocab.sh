@@ -5,6 +5,9 @@
 # what is used to tokenize text input for the machine learning model. The vocab that
 # is generated is a mix of the source and target languages.
 #
+# Docs:
+#   docs/vocab-size.md
+#
 # Kinds:
 #   taskcluster/ci/train-vocab/kind.yml
 #

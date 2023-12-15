@@ -2,6 +2,8 @@
 ##
 # Cleans corpus using bicleaner-ai or bicleaner
 #
+# See:
+#   docs/bicleaner.md
 
 set -x
 set -euo pipefail
