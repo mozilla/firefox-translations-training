@@ -1,7 +1,10 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
+#
+# This is almost a pure clone of upstream Taskgraph's `docker_image` transform,
+# but with an extended expiration time for PRs. It should be removed after
+# https://github.com/taskcluster/taskgraph/issues/393 is fixed.
 
 import json
 import logging

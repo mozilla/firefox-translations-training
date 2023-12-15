@@ -2,6 +2,7 @@
 layout: default
 title: Data cleaning
 nav_order: 5
+has_children: true
 ---
 
 # Data cleaning
@@ -10,7 +11,6 @@ Making datasets less noisy to improve quality of translation.
 
 ## Regular pipeline
 
-
 Config setting:
 ```
   use-opuscleaner: false
@@ -18,9 +18,9 @@ Config setting:
 
 ### Dataset fixing
 
-Some datasets require fixes like detokenization. 
+Some datasets require fixes like detokenization.
 Dataset and language specific fixes are implemented in [https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/clean/fixes](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/clean/fixes).
-Naming convention: 
+Naming convention:
 - `<dataset_name>.sh` for parallel dataset cleaning
 - `<dataset_name>.<lang>.sh` for language specific cleaning of parallel or monolingual dataset
 - `/` in dataset name should be replaced with `_`
@@ -32,8 +32,8 @@ Make sure the language is present in [clean_parallel](https://github.com/mozilla
 
 ### Bicleaner
 
-It is recommended to use Bicleaner ML models to filter noisy data. 
-See more details on how to configure it in the [Model training guide, Bicleaner section](training-guide.md/#bicleaner).
+It is recommended to use Bicleaner ML models to filter noisy data.
+See the [bicleaner documentation](bicleaner.md) for more details on how to configure it.
 
 
 ## OpusCleaner
@@ -46,7 +46,8 @@ Config setting:
 ```
 
 ## Custom filter configs
-The idea behind the OpusCleaner is customizing filter rules for each language pair and dataset 
+
+The idea behind the OpusCleaner is customizing filter rules for each language pair and dataset
 to get a training corpus with less noise and train higher quality translation models.
 
 Filtering rules can be tuned in an interactive UI.

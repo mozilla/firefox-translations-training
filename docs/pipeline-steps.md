@@ -2,6 +2,7 @@
 layout: default
 title: Pipeline steps
 nav_order: 3
+has_children: true
 ---
 
 # Pipeline steps

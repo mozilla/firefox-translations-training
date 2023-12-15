@@ -54,6 +54,10 @@ task-defaults:
         command:
             - bash
             - -c
+            # Arguments:
+            #   1) chunks_dir
+            #   2) output_path
+            #   3) mono_path
             - >-
                 zstd -d --rm $MOZ_FETCHES_DIR/out-file* &&
                 $VCS_PATH/pipeline/translate/collect.sh

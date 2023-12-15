@@ -1,3 +1,14 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# This is a simple transform sequence that takes the `marian_args` referenced
+# in a job, turns its key/value pairs into standard unix command line
+# options, and makes them available to `task-context` substitutions as
+# `marian_args`. For example:
+# If the `marian_args` input resolves to: `{"beam-size": "12", "mini-batch-words": "2000"}`
+# Then `marian_args` in `task-context` will be: `--beam-size 12 --mini-batch-words 2000`
+
 from taskgraph.transforms.base import TransformSequence
 from taskgraph.util.schema import Schema
 from voluptuous import ALLOW_EXTRA, Required

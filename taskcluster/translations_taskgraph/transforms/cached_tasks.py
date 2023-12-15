@@ -1,6 +1,17 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# This transform is largely of the upstream `cached_task` transform in Taskgraph.
+# It exists because there are two features that we need that are missing upstream:
+# - The ability to influence the cache digest from parameters.
+#   (https://github.com/taskcluster/taskgraph/issues/391)
+# - The ability to avoid adding some upstream tasks to the cache digest (which
+#   allows us to avoid rebuilding the world when, eg: we upgrade a Docker base
+#   image version). No upstream issue is filed for this, because for the vast
+#   majority of use cases it is better to take the rebuilds. Our use case is
+#   an exception, because of the truly massive amount of time it takes to
+#   train a model.
 
 
 import itertools
