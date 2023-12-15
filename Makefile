@@ -195,6 +195,8 @@ tensorboard:
 	marian-tensorboard --offline -f logs/*.log
 
 # Run the GitHub pages Jekyll theme locally.
+# TODO - This command would be better to be run in a docker container, as the
+# requirement for rbenv is a little brittle.
 serve-docs:
 	echo "This command requires"
 	echo "  rbenv: https://github.com/rbenv/rbenv"
