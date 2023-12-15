@@ -110,7 +110,8 @@ def main():
     directory = args.directory
     # Ignore files with a different name than "train.log"
     file_groups = {
-        path: list(files) for path, files in groupby(directory.glob("**/train.log"), lambda path: path.parent)
+        path: list(files)
+        for path, files in groupby(directory.glob("**/train.log"), lambda path: path.parent)
     }
     logger.info(f"Reading {len(file_groups)} train.log data")
     prefix = os.path.commonprefix([path.parts for path in file_groups])
@@ -133,7 +134,9 @@ def main():
             if (
                 prefix
                 and prefix[-1] == "models"
-                and (path := Path("/".join([*prefix[:-1], "logs", last_project, last_group]))).is_dir()
+                and (
+                    path := Path("/".join([*prefix[:-1], "logs", last_project, last_group]))
+                ).is_dir()
             ):
                 publish_group_logs(last_project, last_group, path)
             else:

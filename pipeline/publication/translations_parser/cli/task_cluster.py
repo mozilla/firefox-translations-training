@@ -9,7 +9,9 @@ from translations_parser.publishers import CSVExport, WandB
 
 
 def get_args():
-    parser = argparse.ArgumentParser(description="Extract information from Marian execution on Task Cluster")
+    parser = argparse.ArgumentParser(
+        description="Extract information from Marian execution on Task Cluster"
+    )
     input_group = parser.add_mutually_exclusive_group()
     input_group.add_argument(
         "--input-file",

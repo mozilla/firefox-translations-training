@@ -17,7 +17,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 HEADER_RE = re.compile(r"(?<=\[)(?P<value>.+?)\] ")
-VALIDATION_RE = re.compile(r"Ep\.[ :]+(?P<ep>\d+)[ :]+Up\.[ :]+(?P<up>\d+)[ :]+(?P<key>[\w-]+)[ :]+(?P<value>[\d\.]+)")
+VALIDATION_RE = re.compile(
+    r"Ep\.[ :]+(?P<ep>\d+)[ :]+Up\.[ :]+(?P<up>\d+)[ :]+(?P<key>[\w-]+)[ :]+(?P<value>[\d\.]+)"
+)
 TRAINING_RE = re.compile(
     r"Ep\.[ :]+(?P<epoch>\d+)[ :]+"
     r"Up\.[ :]+(?P<up>\d+)[ :]+"
@@ -110,7 +112,9 @@ class TrainingParser:
             try:
                 publisher.handle_training(training_epoch)
             except Exception as e:
-                logger.error(f"Error publishing training epoch using {publisher.__class__.__name__}: {e}")
+                logger.error(
+                    f"Error publishing training epoch using {publisher.__class__.__name__}: {e}"
+                )
         return training_epoch
 
     def parse_validation_log(self, headers, text):
@@ -132,7 +136,9 @@ class TrainingParser:
                 try:
                     publisher.handle_validation(validation_epoch)
                 except Exception as e:
-                    logger.error(f"Error publishing validation epoch using {publisher.__class__.__name__}: {e}")
+                    logger.error(
+                        f"Error publishing validation epoch using {publisher.__class__.__name__}: {e}"
+                    )
             del self._validation_entries[(epoch, up)]
             return validation_epoch
 
@@ -141,7 +147,9 @@ class TrainingParser:
             self._current_index += 1
             headers, position = self.get_headers(line)
             if self.log_filter and not self.log_filter(headers):
-                logger.debug(f"Skipping line {self._current_index} : Headers does not match the filter")
+                logger.debug(
+                    f"Skipping line {self._current_index} : Headers does not match the filter"
+                )
                 continue
             elif self.run_date is None:
                 # Try to fill run date from log headers
@@ -220,7 +228,9 @@ class TrainingParser:
 
         # Report incomplete validation logs
         if self._validation_entries.keys():
-            logger.warning("Some validation data is incomplete with the following epoch/up couples:")
+            logger.warning(
+                "Some validation data is incomplete with the following epoch/up couples:"
+            )
             for epoch, up in self._validation_entries.keys():
                 logger.warning(f"* Ep. {epoch}, Up. {up}")
 
@@ -228,7 +238,10 @@ class TrainingParser:
 
     @property
     def logs_str(self):
-        return "\n".join("".join(f"[{key}] {val}\n" for val in values) for key, values in self.indexed_logs.items())
+        return "\n".join(
+            "".join(f"[{key}] {val}\n" for val in values)
+            for key, values in self.indexed_logs.items()
+        )
 
     @property
     def output(self):
