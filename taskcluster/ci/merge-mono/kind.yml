@@ -68,9 +68,9 @@ task-defaults:
             - bash
             - -c
             # Arguments are:
-            # 1) output directory
-            # 2) max_sent (sent to shuf -n to output at most max_sent lines)
-            # 3) input files
+            # 1) output
+            # 2) max_sentences
+            # 3) datasets
             - >-
                 export BIN=$MOZ_FETCHES_DIR &&
                 $VCS_PATH/pipeline/clean/merge-mono.sh

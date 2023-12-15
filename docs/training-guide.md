@@ -6,11 +6,11 @@ nav_order: 2
 
 # Model training guide
 
-A step-by-step guide on how to train a translation model. 
+A step-by-step guide on how to train a translation model.
 
-The configuration of the training run happens mostly in the training configuration file. 
+The configuration of the training run happens mostly in the training configuration file.
 Look at the examples of the full production configs for
-[Taskcluster](https://github.com/mozilla/firefox-translations-training/tree/main/configs/tc.prod.yml) and 
+[Taskcluster](https://github.com/mozilla/firefox-translations-training/tree/main/configs/tc.prod.yml) and
 [Snakemake](https://github.com/mozilla/firefox-translations-training/tree/main/configs/config.prod.yml).
 
 ## 1. Choose a language
@@ -131,39 +131,18 @@ To use the default data cleaning pipeline set:
 ```
   use-opuscleaner: false
 ```
+
 Make sure the language is present in [clean_parallel](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/clean/tools/clean_parallel.py#L19) script.
 
-For more advanced cleaning and for using OpusCleaner look at the [Data cleaning](cleaning.md) doc.
-
-### Bicleaner
-It is recommended to use [Bicleaner](https://github.com/bitextor/bicleaner-ai) ML models to filter noisy data. 
-Bicleaner classifier scores parallel sentences from 0 to 1 where 0 means a very noisy translation and 1 is a good translation.
-Most of the scores will be between 0 and 1.
-
-Check that the bicleaner-ai model is [available](https://github.com/bitextor/bicleaner-ai-data/releases) for your language pair
-and add filtering thresholds to the config.
-
-- `0.5` should be a [good default value](https://github.com/bitextor/bicleaner-ai/wiki/How-to-train-your-Bicleaner-AI#bicleaning-a-corpus).
-- Noisier datasets like OpenSubtitles should have higher threshold. 
-- Set the threshold to `0` to skip cleaning entirely, for example for ParaCrawl dataset that comes already cleaned by Bicleaner 
-  (see [Bicleaner AI: Bicleaner Goes Neural](https://aclanthology.org/2022.lrec-1.87.pdf), section 4.2.2).
-
-```
-  bicleaner:
-    default-threshold: 0.5
-    dataset-thresholds:
-      opus_CCAligned/v1: 0.7
-      opus_OpenSubtitles/v2018: 0.8
-      opus_ParaCrawl/v9: 0
-      ...
-```
+For more details on data cleaning see the documents on [Data cleaning](cleaning.md) [Bicleaner](bicleaner.md).
 
 ## 4. Set hyperparameters
 
-The pipeline supports overriding the default [Marian settings](https://marian-nmt.github.io/docs/cmd/marian/) in the training config.
-The default settings are in the `pipeline/train/configs` directory, 
-for example [teacher.train.yml](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/training/teacher.train.yml) 
-and in the [train.sh](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/train.sh) script.
+The pipeline supports overriding the default [Marian settings](https://marian-nmt.github.io/docs/cmd/marian/) in the training config. The default settings are in the `pipeline/train/configs` directory,
+for example [`teacher.train.yml`] and in the [`train.sh`] script.
+
+[teacher.train.yml]: https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/training/teacher.train.yml
+[train.sh]: https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/train.sh
 
 ### Model training
 I often increase early stopping for teachers to make sure the training converges.
@@ -180,7 +159,7 @@ marian-args:
 
 ### Decoding (translation)
 
-`mini-batch-words` can be set depending on available GPU memory and the number of teachers. 
+`mini-batch-words` can be set depending on available GPU memory and the number of teachers.
 It affects the batch size and decoding speed for the `traslate` steps.
 ```
 marian-args:
@@ -331,5 +310,3 @@ Reduce the Marian workspace or batch size.
 
 It happens on Taskcluster, because we train on increasingly large datasets especially close to the end of the pipeline. 
 Just increase the disk size, it's cheap compared to the GPUs.
-
-

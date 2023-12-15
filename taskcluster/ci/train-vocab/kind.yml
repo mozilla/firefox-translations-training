@@ -64,11 +64,11 @@ tasks:
                 - bash
                 - -c
                 # Arguments are:
-                # 1) merged src corpus file
-                # 2) merged trg corpus file
-                # 3) output file
-                # 4) sample size
-                # 5) number of threads (auto = output of nproc)
+                # 1) merged_corpus_src
+                # 2) merged_corpus_trg
+                # 3) vocab_output
+                # 4) sample_size
+                # 5) num_threads (auto = output of nproc)
                 - >-
                     export MARIAN=$MOZ_FETCHES_DIR &&
                     $VCS_PATH/pipeline/train/spm-vocab.sh

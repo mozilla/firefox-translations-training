@@ -10,4 +10,5 @@ aux_links:
   "GitHub":
     - "https://github.com/mozilla/firefox-translations-training"
 plugins:
+  - jekyll-relative-links
   - jekyll-remote-theme
