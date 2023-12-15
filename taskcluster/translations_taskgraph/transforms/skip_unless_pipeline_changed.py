@@ -1,3 +1,15 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# This transform sequence will remove all jobs unless at least one pipeline
+# impacting thing (a pipeline script or relevant Taskcluster code) has changed
+# (This is done with the `files_changed` helper, which uses data in the
+# parameters to determine files changed between the `base` and `head` revisions.)
+
+# When upstream taskgraph supports better selection (https://github.com/taskcluster/taskgraph/issues/369)
+# this can be replaced with it.
+
 import os
 from pathlib import Path
 
@@ -26,12 +38,6 @@ transforms = TransformSequence()
 
 @transforms.add
 def skip_unless_pipeline_changed(config, jobs):
-    """Remove all jobs unless at least one pipeline impacting thing (a pipeline script or
-    relevant Taskcluster code) has changed.
-
-    If/when upstream taskgraph supports better selection (https://github.com/taskcluster/taskgraph/issues/369)
-    this can be replaced with it."""
-
     if not files_changed.check(config.params, PIPELINE_DIRS):
         return
 
