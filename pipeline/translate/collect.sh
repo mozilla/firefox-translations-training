@@ -1,9 +1,9 @@
 #!/bin/bash
 #
 # Collects chunked translation data of the form "out-file.N.out" where N is a number.
-# The datasets are initially chunked so that tasks can work on smaller sets of data
-# to better parallelize the work. After processing, any chunked data is reassembled
-# with this script.
+# The datasets are chunked earlier in the pipeline by split-{corpus,mono}.sh so that
+# tasks can work on smaller sets of data to better parallelize the work. After processing,
+# any chunked data is reassembled with this script.
 #
 # Example tasks running on chunked data (before this script):
 #   extract-best-en-ca-1/10
