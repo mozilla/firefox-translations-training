@@ -19,6 +19,8 @@ We use fast translation engine [Marian](https://marian-nmt.github.io).
 
 You can find more details about the pipeline steps in the [documentation](docs/pipeline-steps.md).
 
+Marian training metrics are parsed from logs and published using a custom package documented [here](docs/publication.md).
+
 ## Orchestrators
 
 An orchestrator is responsible for workflow management and parallelization.
