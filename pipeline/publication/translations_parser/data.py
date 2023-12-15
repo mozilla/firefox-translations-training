@@ -23,6 +23,18 @@ class ValidationEpoch:
     bleu_detok: float
 
 
+class Metric:
+    """
+    A generic metric extracted from .metric files
+    """
+    up: int
+
+    def __init__(self, up, **kwargs):
+        self.up = up
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+
 @dataclass
 class TrainingLog:
     """Results from the parsing of a training log file"""

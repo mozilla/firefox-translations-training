@@ -1,12 +1,12 @@
 import argparse
 import logging
 import os
-from dataclasses import dataclass
 from itertools import groupby
 from pathlib import Path
 
 import wandb
 
+from translations_parser.data import Metric
 from translations_parser.parser import TrainingParser
 from translations_parser.publishers import WandB
 
@@ -15,52 +15,6 @@ logging.basicConfig(
     format="[%(levelname)s] %(message)s",
 )
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class MetricEpoch:
-    """
-    A generic metric extracted from .metric files
-    """
-
-    up: int
-
-
-class ExperimentsParser(TrainingParser):
-    def __init__(self, *args, metrics_dir=None, **kwargs):
-        self.metrics_dir = metrics_dir
-        super().__init__(*args, **kwargs)
-
-    def run(self):
-        """
-        Add experiment metrics to the training data of the parser
-        so they are also reported by the WandB publisher.
-        """
-        if not self.metrics_dir:
-            return super().run()
-
-        # Add Metrics to the published output based on the name of the file
-        for metrics_file in self.metrics_dir.glob("*.metrics"):
-            with metrics_file.open("r") as f:
-                lines = f.readlines()
-            up = 1
-            for line in lines:
-                # Ignore lines that does not contain a float value
-                try:
-                    value = float(line)
-                except ValueError:
-                    continue
-                else:
-                    metric = MetricEpoch(up=up)
-                    setattr(
-                        metric,
-                        # Always prefix metrics to avoid names conflict
-                        f"[metric] {metrics_file.stem}",
-                        value,
-                    )
-                    self.training.append(metric)
-                    up += 1
-        return super().run()
 
 
 def get_args():
@@ -76,11 +30,29 @@ def get_args():
 
 
 def parse_experiment(logs_file, project, group, name, metrics_dir=None):
+    metrics = []
+    # Add Metrics to the published output based on the name of the file
+    if metrics_dir:
+        for metrics_file in metrics_dir.glob("*.metrics"):
+            with metrics_file.open("r") as f:
+                lines = f.readlines()
+            up = 1
+            for line in lines:
+                # Ignore lines that does not contain a float value
+                try:
+                    metric = {metrics_file.stem: float(line)}
+                except ValueError:
+                    continue
+                else:
+                    metric = Metric(up=up, **metric)
+                    metrics.append(metric)
+                    up += 1
+
     with logs_file.open("r") as f:
         lines = (line.strip() for line in f.readlines())
-    parser = ExperimentsParser(
+    parser = TrainingParser(
         lines,
-        metrics_dir=metrics_dir,
+        metrics=metrics,
         publishers=[
             WandB(
                 project=project,

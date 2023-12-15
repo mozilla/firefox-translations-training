@@ -2,10 +2,12 @@ import csv
 import logging
 from abc import ABC
 from pathlib import Path
+from typing import Sequence
+from collections import defaultdict
 
 import wandb
 
-from translations_parser.data import TrainingEpoch, TrainingLog, ValidationEpoch
+from translations_parser.data import TrainingEpoch, TrainingLog, ValidationEpoch, Metric
 
 logging.basicConfig(
     level=logging.INFO,
@@ -24,10 +26,13 @@ class Publisher(ABC):
     def open(self, parser) -> None:
         ...
 
-    def handle_training(self, training: TrainingEpoch) -> None:
+    def handle_training(self, training: TrainingEpoch, **kwargs) -> None:
         ...
 
     def handle_validation(self, validation: ValidationEpoch) -> None:
+        ...
+
+    def handle_metric(self, metric: Sequence[Metric]) -> None:
         ...
 
     def publish(self, log: TrainingLog) -> None:
@@ -75,6 +80,8 @@ class WandB(Publisher):
         self.parser = None
 
     def open(self, parser):
+        if parser is None or self.parser is not None:
+            return
         self.parser = parser
         config = parser.config
         config.update(self.extra_kwargs.pop("config", {}))
@@ -89,13 +96,37 @@ class WandB(Publisher):
         epoch = vars(data)
         step = epoch.pop("up")
         for key, val in epoch.items():
-            wandb.log(step=step, data={key: val})
+            self.wandb.log(step=step, data={key: val})
 
     def handle_training(self, training):
         self.generic_log(training)
 
     def handle_validation(self, validation):
         self.generic_log(validation)
+
+    def handle_metric(self, metrics: Sequence[Metric]) -> None:
+        max_values = defaultdict(float)
+        # Publish metrics as usual data, prefixed by "[metric] "
+        for metric in metrics:
+            epoch = vars(metrics)
+            step = epoch.pop("up")
+            for key, val in epoch.items():
+                self.wandb.log(step=step, data={f"[metric] {key}": val})
+                if key not in max_values.keys() or val > max_values[key]:
+                    max_values[key] = val
+
+        # Also publish a bar chart with max values for each metric
+        self.wandb.log({
+            "Metrics summary": wandb.plot.bar(
+                wandb.Table(
+                    columns=["Metric", "Max value"],
+                    data=max_values.items(),
+                ),
+                "Metric",
+                "Max value",
+                title="Metrics summary",
+            )
+        })
 
     def close(self):
         # Store runtime logs as the main log artifact

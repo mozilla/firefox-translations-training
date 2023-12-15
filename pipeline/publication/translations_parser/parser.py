@@ -7,7 +7,7 @@ from typing import Callable
 
 import yaml
 
-from translations_parser.data import TrainingEpoch, TrainingLog, ValidationEpoch
+from translations_parser.data import Metric, TrainingEpoch, TrainingLog, ValidationEpoch
 from translations_parser.publishers import Publisher
 
 logging.basicConfig(
@@ -40,6 +40,7 @@ class TrainingParser:
         publishers: Sequence[Publisher],
         log_filter: Callable = None,
         skip_marian_context: bool = False,
+        metrics: Sequence[Metric] = None,
     ):
         # Iterable reading logs lines
         self.logs_iter = logs_iter
@@ -49,6 +50,8 @@ class TrainingParser:
         self.parsed = False
         self.config = {}
         self.indexed_logs = defaultdict(list)
+        # Optional list of Metric published earlier to the parsing
+        self.metrics = []
         # List of TrainingEpoch
         self.training = []
         # List of ValidationEpoch
@@ -210,9 +213,17 @@ class TrainingParser:
             except Exception as e:
                 raise Exception(f"Invalid config section: {e}")
 
-        # Iterate until the end of file to find training or validation logs
         for publisher in self.publishers:
             publisher.open(self)
+
+        # Publish optional metrics
+        if self.metrics:
+            # Order metrics step-by-step for consistent plot logging
+            self.metrics = sorted(self.metrics, key=lambda t: t.up)
+            for publisher in self.publishers:
+                publisher.handle_metrics(self.metrics)
+
+        # Iterate until the end of file to find training or validation logs
         while True:
             try:
                 try:
