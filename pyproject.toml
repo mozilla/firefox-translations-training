@@ -41,7 +41,7 @@ opustrainer = {git = "https://github.com/hplt-project/OpusTrainer.git", rev="913
 pytest-clarity = "^1.0.1"
 requests-mock = "^1.11.0"
 sh = "^2.0.6"
-zstd = "*"
+zstandard = "*"
 
 [tool.black]
 extend-exclude= "/3rd_party"

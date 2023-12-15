@@ -10,6 +10,8 @@ import sh
 
 from pipeline.translate.splitter import split_file
 
+COMPRESSION_CMD = "zstdmt"
+
 OUTPUT_DIR = "tests_data"
 
 
@@ -33,6 +35,8 @@ def generate_dataset(length, path):
     with open(path, "w") as f:
         f.write("\n".join(sentences))
 
+    sh.zstdmt(path)
+
 
 def imitate_translate(dir, suffix):
     for file in glob.glob(f"{dir}/file.??"):
@@ -45,28 +49,30 @@ def read_file(path):
 
 
 def test_split_collect_mono(clean):
-    os.environ["COMPRESSION_CMD"] = "zstd"
+    os.environ["COMPRESSION_CMD"] = COMPRESSION_CMD
     length = 1234
     path = os.path.join(OUTPUT_DIR, "mono.in")
     output = os.path.join(OUTPUT_DIR, "mono.output")
     output_compressed = f"{output}.zst"
     generate_dataset(length, path)
-    sh.zstd(path)
 
     split_file(
-        mono_path=f"{path}.zst", output_dir=OUTPUT_DIR, num_parts=10, compression_cmd="zstd"
+        mono_path=f"{path}.zst",
+        output_dir=OUTPUT_DIR,
+        num_parts=10,
+        compression_cmd=COMPRESSION_CMD,
     )
     imitate_translate(OUTPUT_DIR, suffix=".out")
     subprocess.run(
         ["pipeline/translate/collect.sh", OUTPUT_DIR, output_compressed, f"{path}.zst"], check=True
     )
 
-    sh.zstd("-d", output_compressed)
+    sh.zstdmt("-d", output_compressed)
     assert read_file(path) == read_file(output)
 
 
 def test_split_collect_corpus(clean):
-    os.environ["COMPRESSION_CMD"] = "zstd"
+    os.environ["COMPRESSION_CMD"] = COMPRESSION_CMD
     length = 1234
     path_src = os.path.join(OUTPUT_DIR, "corpus.src.in")
     path_trg = os.path.join(OUTPUT_DIR, "corpus.trg.in")
@@ -74,17 +80,18 @@ def test_split_collect_corpus(clean):
     output_compressed = f"{output}.zst"
     generate_dataset(length, path_src)
     generate_dataset(length, path_trg)
-    sh.zstd(path_src)
-    sh.zstd(path_trg)
 
     split_file(
-        mono_path=f"{path_src}.zst", output_dir=OUTPUT_DIR, num_parts=10, compression_cmd="zstd"
+        mono_path=f"{path_src}.zst",
+        output_dir=OUTPUT_DIR,
+        num_parts=10,
+        compression_cmd=COMPRESSION_CMD,
     )
     split_file(
         mono_path=f"{path_trg}.zst",
         output_dir=OUTPUT_DIR,
         num_parts=10,
-        compression_cmd="zstd",
+        compression_cmd=COMPRESSION_CMD,
         output_suffix=".ref",
     )
     imitate_translate(OUTPUT_DIR, suffix=".nbest.out")
@@ -93,5 +100,5 @@ def test_split_collect_corpus(clean):
         check=True,
     )
 
-    sh.zstd("-d", output_compressed)
+    sh.zstdmt("-d", output_compressed)
     assert read_file(path_src) == read_file(output)
