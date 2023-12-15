@@ -131,7 +131,6 @@ experiment:
   mono-max-sentences-src: 100000000
   mono-max-sentences-trg: 20000000
   name: baseline_enhu
-  split-length: 2000000
   spm-sample-size: 10000000
   src: en
   teacher-ensemble: 2

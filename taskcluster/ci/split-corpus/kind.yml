@@ -26,13 +26,10 @@ tasks:
                 type: split-corpus
                 resources:
                     - pipeline/translate/split-corpus.sh
-                    - taskcluster/scripts/pipeline/split-corpus-taskcluster.sh
                 from-parameters:
-                    split_length: training_config.experiment.split-length
                     split_chunks: training_config.taskcluster.split-chunks
         task-context:
             from-parameters:
-                split_length: training_config.experiment.split-length
                 split_chunks: training_config.taskcluster.split-chunks
                 src_locale: training_config.experiment.src
                 trg_locale: training_config.experiment.trg
@@ -65,12 +62,11 @@ tasks:
                 - bash
                 - -c
                 - >-
-                    $VCS_PATH/taskcluster/scripts/pipeline/split-corpus-taskcluster.sh
-                    {split_chunks}
-                    /builds/worker/artifacts
-                    {split_length}
+                    $VCS_PATH/pipeline/translate/split-corpus.sh
                     fetches/corpus.{src_locale}.zst
                     fetches/corpus.{trg_locale}.zst
+                    /builds/worker/artifacts
+                    {split_chunks}
 
         dependencies:
             merge-corpus: merge-corpus-{src_locale}-{trg_locale}

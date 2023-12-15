@@ -23,14 +23,11 @@ task-defaults:
             type: split-mono
             resources:
                 - pipeline/translate/split-mono.sh
-                - taskcluster/scripts/pipeline/split-mono-taskcluster.sh
             from-parameters:
-                split_length: training_config.experiment.split-length
                 split_chunks: training_config.taskcluster.split-chunks
 
     task-context:
         from-parameters:
-            split_length: training_config.experiment.split-length
             split_chunks: training_config.taskcluster.split-chunks
             src_locale: training_config.experiment.src
         substitution-fields:
@@ -67,11 +64,10 @@ task-defaults:
               # TODO: move number of chunks elsewhere
             - >-
                 export BIN=$MOZ_FETCHES_DIR &&
-                $VCS_PATH/taskcluster/scripts/pipeline/split-mono-taskcluster.sh
-                {split_chunks}
-                /builds/worker/artifacts
-                {split_length}
+                $VCS_PATH/pipeline/translate/split-mono.sh
                 $MOZ_FETCHES_DIR/mono.$LOCALE.zst
+                /builds/worker/artifacts
+                {split_chunks}
 
     fetches:
         toolchain:
