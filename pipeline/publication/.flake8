@@ -1,0 +1,6 @@
+[flake8]
+max-line-length = 120
+exclude=.cache,.eggs,.git
+# E203 whitespace before ':' incompatible with black
+# W503 line break before binary operator incompatible with black
+ignore = E203,W503

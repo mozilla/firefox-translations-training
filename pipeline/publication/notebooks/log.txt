@@ -1,0 +1,639 @@
+[taskcluster 2023-08-29T17:30:30.458Z] Worker Type (translations-3/b-linux-v100-gpu-4) settings:
+[taskcluster 2023-08-29T17:30:30.458Z]   {
+[taskcluster 2023-08-29T17:30:30.458Z]     "config": {
+[taskcluster 2023-08-29T17:30:30.458Z]       "deploymentId": ""
+[taskcluster 2023-08-29T17:30:30.458Z]     },
+[taskcluster 2023-08-29T17:30:30.458Z]     "generic-worker": {
+[taskcluster 2023-08-29T17:30:30.458Z]       "engine": "simple",
+[taskcluster 2023-08-29T17:30:30.458Z]       "go-arch": "amd64",
+[taskcluster 2023-08-29T17:30:30.458Z]       "go-os": "linux",
+[taskcluster 2023-08-29T17:30:30.458Z]       "go-version": "go1.19.7",
+[taskcluster 2023-08-29T17:30:30.458Z]       "release": "https://github.com/taskcluster/taskcluster/releases/tag/v48.1.0",
+[taskcluster 2023-08-29T17:30:30.458Z]       "revision": "fa6cdbdf9a2aa6616cb6997e5f91e14a33685c87",
+[taskcluster 2023-08-29T17:30:30.458Z]       "source": "https://github.com/taskcluster/taskcluster/commits/fa6cdbdf9a2aa6616cb6997e5f91e14a33685c87",
+[taskcluster 2023-08-29T17:30:30.458Z]       "version": "48.1.0"
+[taskcluster 2023-08-29T17:30:30.458Z]     },
+[taskcluster 2023-08-29T17:30:30.458Z]     "image": "projects/taskcluster-imaging/global/images/generic-translations-gcp-googlecompute-2023-08-07t17-55-40z",
+[taskcluster 2023-08-29T17:30:30.458Z]     "instance-id": "4802412144639579235",
+[taskcluster 2023-08-29T17:30:30.458Z]     "instance-type": "projects/970387039909/machineTypes/n1-highmem-8",
+[taskcluster 2023-08-29T17:30:30.458Z]     "local-ipv4": "10.128.0.60",
+[taskcluster 2023-08-29T17:30:30.458Z]     "project-id": "fxci-production-level3-workers",
+[taskcluster 2023-08-29T17:30:30.458Z]     "public-hostname": "translations-3-b-linux-v100-gpu-4-cenp5xb5q4s10slfyr66gg.c.fxci-production-level3-workers.internal",
+[taskcluster 2023-08-29T17:30:30.458Z]     "public-ipv4": "34.122.36.190",
+[taskcluster 2023-08-29T17:30:30.458Z]     "region": "us-central1",
+[taskcluster 2023-08-29T17:30:30.458Z]     "zone": "us-central1-c"
+[taskcluster 2023-08-29T17:30:30.458Z]   }
+[taskcluster 2023-08-29T17:30:30.458Z] Task ID: f7NREn6TQSSpQdQKh4opHA
+[taskcluster 2023-08-29T17:30:30.458Z] === Task Starting ===
+[taskcluster 2023-08-29T17:30:30.938Z] Uploading redirect artifact public/logs/live.log to URL https://firefoxci-websocktunnel.services.mozilla.com/us-central1.4802412144639579235.60099/log/JUJWlRHKRTa8KD90c6awJA with mime type "text/plain; charset=utf-8" and expiry 2023-08-30T17:45:30.846Z
+[taskcluster 2023-08-29T17:30:31.022Z] [mounts] No existing writable directory cache 'translations-level-3-checkouts' - creating /home/ubuntu/caches/FEQXaQP8TtSGbFkCywQbEA
+[taskcluster 2023-08-29T17:30:31.022Z] [mounts] Creating directory /home/ubuntu/tasks/task_169333023023778/checkouts with permissions 0700
+[taskcluster 2023-08-29T17:30:31.022Z] [mounts] Successfully mounted writable directory cache '/home/ubuntu/tasks/task_169333023023778/checkouts'
+[taskcluster 2023-08-29T17:30:31.022Z] [mounts] Downloading url https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/YSOPtvPZQP2IXE_FD--LTg/artifacts/public/run-task to /home/ubuntu/downloads/d7UDHGRYQpO3b3f5u3nFWQ
+[taskcluster 2023-08-29T17:30:31.202Z] [mounts] Downloaded 45128 bytes with SHA256 2922149087d95338df26d8883edc17054e01d2f03d8599d9b2527e85e29122e5 from url https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/YSOPtvPZQP2IXE_FD--LTg/artifacts/public/run-task to /home/ubuntu/downloads/d7UDHGRYQpO3b3f5u3nFWQ
+[taskcluster:warn 2023-08-29T17:30:31.202Z] [mounts] Download /home/ubuntu/downloads/d7UDHGRYQpO3b3f5u3nFWQ of url https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/YSOPtvPZQP2IXE_FD--LTg/artifacts/public/run-task has SHA256 2922149087d95338df26d8883edc17054e01d2f03d8599d9b2527e85e29122e5 but task payload does not declare a required value, so content authenticity cannot be verified
+[taskcluster 2023-08-29T17:30:31.202Z] [mounts] Creating directory /home/ubuntu/tasks/task_169333023023778 with permissions 0700
+[taskcluster 2023-08-29T17:30:31.203Z] [mounts] Copying /home/ubuntu/downloads/d7UDHGRYQpO3b3f5u3nFWQ to /home/ubuntu/tasks/task_169333023023778/run-task
+[taskcluster 2023-08-29T17:30:31.207Z] [mounts] Downloading url https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/YSOPtvPZQP2IXE_FD--LTg/artifacts/public/fetch-content to /home/ubuntu/downloads/GRTm0VkWSSifDtmzqm6yPw
+[taskcluster 2023-08-29T17:30:31.341Z] [mounts] Downloaded 29990 bytes with SHA256 1b5680bd9953834c961eac614b18b846f7f15be2812792709c6b5646a7c7fdb8 from url https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/YSOPtvPZQP2IXE_FD--LTg/artifacts/public/fetch-content to /home/ubuntu/downloads/GRTm0VkWSSifDtmzqm6yPw
+[taskcluster:warn 2023-08-29T17:30:31.341Z] [mounts] Download /home/ubuntu/downloads/GRTm0VkWSSifDtmzqm6yPw of url https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/YSOPtvPZQP2IXE_FD--LTg/artifacts/public/fetch-content has SHA256 1b5680bd9953834c961eac614b18b846f7f15be2812792709c6b5646a7c7fdb8 but task payload does not declare a required value, so content authenticity cannot be verified
+[taskcluster 2023-08-29T17:30:31.341Z] [mounts] Creating directory /home/ubuntu/tasks/task_169333023023778 with permissions 0700
+[taskcluster 2023-08-29T17:30:31.341Z] [mounts] Copying /home/ubuntu/downloads/GRTm0VkWSSifDtmzqm6yPw to /home/ubuntu/tasks/task_169333023023778/fetch-content
+[taskcluster 2023-08-29T17:30:31.344Z] Executing command 0: chmod '+x' run-task
+[taskcluster 2023-08-29T17:30:31.346Z]    Exit Code: 0
+[taskcluster 2023-08-29T17:30:31.346Z]    User Time: 1.245ms
+[taskcluster 2023-08-29T17:30:31.346Z]  Kernel Time: 0s
+[taskcluster 2023-08-29T17:30:31.346Z]    Wall Time: 1.416259ms
+[taskcluster 2023-08-29T17:30:31.346Z]       Result: SUCCEEDED
+[taskcluster 2023-08-29T17:30:31.346Z] Executing command 1: './run-task' '--firefox_translations_training-checkout=./checkouts/vcs/' -- bash -c 'export MARIAN=$MOZ_FETCHES_DIR && $VCS_PATH/pipeline/train/train.sh backward train en ru $MOZ_FETCHES_DIR/corpus $MOZ_FETCHES_DIR/devset $TASK_WORKDIR/artifacts $MOZ_FETCHES_DIR/vocab.spm chrf  --after 500u --disp-freq 10 --save-freq 100 --valid-freq 100'
+[setup 2023-08-29T17:30:31.422Z] run-task started in /home/ubuntu/tasks/task_169333023023778
+[setup 2023-08-29T17:30:31.422Z] Invoked by command: --firefox_translations_training-checkout=./checkouts/vcs/ -- bash -c export MARIAN=$MOZ_FETCHES_DIR && $VCS_PATH/pipeline/train/train.sh backward train en ru $MOZ_FETCHES_DIR/corpus $MOZ_FETCHES_DIR/devset $TASK_WORKDIR/artifacts $MOZ_FETCHES_DIR/vocab.spm chrf  --after 500u --disp-freq 10 --save-freq 100 --valid-freq 100
+[setup 2023-08-29T17:30:31.422Z] Python version: 3.10.12
+[vcs 2023-08-29T17:30:31.423Z] WARNING: vcs checkout path (/home/ubuntu/tasks/task_169333023023778/checkouts/vcs) not in cache or volume; performance will likely suffer
+[vcs 2023-08-29T17:30:31.424Z] executing ['git', 'clone', 'https://github.com/mozilla/firefox-translations-training', '/home/ubuntu/tasks/task_169333023023778/checkouts/vcs']
+[vcs 2023-08-29T17:30:31.530Z] Cloning into '/home/ubuntu/tasks/task_169333023023778/checkouts/vcs'...
+[vcs 2023-08-29T17:30:51.916Z] fatal: unable to access 'https://github.com/mozilla/firefox-translations-training/': Could not resolve host: github.com
+[vcs 2023-08-29T17:30:53.921Z] executing ['git', 'clone', 'https://github.com/mozilla/firefox-translations-training', '/home/ubuntu/tasks/task_169333023023778/checkouts/vcs']
+[vcs 2023-08-29T17:30:53.923Z] Cloning into '/home/ubuntu/tasks/task_169333023023778/checkouts/vcs'...
+[vcs 2023-08-29T17:31:08.562Z] fatal: unable to access 'https://github.com/mozilla/firefox-translations-training/': Could not resolve host: github.com
+[vcs 2023-08-29T17:31:12.567Z] executing ['git', 'clone', 'https://github.com/mozilla/firefox-translations-training', '/home/ubuntu/tasks/task_169333023023778/checkouts/vcs']
+[vcs 2023-08-29T17:31:12.569Z] Cloning into '/home/ubuntu/tasks/task_169333023023778/checkouts/vcs'...
+[vcs 2023-08-29T17:31:13.315Z] executing ['git', 'fetch', '--tags', '--force', 'https://github.com/mozilla/firefox-translations-training', 'refs/heads/main']
+[vcs 2023-08-29T17:31:13.557Z] From https://github.com/mozilla/firefox-translations-training
+[vcs 2023-08-29T17:31:13.557Z]  * branch            main       -> FETCH_HEAD
+[vcs 2023-08-29T17:31:13.564Z] executing ['git', 'fetch', '--no-tags', 'https://github.com/mozilla/firefox-translations-training', 'refs/heads/main']
+[vcs 2023-08-29T17:31:14.825Z] From https://github.com/mozilla/firefox-translations-training
+[vcs 2023-08-29T17:31:14.825Z]  * branch            main       -> FETCH_HEAD
+[vcs 2023-08-29T17:31:14.831Z] executing ['git', 'checkout', '-f', '-B', 'refs/heads/main', '3a8448d73bb58fe8f6c825faa315412fdfe6b172']
+[vcs 2023-08-29T17:31:14.851Z] Switched to a new branch 'refs/heads/main'
+[vcs 2023-08-29T17:31:14.851Z] executing ['git', 'submodule', 'init']
+[vcs 2023-08-29T17:31:14.949Z] Submodule '3rd_party/browsermt-marian-dev' (https://github.com/browsermt/marian-dev) registered for path '3rd_party/browsermt-marian-dev'
+[vcs 2023-08-29T17:31:14.950Z] Submodule 'extract-lex' (https://github.com/marian-nmt/extract-lex) registered for path '3rd_party/extract-lex'
+[vcs 2023-08-29T17:31:14.951Z] Submodule 'fast_align' (https://github.com/clab/fast_align) registered for path '3rd_party/fast_align'
+[vcs 2023-08-29T17:31:14.952Z] Submodule '3rd_party/kenlm' (https://github.com/kpu/kenlm) registered for path '3rd_party/kenlm'
+[vcs 2023-08-29T17:31:14.952Z] Submodule '3rd_party/marian-dev' (https://github.com/marian-nmt/marian-dev) registered for path '3rd_party/marian-dev'
+[vcs 2023-08-29T17:31:14.953Z] Submodule '3rd_party/preprocess' (https://github.com/kpu/preprocess.git) registered for path '3rd_party/preprocess'
+[vcs 2023-08-29T17:31:14.954Z] executing ['git', 'submodule', 'update', '--force']
+[vcs 2023-08-29T17:31:15.012Z] Cloning into '/home/ubuntu/tasks/task_169333023023778/checkouts/vcs/3rd_party/browsermt-marian-dev'...
+[vcs 2023-08-29T17:31:16.745Z] Cloning into '/home/ubuntu/tasks/task_169333023023778/checkouts/vcs/3rd_party/extract-lex'...
+[vcs 2023-08-29T17:31:17.139Z] Cloning into '/home/ubuntu/tasks/task_169333023023778/checkouts/vcs/3rd_party/fast_align'...
+[vcs 2023-08-29T17:31:17.545Z] Cloning into '/home/ubuntu/tasks/task_169333023023778/checkouts/vcs/3rd_party/kenlm'...
+[vcs 2023-08-29T17:31:18.357Z] Cloning into '/home/ubuntu/tasks/task_169333023023778/checkouts/vcs/3rd_party/marian-dev'...
+[vcs 2023-08-29T17:31:20.135Z] Cloning into '/home/ubuntu/tasks/task_169333023023778/checkouts/vcs/3rd_party/preprocess'...
+[vcs 2023-08-29T17:31:20.829Z] Submodule path '3rd_party/browsermt-marian-dev': checked out '08b1544636fe13eaf1fbacb17c6fb050abfb8d42'
+[vcs 2023-08-29T17:31:20.850Z] Submodule path '3rd_party/extract-lex': checked out '42fa605b53f32eaf6c6e0b5677255c21c91b3d49'
+[vcs 2023-08-29T17:31:20.872Z] Submodule path '3rd_party/fast_align': checked out 'cab1e9aac8d3bb02ff5ae58218d8d225a039fa11'
+[vcs 2023-08-29T17:31:20.917Z] Submodule path '3rd_party/kenlm': checked out 'bbf4fc511266c5d4515047055d7bdec659a6e158'
+[vcs 2023-08-29T17:31:21.076Z] Submodule path '3rd_party/marian-dev': checked out 'e8a1a2530fb84cbff7383302ebca393e5875c441'
+[vcs 2023-08-29T17:31:21.110Z] Submodule path '3rd_party/preprocess': checked out '64307314b4d5a9a0bd529b5c1036b0710d995eec'
+[vcs 2023-08-29T17:31:21.111Z] cleaning git checkout...
+[vcs 2023-08-29T17:31:21.111Z] executing ['git', 'clean', '-nxdff']
+[vcs 2023-08-29T17:31:21.115Z] removing []
+[vcs 2023-08-29T17:31:21.115Z] successfully cleaned git checkout!
+[vcs 2023-08-29T17:31:21.118Z] TinderboxPrint:<a href='https://github.com/mozilla/firefox-translations-training/commit/3a8448d73bb58fe8f6c825faa315412fdfe6b172' title='Built from firefox-translations-training commit 3a8448d73bb58fe8f6c825faa315412fdfe6b172'>3a8448d73bb58fe8f6c825faa315412fdfe6b172</a>
+[setup 2023-08-29T17:31:21.118Z] MOZ_FETCHES_DIR is /home/ubuntu/tasks/task_169333023023778/fetches
+[fetches 2023-08-29T17:31:21.118Z] fetching artifacts
+[fetches 2023-08-29T17:31:21.119Z] executing ['/usr/bin/python3', '-u', '/home/ubuntu/tasks/task_169333023023778/./fetch-content', 'task-artifacts']
+attempt 1/5attempt 1/5
+Downloading https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/ZzvqIeoSQ5C9CBCFyD2IGg/artifacts/public/build/corpus.ru.zst to /home/ubuntu/tasks/task_169333023023778/fetches/corpus.ru.zst
+Downloading https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/ZzvqIeoSQ5C9CBCFyD2IGg/artifacts/public/build/corpus.ru.zstattempt 1/5
+
+
+Downloading https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/ZzvqIeoSQ5C9CBCFyD2IGg/artifacts/public/build/corpus.en.zst to /home/ubuntu/tasks/task_169333023023778/fetches/corpus.en.zstDownloading https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/E4_7BLraTAmVphZotTKhog/artifacts/public/build/devset.en.zst to /home/ubuntu/tasks/task_169333023023778/fetches/devset.en.zstattempt 1/5
+
+
+Downloading https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/E4_7BLraTAmVphZotTKhog/artifacts/public/build/devset.ru.zst to /home/ubuntu/tasks/task_169333023023778/fetches/devset.ru.zst
+attempt 1/5
+Downloading https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/VZFMH0-ASnun_eh9CQZUjA/artifacts/public/build/marian.tar.zst to /home/ubuntu/tasks/task_169333023023778/fetches/marian.tar.zst
+Downloading https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/ZzvqIeoSQ5C9CBCFyD2IGg/artifacts/public/build/corpus.en.zstDownloading https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/E4_7BLraTAmVphZotTKhog/artifacts/public/build/devset.en.zst
+
+/home/ubuntu/tasks/task_169333023023778/./fetch-content:192: DeprecationWarning: cafile, capath and cadefault are deprecated, use a custom context instead.
+  with urllib.request.urlopen(
+attempt 1/5Downloading https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/VZFMH0-ASnun_eh9CQZUjA/artifacts/public/build/marian.tar.zst
+
+Downloading https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/BmimSYT7Qq6vVXV4Mn6dLw/artifacts/public/build/vocab.spm to /home/ubuntu/tasks/task_169333023023778/fetches/vocab.spm
+Downloading https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/E4_7BLraTAmVphZotTKhog/artifacts/public/build/devset.ru.zst
+Downloading https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/BmimSYT7Qq6vVXV4Mn6dLw/artifacts/public/build/vocab.spm
+https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/ZzvqIeoSQ5C9CBCFyD2IGg/artifacts/public/build/corpus.ru.zst resolved to 2454054 bytes with sha256 be0cc94415c7e9b508058e9cfd9225da89539b2e99d5303ead3e4bdfbf0f7f67 in 1.214s
+https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/ZzvqIeoSQ5C9CBCFyD2IGg/artifacts/public/build/corpus.en.zst resolved to 1665366 bytes with sha256 140571327a019ec53837f089628ab3662a3bc3f52d629914d58b918a23658bb5 in 1.221s
+https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/BmimSYT7Qq6vVXV4Mn6dLw/artifacts/public/build/vocab.spm resolved to 967221 bytes with sha256 7d1146835087617a8550622b0d441055802ba9f4bb17b31d617baa77db8aca10 in 1.236s
+https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/E4_7BLraTAmVphZotTKhog/artifacts/public/build/devset.ru.zst resolved to 186639 bytes with sha256 4a4c6a565f1ca417dc6d051f3dd6c0115715a63e56c250ea4eaf839083ebe3dd in 1.290s
+https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/E4_7BLraTAmVphZotTKhog/artifacts/public/build/devset.en.zst resolved to 134761 bytes with sha256 40051d32e11e143312401c9cc10975d9eb7905005343462011dd651ec0256880 in 1.308s
+https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/VZFMH0-ASnun_eh9CQZUjA/artifacts/public/build/marian.tar.zst resolved to 615645054 bytes with sha256 1040fc3376d11f4f6333a8da11d009e027b9c8d81ac8c04c0398eb114e81cdf4 in 7.663s
+Extracting /home/ubuntu/tasks/task_169333023023778/fetches/marian.tar.zst to /home/ubuntu/tasks/task_169333023023778/fetches
+/home/ubuntu/tasks/task_169333023023778/fetches/marian.tar.zst extracted in 6.562s
+Removing /home/ubuntu/tasks/task_169333023023778/fetches/marian.tar.zst
+PERFHERDER_DATA: {"framework": {"name": "build_metrics"}, "suites": [{"name": "fetch_content", "value": 14.346586303999999, "lowerIsBetter": true, "shouldAlert": false, "subtests": []}]}
+[fetches 2023-08-29T17:31:35.724Z] finished fetching artifacts
+[task 2023-08-29T17:31:35.724Z] executing ['bash', '-c', 'export MARIAN=$MOZ_FETCHES_DIR && $VCS_PATH/pipeline/train/train.sh backward train en ru $MOZ_FETCHES_DIR/corpus $MOZ_FETCHES_DIR/devset $TASK_WORKDIR/artifacts $MOZ_FETCHES_DIR/vocab.spm chrf  --after 500u --disp-freq 10 --save-freq 100 --valid-freq 100']
+[task 2023-08-29T17:31:35.728Z] + set -euo pipefail
+[task 2023-08-29T17:31:35.728Z] + echo '###### Training a model'
+[task 2023-08-29T17:31:35.728Z] ###### Training a model
+[task 2023-08-29T17:31:35.728Z] + model_type=backward
+[task 2023-08-29T17:31:35.728Z] + training_type=train
+[task 2023-08-29T17:31:35.728Z] + src=en
+[task 2023-08-29T17:31:35.728Z] + trg=ru
+[task 2023-08-29T17:31:35.728Z] + train_set_prefix=/home/ubuntu/tasks/task_169333023023778/fetches/corpus
+[task 2023-08-29T17:31:35.728Z] + valid_set_prefix=/home/ubuntu/tasks/task_169333023023778/fetches/devset
+[task 2023-08-29T17:31:35.728Z] + model_dir=/home/ubuntu/tasks/task_169333023023778/artifacts
+[task 2023-08-29T17:31:35.728Z] + vocab=/home/ubuntu/tasks/task_169333023023778/fetches/vocab.spm
+[task 2023-08-29T17:31:35.728Z] + best_model_metric=chrf
+[task 2023-08-29T17:31:35.728Z] + extra_params=("${@:10}")
+[task 2023-08-29T17:31:35.728Z] + ARTIFACT_EXT=zst
+[task 2023-08-29T17:31:35.728Z] + test -v GPUS
+[task 2023-08-29T17:31:35.728Z] + test -v MARIAN
+[task 2023-08-29T17:31:35.728Z] + test -v WORKSPACE
+[task 2023-08-29T17:31:35.728Z] ++ dirname ./checkouts/vcs/pipeline/train/train.sh
+[task 2023-08-29T17:31:35.730Z] + cd ./checkouts/vcs/pipeline/train
+[task 2023-08-29T17:31:35.730Z] + mkdir -p /home/ubuntu/tasks/task_169333023023778/artifacts/tmp
+[task 2023-08-29T17:31:35.732Z] + all_model_metrics=(chrf ce-mean-words bleu-detok)
+[task 2023-08-29T17:31:35.732Z] + echo '### Training /home/ubuntu/tasks/task_169333023023778/artifacts'
+[task 2023-08-29T17:31:35.732Z] ### Training /home/ubuntu/tasks/task_169333023023778/artifacts
+[task 2023-08-29T17:31:35.732Z] + '[' zst = zst ']'
+[task 2023-08-29T17:31:35.732Z] + zstdmt --rm -d /home/ubuntu/tasks/task_169333023023778/fetches/corpus.en.zst
+[task 2023-08-29T17:31:35.758Z] 
+[task 2023-08-29T17:31:35.777Z] etches/corpus.en.zst : 0 MB...     
+[task 2023-08-29T17:31:35.777Z]                                                                                
+[task 2023-08-29T17:31:35.777Z] /home/ubuntu/tasks/task_169333023023778/fetches/corpus.en.zst: 4893731 bytes 
+[task 2023-08-29T17:31:35.778Z] + zstdmt --rm -d /home/ubuntu/tasks/task_169333023023778/fetches/corpus.ru.zst
+[task 2023-08-29T17:31:35.779Z] 
+[task 2023-08-29T17:31:35.809Z] etches/corpus.ru.zst : 0 MB...     
+[task 2023-08-29T17:31:35.809Z]                                                                                
+[task 2023-08-29T17:31:35.809Z] /home/ubuntu/tasks/task_169333023023778/fetches/corpus.ru.zst: 9146473 bytes 
+[task 2023-08-29T17:31:35.810Z] + zstdmt --rm -d /home/ubuntu/tasks/task_169333023023778/fetches/devset.en.zst
+[task 2023-08-29T17:31:35.812Z] 
+[task 2023-08-29T17:31:35.813Z] etches/devset.en.zst : 0 MB...     
+[task 2023-08-29T17:31:35.813Z]                                                                                
+[task 2023-08-29T17:31:35.813Z] /home/ubuntu/tasks/task_169333023023778/fetches/devset.en.zst: 352487 bytes 
+[task 2023-08-29T17:31:35.814Z] + zstdmt --rm -d /home/ubuntu/tasks/task_169333023023778/fetches/devset.ru.zst
+[task 2023-08-29T17:31:35.815Z] 
+[task 2023-08-29T17:31:35.818Z] etches/devset.ru.zst : 0 MB...     
+[task 2023-08-29T17:31:35.818Z]                                                                                
+[task 2023-08-29T17:31:35.818Z] /home/ubuntu/tasks/task_169333023023778/fetches/devset.ru.zst: 639165 bytes 
+[task 2023-08-29T17:31:35.818Z] + ARTIFACT_EXT=
+[task 2023-08-29T17:31:35.819Z] + /home/ubuntu/tasks/task_169333023023778/fetches/marian --model /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz -c configs/model/backward.yml configs/training/backward.train.yml --train-sets /home/ubuntu/tasks/task_169333023023778/fetches/corpus.en /home/ubuntu/tasks/task_169333023023778/fetches/corpus.ru -T /home/ubuntu/tasks/task_169333023023778/artifacts/tmp --shuffle-in-ram --vocabs /home/ubuntu/tasks/task_169333023023778/fetches/vocab.spm /home/ubuntu/tasks/task_169333023023778/fetches/vocab.spm -w 8000 --devices 0 1 2 3 --sharding local --sync-sgd --valid-metrics chrf ce-mean-words bleu-detok --valid-sets /home/ubuntu/tasks/task_169333023023778/fetches/devset.en /home/ubuntu/tasks/task_169333023023778/fetches/devset.ru --valid-translation-output /home/ubuntu/tasks/task_169333023023778/artifacts/devset.out --quiet-translation --overwrite --keep-best --log /home/ubuntu/tasks/task_169333023023778/artifacts/train.log --valid-log /home/ubuntu/tasks/task_169333023023778/artifacts/valid.log --after 500u --disp-freq 10 --save-freq 100 --valid-freq 100
+[task 2023-08-29T17:31:38.616Z] [2023-08-29 17:31:38] [marian] Marian v1.10.25; e8a1a25 2021-12-07 17:47:33 +0000
+[task 2023-08-29T17:31:38.616Z] [2023-08-29 17:31:38] [marian] Running on translations-3-b-linux-v100-gpu-4-cenp5xb5q4s10slfyr66gg as process 1410 with command line:
+[task 2023-08-29T17:31:38.616Z] [2023-08-29 17:31:38] [marian] /home/ubuntu/tasks/task_169333023023778/fetches/marian --model /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz -c configs/model/backward.yml configs/training/backward.train.yml --train-sets /home/ubuntu/tasks/task_169333023023778/fetches/corpus.en /home/ubuntu/tasks/task_169333023023778/fetches/corpus.ru -T /home/ubuntu/tasks/task_169333023023778/artifacts/tmp --shuffle-in-ram --vocabs /home/ubuntu/tasks/task_169333023023778/fetches/vocab.spm /home/ubuntu/tasks/task_169333023023778/fetches/vocab.spm -w 8000 --devices 0 1 2 3 --sharding local --sync-sgd --valid-metrics chrf ce-mean-words bleu-detok --valid-sets /home/ubuntu/tasks/task_169333023023778/fetches/devset.en /home/ubuntu/tasks/task_169333023023778/fetches/devset.ru --valid-translation-output /home/ubuntu/tasks/task_169333023023778/artifacts/devset.out --quiet-translation --overwrite --keep-best --log /home/ubuntu/tasks/task_169333023023778/artifacts/train.log --valid-log /home/ubuntu/tasks/task_169333023023778/artifacts/valid.log --after 500u --disp-freq 10 --save-freq 100 --valid-freq 100
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] after: 500u
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] after-batches: 0
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] after-epochs: 0
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] all-caps-every: 0
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] allow-unk: false
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] authors: false
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] beam-size: 12
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] bert-class-symbol: "[CLS]"
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] bert-mask-symbol: "[MASK]"
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] bert-masking-fraction: 0.15
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] bert-sep-symbol: "[SEP]"
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] bert-train-type-embeddings: true
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] bert-type-vocab-size: 2
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] build-info: ""
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] check-gradient-nan: false
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] check-nan: false
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] cite: false
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] clip-norm: 1
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] cost-scaling:
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config]   []
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] cost-type: ce-mean-words
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] cpu-threads: 0
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] data-weighting: ""
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] data-weighting-type: sentence
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] dec-cell: gru
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] dec-cell-base-depth: 2
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] dec-cell-high-depth: 1
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] dec-depth: 1
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] devices:
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config]   - 0
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config]   - 1
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config]   - 2
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config]   - 3
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] dim-emb: 512
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] dim-rnn: 1024
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] dim-vocabs:
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config]   - 32000
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config]   - 32000
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] disp-first: 0
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] disp-freq: 10
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] disp-label-counts: true
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] dropout-rnn: 0
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] dropout-src: 0
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] dropout-trg: 0
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] dump-config: ""
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] dynamic-gradient-scaling:
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config]   []
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] early-stopping: 5
+[task 2023-08-29T17:31:38.618Z] [2023-08-29 17:31:38] [config] early-stopping-on: first
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] embedding-fix-src: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] embedding-fix-trg: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] embedding-normalization: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] embedding-vectors:
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config]   []
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] enc-cell: gru
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] enc-cell-depth: 1
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] enc-depth: 1
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] enc-type: bidirectional
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] english-title-case-every: 0
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] exponential-smoothing: True
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] factor-weight: 1
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] factors-combine: sum
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] factors-dim-emb: 0
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] gradient-checkpointing: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] gradient-norm-average-window: 100
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] guided-alignment: none
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] guided-alignment-cost: mse
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] guided-alignment-weight: 0.1
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] ignore-model-config: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] input-types:
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config]   []
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] interpolate-env-vars: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] keep-best: true
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] label-smoothing: 0
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] layer-normalization: True
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] learn-rate: 0.0001
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] lemma-dependency: ""
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] lemma-dim-emb: 0
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] log: /home/ubuntu/tasks/task_169333023023778/artifacts/train.log
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] log-level: info
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] log-time-zone: ""
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] logical-epoch:
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config]   - 1e
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config]   - 0
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] lr-decay: 0
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] lr-decay-freq: 50000
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] lr-decay-inv-sqrt:
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config]   - 0
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] lr-decay-repeat-warmup: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] lr-decay-reset-optimizer: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] lr-decay-start:
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config]   - 10
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config]   - 1
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] lr-decay-strategy: epoch+stalled
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] lr-report: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] lr-warmup: 0
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] lr-warmup-at-reload: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] lr-warmup-cycle: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] lr-warmup-start-rate: 0
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] max-length: 100
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] max-length-crop: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] max-length-factor: 3
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] maxi-batch: 1000
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] maxi-batch-sort: trg
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] mini-batch: 64
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] mini-batch-fit: True
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] mini-batch-fit-step: 10
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] mini-batch-round-up: true
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] mini-batch-track-lr: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] mini-batch-warmup: 0
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] mini-batch-words: 0
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] mini-batch-words-ref: 0
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] model: /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] multi-loss-type: sum
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] n-best: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] no-nccl: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] no-reload: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] no-restore-corpus: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] normalize: 1
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] normalize-gradient: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] num-devices: 0
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] optimizer: adam
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] optimizer-delay: 1
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] optimizer-params:
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config]   []
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] output-omit-bias: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] overwrite: true
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] precision:
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config]   - float32
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config]   - float32
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] pretrained-model: ""
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] quantize-biases: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] quantize-bits: 0
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] quantize-log-based: false
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] quantize-optimization-steps: 0
+[task 2023-08-29T17:31:38.619Z] [2023-08-29 17:31:38] [config] quiet: false
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] quiet-translation: true
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] relative-paths: false
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] right-left: false
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] save-freq: 100
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] seed: 0
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] sentencepiece-alphas:
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config]   []
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] sentencepiece-max-lines: 2000000
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] sentencepiece-options: ""
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] sharding: local
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] shuffle: data
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] shuffle-in-ram: true
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] sigterm: save-and-exit
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] skip: false
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] sqlite: ""
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] sqlite-drop: false
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] sync-freq: 200u
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] sync-sgd: true
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] tempdir: /home/ubuntu/tasks/task_169333023023778/artifacts/tmp
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] tied-embeddings: false
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] tied-embeddings-all: True
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] tied-embeddings-src: false
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] train-embedder-rank:
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config]   []
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] train-sets:
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config]   - /home/ubuntu/tasks/task_169333023023778/fetches/corpus.en
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config]   - /home/ubuntu/tasks/task_169333023023778/fetches/corpus.ru
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-aan-activation: swish
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-aan-depth: 2
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-aan-nogate: false
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-decoder-autoreg: self-attention
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-depth-scaling: false
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-dim-aan: 2048
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-dim-ffn: 2048
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-dropout: 0
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-dropout-attention: 0
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-dropout-ffn: 0
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-ffn-activation: swish
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-ffn-depth: 2
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-guided-alignment-layer: last
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-heads: 8
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-no-projection: false
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-pool: false
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-postprocess: dan
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-postprocess-emb: d
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-postprocess-top: ""
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-preprocess: ""
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-tied-layers:
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config]   []
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] transformer-train-position-embeddings: false
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] tsv: false
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] tsv-fields: 0
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] type: s2s
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] ulr: false
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] ulr-dim-emb: 0
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] ulr-dropout: 0
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] ulr-keys-vectors: ""
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] ulr-query-vectors: ""
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] ulr-softmax-temperature: 1
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] ulr-trainable-transformation: false
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] unlikelihood-loss: false
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] valid-freq: 100
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] valid-log: /home/ubuntu/tasks/task_169333023023778/artifacts/valid.log
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] valid-max-length: 1000
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] valid-metrics:
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config]   - chrf
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config]   - ce-mean-words
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config]   - bleu-detok
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] valid-mini-batch: 64
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] valid-reset-stalled: false
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] valid-script-args:
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config]   []
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] valid-script-path: ""
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] valid-sets:
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config]   - /home/ubuntu/tasks/task_169333023023778/fetches/devset.en
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config]   - /home/ubuntu/tasks/task_169333023023778/fetches/devset.ru
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] valid-translation-output: /home/ubuntu/tasks/task_169333023023778/artifacts/devset.out
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] vocabs:
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config]   - /home/ubuntu/tasks/task_169333023023778/fetches/vocab.spm
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config]   - /home/ubuntu/tasks/task_169333023023778/fetches/vocab.spm
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] word-penalty: 0
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] word-scores: false
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] workspace: 8000
+[task 2023-08-29T17:31:38.620Z] [2023-08-29 17:31:38] [config] Model is being created with Marian v1.10.25; e8a1a25 2021-12-07 17:47:33 +0000
+[task 2023-08-29T17:31:38.623Z] [2023-08-29 17:31:38] Using synchronous SGD
+[task 2023-08-29T17:31:38.623Z] [2023-08-29 17:31:38] [comm] Compiled without MPI support. Running as a single process on translations-3-b-linux-v100-gpu-4-cenp5xb5q4s10slfyr66gg
+[task 2023-08-29T17:31:38.623Z] [2023-08-29 17:31:38] Synced seed 1693330298
+[task 2023-08-29T17:31:38.623Z] [2023-08-29 17:31:38] [data] Loading SentencePiece vocabulary from file /home/ubuntu/tasks/task_169333023023778/fetches/vocab.spm
+[task 2023-08-29T17:31:38.699Z] [2023-08-29 17:31:38] [data] Setting vocabulary size for input 0 to 32,000
+[task 2023-08-29T17:31:38.699Z] [2023-08-29 17:31:38] [data] Loading SentencePiece vocabulary from file /home/ubuntu/tasks/task_169333023023778/fetches/vocab.spm
+[task 2023-08-29T17:31:38.769Z] [2023-08-29 17:31:38] [data] Setting vocabulary size for input 1 to 32,000
+[task 2023-08-29T17:31:38.770Z] [2023-08-29 17:31:38] [batching] Collecting statistics for batch fitting with step size 10
+[task 2023-08-29T17:31:41.617Z] [2023-08-29 17:31:41] [memory] Extending reserved space to 8064 MB (device gpu0)
+[task 2023-08-29T17:31:41.745Z] [2023-08-29 17:31:41] [memory] Extending reserved space to 8064 MB (device gpu1)
+[task 2023-08-29T17:31:41.858Z] [2023-08-29 17:31:41] [memory] Extending reserved space to 8064 MB (device gpu2)
+[task 2023-08-29T17:31:41.989Z] [2023-08-29 17:31:41] [memory] Extending reserved space to 8064 MB (device gpu3)
+[task 2023-08-29T17:31:42.012Z] [2023-08-29 17:31:42] [comm] Using NCCL 2.8.3 for GPU communication
+[task 2023-08-29T17:31:42.012Z] [2023-08-29 17:31:42] [comm] Using global sharding
+[task 2023-08-29T17:31:42.523Z] [2023-08-29 17:31:42] [comm] NCCLCommunicators constructed successfully
+[task 2023-08-29T17:31:42.523Z] [2023-08-29 17:31:42] [training] Using 4 GPUs
+[task 2023-08-29T17:31:42.526Z] [2023-08-29 17:31:42] [logits] Applying loss function for 1 factor(s)
+[task 2023-08-29T17:31:42.526Z] [2023-08-29 17:31:42] [memory] Reserving 191 MB, device gpu0
+[task 2023-08-29T17:31:44.795Z] [2023-08-29 17:31:44] [gpu] 16-bit TensorCores enabled for float32 matrix operations
+[task 2023-08-29T17:31:45.912Z] [2023-08-29 17:31:45] [memory] Reserving 191 MB, device gpu0
+[task 2023-08-29T17:32:10.154Z] [2023-08-29 17:32:10] [batching] Done. Typical MB size is 59,268 target words
+[task 2023-08-29T17:32:10.285Z] [2023-08-29 17:32:10] [memory] Extending reserved space to 8064 MB (device gpu0)
+[task 2023-08-29T17:32:10.454Z] [2023-08-29 17:32:10] [memory] Extending reserved space to 8064 MB (device gpu1)
+[task 2023-08-29T17:32:10.494Z] [2023-08-29 17:32:10] [memory] Extending reserved space to 8064 MB (device gpu2)
+[task 2023-08-29T17:32:10.520Z] [2023-08-29 17:32:10] [memory] Extending reserved space to 8064 MB (device gpu3)
+[task 2023-08-29T17:32:10.552Z] [2023-08-29 17:32:10] [comm] Using NCCL 2.8.3 for GPU communication
+[task 2023-08-29T17:32:10.552Z] [2023-08-29 17:32:10] [comm] Using global sharding
+[task 2023-08-29T17:32:10.748Z] [2023-08-29 17:32:10] [comm] NCCLCommunicators constructed successfully
+[task 2023-08-29T17:32:10.748Z] [2023-08-29 17:32:10] [training] Using 4 GPUs
+[task 2023-08-29T17:32:10.748Z] [2023-08-29 17:32:10] Training started
+[task 2023-08-29T17:32:10.749Z] [2023-08-29 17:32:10] [data] Shuffling data
+[task 2023-08-29T17:32:10.795Z] [2023-08-29 17:32:10] [data] Done reading 59,069 sentences
+[task 2023-08-29T17:32:10.796Z] [2023-08-29 17:32:10] [data] Done shuffling 59,069 sentences (cached in RAM)
+[task 2023-08-29T17:32:13.740Z] [2023-08-29 17:32:13] [training] Batches are processed as 1 process(es) x 4 devices/process
+[task 2023-08-29T17:32:13.743Z] [2023-08-29 17:32:13] [memory] Reserving 191 MB, device gpu1
+[task 2023-08-29T17:32:13.743Z] [2023-08-29 17:32:13] [memory] Reserving 191 MB, device gpu3
+[task 2023-08-29T17:32:13.743Z] [2023-08-29 17:32:13] [memory] Reserving 191 MB, device gpu0
+[task 2023-08-29T17:32:13.743Z] [2023-08-29 17:32:13] [memory] Reserving 191 MB, device gpu2
+[task 2023-08-29T17:32:13.794Z] [2023-08-29 17:32:13] [memory] Reserving 191 MB, device gpu0
+[task 2023-08-29T17:32:13.860Z] [2023-08-29 17:32:13] [memory] Reserving 191 MB, device gpu1
+[task 2023-08-29T17:32:13.895Z] [2023-08-29 17:32:13] [memory] Reserving 191 MB, device gpu2
+[task 2023-08-29T17:32:13.925Z] [2023-08-29 17:32:13] [memory] Reserving 191 MB, device gpu3
+[task 2023-08-29T17:32:14.621Z] [2023-08-29 17:32:14] Allocating memory for general optimizer shards
+[task 2023-08-29T17:32:14.621Z] [2023-08-29 17:32:14] Parameter type float32, optimization type float32, casting types false
+[task 2023-08-29T17:32:14.621Z] [2023-08-29 17:32:14] [memory] Reserving 47 MB, device gpu2
+[task 2023-08-29T17:32:14.621Z] [2023-08-29 17:32:14] [memory] Reserving 47 MB, device gpu1
+[task 2023-08-29T17:32:14.621Z] [2023-08-29 17:32:14] [memory] Reserving 47 MB, device gpu3
+[task 2023-08-29T17:32:14.621Z] [2023-08-29 17:32:14] [memory] Reserving 47 MB, device gpu0
+[task 2023-08-29T17:32:14.626Z] [2023-08-29 17:32:14] Allocating memory for Adam-specific shards
+[task 2023-08-29T17:32:14.626Z] [2023-08-29 17:32:14] [memory] Reserving 95 MB, device gpu2
+[task 2023-08-29T17:32:14.627Z] [2023-08-29 17:32:14] [memory] Reserving 95 MB, device gpu3
+[task 2023-08-29T17:32:14.627Z] [2023-08-29 17:32:14] [memory] Reserving 95 MB, device gpu0
+[task 2023-08-29T17:32:14.627Z] [2023-08-29 17:32:14] [memory] Reserving 95 MB, device gpu1
+[task 2023-08-29T17:32:16.721Z] [2023-08-29 17:32:16] Ep. 1 : Up. 10 : Sen. 16,087 : Cost 9.45783615 : Time 6.48s : 48219.74 words/s : gNorm 2.0783
+[task 2023-08-29T17:32:18.903Z] [2023-08-29 17:32:18] Ep. 1 : Up. 20 : Sen. 32,703 : Cost 8.34833908 : Time 2.18s : 141864.30 words/s : gNorm 1.5718
+[task 2023-08-29T17:32:21.769Z] [2023-08-29 17:32:21] Ep. 1 : Up. 30 : Sen. 46,565 : Cost 7.98280764 : Time 2.87s : 121936.01 words/s : gNorm 1.3875
+[task 2023-08-29T17:32:23.861Z] [2023-08-29 17:32:23] Seen 58,929 samples
+[task 2023-08-29T17:32:23.861Z] [2023-08-29 17:32:23] Starting data epoch 2 in logical epoch 2
+[task 2023-08-29T17:32:23.861Z] [2023-08-29 17:32:23] [data] Shuffling data
+[task 2023-08-29T17:32:23.862Z] [2023-08-29 17:32:23] [data] Done shuffling 59,069 sentences (cached in RAM)
+[task 2023-08-29T17:32:26.981Z] [2023-08-29 17:32:26] Ep. 2 : Up. 40 : Sen. 4,152 : Cost 7.44025898 : Time 5.21s : 65215.23 words/s : gNorm 1.2907
+[task 2023-08-29T17:32:29.489Z] [2023-08-29 17:32:29] Ep. 2 : Up. 50 : Sen. 20,823 : Cost 7.01155901 : Time 2.51s : 127160.01 words/s : gNorm 1.2699
+[task 2023-08-29T17:32:31.794Z] [2023-08-29 17:32:31] Ep. 2 : Up. 60 : Sen. 37,575 : Cost 6.74759531 : Time 2.30s : 144133.96 words/s : gNorm 1.1141
+[task 2023-08-29T17:32:34.112Z] [2023-08-29 17:32:34] Ep. 2 : Up. 70 : Sen. 52,241 : Cost 6.54671240 : Time 2.32s : 136204.85 words/s : gNorm 1.0484
+[task 2023-08-29T17:32:35.936Z] [2023-08-29 17:32:35] Seen 58,929 samples
+[task 2023-08-29T17:32:35.936Z] [2023-08-29 17:32:35] Starting data epoch 3 in logical epoch 3
+[task 2023-08-29T17:32:35.936Z] [2023-08-29 17:32:35] [data] Shuffling data
+[task 2023-08-29T17:32:35.937Z] [2023-08-29 17:32:35] [data] Done shuffling 59,069 sentences (cached in RAM)
+[task 2023-08-29T17:32:39.672Z] [2023-08-29 17:32:39] Ep. 3 : Up. 80 : Sen. 5,540 : Cost 6.45380640 : Time 5.56s : 61122.01 words/s : gNorm 0.9815
+[task 2023-08-29T17:32:42.486Z] [2023-08-29 17:32:42] Ep. 3 : Up. 90 : Sen. 18,164 : Cost 6.23551321 : Time 2.81s : 116747.66 words/s : gNorm 0.9429
+[task 2023-08-29T17:32:44.818Z] [2023-08-29 17:32:44] Ep. 3 : Up. 100 : Sen. 33,721 : Cost 6.03385878 : Time 2.33s : 142664.86 words/s : gNorm 0.8967
+[task 2023-08-29T17:32:44.822Z] [2023-08-29 17:32:44] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz
+[task 2023-08-29T17:32:46.934Z] [2023-08-29 17:32:46] Saving Adam parameters
+[task 2023-08-29T17:32:50.150Z] [2023-08-29 17:32:50] [training] Saving training checkpoint to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz and /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.optimizer.npz
+[task 2023-08-29T17:32:53.258Z] [2023-08-29 17:32:53] [valid] First sentence's tokens as scored:
+[task 2023-08-29T17:32:53.258Z] [2023-08-29 17:32:53] [valid] Decoding validation set with SentencePieceVocab for scoring
+[task 2023-08-29T17:32:53.259Z] [2023-08-29 17:32:53] [valid]   Hyp: Д л я — э т о т .
+[task 2023-08-29T17:32:53.260Z] [2023-08-29 17:32:53] [valid]   Ref: А н г л и й с к и й а с т р о н о м Д ж е р е м а й я Х о р р о к с ( J e r e m i a h H o r r o c k s ) н а б л ю д а л п р о х о ж д е н и е В е н е р ы ч е р е з н е с к о л ь к о л е т ( а и м е н н о в 1 6 3 9 г о д у ) .
+[task 2023-08-29T17:32:53.285Z] [2023-08-29 17:32:53] [valid] References contain unknown word, metric scores may be inaccurate
+[task 2023-08-29T17:33:01.985Z] [2023-08-29 17:33:01] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.best-chrf.npz
+[task 2023-08-29T17:33:03.182Z] [2023-08-29 17:33:03] [valid] Ep. 3 : Up. 100 : chrf : 2.07038 : new best
+[task 2023-08-29T17:33:03.810Z] [2023-08-29 17:33:03] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.best-ce-mean-words.npz
+[task 2023-08-29T17:33:04.998Z] [2023-08-29 17:33:04] [valid] Ep. 3 : Up. 100 : ce-mean-words : 7.22797 : new best
+[task 2023-08-29T17:33:13.926Z] [2023-08-29 17:33:13] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.best-bleu-detok.npz
+[task 2023-08-29T17:33:15.135Z] [2023-08-29 17:33:15] [valid] Ep. 3 : Up. 100 : bleu-detok : 0 : new best
+[task 2023-08-29T17:33:17.442Z] [2023-08-29 17:33:17] Ep. 3 : Up. 110 : Sen. 53,882 : Cost 5.88645744 : Time 32.62s : 10467.11 words/s : gNorm 1.1135
+[task 2023-08-29T17:33:18.296Z] [2023-08-29 17:33:18] Seen 58,929 samples
+[task 2023-08-29T17:33:18.296Z] [2023-08-29 17:33:18] Starting data epoch 4 in logical epoch 4
+[task 2023-08-29T17:33:18.296Z] [2023-08-29 17:33:18] [data] Shuffling data
+[task 2023-08-29T17:33:18.297Z] [2023-08-29 17:33:18] [data] Done shuffling 59,069 sentences (cached in RAM)
+[task 2023-08-29T17:33:22.424Z] [2023-08-29 17:33:22] Ep. 4 : Up. 120 : Sen. 8,682 : Cost 5.93581009 : Time 4.98s : 60205.42 words/s : gNorm 1.1973
+[task 2023-08-29T17:33:24.911Z] [2023-08-29 17:33:24] Ep. 4 : Up. 130 : Sen. 25,827 : Cost 5.72188568 : Time 2.49s : 136218.22 words/s : gNorm 1.0801
+[task 2023-08-29T17:33:27.380Z] [2023-08-29 17:33:27] Ep. 4 : Up. 140 : Sen. 41,011 : Cost 5.73020506 : Time 2.47s : 135723.98 words/s : gNorm 0.9959
+[task 2023-08-29T17:33:29.844Z] [2023-08-29 17:33:29] Ep. 4 : Up. 150 : Sen. 57,201 : Cost 5.63094139 : Time 2.46s : 126489.35 words/s : gNorm 1.1255
+[task 2023-08-29T17:33:30.436Z] [2023-08-29 17:33:30] Seen 58,929 samples
+[task 2023-08-29T17:33:30.436Z] [2023-08-29 17:33:30] Starting data epoch 5 in logical epoch 5
+[task 2023-08-29T17:33:30.436Z] [2023-08-29 17:33:30] [data] Shuffling data
+[task 2023-08-29T17:33:30.437Z] [2023-08-29 17:33:30] [data] Done shuffling 59,069 sentences (cached in RAM)
+[task 2023-08-29T17:33:35.268Z] [2023-08-29 17:33:35] Ep. 5 : Up. 160 : Sen. 11,180 : Cost 5.69442463 : Time 5.42s : 63317.25 words/s : gNorm 1.0882
+[task 2023-08-29T17:33:38.151Z] [2023-08-29 17:33:38] Ep. 5 : Up. 170 : Sen. 24,825 : Cost 5.60522366 : Time 2.88s : 125887.32 words/s : gNorm 1.0159
+[task 2023-08-29T17:33:40.466Z] [2023-08-29 17:33:40] Ep. 5 : Up. 180 : Sen. 43,813 : Cost 5.33665562 : Time 2.31s : 139874.36 words/s : gNorm 1.1026
+[task 2023-08-29T17:33:42.543Z] [2023-08-29 17:33:42] Ep. 5 : Up. 190 : Sen. 58,929 : Cost 5.37164307 : Time 2.08s : 136174.57 words/s : gNorm 1.2524
+[task 2023-08-29T17:33:42.544Z] [2023-08-29 17:33:42] Seen 58,929 samples
+[task 2023-08-29T17:33:42.544Z] [2023-08-29 17:33:42] Starting data epoch 6 in logical epoch 6
+[task 2023-08-29T17:33:42.544Z] [2023-08-29 17:33:42] [data] Shuffling data
+[task 2023-08-29T17:33:42.544Z] [2023-08-29 17:33:42] [data] Done shuffling 59,069 sentences (cached in RAM)
+[task 2023-08-29T17:33:47.800Z] [2023-08-29 17:33:47] Ep. 6 : Up. 200 : Sen. 15,036 : Cost 5.41380548 : Time 5.26s : 64258.04 words/s : gNorm 1.2332
+[task 2023-08-29T17:33:47.804Z] [2023-08-29 17:33:47] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz
+[task 2023-08-29T17:33:51.345Z] [2023-08-29 17:33:51] Saving Adam parameters
+[task 2023-08-29T17:33:54.580Z] [2023-08-29 17:33:54] [training] Saving training checkpoint to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz and /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.optimizer.npz
+[task 2023-08-29T17:34:09.153Z] [2023-08-29 17:34:09] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.best-chrf.npz
+[task 2023-08-29T17:34:11.798Z] [2023-08-29 17:34:11] [valid] Ep. 6 : Up. 200 : chrf : 4.40761 : new best
+[task 2023-08-29T17:34:12.439Z] [2023-08-29 17:34:12] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.best-ce-mean-words.npz
+[task 2023-08-29T17:34:15.076Z] [2023-08-29 17:34:15] [valid] Ep. 6 : Up. 200 : ce-mean-words : 6.89683 : new best
+[task 2023-08-29T17:34:20.150Z] [2023-08-29 17:34:20] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.best-bleu-detok.npz
+[task 2023-08-29T17:34:22.792Z] [2023-08-29 17:34:22] [valid] Ep. 6 : Up. 200 : bleu-detok : 0.0524805 : new best
+[task 2023-08-29T17:34:25.420Z] [2023-08-29 17:34:25] Ep. 6 : Up. 210 : Sen. 30,423 : Cost 5.30031824 : Time 37.62s : 8794.80 words/s : gNorm 1.1524
+[task 2023-08-29T17:34:27.777Z] [2023-08-29 17:34:27] Ep. 6 : Up. 220 : Sen. 45,737 : Cost 5.24578285 : Time 2.36s : 140471.04 words/s : gNorm 1.1316
+[task 2023-08-29T17:34:29.639Z] [2023-08-29 17:34:29] Seen 58,929 samples
+[task 2023-08-29T17:34:29.639Z] [2023-08-29 17:34:29] Starting data epoch 7 in logical epoch 7
+[task 2023-08-29T17:34:29.639Z] [2023-08-29 17:34:29] [data] Shuffling data
+[task 2023-08-29T17:34:29.640Z] [2023-08-29 17:34:29] [data] Done shuffling 59,069 sentences (cached in RAM)
+[task 2023-08-29T17:34:32.703Z] [2023-08-29 17:34:32] Ep. 7 : Up. 230 : Sen. 3,168 : Cost 5.14712334 : Time 4.93s : 61157.23 words/s : gNorm 1.1447
+[task 2023-08-29T17:34:35.022Z] [2023-08-29 17:34:35] Ep. 7 : Up. 240 : Sen. 20,620 : Cost 5.04944658 : Time 2.32s : 144359.28 words/s : gNorm 1.0415
+[task 2023-08-29T17:34:37.252Z] [2023-08-29 17:34:37] Ep. 7 : Up. 250 : Sen. 36,119 : Cost 5.08129740 : Time 2.23s : 138577.44 words/s : gNorm 1.1024
+[task 2023-08-29T17:34:40.267Z] [2023-08-29 17:34:40] Ep. 7 : Up. 260 : Sen. 47,121 : Cost 5.23201656 : Time 3.02s : 114569.86 words/s : gNorm 1.0726
+[task 2023-08-29T17:34:41.690Z] [2023-08-29 17:34:41] Seen 58,929 samples
+[task 2023-08-29T17:34:41.691Z] [2023-08-29 17:34:41] Starting data epoch 8 in logical epoch 8
+[task 2023-08-29T17:34:41.691Z] [2023-08-29 17:34:41] [data] Shuffling data
+[task 2023-08-29T17:34:41.692Z] [2023-08-29 17:34:41] [data] Done shuffling 59,069 sentences (cached in RAM)
+[task 2023-08-29T17:34:45.249Z] [2023-08-29 17:34:45] Ep. 8 : Up. 270 : Sen. 7,416 : Cost 4.87663746 : Time 4.98s : 65639.86 words/s : gNorm 1.1363
+[task 2023-08-29T17:34:47.648Z] [2023-08-29 17:34:47] Ep. 8 : Up. 280 : Sen. 22,112 : Cost 4.94530010 : Time 2.40s : 138078.86 words/s : gNorm 1.1030
+[task 2023-08-29T17:34:50.484Z] [2023-08-29 17:34:50] Ep. 8 : Up. 290 : Sen. 35,792 : Cost 5.00729084 : Time 2.84s : 121367.48 words/s : gNorm 1.1703
+[task 2023-08-29T17:34:52.760Z] [2023-08-29 17:34:52] Ep. 8 : Up. 300 : Sen. 51,357 : Cost 4.87690496 : Time 2.28s : 134393.21 words/s : gNorm 1.2256
+[task 2023-08-29T17:34:52.764Z] [2023-08-29 17:34:52] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz
+[task 2023-08-29T17:34:56.306Z] [2023-08-29 17:34:56] Saving Adam parameters
+[task 2023-08-29T17:34:59.509Z] [2023-08-29 17:34:59] [training] Saving training checkpoint to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz and /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.optimizer.npz
+[task 2023-08-29T17:35:15.360Z] [2023-08-29 17:35:15] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.best-chrf.npz
+[task 2023-08-29T17:35:17.924Z] [2023-08-29 17:35:17] [valid] Ep. 8 : Up. 300 : chrf : 9.1483 : new best
+[task 2023-08-29T17:35:18.546Z] [2023-08-29 17:35:18] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.best-ce-mean-words.npz
+[task 2023-08-29T17:35:21.062Z] [2023-08-29 17:35:21] [valid] Ep. 8 : Up. 300 : ce-mean-words : 6.666 : new best
+[task 2023-08-29T17:35:27.410Z] [2023-08-29 17:35:27] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.best-bleu-detok.npz
+[task 2023-08-29T17:35:30.082Z] [2023-08-29 17:35:30] [valid] Ep. 8 : Up. 300 : bleu-detok : 0.424367 : new best
+[task 2023-08-29T17:35:31.110Z] [2023-08-29 17:35:31] Seen 58,929 samples
+[task 2023-08-29T17:35:31.110Z] [2023-08-29 17:35:31] Starting data epoch 9 in logical epoch 9
+[task 2023-08-29T17:35:31.110Z] [2023-08-29 17:35:31] [data] Shuffling data
+[task 2023-08-29T17:35:31.111Z] [2023-08-29 17:35:31] [data] Done shuffling 59,069 sentences (cached in RAM)
+[task 2023-08-29T17:35:35.166Z] [2023-08-29 17:35:35] Ep. 9 : Up. 310 : Sen. 9,840 : Cost 4.72674179 : Time 42.41s : 7668.15 words/s : gNorm 1.2067
+[task 2023-08-29T17:35:37.467Z] [2023-08-29 17:35:37] Ep. 9 : Up. 320 : Sen. 26,808 : Cost 4.72901249 : Time 2.30s : 139232.62 words/s : gNorm 1.2952
+[task 2023-08-29T17:35:40.119Z] [2023-08-29 17:35:40] Ep. 9 : Up. 330 : Sen. 41,450 : Cost 4.85835505 : Time 2.65s : 125882.79 words/s : gNorm 1.4180
+[task 2023-08-29T17:35:42.756Z] [2023-08-29 17:35:42] Ep. 9 : Up. 340 : Sen. 55,465 : Cost 4.82634115 : Time 2.64s : 126148.26 words/s : gNorm 1.3448
+[task 2023-08-29T17:35:43.193Z] [2023-08-29 17:35:43] Seen 58,929 samples
+[task 2023-08-29T17:35:43.193Z] [2023-08-29 17:35:43] Starting data epoch 10 in logical epoch 10
+[task 2023-08-29T17:35:43.193Z] [2023-08-29 17:35:43] [data] Shuffling data
+[task 2023-08-29T17:35:43.194Z] [2023-08-29 17:35:43] [data] Done shuffling 59,069 sentences (cached in RAM)
+[task 2023-08-29T17:35:47.616Z] [2023-08-29 17:35:47] Ep. 10 : Up. 350 : Sen. 13,007 : Cost 4.59679604 : Time 4.86s : 61178.95 words/s : gNorm 1.4039
+[task 2023-08-29T17:35:50.027Z] [2023-08-29 17:35:50] Ep. 10 : Up. 360 : Sen. 26,885 : Cost 4.65966797 : Time 2.41s : 133709.16 words/s : gNorm 1.3133
+[task 2023-08-29T17:35:52.645Z] [2023-08-29 17:35:52] Ep. 10 : Up. 370 : Sen. 45,032 : Cost 4.52348661 : Time 2.62s : 129960.78 words/s : gNorm 1.2443
+[task 2023-08-29T17:35:55.326Z] [2023-08-29 17:35:55] Ep. 10 : Up. 380 : Sen. 58,929 : Cost 4.69770002 : Time 2.68s : 130058.05 words/s : gNorm 1.2590
+[task 2023-08-29T17:35:55.326Z] [2023-08-29 17:35:55] Seen 58,929 samples
+[task 2023-08-29T17:35:55.326Z] [2023-08-29 17:35:55] Starting data epoch 11 in logical epoch 11
+[task 2023-08-29T17:35:55.326Z] [2023-08-29 17:35:55] [data] Shuffling data
+[task 2023-08-29T17:35:55.327Z] [2023-08-29 17:35:55] [data] Done shuffling 59,069 sentences (cached in RAM)
+[task 2023-08-29T17:36:00.388Z] [2023-08-29 17:36:00] Ep. 11 : Up. 390 : Sen. 14,996 : Cost 4.52324200 : Time 5.06s : 64316.30 words/s : gNorm 1.2643
+[task 2023-08-29T17:36:03.010Z] [2023-08-29 17:36:03] Ep. 11 : Up. 400 : Sen. 30,061 : Cost 4.50054789 : Time 2.62s : 129873.02 words/s : gNorm 1.2545
+[task 2023-08-29T17:36:03.014Z] [2023-08-29 17:36:03] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz
+[task 2023-08-29T17:36:06.496Z] [2023-08-29 17:36:06] Saving Adam parameters
+[task 2023-08-29T17:36:09.711Z] [2023-08-29 17:36:09] [training] Saving training checkpoint to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz and /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.optimizer.npz
+[task 2023-08-29T17:36:27.528Z] [2023-08-29 17:36:27] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.best-chrf.npz
+[task 2023-08-29T17:36:30.178Z] [2023-08-29 17:36:30] [valid] Ep. 11 : Up. 400 : chrf : 11.9932 : new best
+[task 2023-08-29T17:36:30.796Z] [2023-08-29 17:36:30] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.best-ce-mean-words.npz
+[task 2023-08-29T17:36:33.285Z] [2023-08-29 17:36:33] [valid] Ep. 11 : Up. 400 : ce-mean-words : 6.50094 : new best
+[task 2023-08-29T17:36:41.310Z] [2023-08-29 17:36:41] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.best-bleu-detok.npz
+[task 2023-08-29T17:36:43.932Z] [2023-08-29 17:36:43] [valid] Ep. 11 : Up. 400 : bleu-detok : 0.459795 : new best
+[task 2023-08-29T17:36:46.404Z] [2023-08-29 17:36:46] Ep. 11 : Up. 410 : Sen. 43,657 : Cost 4.48192835 : Time 43.39s : 7220.82 words/s : gNorm 1.2045
+[task 2023-08-29T17:36:48.291Z] [2023-08-29 17:36:48] Seen 58,929 samples
+[task 2023-08-29T17:36:48.291Z] [2023-08-29 17:36:48] Starting data epoch 12 in logical epoch 12
+[task 2023-08-29T17:36:48.292Z] [2023-08-29 17:36:48] [data] Shuffling data
+[task 2023-08-29T17:36:48.293Z] [2023-08-29 17:36:48] [data] Done shuffling 59,069 sentences (cached in RAM)
+[task 2023-08-29T17:36:51.464Z] [2023-08-29 17:36:51] Ep. 12 : Up. 420 : Sen. 2,828 : Cost 4.38412666 : Time 5.06s : 65034.37 words/s : gNorm 1.3144
+[task 2023-08-29T17:36:53.702Z] [2023-08-29 17:36:53] Ep. 12 : Up. 430 : Sen. 20,369 : Cost 4.25491714 : Time 2.24s : 150801.50 words/s : gNorm 1.3186
+[task 2023-08-29T17:36:56.599Z] [2023-08-29 17:36:56] Ep. 12 : Up. 440 : Sen. 32,915 : Cost 4.55333281 : Time 2.90s : 118571.49 words/s : gNorm 1.4795
+[task 2023-08-29T17:36:58.891Z] [2023-08-29 17:36:58] Ep. 12 : Up. 450 : Sen. 50,369 : Cost 4.25555706 : Time 2.29s : 130480.79 words/s : gNorm 1.5241
+[task 2023-08-29T17:37:00.353Z] [2023-08-29 17:37:00] Seen 58,929 samples
+[task 2023-08-29T17:37:00.353Z] [2023-08-29 17:37:00] Starting data epoch 13 in logical epoch 13
+[task 2023-08-29T17:37:00.353Z] [2023-08-29 17:37:00] [data] Shuffling data
+[task 2023-08-29T17:37:00.354Z] [2023-08-29 17:37:00] [data] Done shuffling 59,069 sentences (cached in RAM)
+[task 2023-08-29T17:37:04.024Z] [2023-08-29 17:37:04] Ep. 13 : Up. 460 : Sen. 5,096 : Cost 4.35338163 : Time 5.13s : 64177.10 words/s : gNorm 1.4691
+[task 2023-08-29T17:37:06.586Z] [2023-08-29 17:37:06] Ep. 13 : Up. 470 : Sen. 21,183 : Cost 4.29011154 : Time 2.56s : 126791.36 words/s : gNorm 1.4921
+[task 2023-08-29T17:37:09.055Z] [2023-08-29 17:37:09] Ep. 13 : Up. 480 : Sen. 37,595 : Cost 4.18431139 : Time 2.47s : 132395.60 words/s : gNorm 1.4504
+[task 2023-08-29T17:37:11.480Z] [2023-08-29 17:37:11] Ep. 13 : Up. 490 : Sen. 53,886 : Cost 4.20623493 : Time 2.43s : 139018.21 words/s : gNorm 1.4771
+[task 2023-08-29T17:37:12.398Z] [2023-08-29 17:37:12] Seen 58,929 samples
+[task 2023-08-29T17:37:12.398Z] [2023-08-29 17:37:12] Starting data epoch 14 in logical epoch 14
+[task 2023-08-29T17:37:12.398Z] [2023-08-29 17:37:12] [data] Shuffling data
+[task 2023-08-29T17:37:12.399Z] [2023-08-29 17:37:12] [data] Done shuffling 59,069 sentences (cached in RAM)
+[task 2023-08-29T17:37:16.604Z] [2023-08-29 17:37:16] Ep. 14 : Up. 500 : Sen. 10,228 : Cost 4.16265726 : Time 5.12s : 61999.29 words/s : gNorm 1.4314
+[task 2023-08-29T17:37:16.608Z] [2023-08-29 17:37:16] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz
+[task 2023-08-29T17:37:19.829Z] [2023-08-29 17:37:19] Saving Adam parameters
+[task 2023-08-29T17:37:23.026Z] [2023-08-29 17:37:23] [training] Saving training checkpoint to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz and /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.optimizer.npz
+[task 2023-08-29T17:37:31.666Z] [2023-08-29 17:37:31] Training finished
+[task 2023-08-29T17:37:40.212Z] [2023-08-29 17:37:40] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.best-chrf.npz
+[task 2023-08-29T17:37:42.865Z] [2023-08-29 17:37:42] [valid] Ep. 14 : Up. 500 : chrf : 12.7011 : new best
+[task 2023-08-29T17:37:43.492Z] [2023-08-29 17:37:43] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.best-ce-mean-words.npz
+[task 2023-08-29T17:37:46.094Z] [2023-08-29 17:37:46] [valid] Ep. 14 : Up. 500 : ce-mean-words : 6.3866 : new best
+[task 2023-08-29T17:37:53.329Z] [2023-08-29 17:37:53] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.best-bleu-detok.npz
+[task 2023-08-29T17:37:55.821Z] [2023-08-29 17:37:55] [valid] Ep. 14 : Up. 500 : bleu-detok : 0.682085 : new best
+[task 2023-08-29T17:37:55.821Z] [2023-08-29 17:37:55] Saving model weights and runtime parameters to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz
+[task 2023-08-29T17:37:59.217Z] [2023-08-29 17:37:59] Saving Adam parameters
+[task 2023-08-29T17:38:02.394Z] [2023-08-29 17:38:02] [training] Saving training checkpoint to /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz and /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.optimizer.npz
+[task 2023-08-29T17:38:13.140Z] + cp /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.best-chrf.npz /home/ubuntu/tasks/task_169333023023778/artifacts/final.model.npz.best-chrf.npz
+[task 2023-08-29T17:38:13.341Z] + cp /home/ubuntu/tasks/task_169333023023778/artifacts/model.npz.best-chrf.npz.decoder.yml /home/ubuntu/tasks/task_169333023023778/artifacts/final.model.npz.best-chrf.npz.decoder.yml
+[task 2023-08-29T17:38:13.344Z] + echo '### Model training is completed: /home/ubuntu/tasks/task_169333023023778/artifacts'
+[task 2023-08-29T17:38:13.344Z] ### Model training is completed: /home/ubuntu/tasks/task_169333023023778/artifacts
+[task 2023-08-29T17:38:13.344Z] + echo '###### Done: Training a model'
+[task 2023-08-29T17:38:13.344Z] ###### Done: Training a model
+[fetches 2023-08-29T17:38:13.344Z] removing /home/ubuntu/tasks/task_169333023023778/fetches
+[fetches 2023-08-29T17:38:13.698Z] finished
+[taskcluster 2023-08-29T17:38:13.709Z]    Exit Code: 0
+[taskcluster 2023-08-29T17:38:13.709Z]    User Time: 13m20.137438s
+[taskcluster 2023-08-29T17:38:13.709Z]  Kernel Time: 52.042561s
+[taskcluster 2023-08-29T17:38:13.709Z]    Wall Time: 7m42.363235214s
+[taskcluster 2023-08-29T17:38:13.709Z]       Result: SUCCEEDED
+[taskcluster 2023-08-29T17:38:13.710Z] === Task Finished ===
+[taskcluster 2023-08-29T17:38:13.710Z] Task Duration: 7m42.365435176s
+[taskcluster 2023-08-29T17:38:13.856Z] Uploading artifact public/build/devset.out from file artifacts/devset.out with content encoding "gzip", mime type "application/octet-stream" and expiry 2024-08-28T17:25:28.039Z
+[taskcluster 2023-08-29T17:38:14.058Z] Uploading artifact public/build/final.model.npz.best-chrf.npz from file artifacts/final.model.npz.best-chrf.npz with content encoding "gzip", mime type "application/octet-stream" and expiry 2024-08-28T17:25:28.039Z
+[taskcluster 2023-08-29T17:38:25.024Z] Uploading artifact public/build/final.model.npz.best-chrf.npz.decoder.yml from file artifacts/final.model.npz.best-chrf.npz.decoder.yml with content encoding "gzip", mime type "application/x-yaml" and expiry 2024-08-28T17:25:28.039Z
+[taskcluster 2023-08-29T17:38:25.209Z] Uploading artifact public/build/model.npz from file artifacts/model.npz with content encoding "gzip", mime type "application/octet-stream" and expiry 2024-08-28T17:25:28.039Z
+[taskcluster 2023-08-29T17:38:35.597Z] Uploading artifact public/build/model.npz.best-bleu-detok.npz from file artifacts/model.npz.best-bleu-detok.npz with content encoding "gzip", mime type "application/octet-stream" and expiry 2024-08-28T17:25:28.039Z
+[taskcluster 2023-08-29T17:38:45.860Z] Uploading artifact public/build/model.npz.best-bleu-detok.npz.decoder.yml from file artifacts/model.npz.best-bleu-detok.npz.decoder.yml with content encoding "gzip", mime type "application/x-yaml" and expiry 2024-08-28T17:25:28.039Z
+[taskcluster 2023-08-29T17:38:46.044Z] Uploading artifact public/build/model.npz.best-ce-mean-words.npz from file artifacts/model.npz.best-ce-mean-words.npz with content encoding "gzip", mime type "application/octet-stream" and expiry 2024-08-28T17:25:28.039Z
+[taskcluster 2023-08-29T17:38:58.536Z] Uploading artifact public/build/model.npz.best-ce-mean-words.npz.decoder.yml from file artifacts/model.npz.best-ce-mean-words.npz.decoder.yml with content encoding "gzip", mime type "application/x-yaml" and expiry 2024-08-28T17:25:28.039Z
+[taskcluster 2023-08-29T17:38:58.714Z] Uploading artifact public/build/model.npz.best-chrf.npz from file artifacts/model.npz.best-chrf.npz with content encoding "gzip", mime type "application/octet-stream" and expiry 2024-08-28T17:25:28.039Z
+[taskcluster 2023-08-29T17:39:08.951Z] Uploading artifact public/build/model.npz.best-chrf.npz.decoder.yml from file artifacts/model.npz.best-chrf.npz.decoder.yml with content encoding "gzip", mime type "application/x-yaml" and expiry 2024-08-28T17:25:28.039Z
+[taskcluster 2023-08-29T17:39:09.109Z] Uploading artifact public/build/model.npz.decoder.yml from file artifacts/model.npz.decoder.yml with content encoding "gzip", mime type "application/x-yaml" and expiry 2024-08-28T17:25:28.039Z
+[taskcluster 2023-08-29T17:39:09.294Z] Uploading artifact public/build/model.npz.optimizer.npz from file artifacts/model.npz.optimizer.npz with content encoding "gzip", mime type "application/octet-stream" and expiry 2024-08-28T17:25:28.039Z
+[taskcluster 2023-08-29T17:39:50.128Z] Uploading artifact public/build/model.npz.progress.yml from file artifacts/model.npz.progress.yml with content encoding "gzip", mime type "application/x-yaml" and expiry 2024-08-28T17:25:28.039Z
+[taskcluster 2023-08-29T17:39:50.310Z] Uploading artifact public/build/model.npz.yml from file artifacts/model.npz.yml with content encoding "gzip", mime type "application/x-yaml" and expiry 2024-08-28T17:25:28.039Z
+[taskcluster 2023-08-29T17:39:50.481Z] Uploading artifact public/build/train.log from file artifacts/train.log with content encoding "gzip", mime type "text/plain" and expiry 2024-08-28T17:25:28.039Z
+[taskcluster 2023-08-29T17:39:50.651Z] Uploading artifact public/build/valid.log from file artifacts/valid.log with content encoding "gzip", mime type "text/plain" and expiry 2024-08-28T17:25:28.039Z
+[taskcluster 2023-08-29T17:39:50.804Z] [mounts] Preserving cache: Moving "/home/ubuntu/tasks/task_169333023023778/checkouts" to "/home/ubuntu/caches/FEQXaQP8TtSGbFkCywQbEA"
+[taskcluster 2023-08-29T17:39:50.881Z] Uploading link artifact public/logs/live.log to artifact public/logs/live_backing.log with expiry 2024-08-28T17:25:28.039Z
