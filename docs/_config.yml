@@ -1,5 +1,4 @@
 remote_theme: just-the-docs/just-the-docs
-theme: just-the-docs
 #color_scheme: dark
 title: Firefox Translations Training
 description: Documentation for the Firefox Translations training pipelines
@@ -10,3 +9,5 @@ favicon_ico: "img/logo.svg"
 aux_links:
   "GitHub":
     - "https://github.com/mozilla/firefox-translations-training"
+plugins:
+  - jekyll-remote-theme
