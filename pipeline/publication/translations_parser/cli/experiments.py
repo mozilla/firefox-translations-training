@@ -29,7 +29,7 @@ class MetricEpoch:
 class ExperimentsParser(TrainingParser):
     def __init__(self, *args, metrics_dir=None, **kwargs):
         self.metrics_dir = metrics_dir
-        return super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def run(self):
         """
@@ -141,7 +141,7 @@ def main():
         last_index = (project, group)
 
         # Publish a run for each file inside that group
-        for index, file in enumerate(files, start=1):
+        for file in files:
             # Also publish metric files when available
             metrics_dir = Path("/".join([*prefix, project, group, "evaluation", base_name]))
             if not metrics_dir.is_dir():

@@ -1,27 +1,52 @@
-# translations-experiment-tracking
+# Metrics publication
 
-Track and extract data from the training system of Firefox Translations.
+This package reads and extracts metrics data from the training system of Firefox Translations.
+It actually supports logs from Marian version **1.10**.
+Above versions (even minor) will raise a warning as not supported.
 
-Logs are extracted from [Marian](https://marian-nmt.github.io/) training tasks, running in Task Cluster.
+## Behavior
 
-This POC works offline, using a text log sample within the `samples` directory. It outputs an instance of the `TrainingLog` dataclass with the following attributes:
-  * `info`: Marian information as a dict
-  * `configuration` Runtime configuration as a dict
-  * `training` List of Training dataclass instances:
-    * `epoch`
-    * `up`
-    * `sen`
-    * `cost`
-    * `time`
-    * `rate`
-    * `gnorm`
-  * `validation` List of `Validation` dataclass instances:
-    * `epoch`
-    * `up`
-    * `chrf`
-    * `ce_mean_words`
-    * `bleu_detok`
-  * `logs` as a dict of log lines, indexed by their header (e.g. marian, data, memory)
+Logs are extracted from [Marian](https://marian-nmt.github.io/) training tasks, usually running in a Task Cluster environment.
+
+The parser has 2 entry points:
+* Parsing logs from a file or process in real time
+* Reading a folder with multiple training data
+
+Publication is handled via extensible `translations_parser.publishers`.
+It actually supports writting to local CSV files or puiblish metrics to [Weight & Biases](https://docs.wandb.ai/ref/python) (W&B).
+
+### Reading a folder
+
+The parser supports reading a folder containing multiple trainings with a structure like above example:
+```
+.
+├── logs
+│   └── en-sv
+│       └── opusmt-multimodel-test
+│           └── opusmt-multimodel-test
+│               ├── alignments.log
+│               ├── ce_filter.log
+│               └── …
+└── models
+    └── en-sv
+        └── opusmt-multimodel-test
+            ├── evaluation
+            │   └── speed
+            │       ├── tc_Tatoeba-Challenge-v2021-08-07.metrics
+            │       └── …
+            ├── student-finetuned
+            │   ├── train.log
+            │   └── valid.log
+            └─ …
+```
+
+
+The following rules are applied:
+* `./models` sub-folders are projects (e.g. `en-sv`), corresponding to projects in W&B.
+* Projects contains multiple groups (e.g. `opusmt-multimodel-test`), each containing multiple runs (e.g. `student-finetuned`) and usually an `evaluation` folder.
+* For each run, `train.log` is parsed (`valid.log` results are usually contained in `train.log`) and published to W&B.
+* `.metrics` files in the `evaluation` are parsed (looking for one float value per line) and also published on the same run (e.g. `[metric] tc_Tatoeba-Challenge-v2021-08-07`).
+* Once all runs of a group have been published, a last group is pushed to W&B, named `group_logs`. That run contains no metrics but all experiment files published as artifacts.
 
 ## Install and run the package
 
@@ -32,7 +57,7 @@ $ pip install .
 
 Run the parser with the local sample:
 ```sh
-$ parse_tc_logs -i samples/<log_file>
+$ parse_tc_logs -i samples/KZPjvTEiSmO--BXYpQCNPQ.txt
 ```
 
 Simulate reading logs from a process:
@@ -42,7 +67,7 @@ Simulate reading logs from a process:
 
 Publish data to Weight & Biases:
 ```sh
-$ parse_tc_logs -i samples/<log_file> --wandb-project <project> --wandb-group=<group> --wandb-run-name=<run>
+$ parse_tc_logs -i samples/KZPjvTEiSmO--BXYpQCNPQ.txt --wandb-project <project> --wandb-group <group> --wandb-run-name <run>
 ```
 
 Run the parser on a directory containing experiments and publis to Weight & Biases:
