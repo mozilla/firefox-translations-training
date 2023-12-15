@@ -17,4 +17,8 @@ COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
 
 mkdir -p "${output_dir}"
-${COMPRESSION_CMD} -dc "${mono_path}" | ${BIN}/dedupe | split -d -n ${num_parts} - "${output_dir}/file."
+${COMPRESSION_CMD} -dc "${mono_path}" | ${BIN}/dedupe > decompressed
+total_lines=$(wc -l < decompressed)
+lines_per_part=$(( (total_lines + ${num_parts} - 1) / ${num_parts} ))
+split -d -l $lines_per_part decompressed "${output_dir}/file."
+rm decompressed
