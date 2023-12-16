@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Splits a dataset to chunks. Generates files in format file.00, file.01 etc.
+Splits a dataset to chunks. Generates files in format file.00.zst, file.01.zst etc.
 
 Example:
     python splitter.py \
@@ -36,6 +36,7 @@ def split_file(mono_path, output_dir, num_parts, compression_cmd, output_suffix=
             subprocess.Popen(decompress_cmd, shell=True, stdout=subprocess.PIPE)
         )
         current_file = None
+        current_name = None
         current_line_count = 0
         file_index = 0
 
@@ -44,14 +45,18 @@ def split_file(mono_path, output_dir, num_parts, compression_cmd, output_suffix=
             if current_line_count == 0 or current_line_count >= lines_per_part:
                 if current_file is not None:
                     current_file.close()
-                current_file = stack.enter_context(
-                    open(f"{output_dir}/file.{str(file_index).zfill(2)}{output_suffix}", "w")
-                )
+                    subprocess.run([compression_cmd, "--rm", current_name], check=True)
+
+                current_name = f"{output_dir}/file.{str(file_index).zfill(2)}{output_suffix}"
+                current_file = stack.enter_context(open(current_name, "w"))
                 file_index += 1
                 current_line_count = 0
 
             current_file.write(line.decode())
             current_line_count += 1
+
+    # decompress the last file after closing
+    subprocess.run([compression_cmd, "--rm", current_name], check=True)
 
 
 def parse_args():

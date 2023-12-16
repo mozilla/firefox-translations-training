@@ -38,9 +38,15 @@ def generate_dataset(length, path):
     sh.zstdmt(path)
 
 
+def decompress(path):
+    sh.zstdmt("-d", path)
+
+
 def imitate_translate(dir, suffix):
-    for file in glob.glob(f"{dir}/file.??"):
-        shutil.copy(file, file + suffix)
+    for file in glob.glob(f"{dir}/file.??.zst"):
+        print(file)
+        decompress(file)
+        shutil.copy(file[:-4], file[:-4] + suffix)
 
 
 def read_file(path):
@@ -67,7 +73,7 @@ def test_split_collect_mono(clean):
         ["pipeline/translate/collect.sh", OUTPUT_DIR, output_compressed, f"{path}.zst"], check=True
     )
 
-    sh.zstdmt("-d", output_compressed)
+    decompress(output_compressed)
     assert read_file(path) == read_file(output)
 
 
@@ -100,5 +106,5 @@ def test_split_collect_corpus(clean):
         check=True,
     )
 
-    sh.zstdmt("-d", output_compressed)
+    decompress(output_compressed)
     assert read_file(path_src) == read_file(output)
