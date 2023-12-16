@@ -47,7 +47,7 @@ def split_file(mono_path, output_dir, num_parts, compression_cmd, output_suffix=
                     current_file.close()
                     subprocess.run([compression_cmd, "--rm", current_name], check=True)
 
-                current_name = f"{output_dir}/file.{str(file_index).zfill(2)}{output_suffix}"
+                current_name = f"{output_dir}/file.{file_index}{output_suffix}"
                 current_file = stack.enter_context(open(current_name, "w"))
                 file_index += 1
                 current_line_count = 0
