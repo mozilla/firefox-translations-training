@@ -43,7 +43,7 @@ def decompress(path):
 
 
 def imitate_translate(dir, suffix):
-    for file in glob.glob(f"{dir}/file.?.zst"):
+    for file in glob.glob(f"{dir}/file.?.zst") + glob.glob(f"{dir}/file.??.zst"):
         print(file)
         decompress(file)
         shutil.copy(file[:-4], file[:-4] + suffix)

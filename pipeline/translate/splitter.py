@@ -38,7 +38,7 @@ def split_file(mono_path, output_dir, num_parts, compression_cmd, output_suffix=
         current_file = None
         current_name = None
         current_line_count = 0
-        file_index = 0
+        file_index = 1
 
         for line in decompressed.stdout:
             # If the current file is full or doesn't exist, start a new one
