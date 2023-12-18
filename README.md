@@ -19,8 +19,6 @@ We use fast translation engine [Marian](https://marian-nmt.github.io).
 
 You can find more details about the pipeline steps in the [documentation](docs/pipeline-steps.md).
 
-Marian training metrics are parsed from logs and published using a custom package documented [here](docs/publication.md).
-
 ## Orchestrators
 
 An orchestrator is responsible for workflow management and parallelization.
@@ -30,6 +28,11 @@ An orchestrator is responsible for workflow management and parallelization.
   [Usage instructions](docs/task-cluster.md).
 - [Snakemake](https://snakemake.github.io/) - a file based orchestrator that can be used to run the pipeline locally or on a Slurm cluster. 
   [Usage instructions](docs/snakemake.md). (The integration will not be actively maintained, since Mozilla is switching to Taskcluster)
+
+## Experiment tracking
+
+Marian training metrics are parsed from logs and published using a custom module within the `tracking` directory.
+More information is available [here](docs/tracking.md).
 
 ## Learning resources
 
