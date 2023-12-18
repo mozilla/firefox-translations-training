@@ -65,7 +65,7 @@ def get_args():
     return parser.parse_args()
 
 
-def task_cluster_log_filter(headers):
+def taskcluster_log_filter(headers):
     """
     Check TC log contain a valid task header ('task', <timestamp>)
     """
@@ -113,6 +113,6 @@ def main():
     parser = TrainingParser(
         lines,
         publishers=publishers,
-        log_filter=task_cluster_log_filter,
+        log_filter=taskcluster_log_filter,
     )
     parser.run()

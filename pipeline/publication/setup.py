@@ -32,7 +32,7 @@ setup(
     include_package_data=True,
     entry_points={
         "console_scripts": [
-            "parse_tc_logs=translations_parser.cli.task_cluster:main",
+            "parse_tc_logs=translations_parser.cli.taskcluster:main",
             "parse_experiment_dir=translations_parser.cli.experiments:main",
         ]
     },
