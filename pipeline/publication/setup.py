@@ -27,7 +27,7 @@ setup(
     author="Teklia",
     author_email="team@teklia.com",
     python_requires=">=3.10",
-    install_requires=requirements("requirements.txt"),
+    install_requires=requirements("requirements/common.in"),
     packages=find_packages(),
     include_package_data=True,
     entry_points={

@@ -48,12 +48,42 @@ The following rules are applied:
 * `.metrics` files in the `evaluation` are parsed (looking for one float value per line) and also published on the same run (e.g. `[metric] tc_Tatoeba-Challenge-v2021-08-07`).
 * Once all runs of a group have been published, a last group is pushed to W&B, named `group_logs`. That run contains no metrics but all experiment files published as artifacts.
 
-## Install and run the package
+## Install
 
-On a virtual environment, you can install the package using pip:
+### Deployment
+
+The full list of dependencies (hash pinned) is specified in `requirements/comon.txt`.
+
+This file is generated using `pip-tools`, and must be updated once dependecies change:
+```sh
+pip-compile --generate-hashes --output-file=requirements/common.txt requirements/common.in
+```
+
+### Package
+
+The parser can be built as a distinct package to make developments easier.
+
+You can install the package using pip:
 ```sh
 $ pip install .
 ```
+
+## Development
+
+On a virtual environment, you can install the package using pip:
+A developer may want to install the package in editable mode (i.e install from the local path directly):
+```sh
+$ pip install -e .
+```
+
+Pre-commit rules are automatically run once pre-commits hooks have been installed:
+```sh
+$ pip install pre-commit
+$ pre-commit install
+$ pre-commit run -a # Run pre-commit once
+```
+
+### Usage
 
 Run the parser with the local sample:
 ```sh
@@ -73,19 +103,4 @@ $ parse_tc_logs -i samples/KZPjvTEiSmO--BXYpQCNPQ.txt --wandb-project <project> 
 Run the parser on a directory containing experiments and publis to Weight & Biases:
 ```sh
 $ parse_experiment_dir -d models
-```
-
-## Development
-
-On a virtual environment, you can install the package using pip:
-A developer may want to install the package in editable mode (i.e install from the local path directly):
-```sh
-$ pip install -e .
-```
-
-Pre-commit rules are automatically run once pre-commits hooks have been installed:
-```sh
-$ pip install pre-commit
-$ pre-commit install
-$ pre-commit run -a # Run pre-commit once
 ```
