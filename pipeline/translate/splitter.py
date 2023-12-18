@@ -70,7 +70,7 @@ def parse_args():
         "--compression_cmd", type=str, help="Compression command (e.g., gzip, zstd)"
     )
     parser.add_argument(
-        "--output_suffix", type=str, help="A suffix for output files, for example .ref"
+        "--output_suffix", type=str, help="A suffix for output files, for example .ref", default=""
     )
 
     return parser.parse_args()
@@ -78,4 +78,10 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    split_file(args.mono_path, args.output_dir, args.num_parts, args.compression_cmd)
+    split_file(
+        mono_path=args.mono_path,
+        output_dir=args.output_dir,
+        num_parts=args.num_parts,
+        compression_cmd=args.compression_cmd,
+        output_suffix=args.output_suffix,
+    )

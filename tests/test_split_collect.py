@@ -68,6 +68,10 @@ def test_split_collect_mono(clean):
         num_parts=10,
         compression_cmd=COMPRESSION_CMD,
     )
+
+    expected_files = set([f"{OUTPUT_DIR}/file.{i}.zst" for i in range(1, 11)])
+    assert set(glob.glob(f"{OUTPUT_DIR}/file.*.zst")) == expected_files
+
     imitate_translate(OUTPUT_DIR, suffix=".out")
     subprocess.run(
         ["pipeline/translate/collect.sh", OUTPUT_DIR, output_compressed, f"{path}.zst"], check=True
@@ -100,6 +104,12 @@ def test_split_collect_corpus(clean):
         compression_cmd=COMPRESSION_CMD,
         output_suffix=".ref",
     )
+
+    expected_files = set([f"{OUTPUT_DIR}/file.{i}.zst" for i in range(1, 11)]) | set(
+        [f"{OUTPUT_DIR}/file.{i}.ref.zst" for i in range(1, 11)]
+    )
+    assert set(glob.glob(f"{OUTPUT_DIR}/file.*.zst")) == expected_files
+
     imitate_translate(OUTPUT_DIR, suffix=".nbest.out")
     subprocess.run(
         ["pipeline/translate/collect.sh", OUTPUT_DIR, output_compressed, f"{path_src}.zst"],
