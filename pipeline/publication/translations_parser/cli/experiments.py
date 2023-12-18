@@ -34,6 +34,7 @@ def parse_experiment(logs_file, project, group, name, metrics_dir=None):
     # Add Metrics to the published output based on the name of the file
     if metrics_dir:
         for metrics_file in metrics_dir.glob("*.metrics"):
+            logger.info(f"Reading metric file {metrics_file.name}")
             with metrics_file.open("r") as f:
                 lines = f.readlines()
             up = 1
@@ -87,6 +88,8 @@ def main():
     }
     logger.info(f"Reading {len(file_groups)} train.log data")
     prefix = os.path.commonprefix([path.parts for path in file_groups])
+    if 'models' in prefix:
+        prefix = prefix[:prefix.index('models') + 1]
 
     last_index = None
     for index, (path, files) in enumerate(file_groups.items(), start=1):

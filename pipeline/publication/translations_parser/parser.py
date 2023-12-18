@@ -51,7 +51,7 @@ class TrainingParser:
         self.config = {}
         self.indexed_logs = defaultdict(list)
         # Optional list of Metric published earlier to the parsing
-        self.metrics = []
+        self.metrics = metrics
         # List of TrainingEpoch
         self.training = []
         # List of ValidationEpoch

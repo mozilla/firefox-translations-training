@@ -32,7 +32,7 @@ class Publisher(ABC):
     def handle_validation(self, validation: ValidationEpoch) -> None:
         ...
 
-    def handle_metric(self, metric: Sequence[Metric]) -> None:
+    def handle_metrics(self, metrics: Sequence[Metric]) -> None:
         ...
 
     def publish(self, log: TrainingLog) -> None:
@@ -104,11 +104,11 @@ class WandB(Publisher):
     def handle_validation(self, validation):
         self.generic_log(validation)
 
-    def handle_metric(self, metrics: Sequence[Metric]) -> None:
+    def handle_metrics(self, metrics: Sequence[Metric]) -> None:
         max_values = defaultdict(float)
         # Publish metrics as usual data, prefixed by "[metric] "
         for metric in metrics:
-            epoch = vars(metrics)
+            epoch = vars(metric)
             step = epoch.pop("up")
             for key, val in epoch.items():
                 self.wandb.log(step=step, data={f"[metric] {key}": val})
@@ -120,7 +120,7 @@ class WandB(Publisher):
             "Metrics summary": wandb.plot.bar(
                 wandb.Table(
                     columns=["Metric", "Max value"],
-                    data=max_values.items(),
+                    data=list(max_values.items()),
                 ),
                 "Metric",
                 "Max value",
