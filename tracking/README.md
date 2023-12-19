@@ -87,17 +87,17 @@ $ pre-commit run -a # Run pre-commit once
 
 Run the parser with the local sample:
 ```sh
-$ parse_tc_logs -i samples/KZPjvTEiSmO--BXYpQCNPQ.txt
+$ parse_tc_logs -i ../tests/data/KZPjvTEiSmO--BXYpQCNPQ.txt
 ```
 
 Simulate reading logs from a process:
 ```sh
-./samples/simulate_process.py | parse_tc_logs -s --verbose
+../tests/data/simulate_process.py | parse_tc_logs -s --verbose
 ```
 
 Publish data to Weight & Biases:
 ```sh
-$ parse_tc_logs -i samples/KZPjvTEiSmO--BXYpQCNPQ.txt --wandb-project <project> --wandb-group <group> --wandb-run-name <run>
+$ parse_tc_logs -i ../tests/data/KZPjvTEiSmO--BXYpQCNPQ.txt --wandb-project <project> --wandb-group <group> --wandb-run-name <run>
 ```
 
 Run the parser on a directory containing experiments and publis to Weight & Biases:
