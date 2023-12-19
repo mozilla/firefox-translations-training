@@ -12,7 +12,7 @@ from pipeline.translate.splitter import split_file
 
 COMPRESSION_CMD = "zstdmt"
 
-OUTPUT_DIR = "tests_data"
+OUTPUT_DIR = "data/tests_data"
 
 
 @pytest.fixture(scope="function")
