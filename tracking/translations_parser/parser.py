@@ -218,8 +218,6 @@ class TrainingParser:
 
         # Publish optional metrics
         if self.metrics:
-            # Order metrics step-by-step for consistent plot logging
-            self.metrics = sorted(self.metrics, key=lambda t: t.up)
             for publisher in self.publishers:
                 publisher.handle_metrics(self.metrics)
 

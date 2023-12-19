@@ -31,23 +31,9 @@ def get_args():
 
 def parse_experiment(logs_file, project, group, name, metrics_dir=None):
     metrics = []
-    # Add Metrics to the published output based on the name of the file
     if metrics_dir:
         for metrics_file in metrics_dir.glob("*.metrics"):
-            logger.info(f"Reading metric file {metrics_file.name}")
-            with metrics_file.open("r") as f:
-                lines = f.readlines()
-            up = 1
-            for line in lines:
-                # Ignore lines that does not contain a float value
-                try:
-                    metric = {metrics_file.stem: float(line)}
-                except ValueError:
-                    continue
-                else:
-                    metric = Metric(up=up, **metric)
-                    metrics.append(metric)
-                    up += 1
+            metrics.append(Metric.from_file(metrics_file))
 
     with logs_file.open("r") as f:
         lines = (line.strip() for line in f.readlines())
@@ -88,8 +74,8 @@ def main():
     }
     logger.info(f"Reading {len(file_groups)} train.log data")
     prefix = os.path.commonprefix([path.parts for path in file_groups])
-    if 'models' in prefix:
-        prefix = prefix[:prefix.index('models') + 1]
+    if "models" in prefix:
+        prefix = prefix[: prefix.index("models") + 1]
 
     last_index = None
     for index, (path, files) in enumerate(file_groups.items(), start=1):

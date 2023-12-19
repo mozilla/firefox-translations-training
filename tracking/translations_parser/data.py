@@ -1,6 +1,14 @@
+import logging
 from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 from typing import List
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(levelname)s] %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -23,16 +31,31 @@ class ValidationEpoch:
     bleu_detok: float
 
 
+@dataclass
 class Metric:
-    """
-    A generic metric extracted from .metric files
-    """
-    up: int
+    """A simple key:value metric extracted from `.metrics` files"""
 
-    def __init__(self, up, **kwargs):
-        self.up = up
-        for k, v in kwargs.items():
-            setattr(self, k, v)
+    name: str
+    chrf: float
+    bleu_detok: float
+
+    @classmethod
+    def from_file(cls, metrics_file: Path):
+        logger.info(f"Reading metrics file {metrics_file.name}")
+        values = []
+        try:
+            with metrics_file.open("r") as f:
+                lines = f.readlines()
+            for line in lines:
+                try:
+                    values.append(float(line))
+                except ValueError:
+                    continue
+            assert len(values) == 2, "file must contain exactly 2 float values"
+        except Exception as e:
+            raise ValueError(f"Metrics file could not be parsed: {e}")
+        chrf, bleu_detok = values
+        return cls(name=metrics_file.stem, chrf=chrf, bleu_detok=bleu_detok)
 
 
 @dataclass

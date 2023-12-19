@@ -3,11 +3,10 @@ import logging
 from abc import ABC
 from pathlib import Path
 from typing import Sequence
-from collections import defaultdict
 
 import wandb
 
-from translations_parser.data import TrainingEpoch, TrainingLog, ValidationEpoch, Metric
+from translations_parser.data import Metric, TrainingEpoch, TrainingLog, ValidationEpoch
 
 logging.basicConfig(
     level=logging.INFO,
@@ -105,28 +104,30 @@ class WandB(Publisher):
         self.generic_log(validation)
 
     def handle_metrics(self, metrics: Sequence[Metric]) -> None:
-        max_values = defaultdict(float)
         # Publish metrics as usual data, prefixed by "[metric] "
         for metric in metrics:
-            epoch = vars(metric)
-            step = epoch.pop("up")
-            for key, val in epoch.items():
-                self.wandb.log(step=step, data={f"[metric] {key}": val})
-                if key not in max_values.keys() or val > max_values[key]:
-                    max_values[key] = val
+            for key in ("chrf", "bleu_detok"):
+                self.wandb.log(
+                    step=1, data={f"[metric {metric.name}] {key}": getattr(metric, key)}
+                )
 
-        # Also publish a bar chart with max values for each metric
-        self.wandb.log({
-            "Metrics summary": wandb.plot.bar(
-                wandb.Table(
-                    columns=["Metric", "Max value"],
-                    data=list(max_values.items()),
-                ),
-                "Metric",
-                "Max value",
-                title="Metrics summary",
+            # Also publish a bar chart with max values for each metric
+            self.wandb.log(
+                {
+                    f"{metric.name.capitalize()} summary": wandb.plot.bar(
+                        wandb.Table(
+                            columns=["Metric", "Value"],
+                            data=[
+                                [f"{metric.name} - {key}", getattr(metric, key)]
+                                for key in ("chrf", "bleu_detok")
+                            ],
+                        ),
+                        "Metric",
+                        "Value",
+                        title=f"{metric.name.capitalize()} summary",
+                    )
+                }
             )
-        })
 
     def close(self):
         # Store runtime logs as the main log artifact
