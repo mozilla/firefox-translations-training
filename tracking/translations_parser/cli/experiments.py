@@ -103,6 +103,18 @@ def main():
         base_name = name[0]
         name = "_".join(name)
 
+        # Publish a run for each file inside that group
+        for file in files:
+            # Also publish metric files when available
+            metrics_dir = Path("/".join([*prefix, project, group, "evaluation", base_name]))
+            if not metrics_dir.is_dir():
+                logger.warning("Evaluation metrics files not found, skipping.")
+                metrics_dir = None
+            try:
+                parse_experiment(file, project, group, name, metrics_dir=metrics_dir)
+            except Exception as e:
+                logger.error(f"An exception occured parsing {file}: {e}")
+
         # Try to publish related log files to the group on a last run named "group_logs"
         if index == len(file_groups) or last_index and last_index != (project, group):
             last_project, last_group = last_index
@@ -131,15 +143,3 @@ def main():
                     "No extra logs nor metrics found for this project, skipping 'group_logs' fake run."
                 )
         last_index = (project, group)
-
-        # Publish a run for each file inside that group
-        for file in files:
-            # Also publish metric files when available
-            metrics_dir = Path("/".join([*prefix, project, group, "evaluation", base_name]))
-            if not metrics_dir.is_dir():
-                logger.warning("Evaluation metrics files not found, skipping.")
-                metrics_dir = None
-            try:
-                parse_experiment(file, project, group, name, metrics_dir=metrics_dir)
-            except Exception as e:
-                logger.error(f"An exception occured parsing {file}: {e}")
