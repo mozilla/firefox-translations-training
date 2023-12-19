@@ -43,10 +43,6 @@ experiment:
   mono-max-sentences-src: 100_000_000
   mono-max-sentences-trg: 20_000_000
 
-  # The number of sentences split out into separate files for the monolingual data.
-  # Also see taskcluster.split-chunks below.
-  split-length: 2_000_000
-
   # How many bytes of the corpus are sampled to be used in SentencePiece
   # tokenization training.
   spm-sample-size: 10_000_000

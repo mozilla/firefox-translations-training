@@ -12,7 +12,6 @@ transforms:
 
 kind-dependencies:
     - merge-mono
-    - toolchain
 
 task-defaults:
     description: split mono for {locale}
@@ -22,15 +21,12 @@ task-defaults:
         cache:
             type: split-mono
             resources:
-                - pipeline/translate/split-mono.sh
-                - taskcluster/scripts/pipeline/split-mono-taskcluster.sh
+                - pipeline/translate/splitter.py
             from-parameters:
-                split_length: training_config.experiment.split-length
                 split_chunks: training_config.taskcluster.split-chunks
 
     task-context:
         from-parameters:
-            split_length: training_config.experiment.split-length
             split_chunks: training_config.taskcluster.split-chunks
             src_locale: training_config.experiment.src
         substitution-fields:
@@ -66,16 +62,11 @@ task-defaults:
             - -c
               # TODO: move number of chunks elsewhere
             - >-
-                export BIN=$MOZ_FETCHES_DIR &&
-                $VCS_PATH/taskcluster/scripts/pipeline/split-mono-taskcluster.sh
-                {split_chunks}
-                /builds/worker/artifacts
-                {split_length}
+                python3 $VCS_PATH/pipeline/translate/splitter.py
+                --output_dir=/builds/worker/artifacts
+                --num_parts={split_chunks}
+                --compression_cmd=zstdmt
                 $MOZ_FETCHES_DIR/mono.$LOCALE.zst
-
-    fetches:
-        toolchain:
-            - preprocess
 
 tasks:
     src:

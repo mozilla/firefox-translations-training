@@ -125,10 +125,6 @@ def validate_pretrained_models(params):
                         "type": "number",
                         "description": "limits per downloaded trg dataset",
                     },
-                    "split-length": {
-                        "type": "number",
-                        "description": "???",
-                    },
                     "spm-sample-size": {
                         "type": "number",
                         "description": "vocabularly training sample size",

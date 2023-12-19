@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Collects chunked translation data of the form "out-file.N.out" where N is a number.
+# Collects chunked translation data of the form "file.N.out" where N is a number.
 # The datasets are chunked earlier in the pipeline by split-{corpus,mono}.sh so that
 # tasks can work on smaller sets of data to better parallelize the work. After processing,
 # any chunked data is reassembled with this script.
@@ -26,7 +26,7 @@
 set -x
 set -euo pipefail
 
-# The directory with chunks of the form "fetches/out-file.N.out", where N is a number.
+# The directory with chunks of the form "fetches/file.N.out", where N is a number.
 chunks_dir=$1
 # The full file name path to the output compressed file, e.g. "artifacts/mono.en.zst"
 output_path=$2
@@ -38,8 +38,8 @@ COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 
 echo "### Collecting translations"
 
-find "${chunks_dir}" -name '*.out' |  # For example, finds "fetches/out-file.1.out", "fetches/out-file.2.out", etc.
-  sort -t '.' -k2,2n |                      # Sort by the number in "out-file.1.out", e.g. 1 here.
+find "${chunks_dir}" -name '*.out' |  # For example, finds "fetches/file.1.out", "fetches/file.2.out", etc.
+  sort -t '.' -k2,2n |                      # Sort by the number in "file.1.out", e.g. 1 here.
   xargs cat |                               # Combine all of these files together.
   ${COMPRESSION_CMD} >"${output_path}"
 

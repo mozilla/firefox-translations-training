@@ -25,14 +25,11 @@ tasks:
             cache:
                 type: split-corpus
                 resources:
-                    - pipeline/translate/split-corpus.sh
-                    - taskcluster/scripts/pipeline/split-corpus-taskcluster.sh
+                    - pipeline/translate/splitter.py
                 from-parameters:
-                    split_length: training_config.experiment.split-length
                     split_chunks: training_config.taskcluster.split-chunks
         task-context:
             from-parameters:
-                split_length: training_config.experiment.split-length
                 split_chunks: training_config.taskcluster.split-chunks
                 src_locale: training_config.experiment.src
                 trg_locale: training_config.experiment.trg
@@ -65,11 +62,16 @@ tasks:
                 - bash
                 - -c
                 - >-
-                    $VCS_PATH/taskcluster/scripts/pipeline/split-corpus-taskcluster.sh
-                    {split_chunks}
-                    /builds/worker/artifacts
-                    {split_length}
-                    fetches/corpus.{src_locale}.zst
+                    python3 $VCS_PATH/pipeline/translate/splitter.py
+                    --output_dir=/builds/worker/artifacts
+                    --num_parts={split_chunks}
+                    --compression_cmd=zstdmt
+                    fetches/corpus.{src_locale}.zst &&
+                    python3 $VCS_PATH/pipeline/translate/splitter.py
+                    --output_dir=/builds/worker/artifacts
+                    --num_parts={split_chunks}
+                    --output_suffix=.ref
+                    --compression_cmd=zstdmt
                     fetches/corpus.{trg_locale}.zst
 
         dependencies:

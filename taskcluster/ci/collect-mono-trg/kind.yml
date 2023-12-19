@@ -59,7 +59,7 @@ task-defaults:
             - bash
             - -c
             - >-
-                zstd -d --rm $MOZ_FETCHES_DIR/out-file* &&
+                zstd -d --rm $MOZ_FETCHES_DIR/file* &&
                 $VCS_PATH/pipeline/translate/collect.sh
                 fetches
                 artifacts/mono.{src_locale}.zst
@@ -85,7 +85,7 @@ tasks:
                 dataset-category: mono-trg
             fetches:
                 translate-mono-trg:
-                    - artifact: out-file.{this_chunk}.out.zst
+                    - artifact: file.{this_chunk}.out.zst
                 merge-mono:
                     - artifact: mono.{trg_locale}.zst
 

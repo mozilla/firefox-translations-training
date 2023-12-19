@@ -56,7 +56,7 @@ mono_max_sent = {src: mono_max_sent_src, trg: mono_max_sent_trg}
 # parallelization
 
 ensemble = list(range(config['experiment']['teacher-ensemble']))
-split_length = config['experiment']['split-length']
+split_chunks = config['experiment']['split-chunks']
 
 # logging
 log_dir = f"{data_root_dir}/logs/{src}-{trg}/{experiment}"
@@ -440,7 +440,7 @@ checkpoint split_mono_trg:
     threads: 1
     input: corpora=f"{clean}/mono.{trg}.gz", bin=ancient(deduper)
     output: directory(f'{translated}/mono_trg')
-    shell: 'bash pipeline/translate/split-mono.sh {input.corpora} {output} {split_length} >> {log} 2>&1'
+    shell: 'bash pipeline/translate/split-mono.sh {input.corpora} {output} {split_chunks} >> {log} 2>&1'
 
 rule translate_mono_trg:
     message: "Translating monolingual trg dataset with backward model"
@@ -523,7 +523,7 @@ checkpoint split_corpus:
     input: corpus_src=clean_corpus_src,corpus_trg=clean_corpus_trg
     output: directory(f"{translated}/corpus")
     shell: '''bash pipeline/translate/split-corpus.sh \
-                {input.corpus_src} {input.corpus_trg} {output} {split_length} >> {log} 2>&1'''
+                {input.corpus_src} {input.corpus_trg} {output} {split_chunks} >> {log} 2>&1'''
 
 rule translate_corpus:
     message: "Translating corpus with teacher"
@@ -573,7 +573,7 @@ checkpoint split_mono_src:
     threads: 1
     input: corpora=f"{clean}/mono.{src}.gz", bin=ancient(deduper)
     output: directory(f'{translated}/mono_src')
-    shell: 'bash pipeline/translate/split-mono.sh {input.corpora} {output} {split_length} >> {log} 2>&1'
+    shell: 'bash pipeline/translate/split-mono.sh {input.corpora} {output} {split_chunks} >> {log} 2>&1'
 
 rule translate_mono_src:
     message: "Translating monolingual src dataset with teacher"

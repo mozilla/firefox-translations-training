@@ -15,7 +15,7 @@ os.environ["TRG"] = TRG
 
 from pipeline.data.dataset_importer import run_import
 
-OUTPUT_DIR = "data/tests"
+OUTPUT_DIR = "data/tests_data"
 # the augmentation is probabilistic, here is a range for 0.1 probability
 AUG_MAX_RATE = 0.3
 AUG_MIN_RATE = 0.01

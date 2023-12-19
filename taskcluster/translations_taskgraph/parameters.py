@@ -22,11 +22,12 @@ def get_defaults(_):
                 "teacher-ensemble": 1,
                 "mono-max-sentences-trg": 10000,
                 "mono-max-sentences-src": 10000,
-                "split-length": 5000,
                 "spm-sample-size": 10000,
                 "spm-vocab-size": 1000,
                 "best-model": "chrf",
-                "use-opuscleaner": "true",
+                # todo: fix opuscleaner build and enable it
+                #  https://github.com/mozilla/firefox-translations-training/issues/292
+                "use-opuscleaner": "false",
                 "bicleaner": {
                     "default-threshold": 0.5,
                     "dataset-thresholds": {
@@ -122,7 +123,6 @@ extend_parameters_schema(
                 Required("teacher-ensemble"): int,
                 Required("mono-max-sentences-trg"): int,
                 Required("mono-max-sentences-src"): int,
-                Required("split-length"): int,
                 Required("spm-sample-size"): int,
                 Optional("spm-vocab-size"): int,
                 Required("best-model"): str,
