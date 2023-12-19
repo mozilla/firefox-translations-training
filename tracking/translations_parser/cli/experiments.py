@@ -63,10 +63,9 @@ def publish_group_logs(project, group, logs_dir, metrics_dir):
         name="group_logs",
     )
     # Add "speed" metrics
-    if metrics_dir.is_dir():
-        metrics = []
-        for metrics_file in metrics_dir.glob("*.metrics"):
-            metrics.append(Metric.from_file(metrics_file))
+    metrics = []
+    for metrics_file in metrics_dir.glob("*.metrics"):
+        metrics.append(Metric.from_file(metrics_file))
     if metrics:
         publisher.handle_metrics(metrics)
     # Add logs dir content as artifacts
@@ -117,22 +116,11 @@ def main():
         # Try to publish related log files to the group on a last run named "group_logs"
         if index == len(file_groups) or last_index and last_index != (project, group):
             last_project, last_group = last_index
-            if (
-                prefix
-                and prefix[-1] == "models"
-                and (
-                    (
-                        logs_dir := Path(
-                            "/".join([*prefix[:-1], "logs", last_project, last_group])
-                        )
-                    ).is_dir()
-                    or (
-                        metrics_dir := Path(
-                            "/".join([*prefix, last_project, last_group, "evaluation", "speed"])
-                        )
-                    ).is_dir()
-                )
-            ):
+            logs_dir = Path("/".join([*prefix[:-1], "logs", last_project, last_group]))
+            metrics_dir = Path(
+                "/".join([*prefix, last_project, last_group, "evaluation", "speed"])
+            )
+            if logs_dir.exists() or next(metrics_dir.glob("*.metrics"), None) is None:
                 logger.info(
                     f"Publishing '{last_project}' group '{last_group}' metrics and files to a last fake run 'group_logs'"
                 )
