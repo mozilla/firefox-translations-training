@@ -137,7 +137,7 @@ dmypy.json
 .bin
 .snakemake
 
-tests_data
+/data
 
 # Jekyll files.
 /docs/_site
