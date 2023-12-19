@@ -26,6 +26,7 @@ def get_defaults(_):
                 "spm-vocab-size": 1000,
                 "best-model": "chrf",
                 # todo: fix opuscleaner build and enable it
+                #  https://github.com/mozilla/firefox-translations-training/issues/292
                 "use-opuscleaner": "false",
                 "bicleaner": {
                     "default-threshold": 0.5,
