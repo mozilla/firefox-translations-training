@@ -71,6 +71,7 @@ def test_split_collect_mono(clean):
         ]
     )
 
+    # file.1.zst, file.2.zst ... file.10.zst
     expected_files = set([f"{OUTPUT_DIR}/file.{i}.zst" for i in range(1, 11)])
     assert set(glob.glob(f"{OUTPUT_DIR}/file.*.zst")) == expected_files
 
@@ -111,6 +112,8 @@ def test_split_collect_corpus(clean):
         ]
     )
 
+    # file.1.zst, file.2.zst ... file.10.zst
+    # file.1.ref.zst, file.2.ref.zst ... file.10.ref.zst
     expected_files = set([f"{OUTPUT_DIR}/file.{i}.zst" for i in range(1, 11)]) | set(
         [f"{OUTPUT_DIR}/file.{i}.ref.zst" for i in range(1, 11)]
     )
