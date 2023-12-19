@@ -52,16 +52,31 @@ def parse_experiment(logs_file, project, group, name, metrics_dir=None):
     parser.run()
 
 
-def publish_group_logs(project, group, logs_dir):
-    run = wandb.init(
+def publish_group_logs(project, group, logs_dir, metrics_dir):
+    publisher = WandB(
         project=project,
         group=group,
         name="group_logs",
     )
-    artifact = wandb.Artifact(name=group, type="logs")
-    artifact.add_dir(local_path=logs_dir)
-    run.log_artifact(artifact)
-    run.finish()
+    publisher.wandb = wandb.init(
+        project=project,
+        group=group,
+        name="group_logs",
+    )
+    # Add "speed" metrics
+    if metrics_dir.is_dir():
+        metrics = []
+        for metrics_file in metrics_dir.glob("*.metrics"):
+            metrics.append(Metric.from_file(metrics_file))
+    if metrics:
+        publisher.handle_metrics(metrics)
+    # Add logs dir content as artifacts
+    if logs_dir.is_dir():
+        artifact = wandb.Artifact(name=group, type="logs")
+        artifact.add_dir(local_path=logs_dir)
+        publisher.wandb.log_artifact(artifact)
+        publisher.wandb.finish()
+    publisher.wandb.finish()
 
 
 def main():
@@ -91,17 +106,30 @@ def main():
         # Try to publish related log files to the group on a last run named "group_logs"
         if index == len(file_groups) or last_index and last_index != (project, group):
             last_project, last_group = last_index
-            logger.info(f"Publishing related files for project {last_project} group {last_group}")
+            logger.info(
+                f"Publishing related files for project {last_project} group {last_group} in 'groups logs' fake run"
+            )
             if (
                 prefix
                 and prefix[-1] == "models"
                 and (
-                    path := Path("/".join([*prefix[:-1], "logs", last_project, last_group]))
-                ).is_dir()
+                    (
+                        logs_dir := Path(
+                            "/".join([*prefix[:-1], "logs", last_project, last_group])
+                        )
+                    ).is_dir()
+                    or (
+                        metrics_dir := Path(
+                            "/".join([*prefix, last_project, last_group, "evaluation", "speed"])
+                        )
+                    ).is_dir()
+                )
             ):
-                publish_group_logs(last_project, last_group, path)
+                publish_group_logs(last_project, last_group, logs_dir, metrics_dir)
             else:
-                logger.warning("Logs folder not found, skipping.")
+                logger.warning(
+                    "No extra logs nor metrics found for this project, skipping 'group_logs' fake run."
+                )
         last_index = (project, group)
 
         # Publish a run for each file inside that group
