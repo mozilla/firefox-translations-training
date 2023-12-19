@@ -5,7 +5,6 @@ from itertools import groupby
 from pathlib import Path
 
 import wandb
-
 from translations_parser.data import Metric
 from translations_parser.parser import TrainingParser
 from translations_parser.publishers import WandB
@@ -118,9 +117,6 @@ def main():
         # Try to publish related log files to the group on a last run named "group_logs"
         if index == len(file_groups) or last_index and last_index != (project, group):
             last_project, last_group = last_index
-            logger.info(
-                f"Publishing related files for project {last_project} group {last_group} in 'groups logs' fake run"
-            )
             if (
                 prefix
                 and prefix[-1] == "models"
@@ -137,6 +133,9 @@ def main():
                     ).is_dir()
                 )
             ):
+                logger.info(
+                    f"Publishing '{last_project}' group '{last_group}' metrics and files to a last fake run 'group_logs'"
+                )
                 publish_group_logs(last_project, last_group, logs_dir, metrics_dir)
             else:
                 logger.warning(
