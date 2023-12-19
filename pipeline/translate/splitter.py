@@ -61,7 +61,9 @@ def split_file(mono_path, output_dir, num_parts, compression_cmd, output_suffix=
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Split a large compressed file into multiple parts."
+        description=__doc__,
+        formatter_class=argparse.RawTextHelpFormatter,  # Preserves whitespace in the help text.
+
     )
     parser.add_argument("mono_path", type=str, help="Path to the compressed monolingual dataset")
     parser.add_argument("--output_dir", type=str, help="Output directory to store split files")
