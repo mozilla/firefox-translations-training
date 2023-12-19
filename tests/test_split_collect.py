@@ -8,7 +8,7 @@ import subprocess
 import pytest
 import sh
 
-from pipeline.translate.splitter import split_file
+from pipeline.translate.splitter import main as split_file
 
 COMPRESSION_CMD = "zstdmt"
 
@@ -63,10 +63,12 @@ def test_split_collect_mono(clean):
     generate_dataset(length, path)
 
     split_file(
-        mono_path=f"{path}.zst",
-        output_dir=OUTPUT_DIR,
-        num_parts=10,
-        compression_cmd=COMPRESSION_CMD,
+        [
+            f"--output_dir={OUTPUT_DIR}",
+            "--num_parts=10",
+            f"--compression_cmd={COMPRESSION_CMD}",
+            f"{path}.zst",
+        ]
     )
 
     expected_files = set([f"{OUTPUT_DIR}/file.{i}.zst" for i in range(1, 11)])
@@ -92,17 +94,21 @@ def test_split_collect_corpus(clean):
     generate_dataset(length, path_trg)
 
     split_file(
-        mono_path=f"{path_src}.zst",
-        output_dir=OUTPUT_DIR,
-        num_parts=10,
-        compression_cmd=COMPRESSION_CMD,
+        [
+            f"--output_dir={OUTPUT_DIR}",
+            "--num_parts=10",
+            f"--compression_cmd={COMPRESSION_CMD}",
+            f"{path_src}.zst",
+        ]
     )
     split_file(
-        mono_path=f"{path_trg}.zst",
-        output_dir=OUTPUT_DIR,
-        num_parts=10,
-        compression_cmd=COMPRESSION_CMD,
-        output_suffix=".ref",
+        [
+            f"--output_dir={OUTPUT_DIR}",
+            "--num_parts=10",
+            f"--compression_cmd={COMPRESSION_CMD}",
+            "--output_suffix=.ref",
+            f"{path_trg}.zst",
+        ]
     )
 
     expected_files = set([f"{OUTPUT_DIR}/file.{i}.zst" for i in range(1, 11)]) | set(

@@ -15,9 +15,12 @@ import argparse
 import os
 import subprocess
 from contextlib import ExitStack
+from typing import Optional
 
 
-def split_file(mono_path, output_dir, num_parts, compression_cmd, output_suffix=""):
+def split_file(
+    mono_path: str, output_dir: str, num_parts: int, compression_cmd: str, output_suffix: str = ""
+):
     os.makedirs(output_dir, exist_ok=True)
 
     # Initialize the decompression command
@@ -59,11 +62,10 @@ def split_file(mono_path, output_dir, num_parts, compression_cmd, output_suffix=
     subprocess.run([compression_cmd, "--rm", current_name], check=True)
 
 
-def parse_args():
+def main(args: Optional[list[str]] = None) -> None:
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.RawTextHelpFormatter,  # Preserves whitespace in the help text.
-
     )
     parser.add_argument("mono_path", type=str, help="Path to the compressed monolingual dataset")
     parser.add_argument("--output_dir", type=str, help="Output directory to store split files")
@@ -75,15 +77,16 @@ def parse_args():
         "--output_suffix", type=str, help="A suffix for output files, for example .ref", default=""
     )
 
-    return parser.parse_args()
+    parsed_args = parser.parse_args(args)
+
+    split_file(
+        mono_path=parsed_args.mono_path,
+        output_dir=parsed_args.output_dir,
+        num_parts=parsed_args.num_parts,
+        compression_cmd=parsed_args.compression_cmd,
+        output_suffix=parsed_args.output_suffix,
+    )
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    split_file(
-        mono_path=args.mono_path,
-        output_dir=args.output_dir,
-        num_parts=args.num_parts,
-        compression_cmd=args.compression_cmd,
-        output_suffix=args.output_suffix,
-    )
+    main()
