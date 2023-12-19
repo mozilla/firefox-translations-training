@@ -104,14 +104,8 @@ class WandB(Publisher):
         self.generic_log(validation)
 
     def handle_metrics(self, metrics: Sequence[Metric]) -> None:
-        # Publish metrics as usual data, prefixed by "[metric] "
         for metric in metrics:
-            for key in ("chrf", "bleu_detok"):
-                self.wandb.log(
-                    step=1, data={f"[metric {metric.name}] {key}": getattr(metric, key)}
-                )
-
-            # Also publish a bar chart with max values for each metric
+            # Publish a bar chart (a table with values will also be available from W&B)
             self.wandb.log(
                 {
                     f"{metric.name.capitalize()} summary": wandb.plot.bar(
