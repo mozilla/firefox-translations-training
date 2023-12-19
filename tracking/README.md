@@ -50,7 +50,15 @@ The following rules are applied:
 
 ## Install
 
-### Deployment
+The parser can be built as a distinct package to make deployment and developments easier.
+
+You can install the package using pip:
+```sh
+$ pip install -r requirements/common.txt
+$ pip install .
+```
+
+### Requirements
 
 The full list of dependencies (hash pinned) is specified in `requirements/comon.txt`.
 
@@ -59,20 +67,12 @@ This file is generated using `pip-tools`, and must be updated once dependecies c
 pip-compile --generate-hashes --output-file=requirements/common.txt requirements/common.in
 ```
 
-### Package
-
-The parser can be built as a distinct package to make developments easier.
-
-You can install the package using pip:
-```sh
-$ pip install .
-```
-
-## Development
+### Development
 
 On a virtual environment, you can install the package using pip:
 A developer may want to install the package in editable mode (i.e install from the local path directly):
 ```sh
+$ pip install -r requirements/common.txt
 $ pip install -e .
 ```
 
@@ -83,7 +83,7 @@ $ pre-commit install
 $ pre-commit run -a # Run pre-commit once
 ```
 
-### Usage
+## Usage
 
 Run the parser with the local sample:
 ```sh
