@@ -34,6 +34,8 @@ def split_file(
         total_lines = sum(1 for _ in decompressed.stdout)
         lines_per_part = (total_lines + num_parts - 1) // num_parts
 
+        print(f"Splitting {mono_path} to {num_parts} chunks x {total_lines} lines")
+
         # Reset the decompression for actual processing
         decompressed = stack.enter_context(
             subprocess.Popen(decompress_cmd, shell=True, stdout=subprocess.PIPE)
@@ -48,10 +50,12 @@ def split_file(
             if current_line_count == 0 or current_line_count >= lines_per_part:
                 if current_file is not None:
                     current_file.close()
+                    print(f"Compressing {current_name} with {compression_cmd}")
                     subprocess.run([compression_cmd, "--rm", current_name], check=True)
 
                 current_name = f"{output_dir}/file.{file_index}{output_suffix}"
                 current_file = stack.enter_context(open(current_name, "w"))
+                print(f"A new file {current_name} created")
                 file_index += 1
                 current_line_count = 0
 
@@ -60,6 +64,9 @@ def split_file(
 
     # decompress the last file after closing
     subprocess.run([compression_cmd, "--rm", current_name], check=True)
+    print(f"Compressing {current_name} with {compression_cmd}")
+
+    print("Done")
 
 
 def main(args: Optional[list[str]] = None) -> None:
