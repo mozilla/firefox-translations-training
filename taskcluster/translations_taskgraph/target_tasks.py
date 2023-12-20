@@ -20,7 +20,7 @@ def train_target_tasks(full_task_graph, parameters, graph_config):
         if task.attributes.get("trg_locale") != trg:
             return False
 
-        # Datasets are only applicable to dataset-specific tasks. If these
+        # Datasets are only applicable to dataset-specific tasks. If these 
         # attribute isn't present on the task it can be assumed to be included
         # if the above attributes matched, as it will be a task that is either
         # agnostic of datasets, or folds in datasets from earlier tasks.

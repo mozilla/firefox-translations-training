@@ -20,7 +20,7 @@ kind-dependencies:
 
 tasks:
     all:
-        description: Dummy task that ensures all parts of training pipeline will run
+        description: Dummy task that ensures all parts of training pipeline will run.
         attributes:
             stage: all-pr
             src_locale: "{src_locale}"
