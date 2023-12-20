@@ -56,6 +56,7 @@ def test_taskcluster(wandb_mock, getargs_mock, caplog, samples_dir):
     """
     Asserts the output from stdout matches a certain string.
     """
+    caplog.set_level(logging.DEBUG)
     wandb_dir = OUTPUT_DIR / "wandb"
     wandb_dir.mkdir(parents=True)
     wandb_mock.init.return_value.dir = wandb_dir
@@ -98,6 +99,7 @@ def test_experiments(wandb_mock, getargs_mock, caplog, samples_dir):
     """
     Asserts the output from stdout matches a certain string.
     """
+    caplog.set_level(logging.INFO)
     wandb_dir = OUTPUT_DIR / "wandb"
     wandb_dir.mkdir(parents=True)
     wandb_mock.init.return_value.dir = wandb_dir
@@ -105,27 +107,48 @@ def test_experiments(wandb_mock, getargs_mock, caplog, samples_dir):
     wandb_mock.Table = lambda *args, **kwargs: (args, kwargs)
     experiments_publish.main()
     assert [(level, message) for _module, level, message in caplog.record_tuples] == [
+        (logging.INFO, "Reading 3 train.log data"),
+        # teacher-finetuned0
+        (
+            logging.INFO,
+            "Parsing folder /home/valentin/dev/firefox-translations-training/tests/data/experiments/models/en-nl/prod/teacher-finetuned0",
+        ),
+        (logging.INFO, "Reading metrics file mtdata_Neulab-tedtalks_test-1-eng-nld.metrics"),
+        (logging.INFO, "Reading metrics file flores_devtest.metrics"),
         (logging.INFO, "Reading logs stream."),
-        (logging.DEBUG, "Reading Marian version."),
-        (logging.DEBUG, "Reading Marian run description."),
-        (logging.DEBUG, "Reading Marian configuration."),
         (logging.INFO, "Successfully parsed 993 lines"),
         (logging.INFO, "Found 567 training entries"),
         (logging.INFO, "Found 189 validation entries"),
+        # teacher-finetuned1
+        (
+            logging.INFO,
+            "Parsing folder /home/valentin/dev/firefox-translations-training/tests/data/experiments/models/en-nl/prod/teacher-finetuned1",
+        ),
+        (logging.INFO, "Reading metrics file mtdata_Neulab-tedtalks_test-1-eng-nld.metrics"),
+        (logging.INFO, "Reading metrics file flores_devtest.metrics"),
         (logging.INFO, "Reading logs stream."),
-        (logging.DEBUG, "Reading Marian version."),
-        (logging.DEBUG, "Reading Marian run description."),
-        (logging.DEBUG, "Reading Marian configuration."),
         (logging.INFO, "Successfully parsed 1000 lines"),
         (logging.INFO, "Found 573 training entries"),
         (logging.INFO, "Found 191 validation entries"),
+        # student
+        (
+            logging.INFO,
+            "Parsing folder /home/valentin/dev/firefox-translations-training/tests/data/experiments/models/en-nl/prod/student",
+        ),
+        (logging.INFO, "Reading metrics file mtdata_Neulab-tedtalks_test-1-eng-nld.metrics"),
+        (logging.INFO, "Reading metrics file flores_devtest.metrics"),
         (logging.INFO, "Reading logs stream."),
-        (logging.DEBUG, "Reading Marian version."),
-        (logging.DEBUG, "Reading Marian run description."),
-        (logging.DEBUG, "Reading Marian configuration."),
         (logging.INFO, "Successfully parsed 1002 lines"),
         (logging.INFO, "Found 550 training entries"),
         (logging.INFO, "Found 108 validation entries"),
+        # Group extra logs
+        (
+            logging.INFO,
+            "Publishing 'en-nl' group 'prod' metrics and files to a last fake run 'group_logs'",
+        ),
+        # Metrics for `speed` directory
+        (logging.INFO, "Reading metrics file mtdata_Neulab-tedtalks_test-1-eng-nld.metrics"),
+        (logging.INFO, "Reading metrics file flores_devtest.metrics"),
     ]
     log_calls, metrics_calls = [], []
     for log in wandb_mock.init.return_value.log.call_args_list:
