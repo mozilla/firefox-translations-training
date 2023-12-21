@@ -60,7 +60,6 @@ task-defaults:
         command:
             - bash
             - -c
-              # TODO: move number of chunks elsewhere
             - >-
                 python3 $VCS_PATH/pipeline/translate/splitter.py
                 --output_dir=/builds/worker/artifacts
