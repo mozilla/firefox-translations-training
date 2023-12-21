@@ -133,7 +133,7 @@ tasks:
           docker-image: {in-tree: base}
           max-run-time: 1200
       description: "Create diffs of taskgraphs vs. base revision."
-      run-on-tasks-for: ["github-push", "github-pull-request"]
+      run-on-tasks-for: ["github-pull-request"]
       optimization:
         skip-unless-changed:
             - taskcluster/**
