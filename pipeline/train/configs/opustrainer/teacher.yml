@@ -3,14 +3,14 @@ datasets:
   backtranslated: <dataset1> # Back-translated data
 
 stages:
-  - pretrain
+#  - pretrain
   - finetune
 
 
-pretrain:
-  - original 0.7
-  - backtranslated 0.3
-  - until original 2
+#pretrain:
+#  - original 0.7
+#  - backtranslated 0.3
+#  - until original 2
 
 # Fine-tuning only on original clean corpus until the early stopping
 finetune:
