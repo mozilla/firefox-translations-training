@@ -30,7 +30,7 @@ PIPELINE_DIRS = [
     "taskcluster/translations_taskgraph/**",
 ]
 PIPELINE_DIRS.extend(
-    f"taskcluster/ci/{kind}" for kind in os.listdir(KIND_DIR) if kind not in EXCLUDE_KINDS
+    f"taskcluster/kinds/{kind}" for kind in os.listdir(KIND_DIR) if kind not in EXCLUDE_KINDS
 )
 
 transforms = TransformSequence()
