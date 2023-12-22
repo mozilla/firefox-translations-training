@@ -1,6 +1,5 @@
 import gzip
 import os
-import shutil
 
 import pytest
 from fixtures import DataDir
