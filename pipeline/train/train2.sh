@@ -94,7 +94,7 @@ echo "### Training ${model_dir}"
 opustrainer-train \
   --config "${new_config}" \
   --log-file "${model_dir}/opustrainer.log" \
-  --log-level INFO > "${model_dir}/opus_trainer_corpus.tsv"
+  --log-level INFO cat > "${model_dir}/opus_trainer_corpus.tsv"
 #  "${MARIAN}/marian" \
 #    --model "${model_dir}/model.npz" \
 #    -c "configs/model/${model_type}.yml" "configs/training/${model_type}.${training_type}.yml" \
