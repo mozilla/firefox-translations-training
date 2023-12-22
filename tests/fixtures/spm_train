@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+import os
+import sys
+
+"""
+spm_train test fixture
+
+Do not rely on spm_train in tests, instead just capture what arguments are passed to it
+and save that as a vocab.model.
+"""
+arguments = sys.argv[1:]
+
+model_prefix_arg = next(arg for arg in arguments if "--model_prefix=" in arg)
+model_prefix = model_prefix_arg.split("=")[1]
+
+if not model_prefix:
+    raise Exception("Could not find the model prefix argument")
+
+vocab_path = model_prefix = model_prefix + ".model"
+data_directory = os.path.dirname(vocab_path)
+
+if not os.path.exists(data_directory):
+    raise Exception("The data directory could not be found.")
+
+with open(vocab_path, "w") as file:
+    file.write("\n".join(arguments))

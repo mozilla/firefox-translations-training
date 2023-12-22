@@ -25,7 +25,11 @@
 set -x
 set -euo pipefail
 
-test -v MARIAN
+if [[ -z "${MARIAN}" ]]; then
+    echo "Error: The MARIAN environment variable was not provided. This is required as"
+    echo "the path to the spm_train binary."
+    exit 1
+fi
 
 # The name of the source corpus, e.g. "fetches/corpus.en.zst".
 merged_corpus_src=$1
@@ -38,7 +42,11 @@ sample_size=$4
 # The thread count, either "auto" or an int.
 num_threads=$5
 # The size of the final vocab. Defaults to 32000.
-vocab_size="${6:-32000}"
+vocab_size=${6:-None}
+
+if [ "$vocab_size" == "None" ]; then
+  vocab_size=32000
+fi
 
 if (( vocab_size % 8 != 0 )); then
   echo "Error: vocab_size must be a multiple of 8 (https://github.com/mozilla/firefox-translations-training/issues/249)"

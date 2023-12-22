@@ -1,8 +1,8 @@
 import gzip
 import os
-import shutil
 
 import pytest
+from fixtures import DataDir
 
 SRC = "ru"
 TRG = "en"
@@ -15,7 +15,6 @@ os.environ["TRG"] = TRG
 
 from pipeline.data.dataset_importer import run_import
 
-OUTPUT_DIR = "data/tests_data"
 # the augmentation is probabilistic, here is a range for 0.1 probability
 AUG_MAX_RATE = 0.3
 AUG_MIN_RATE = 0.01
@@ -43,11 +42,8 @@ def get_aug_rate(file, check_func):
 
 
 @pytest.fixture(scope="function")
-def output_dir():
-    if os.path.exists(OUTPUT_DIR):
-        shutil.rmtree(OUTPUT_DIR)
-    os.makedirs(OUTPUT_DIR)
-    return os.path.abspath(OUTPUT_DIR)
+def data_dir():
+    return DataDir("test_data_importer")
 
 
 @pytest.mark.parametrize(
@@ -59,8 +55,8 @@ def output_dir():
         "sacrebleu_wmt19",
     ],
 )
-def test_basic_corpus_import(dataset, output_dir):
-    prefix = os.path.join(output_dir, dataset)
+def test_basic_corpus_import(dataset, data_dir):
+    prefix = data_dir.join(dataset)
     output_src = f"{prefix}.{SRC}.{ARTIFACT_EXT}"
     output_trg = f"{prefix}.{TRG}.{ARTIFACT_EXT}"
 
@@ -81,9 +77,9 @@ def test_basic_corpus_import(dataset, output_dir):
         ("sacrebleu_aug-title-strict_wmt19", is_title_case, 1.0, 1.0),
     ],
 )
-def test_specific_augmentation(params, output_dir):
+def test_specific_augmentation(params, data_dir):
     dataset, check_func, min_rate, max_rate = params
-    prefix = os.path.join(output_dir, dataset)
+    prefix = data_dir.join(dataset)
     output_src = f"{prefix}.{SRC}.{ARTIFACT_EXT}"
     output_trg = f"{prefix}.{TRG}.{ARTIFACT_EXT}"
 
@@ -98,9 +94,9 @@ def test_specific_augmentation(params, output_dir):
         assert rate <= max_rate
 
 
-def test_augmentation_mix(output_dir):
+def test_augmentation_mix(data_dir):
     dataset = "sacrebleu_aug-mix_wmt19"
-    prefix = os.path.join(output_dir, dataset)
+    prefix = data_dir.join(dataset)
     output_src = f"{prefix}.{SRC}.{ARTIFACT_EXT}"
     output_trg = f"{prefix}.{TRG}.{ARTIFACT_EXT}"
 
