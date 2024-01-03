@@ -16,7 +16,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def get_args():
+def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Publish multiple experiments to Weight & Biases")
     parser.add_argument(
         "--directory",
@@ -28,7 +28,17 @@ def get_args():
     return parser.parse_args()
 
 
-def parse_experiment(logs_file, project, group, name, metrics_dir=None):
+def parse_experiment(
+    project: str,
+    group: str,
+    name: str,
+    logs_file: Path,
+    metrics_dir: Path = None,
+) -> None:
+    """
+    Parse logs from a Taskcluster dump and publish data to W&B.
+    If a metrics directory is set, initially read and publish each `.metrics` values.
+    """
     metrics = []
     if metrics_dir:
         for metrics_file in metrics_dir.glob("*.metrics"):
@@ -51,7 +61,17 @@ def parse_experiment(logs_file, project, group, name, metrics_dir=None):
     parser.run()
 
 
-def publish_group_logs(project, group, logs_dir, metrics_dir):
+def publish_group_logs(
+    project: str,
+    group: str,
+    logs_dir: Path,
+    metrics_dir: Path,
+) -> None:
+    """
+    Publish all files within `logs_dir` to W&B artifacts for a specific group.
+    A fake W&B run named `group_logs` is created to publish artifacts.
+    If a metrics directory is set, initially read and publish each `.metrics` values.
+    """
     publisher = WandB(
         project=project,
         group=group,
@@ -77,7 +97,7 @@ def publish_group_logs(project, group, logs_dir, metrics_dir):
     publisher.wandb.finish()
 
 
-def main():
+def main() -> None:
     args = get_args()
     directory = args.directory
     # Ignore files with a different name than "train.log"
@@ -109,7 +129,7 @@ def main():
                 logger.warning("Evaluation metrics files not found, skipping.")
                 metrics_dir = None
             try:
-                parse_experiment(file, project, group, name, metrics_dir=metrics_dir)
+                parse_experiment(project, group, name, file, metrics_dir=metrics_dir)
             except Exception as e:
                 logger.error(f"An exception occured parsing {file}: {e}")
 

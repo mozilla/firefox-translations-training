@@ -1,8 +1,9 @@
 import logging
 import re
 from collections import defaultdict
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Iterator, Sequence
 from datetime import datetime
+from itertools import chain
 from typing import Callable
 
 import yaml
@@ -41,7 +42,7 @@ class TrainingParser:
         log_filter: Callable = None,
         skip_marian_context: bool = False,
         metrics: Sequence[Metric] = None,
-    ):
+    ) -> None:
         # Iterable reading logs lines
         self.logs_iter = logs_iter
         # Function to exclude log lines depending on the headers
@@ -69,17 +70,17 @@ class TrainingParser:
         # Data publication after parsing logs
         self.publishers = publishers
 
-    def get_headers(self, line):
+    def get_headers(self, line: str) -> tuple[list[tuple[str]], int]:
         """
         Returns a list of tuples representing the headers of a log line
-        and the position of the last index
+        and the position of the last character representing the header.
         """
         matches = list(HEADER_RE.finditer(line))
         if not matches:
             return ((), None)
         return ([tuple(m.group("value").split()) for m in matches], matches[-1].span()[-1])
 
-    def get_timestamp(self, headers):
+    def get_timestamp(self, headers: Sequence[Sequence[str]]) -> datetime | None:
         """
         Look for a timestamp in header tags.
         Returns the timestamp if found, None otherwise.
@@ -100,7 +101,7 @@ class TrainingParser:
             except ValueError:
                 pass
 
-    def parse_training_log(self, headers, text):
+    def parse_training_log(self, text: str) -> TrainingEpoch | None:
         match = TRAINING_RE.match(text)
         if not match:
             return
@@ -120,7 +121,10 @@ class TrainingParser:
                 )
         return training_epoch
 
-    def parse_validation_log(self, headers, text):
+    def parse_validation_log(
+        self, headers: Sequence[Sequence[str]], text: str
+    ) -> ValidationEpoch | None:
+        """Parse a validation entry on multiple lines."""
         if ("valid",) not in headers or not (match := VALIDATION_RE.match(text)):
             return
         epoch, up, key, val = match.groups()
@@ -145,7 +149,12 @@ class TrainingParser:
             del self._validation_entries[(epoch, up)]
             return validation_epoch
 
-    def _iter_log_entries(self):
+    def _iter_log_entries(self) -> Iterator[tuple[list[tuple[str]], str]]:
+        """
+        Inner method to iterate on log lines passed to
+        the parser, differentiating headers and text.
+        Automatically set Marian run date when found.
+        """
         for line in self.logs_iter:
             self._current_index += 1
             headers, position = self.get_headers(line)
@@ -168,7 +177,70 @@ class TrainingParser:
 
             yield headers, text
 
-    def _parse(self):
+    def parse_marian_context(self, logs_iter: Iterator[tuple[list[tuple[str]], str]]) -> None:
+        """Look for Marian context in the first logs lines."""
+        headers = []
+        # Consume first lines until we get the Marian header
+        while ("marian",) not in headers:
+            headers, text = next(logs_iter)
+
+        logger.debug("Reading Marian version.")
+        _, version, self.version_hash, self.release_date, *_ = text.split()
+        self.version = version.rstrip(";")
+        major, minor = map(int, version.lstrip("v").split(".")[:2])
+        if (major, minor) > (MARIAN_MAJOR, MARIAN_MINOR):
+            logger.warning(
+                f"Parsing logs from a newer version of Marian ({major}.{minor} > {MARIAN_MAJOR}.{MARIAN_MINOR})"
+            )
+
+        logger.debug("Reading Marian run description.")
+        desc = []
+        for headers, text in logs_iter:
+            if ("marian",) not in headers:
+                break
+            desc.append(text)
+        self.description = " ".join(desc)
+
+        # Try to parse all following config lines as YAML
+        logger.debug("Reading Marian configuration.")
+        config_yaml = ""
+        while ("config",) in headers:
+            if "Model is being created" in text:
+                headers, text = next(logs_iter)
+                break
+            config_yaml += f"{text}\n"
+            headers, text = next(logs_iter)
+        try:
+            self.config = yaml.safe_load(config_yaml)
+        except Exception as e:
+            raise Exception(f"Invalid config section: {e}")
+
+    def parse_data(self, logs_iter: Iterator[tuple[list[tuple[str]], str]]) -> None:
+        """
+        Iterate logs until the end to find training or validation
+        data and report incomplete multiline logs.
+        """
+        while True:
+            try:
+                headers, text = next(logs_iter)
+                training = self.parse_training_log(text)
+                if not training:
+                    self.parse_validation_log(headers, text)
+            except StopIteration:
+                break
+        if self._validation_entries.keys():
+            logger.warning(
+                "Some validation data is incomplete with the following epoch/up couples:"
+            )
+            for epoch, up in self._validation_entries.keys():
+                logger.warning(f"* Ep. {epoch}, Up. {up}")
+
+    def parse(self) -> None:
+        """
+        Parse and publish training logs:
+          1. Optionally reads Marian context (version, configuration)
+          2. Looks for training or validation data among next lines
+        """
         if self.parsed:
             raise Exception("The parser already ran.")
         logs_iter = self._iter_log_entries()
@@ -177,41 +249,7 @@ class TrainingParser:
         if self.skip_marian_context:
             headers, text = next(logs_iter)
         else:
-            # Consume first lines until we get the Marian header
-            headers = []
-            while ("marian",) not in headers:
-                headers, text = next(logs_iter)
-
-            logger.debug("Reading Marian version.")
-            _, version, self.version_hash, self.release_date, *_ = text.split()
-            self.version = version.rstrip(";")
-            major, minor = map(int, version.lstrip("v").split(".")[:2])
-            if (major, minor) > (MARIAN_MAJOR, MARIAN_MINOR):
-                logger.warning(
-                    f"Parsing logs from a newer version of Marian ({major}.{minor} > {MARIAN_MAJOR}.{MARIAN_MINOR})"
-                )
-
-            logger.debug("Reading Marian run description.")
-            desc = []
-            for headers, text in logs_iter:
-                if ("marian",) not in headers:
-                    break
-                desc.append(text)
-            self.description = " ".join(desc)
-
-            # Try to parse all following config lines as YAML
-            logger.debug("Reading Marian configuration.")
-            config_yaml = ""
-            while ("config",) in headers:
-                if "Model is being created" in text:
-                    headers, text = next(logs_iter)
-                    break
-                config_yaml += f"{text}\n"
-                headers, text = next(logs_iter)
-            try:
-                self.config = yaml.safe_load(config_yaml)
-            except Exception as e:
-                raise Exception(f"Invalid config section: {e}")
+            self.parse_marian_context(logs_iter)
 
         for publisher in self.publishers:
             publisher.open(self)
@@ -221,39 +259,34 @@ class TrainingParser:
             for publisher in self.publishers:
                 publisher.handle_metrics(self.metrics)
 
-        # Iterate until the end of file to find training or validation logs
-        while True:
-            try:
-                try:
-                    training = self.parse_training_log(headers, text)
-                    if not training:
-                        self.parse_validation_log(headers, text)
-                except ValueError as e:
-                    logger.warning(f"Line {self._current_index} could not be stored: {e}.")
-                finally:
-                    headers, text = next(logs_iter)
-            except StopIteration:
-                break
-
-        # Report incomplete validation logs
-        if self._validation_entries.keys():
-            logger.warning(
-                "Some validation data is incomplete with the following epoch/up couples:"
+        # Run training and validation data parser
+        self.parse_data(
+            chain(
+                (headers, text),
+                logs_iter,
             )
-            for epoch, up in self._validation_entries.keys():
-                logger.warning(f"* Ep. {epoch}, Up. {up}")
+        )
+
+        # Once all data has been parsed, call the final publication API
+        for publisher in self.publishers:
+            try:
+                publisher.publish(self.output)
+            except Exception as e:
+                logger.error(f"Error publishing data using {publisher.__class__.__name__}: {e}")
+            finally:
+                publisher.close()
 
         self.parsed = True
 
     @property
-    def logs_str(self):
+    def logs_str(self) -> str:
         return "\n".join(
             "".join(f"[{key}] {val}\n" for val in values)
             for key, values in self.indexed_logs.items()
         )
 
     @property
-    def output(self):
+    def output(self) -> TrainingLog:
         if not self.parsed:
             raise Exception("Please run the parser before reading the output")
         return TrainingLog(
@@ -264,12 +297,10 @@ class TrainingParser:
             logs=self.indexed_logs,
         )
 
-    def run(self):
-        """
-        Parse the log lines.
-        """
+    def run(self) -> None:
+        """Parse logs stream."""
         try:
-            self._parse()
+            self.parse()
         except StopIteration:
             # A StopIteration can be raised if some required lines are never found.
             raise ValueError("Logs file ended up unexpectedly")
@@ -278,11 +309,3 @@ class TrainingParser:
         logger.info(f"Successfully parsed {count} lines")
         logger.info(f"Found {len(self.training)} training entries")
         logger.info(f"Found {len(self.validation)} validation entries")
-
-        for publisher in self.publishers:
-            try:
-                publisher.publish(self.output)
-            except Exception as e:
-                logger.error(f"Error publishing data using {publisher.__class__.__name__}: {e}")
-            finally:
-                publisher.close()

@@ -33,7 +33,7 @@ class ValidationEpoch:
 
 @dataclass
 class Metric:
-    """A simple key:value metric extracted from `.metrics` files"""
+    """Data extracted from a `.metrics` file"""
 
     name: str
     chrf: float

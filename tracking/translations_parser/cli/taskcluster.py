@@ -1,6 +1,7 @@
 import argparse
 import logging
 import sys
+from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
 
@@ -8,7 +9,7 @@ from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import CSVExport, WandB
 
 
-def get_args():
+def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Extract information from Marian execution on Task Cluster"
     )
@@ -64,9 +65,9 @@ def get_args():
     return parser.parse_args()
 
 
-def taskcluster_log_filter(headers):
+def taskcluster_log_filter(headers: Sequence[Sequence[str]]) -> bool:
     """
-    Check TC log contain a valid task header ('task', <timestamp>)
+    Check TC log contain a valid task header i.e. ('task', <timestamp>)
     """
     for values in headers:
         if not values or len(values) != 2:
@@ -82,7 +83,7 @@ def taskcluster_log_filter(headers):
     return False
 
 
-def main():
+def main() -> None:
     args = get_args()
 
     if args.loglevel:

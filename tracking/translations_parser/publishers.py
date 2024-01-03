@@ -16,15 +16,17 @@ logger = logging.getLogger(__name__)
 
 class Publisher(ABC):
     """
-    Generic mixin to publish parsed data.
-    Either the `handle_*` methods can be overriden for real time publication or
-    the `publish` method with all results (including run date, configuration…).
+    Abstract class used to publish parsed data.
+
+    Either the `handle_*` methods can be overriden for real time
+    publication (introduced later on) or the `publish` method
+    with all results (including parser run date, configuration…).
     """
 
     def open(self, parser) -> None:
         ...
 
-    def handle_training(self, training: TrainingEpoch, **kwargs) -> None:
+    def handle_training(self, training: TrainingEpoch) -> None:
         ...
 
     def handle_validation(self, validation: ValidationEpoch) -> None:
@@ -41,11 +43,13 @@ class Publisher(ABC):
 
 
 class CSVExport(Publisher):
-    def __init__(self, output_dir):
+    def __init__(self, output_dir: Path) -> None:
         assert output_dir.is_dir(), "Output must be a valid directory"
         self.output_dir = output_dir
 
-    def write_data(self, output, entries, dataclass):
+    def write_data(
+        self, output: Path, entries: Sequence[TrainingEpoch | ValidationEpoch], dataclass: type
+    ) -> None:
         if not entries:
             logger.warning(f"No {dataclass.__name__} entry, skipping.")
         with open(output, "w") as f:
@@ -54,7 +58,7 @@ class CSVExport(Publisher):
             for entry in entries:
                 writer.writerow(vars(entry))
 
-    def publish(self, training_log):
+    def publish(self, training_log: TrainingLog) -> None:
         training_output = self.output_dir / "training.csv"
         if training_output.exists():
             logger.warning(f"Training output file {training_output} exists, skipping.")
@@ -69,9 +73,15 @@ class CSVExport(Publisher):
 
 
 class WandB(Publisher):
-    def __init__(self, project, artifacts=None, artifacts_name="logs", **extra_kwargs):
-        self.project = project
+    def __init__(
+        self,
+        project: str,
         # Optional path to a directory containing training artifacts
+        artifacts: Path = None,
+        artifacts_name: str = "logs",
+        **extra_kwargs,
+    ):
+        self.project = project
         self.artifacts = artifacts
         self.artifacts_name = artifacts_name
         self.extra_kwargs = extra_kwargs
@@ -90,16 +100,16 @@ class WandB(Publisher):
             **self.extra_kwargs,
         )
 
-    def generic_log(self, data):
+    def generic_log(self, data: TrainingEpoch | ValidationEpoch) -> None:
         epoch = vars(data)
         step = epoch.pop("up")
         for key, val in epoch.items():
             self.wandb.log(step=step, data={key: val})
 
-    def handle_training(self, training):
+    def handle_training(self, training: TrainingEpoch) -> None:
         self.generic_log(training)
 
-    def handle_validation(self, validation):
+    def handle_validation(self, validation: ValidationEpoch) -> None:
         self.generic_log(validation)
 
     def handle_metrics(self, metrics: Sequence[Metric]) -> None:
@@ -122,7 +132,7 @@ class WandB(Publisher):
                 }
             )
 
-    def close(self):
+    def close(self) -> None:
         # Store runtime logs as the main log artifact
         # This will be overwritten in case an unhandled exception occurs
         with (Path(self.wandb.dir) / "output.log").open("w") as f:
