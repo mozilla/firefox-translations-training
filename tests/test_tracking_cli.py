@@ -41,7 +41,7 @@ def samples_dir():
 @patch(
     "translations_parser.cli.taskcluster.get_args",
     return_value=argparse.Namespace(
-        input_file=Path(__file__).parent / "data" / "KZPjvTEiSmO--BXYpQCNPQ.txt",
+        input_file=Path(__file__).parent / "data" / "taskcluster.log",
         loglevel=logging.DEBUG,
         output_dir=OUTPUT_DIR,
         from_stream=False,

@@ -3,7 +3,7 @@
 from pathlib import Path
 from time import sleep
 
-logs_sample = Path(__file__).parent / "KZPjvTEiSmO--BXYpQCNPQ.txt"
+logs_sample = Path(__file__).parent / "taskcluster.log"
 
 with logs_sample.open("r") as f:
     lines = f.readlines()

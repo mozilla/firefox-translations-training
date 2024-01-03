@@ -18,7 +18,6 @@ def get_args():
         "-i",
         help="Path to the Task Cluster log file.",
         type=Path,
-        default=Path(__file__).parent.parent / "samples" / "KZPjvTEiSmO--BXYpQCNPQ.txt",
     )
     input_group.add_argument(
         "--from-stream",
