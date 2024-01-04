@@ -2828,6 +2828,19 @@ slack = ["slack-sdk"]
 telegram = ["requests"]
 
 [[package]]
+name = "translations_parser"
+version = "0.1.0"
+description = "A training log parser for the Mozilla translation ML tool"
+optional = false
+python-versions = ">=3.10"
+files = []
+develop = true
+
+[package.source]
+type = "directory"
+url = "tracking"
+
+[[package]]
 name = "typing-extensions"
 version = "4.9.0"
 description = "Backported and Experimental Type Hints for Python 3.8+"
@@ -3214,4 +3227,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "beb6ea7402cbd47fde7ec4cd7a49435f4e344f344fa0330f27c9a8d045288d13"
+content-hash = "e9ea3e20f676b1ea5e49945cf0771a07609d514bd3ae96e7bc36b5d06b4b696c"

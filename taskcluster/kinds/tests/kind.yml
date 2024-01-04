@@ -97,9 +97,7 @@ tasks:
         - -c
         - >-
             pip install poetry &&
-            poetry install --only tests --only utils &&
-            pip install ./tracking &&
-            make tests
+            make run-tests
     run-on-tasks-for: ["github-push", "github-pull-request"]
     optimization:
       skip-unless-changed:
