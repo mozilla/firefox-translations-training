@@ -1,0 +1,87 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - taskgraph.transforms.task_context
+    - taskgraph.transforms.run:transforms
+    - translations_taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - merge-mono
+
+task-defaults:
+    description: split mono for {locale}
+    attributes:
+        stage: split-mono
+        trg_locale: "{trg_locale}"
+        cache:
+            type: split-mono
+            resources:
+                - pipeline/translate/splitter.py
+            from-parameters:
+                split_chunks: training_config.taskcluster.split-chunks
+
+    task-context:
+        from-parameters:
+            split_chunks: training_config.taskcluster.split-chunks
+            trg_locale: training_config.experiment.trg
+        substitution-fields:
+            - description
+            - label
+            - fetches
+            - dependencies
+            - worker.env
+            - attributes
+            - run.command
+
+    worker-type: b-cpu-largedisk
+    expires-after: "90 days"
+    worker:
+        docker-image: { "in-tree": "train" }
+        max-run-time: 86400
+        artifacts:
+            - name: public/build
+              path: /builds/worker/artifacts
+              type: directory
+        env:
+            LOCALE: "{locale}"
+            COMPRESSION_CMD: zstdmt
+            ARTIFACT_EXT: zst
+
+    # Don't run unless explicitly scheduled
+    run-on-tasks-for: []
+
+    run:
+        using: run-task
+        command:
+            - bash
+            - -c
+            - >-
+                python3 $VCS_PATH/pipeline/translate/splitter.py
+                --output_dir=/builds/worker/artifacts
+                --num_parts={split_chunks}
+                --compression_cmd=zstdmt
+                $MOZ_FETCHES_DIR/mono.$LOCALE.zst
+
+
+tasks:
+    trg:
+        label: split-mono-trg-{trg_locale}
+        attributes:
+            dataset-category: mono-trg
+
+        task-context:
+            from-parameters:
+                locale: training_config.experiment.trg
+
+        dependencies:
+            merge-mono-trg: merge-mono-trg-{trg_locale}
+
+        fetches:
+            merge-mono-trg:
+                - artifact: mono.{trg_locale}.zst
+                  extract: false

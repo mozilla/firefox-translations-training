@@ -16,7 +16,7 @@ from pathlib import Path
 from taskgraph import files_changed
 from taskgraph.transforms.base import TransformSequence
 
-KIND_DIR = Path(__file__).parent.parent.parent / "ci"
+KIND_DIR = Path(__file__).parent.parent.parent / "kinds"
 
 # Kinds are slightly special - there are some kinds that don't affect the pipeline,
 # and changing them shouldn't force the pipeline to run.
@@ -30,7 +30,7 @@ PIPELINE_DIRS = [
     "taskcluster/translations_taskgraph/**",
 ]
 PIPELINE_DIRS.extend(
-    f"taskcluster/ci/{kind}" for kind in os.listdir(KIND_DIR) if kind not in EXCLUDE_KINDS
+    f"taskcluster/kinds/{kind}" for kind in os.listdir(KIND_DIR) if kind not in EXCLUDE_KINDS
 )
 
 transforms = TransformSequence()
