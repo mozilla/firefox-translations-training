@@ -44,7 +44,8 @@ class Publisher(ABC):
 
 class CSVExport(Publisher):
     def __init__(self, output_dir: Path) -> None:
-        assert output_dir.is_dir(), "Output must be a valid directory"
+        if not output_dir.is_dir():
+            raise ValueError("Output must be a valid directory for the CSV export")
         self.output_dir = output_dir
 
     def write_data(
@@ -97,11 +98,14 @@ class WandB(Publisher):
         config = parser.config
         config.update(self.extra_kwargs.pop("config", {}))
         # Start a W&B run
-        self.wandb = wandb.init(
-            project=self.project,
-            config=config,
-            **self.extra_kwargs,
-        )
+        try:
+            self.wandb = wandb.init(
+                project=self.project,
+                config=config,
+                **self.extra_kwargs,
+            )
+        except Exception as e:
+            logger.error(f"WandB client could not be initialized: {e}. No data will be published.")
 
     def generic_log(self, data: TrainingEpoch | ValidationEpoch) -> None:
         if self.wandb is None:

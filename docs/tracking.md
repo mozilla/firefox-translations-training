@@ -84,25 +84,3 @@ $ pip install pre-commit
 $ pre-commit install
 $ pre-commit run -a # Run pre-commit once
 ```
-
-## Usage
-
-Run the parser with the local sample:
-```sh
-$ parse_tc_logs -i ../tests/data/taskcluster.log
-```
-
-Simulate reading logs from a process:
-```sh
-../tests/data/simulate_process.py | parse_tc_logs -s --verbose
-```
-
-Publish data to Weight & Biases:
-```sh
-$ parse_tc_logs -i ../tests/data/taskcluster.log --wandb-project <project> --wandb-group <group> --wandb-run-name <run>
-```
-
-Run the parser on a directory containing experiments and publis to Weight & Biases:
-```sh
-$ parse_experiment_dir -d models
-```

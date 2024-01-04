@@ -80,8 +80,8 @@ class TrainingParser:
 
     def get_timestamp(self, headers: Sequence[Sequence[str]]) -> datetime | None:
         """
-        Looks for a timestamp in header tags.
-        Returns the timestamp if found, None otherwise.
+        Looks for a timestamp in Taskcluster header tags.
+        Returns None in case no timestamp is found.
         """
         for values in headers:
             if len(values) != 2:
@@ -91,8 +91,11 @@ class TrainingParser:
             if base == "task":
                 try:
                     return datetime.fromisoformat(timestamp.rstrip("Z"))
-                except ValueError:
-                    pass
+                except ValueError as e:
+                    # Taskcluster timestamp should always be a valid date
+                    logger.error(
+                        f"Unreadable taskcluster timestamp line {self._current_index}: {e}"
+                    )
             # Marian timestamp is composed of two values, one for date and one for hour precision
             try:
                 return datetime.fromisoformat("T".join(values))
@@ -136,7 +139,8 @@ class TrainingParser:
         entry = self._validation_entries[(epoch, up)]
         entry[key] = val
         # Build a validation epochs from multiple lines
-        if not (set(("chrf", "ce_mean_words", "bleu_detok")) - set(entry.keys())):
+        expected_keys = set(ValidationEpoch.__annotations__.keys()) - {"epoch", "up"}
+        if not (expected_keys - set(entry.keys())):
             validation_epoch = ValidationEpoch(epoch=epoch, up=up, **entry)
             self.validation.append(validation_epoch)
             for publisher in self.publishers:
@@ -251,7 +255,8 @@ class TrainingParser:
 
         logger.info("Reading logs stream.")
         if not self.skip_marian_context:
-            # Copy logs iterable so we avoid reading out of context lines
+            # Copy logs iterable so we avoid reading out of context lines.
+            # This will not affect inner self._current_index, as we stop incrementing after reading the context.
             logs_iter, copy = tee(logs_iter)
             self.parse_marian_context(copy)
 

@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+"""
+Publish multiple experiments to Weight & Biases.
+
+Example:
+    parse_experiment_dir -d ./tests/data/experiments
+"""
+
 import argparse
 import logging
 import os

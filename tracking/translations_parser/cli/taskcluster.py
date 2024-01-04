@@ -1,3 +1,17 @@
+#!/usr/bin/env python3
+"""
+Extract information from Marian execution on Task Cluster.
+
+Example with a local file:
+    parse_tc_logs -i ./tests/data/taskcluster.log
+
+Example reading logs from a process:
+    ./tests/data/simulate_process.py | parse_tc_logs -s --verbose
+
+Example publishing data to Weight & Biases:
+    parse_tc_logs -i ./tests/data/taskcluster.log --wandb-project <project> --wandb-group <group> --wandb-run-name <run>
+"""
+
 import argparse
 import logging
 import sys
@@ -8,6 +22,11 @@ from pathlib import Path
 
 from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import CSVExport, Publisher, WandB
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(levelname)s] %(message)s",
+)
 
 
 def get_args() -> argparse.Namespace:
@@ -20,6 +39,7 @@ def get_args() -> argparse.Namespace:
         "-i",
         help="Path to the Task Cluster log file.",
         type=Path,
+        default=None,
     )
     input_group.add_argument(
         "--from-stream",
@@ -93,6 +113,8 @@ def main() -> None:
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
     lines: TextIOWrapper | Iterator[str]
+    if args.input_file is None and args.from_stream is False:
+        raise Exception("One of `--input-file` or `--from-stream` must be set.")
     if args.from_stream:
         lines = sys.stdin
     else:
