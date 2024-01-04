@@ -54,7 +54,7 @@ class Metric:
             assert len(values) == 2, "file must contain exactly 2 float values"
         except Exception as e:
             raise ValueError(f"Metrics file could not be parsed: {e}")
-        chrf, bleu_detok = values
+        bleu_detok, chrf = values
         return cls(name=metrics_file.stem, chrf=chrf, bleu_detok=bleu_detok)
 
 
