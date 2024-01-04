@@ -77,17 +77,20 @@ class WandB(Publisher):
         self,
         project: str,
         # Optional path to a directory containing training artifacts
-        artifacts: Path = None,
+        artifacts: Path | None = None,
         artifacts_name: str = "logs",
         **extra_kwargs,
     ):
+        from translations_parser.parser import TrainingParser
+
         self.project = project
         self.artifacts = artifacts
         self.artifacts_name = artifacts_name
         self.extra_kwargs = extra_kwargs
-        self.parser = None
+        self.parser: TrainingParser | None = None
+        self.wandb: wandb.sdk.wandb_run.Run | wandb.sdk.lib.disabled.RunDisabled | None = None
 
-    def open(self, parser):
+    def open(self, parser) -> None:
         if parser is None or self.parser is not None:
             return
         self.parser = parser
@@ -101,6 +104,8 @@ class WandB(Publisher):
         )
 
     def generic_log(self, data: TrainingEpoch | ValidationEpoch) -> None:
+        if self.wandb is None:
+            return
         epoch = vars(data)
         step = epoch.pop("up")
         for key, val in epoch.items():
@@ -113,6 +118,8 @@ class WandB(Publisher):
         self.generic_log(validation)
 
     def handle_metrics(self, metrics: Sequence[Metric]) -> None:
+        if self.wandb is None:
+            return
         for metric in metrics:
             # Publish a bar chart (a table with values will also be available from W&B)
             self.wandb.log(
@@ -133,6 +140,8 @@ class WandB(Publisher):
             )
 
     def close(self) -> None:
+        if self.wandb is None or self.parser is None:
+            return
         # Store runtime logs as the main log artifact
         # This will be overwritten in case an unhandled exception occurs
         with (Path(self.wandb.dir) / "output.log").open("w") as f:
@@ -141,7 +150,7 @@ class WandB(Publisher):
         # Publish artifacts
         if self.artifacts:
             artifact = wandb.Artifact(name=self.artifacts_name, type=self.artifacts_name)
-            artifact.add_dir(local_path=self.artifacts)
+            artifact.add_dir(local_path=str(self.artifacts.resolve()))
             self.wandb.log_artifact(artifact)
 
         self.wandb.finish()

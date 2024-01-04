@@ -3,8 +3,8 @@ import re
 from collections import defaultdict
 from collections.abc import Iterable, Iterator, Sequence
 from datetime import datetime
-from itertools import chain
-from typing import Callable
+from itertools import tee
+from typing import Callable, DefaultDict
 
 import yaml
 
@@ -39,9 +39,9 @@ class TrainingParser:
         self,
         logs_iter: Iterable[str],
         publishers: Sequence[Publisher],
-        log_filter: Callable = None,
+        log_filter: Callable | None = None,
         skip_marian_context: bool = False,
-        metrics: Sequence[Metric] = None,
+        metrics: Sequence[Metric] | None = None,
     ) -> None:
         # Iterable reading logs lines
         self.logs_iter = logs_iter
@@ -49,40 +49,38 @@ class TrainingParser:
         self.log_filter = log_filter
         self._current_index = 0
         self.parsed = False
-        self.config = {}
-        self.indexed_logs = defaultdict(list)
+        self.config: dict = {}
+        self.indexed_logs: DefaultDict[str, list] = defaultdict(list)
         # Optional list of Metric published earlier to the parsing
         self.metrics = metrics
-        # List of TrainingEpoch
-        self.training = []
-        # List of ValidationEpoch
-        self.validation = []
+        self.training: list[TrainingEpoch] = []
+        self.validation: list[ValidationEpoch] = []
         # Dict mapping (epoch, up) to values parsed on multiple lines
-        self._validation_entries = defaultdict(dict)
+        self._validation_entries: DefaultDict[tuple[int, int], dict] = defaultdict(dict)
         # Option to read logs directly (skip check for Marian context)
         self.skip_marian_context = skip_marian_context
         # Marian exection data
-        self.version = None
-        self.version_hash = None
-        self.release_date = None
-        self.run_date = None
-        self.description = None
+        self.version: str | None = None
+        self.version_hash: str | None = None
+        self.release_date: str | None = None
+        self.run_date: datetime | None = None
+        self.description: str | None = None
         # Data publication after parsing logs
         self.publishers = publishers
 
     def get_headers(self, line: str) -> tuple[list[tuple[str]], int]:
         """
-        Returns a list of tuples representing the headers of a log line
+        Returns a list of tuples representing all headers of a log line
         and the position of the last character representing the header.
         """
         matches = list(HEADER_RE.finditer(line))
         if not matches:
-            return ((), None)
+            return ([], 0)
         return ([tuple(m.group("value").split()) for m in matches], matches[-1].span()[-1])
 
     def get_timestamp(self, headers: Sequence[Sequence[str]]) -> datetime | None:
         """
-        Look for a timestamp in header tags.
+        Looks for a timestamp in header tags.
         Returns the timestamp if found, None otherwise.
         """
         for values in headers:
@@ -99,18 +97,20 @@ class TrainingParser:
             try:
                 return datetime.fromisoformat("T".join(values))
             except ValueError:
-                pass
+                continue
+        return None
 
     def parse_training_log(self, text: str) -> TrainingEpoch | None:
         match = TRAINING_RE.match(text)
         if not match:
-            return
+            return None
         values = match.groupdict()
         # Update sen value from 1,234,567 to 1_234_567 that Python interprets
         values["sen"] = values["sen"].replace(",", "_")
         # Transform values to match output types
-        values = {k: TrainingEpoch.__annotations__[k](v) for k, v in values.items()}
-        training_epoch = TrainingEpoch(**values)
+        training_epoch = TrainingEpoch(
+            **{k: TrainingEpoch.__annotations__[k](v) for k, v in values.items()}
+        )
         self.training.append(training_epoch)
         for publisher in self.publishers:
             try:
@@ -124,9 +124,9 @@ class TrainingParser:
     def parse_validation_log(
         self, headers: Sequence[Sequence[str]], text: str
     ) -> ValidationEpoch | None:
-        """Parse a validation entry on multiple lines."""
+        """Parses a validation entry on multiple lines."""
         if ("valid",) not in headers or not (match := VALIDATION_RE.match(text)):
-            return
+            return None
         epoch, up, key, val = match.groups()
         # Replace items keys to match ValidationEpoch dataclass
         key = key.replace("-", "_")
@@ -148,6 +148,7 @@ class TrainingParser:
                     )
             del self._validation_entries[(epoch, up)]
             return validation_epoch
+        return None
 
     def _iter_log_entries(self) -> Iterator[tuple[list[tuple[str]], str]]:
         """
@@ -178,8 +179,11 @@ class TrainingParser:
             yield headers, text
 
     def parse_marian_context(self, logs_iter: Iterator[tuple[list[tuple[str]], str]]) -> None:
-        """Look for Marian context in the first logs lines."""
-        headers = []
+        """
+        Looks for Marian context in the first logs lines.
+        Returns the first headers and text couple that is not Marian context.
+        """
+        headers: list[tuple[str]] = []
         # Consume first lines until we get the Marian header
         while ("marian",) not in headers:
             headers, text = next(logs_iter)
@@ -217,7 +221,7 @@ class TrainingParser:
 
     def parse_data(self, logs_iter: Iterator[tuple[list[tuple[str]], str]]) -> None:
         """
-        Iterate logs until the end to find training or validation
+        Iterates logs until the end to find training or validation
         data and report incomplete multiline logs.
         """
         while True:
@@ -237,7 +241,7 @@ class TrainingParser:
 
     def parse(self) -> None:
         """
-        Parse and publish training logs:
+        Parses and publishes training logs:
           1. Optionally reads Marian context (version, configuration)
           2. Looks for training or validation data among next lines
         """
@@ -246,10 +250,10 @@ class TrainingParser:
         logs_iter = self._iter_log_entries()
 
         logger.info("Reading logs stream.")
-        if self.skip_marian_context:
-            headers, text = next(logs_iter)
-        else:
-            self.parse_marian_context(logs_iter)
+        if not self.skip_marian_context:
+            # Copy logs iterable so we avoid reading out of context lines
+            logs_iter, copy = tee(logs_iter)
+            self.parse_marian_context(copy)
 
         for publisher in self.publishers:
             publisher.open(self)
@@ -260,12 +264,8 @@ class TrainingParser:
                 publisher.handle_metrics(self.metrics)
 
         # Run training and validation data parser
-        self.parse_data(
-            chain(
-                (headers, text),
-                logs_iter,
-            )
-        )
+        self.parse_data(logs_iter)
+        self.parsed = True
 
         # Once all data has been parsed, call the final publication API
         for publisher in self.publishers:
@@ -275,8 +275,6 @@ class TrainingParser:
                 logger.error(f"Error publishing data using {publisher.__class__.__name__}: {e}")
             finally:
                 publisher.close()
-
-        self.parsed = True
 
     @property
     def logs_str(self) -> str:

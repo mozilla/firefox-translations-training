@@ -33,7 +33,7 @@ def parse_experiment(
     group: str,
     name: str,
     logs_file: Path,
-    metrics_dir: Path = None,
+    metrics_dir: Path | None = None,
 ) -> None:
     """
     Parse logs from a Taskcluster dump and publish data to W&B.
@@ -82,6 +82,8 @@ def publish_group_logs(
         group=group,
         name="group_logs",
     )
+    if publisher.wandb is None:
+        return
     # Add "speed" metrics
     metrics = []
     for metrics_file in metrics_dir.glob("*.metrics"):
@@ -91,9 +93,8 @@ def publish_group_logs(
     # Add logs dir content as artifacts
     if logs_dir.is_dir():
         artifact = wandb.Artifact(name=group, type="logs")
-        artifact.add_dir(local_path=logs_dir)
+        artifact.add_dir(local_path=str(logs_dir.resolve()))
         publisher.wandb.log_artifact(artifact)
-        publisher.wandb.finish()
     publisher.wandb.finish()
 
 
@@ -124,10 +125,10 @@ def main() -> None:
         # Publish a run for each file inside that group
         for file in files:
             # Also publish metric files when available
-            metrics_dir = Path("/".join([*prefix, project, group, "evaluation", base_name]))
-            if not metrics_dir.is_dir():
+            metrics_path = Path("/".join([*prefix, project, group, "evaluation", base_name]))
+            metrics_dir = metrics_path if metrics_path.is_dir() else None
+            if metrics_dir is None:
                 logger.warning("Evaluation metrics files not found, skipping.")
-                metrics_dir = None
             try:
                 parse_experiment(project, group, name, file, metrics_dir=metrics_dir)
             except Exception as e:
@@ -135,7 +136,12 @@ def main() -> None:
 
         # Try to publish related log files to the group on a last run named "group_logs"
         if index == len(file_groups) or last_index and last_index != (project, group):
-            last_project, last_group = last_index
+            last_project, last_group = (
+                last_index
+                if last_index
+                # May occur when handling a single run
+                else (project, group)
+            )
             logs_dir = Path("/".join([*prefix[:-1], "logs", last_project, last_group]))
             metrics_dir = Path(
                 "/".join([*prefix, last_project, last_group, "evaluation", "speed"])

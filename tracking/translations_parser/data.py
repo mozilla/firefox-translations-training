@@ -68,4 +68,4 @@ class TrainingLog:
     validation: List[ValidationEpoch]
     # Dict of log lines indexed by their header (e.g. marian, data, memory)
     logs: dict
-    run_date: datetime
+    run_date: datetime | None

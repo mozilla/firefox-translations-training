@@ -1,12 +1,13 @@
 import argparse
 import logging
 import sys
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 from datetime import datetime
+from io import TextIOWrapper
 from pathlib import Path
 
 from translations_parser.parser import TrainingParser, logger
-from translations_parser.publishers import CSVExport, WandB
+from translations_parser.publishers import CSVExport, Publisher, WandB
 
 
 def get_args() -> argparse.Namespace:
@@ -90,12 +91,15 @@ def main() -> None:
         logger.setLevel(args.loglevel)
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
+
+    lines: TextIOWrapper | Iterator[str]
     if args.from_stream:
         lines = sys.stdin
     else:
         with args.input_file.open("r") as f:
             lines = (line.strip() for line in f.readlines())
-    publishers = [CSVExport(output_dir=args.output_dir)]
+
+    publishers: list[Publisher] = [CSVExport(output_dir=args.output_dir)]
     if args.wandb_project:
         publishers.append(
             WandB(
