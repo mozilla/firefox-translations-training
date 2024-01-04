@@ -2,12 +2,11 @@ import argparse
 import json
 import logging
 import os
-import shutil
 from pathlib import Path
-from tempfile import gettempdir
 from unittest.mock import call, patch
 
 import pytest
+from fixtures import DataDir
 from translations_parser.cli import experiments as experiments_publish
 from translations_parser.cli import taskcluster as tc_publish
 
@@ -15,22 +14,17 @@ from translations_parser.cli import taskcluster as tc_publish
 Tests tracking parser and publication via CLI entrypoints
 """
 
-OUTPUT_DIR = Path(gettempdir()) / ".test_translations_parser_tmpdir"
-
-
-@pytest.fixture(autouse=True)
-def clean_output_dir():
-    try:
-        shutil.rmtree(OUTPUT_DIR)
-    except FileNotFoundError:
-        """Nothing to clean"""
-
 
 @pytest.fixture(autouse=True)
 def disable_wandb():
     """Prevent publication on W&B"""
     os.environ["WANDB_API_KEY"] = "fake"
     os.environ["WANDB_MODE"] = "offline"
+
+
+@pytest.fixture(scope="function")
+def tmp_dir():
+    return Path(DataDir("test_tracking").path)
 
 
 @pytest.fixture
@@ -43,7 +37,7 @@ def samples_dir():
     return_value=argparse.Namespace(
         input_file=Path(__file__).parent / "data" / "taskcluster.log",
         loglevel=logging.DEBUG,
-        output_dir=OUTPUT_DIR,
+        output_dir=Path(DataDir("test_tracking").path),
         from_stream=False,
         wandb_project="test",
         wandb_artifacts=None,
@@ -52,12 +46,9 @@ def samples_dir():
     ),
 )
 @patch("translations_parser.publishers.wandb")
-def test_taskcluster(wandb_mock, getargs_mock, caplog, samples_dir):
-    """
-    Asserts the output from stdout matches a certain string.
-    """
+def test_taskcluster(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
     caplog.set_level(logging.DEBUG)
-    wandb_dir = OUTPUT_DIR / "wandb"
+    wandb_dir = tmp_dir / "wandb"
     wandb_dir.mkdir(parents=True)
     wandb_mock.init.return_value.dir = wandb_dir
     tc_publish.main()
@@ -95,12 +86,9 @@ def test_taskcluster(wandb_mock, getargs_mock, caplog, samples_dir):
     return_value=argparse.Namespace(directory=Path(__file__).parent / "data" / "experiments"),
 )
 @patch("translations_parser.publishers.wandb")
-def test_experiments(wandb_mock, getargs_mock, caplog, samples_dir):
-    """
-    Asserts the output from stdout matches a certain string.
-    """
+def test_experiments(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
     caplog.set_level(logging.INFO)
-    wandb_dir = OUTPUT_DIR / "wandb"
+    wandb_dir = tmp_dir / "wandb"
     wandb_dir.mkdir(parents=True)
     wandb_mock.init.return_value.dir = wandb_dir
     wandb_mock.plot.bar = lambda *args, **kwargs: (args, kwargs)
@@ -166,4 +154,77 @@ def test_experiments(wandb_mock, getargs_mock, caplog, samples_dir):
         "Flores_devtest summary",
         "Mtdata_neulab-tedtalks_test-1-eng-nld summary",
         "Flores_devtest summary",
+    ]
+
+
+@patch(
+    "translations_parser.cli.taskcluster.get_args",
+    return_value=argparse.Namespace(
+        input_file=Path(__file__).parent / "data" / "taskcluster.log",
+        loglevel=logging.DEBUG,
+        output_dir=Path(DataDir("test_tracking").path),
+        from_stream=False,
+        wandb_project="test",
+        wandb_artifacts=None,
+        wandb_group="group",
+        wandb_run_name="run",
+    ),
+)
+@patch("translations_parser.publishers.wandb")
+def test_taskcluster_wandb_initialization_failure(
+    wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir
+):
+    """
+    Ensures tracking continues despite W&B initialization failure
+    """
+    caplog.set_level(logging.INFO)
+    wandb_mock.init.side_effect = Exception("Invalid credentials")
+    tc_publish.main()
+    assert [(level, message) for _module, level, message in caplog.record_tuples] == [
+        (logging.INFO, "Reading logs stream."),
+        (
+            logging.ERROR,
+            "WandB client could not be initialized: Invalid credentials. No data will be published.",
+        ),
+        (logging.INFO, "Successfully parsed 588 lines"),
+        (logging.INFO, "Found 102 training entries"),
+        (logging.INFO, "Found 34 validation entries"),
+    ]
+
+
+@patch(
+    "translations_parser.cli.taskcluster.get_args",
+    return_value=argparse.Namespace(
+        input_file=Path(__file__).parent / "data" / "taskcluster.log",
+        loglevel=logging.DEBUG,
+        output_dir=Path(DataDir("test_tracking").path),
+        from_stream=False,
+        wandb_project="test",
+        wandb_artifacts=None,
+        wandb_group="group",
+        wandb_run_name="run",
+    ),
+)
+@patch("translations_parser.publishers.wandb")
+def test_taskcluster_wandb_log_failures(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
+    """
+    Ensures tracking continues despite potential W&B data log failures
+    """
+    caplog.set_level(logging.INFO)
+    wandb_dir = tmp_dir / "wandb"
+    wandb_dir.mkdir(parents=True)
+    wandb_mock.init.return_value.dir = wandb_dir
+    wandb_mock.init.return_value.log.side_effect = Exception("Unexpected failure")
+    tc_publish.main()
+    assert [(level, message) for _module, level, message in caplog.record_tuples] == [
+        (logging.INFO, "Reading logs stream."),
+    ] + [
+        (logging.ERROR, "Error publishing training epoch using WandB: Unexpected failure"),
+        (logging.ERROR, "Error publishing training epoch using WandB: Unexpected failure"),
+        (logging.ERROR, "Error publishing training epoch using WandB: Unexpected failure"),
+        (logging.ERROR, "Error publishing validation epoch using WandB: Unexpected failure"),
+    ] * 34 + [
+        (logging.INFO, "Successfully parsed 588 lines"),
+        (logging.INFO, "Found 102 training entries"),
+        (logging.INFO, "Found 34 validation entries"),
     ]
