@@ -113,14 +113,23 @@ To start an interactive task, follow these steps:
 
 5. Reduce the maxRunTime to a best guess at how long you'll need the task and worker running for. (We pay for every minute a worker runs - so they should not be kept running, eg: overnight.)
 
-6. Adjust the payload to simply run bash (instead of a full pipeline step). Eg:
+6. Adjust the payload to simply run bash and sleep (instead of a full pipeline step). For docker-worker tasks use something like:
 ```
      command:
-    - /usr/local/bin/run-task
-    - '--firefox_translations_training-checkout=/builds/worker/checkouts/vcs/'
-    - '--'
     - bash
+    - '-c'
+    - 'sleep 7200'
 ```
+
+For generic-worker tasks (those needing a GPU), use:
+```
+     command:
+    - - bash
+      - '-c'
+      - 'sleep 7200'
+```
+
+(docker-worker tasks have an `image` section in the payload)
 
 7. Click "Create Task"
 
