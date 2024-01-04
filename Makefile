@@ -189,7 +189,18 @@ download-logs:
 	poetry install --only taskcluster
 	poetry run python utils/tc_marian_logs.py \
 		--output=data/taskcluster-logs/$(LOGS_TASK_GROUP) \
+		--mode=logs \
 		--task-group-id=$(LOGS_TASK_GROUP)
+
+# Downloads evaluation results from Taskcluster task group to a CSV file
+download-evals:
+	mkdir -p data/taskcluster-logs
+	poetry install --only taskcluster
+	poetry run python utils/tc_marian_logs.py \
+		--output=data/taskcluster-evals/$(LOGS_TASK_GROUP) \
+		--mode=evals \
+		--task-group-id=$(LOGS_TASK_GROUP)
+
 
 # Runs Tensorboard for Marian training logs in ./logs directory
 # then go to http://localhost:6006
