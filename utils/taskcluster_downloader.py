@@ -128,10 +128,10 @@ def donwload_evals(group_id, output):
     os.makedirs(output, exist_ok=True)
     output_path = os.path.join(output, f"{group_id}-metrics.csv")
     with open(output_path, "w") as csvfile:
-        spamwriter = csv.writer(csvfile)
-        spamwriter.writerow(["Model", "Dataset", "Augmentation", "BLEU", "chrF"])
+        csv_writer = csv.writer(csvfile)
+        csv_writer.writerow(["Model", "Dataset", "Augmentation", "BLEU", "chrF"])
         for res in results:
-            spamwriter.writerow(res)
+            csv_writer.writerow(res)
 
 
 def main() -> None:
