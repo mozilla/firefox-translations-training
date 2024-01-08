@@ -50,7 +50,6 @@ task-defaults:
         from-parameters: training_config.marian-args.decoding-backward
 
     worker-type: b-largegpu
-    expires-after: "90 days"
     worker:
         max-run-time: 2592000
         artifacts:

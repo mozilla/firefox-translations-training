@@ -35,7 +35,6 @@ task-defaults:
             - fetches
             - attributes
     worker-type: b-cpu-largedisk
-    expires-after: "90 days"
     worker:
         docker-image: {"in-tree": "train"}
         max-run-time: 86400

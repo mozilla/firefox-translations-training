@@ -71,7 +71,6 @@ tasks:
                     teacher-ensemble: training_config.experiment.teacher-ensemble
                     pretrained_teacher: training_config.experiment.pretrained-models.train-teacher
         worker-type: b-largegpu-xlargedisk
-        expires-after: "90 days"
         worker:
             max-run-time: 2592000
             env:

@@ -14,7 +14,6 @@ transforms:
 
 task-defaults:
     worker-type: b-cpu
-    expires-after: "90 days"
     worker:
         docker-image: {"in-tree": "toolchain-build"}
         max-run-time: 3600

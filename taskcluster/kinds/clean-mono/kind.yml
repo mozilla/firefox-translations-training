@@ -54,7 +54,6 @@ task-defaults:
             - dependencies
             - fetches
             - run.command
-    expires-after: "90 days"
     worker:
         docker-image: {"in-tree": "train"}
         max-run-time: 86400

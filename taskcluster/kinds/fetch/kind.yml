@@ -11,7 +11,6 @@ transforms:
 
 task-defaults:
     docker-image: {in-tree: base}
-    expires-after: "90 days"
 
 tasks-from:
     - bicleaner.yml

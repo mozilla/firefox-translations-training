@@ -49,7 +49,6 @@ task-defaults:
             trg_locale: training_config.experiment.trg
             split_chunks: training_config.experiment.teacher-ensemble
     worker-type: b-gpu
-    expires-after: "90 days"
     worker:
         artifacts:
             - name: public/build
