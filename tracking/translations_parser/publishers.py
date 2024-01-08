@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Sequence
 
 import wandb
+
 from translations_parser.data import Metric, TrainingEpoch, TrainingLog, ValidationEpoch
 
 logging.basicConfig(
