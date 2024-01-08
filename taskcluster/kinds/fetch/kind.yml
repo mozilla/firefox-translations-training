@@ -5,13 +5,12 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.fetch:transforms
+    - taskgraph.transforms.fetch:transforms
     - taskgraph.transforms.run:transforms
     - taskgraph.transforms.task:transforms
 
 task-defaults:
     docker-image: {in-tree: base}
-    expires-after: "90 days"
 
 tasks-from:
     - bicleaner.yml

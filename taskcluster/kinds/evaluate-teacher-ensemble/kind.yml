@@ -44,7 +44,6 @@ task-defaults:
             src_locale: training_config.experiment.src
             trg_locale: training_config.experiment.trg
     worker-type: b-gpu
-    expires-after: "90 days"
     worker:
         artifacts:
             - name: public/build

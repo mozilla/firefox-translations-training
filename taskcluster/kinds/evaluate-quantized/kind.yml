@@ -53,7 +53,6 @@ task-defaults:
             pipeline_setup: >-
 
     worker-type: b-gpu
-    expires-after: "90 days"
     worker:
         artifacts:
             - name: public/build

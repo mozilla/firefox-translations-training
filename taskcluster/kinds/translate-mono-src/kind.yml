@@ -43,7 +43,6 @@ task-defaults:
             - attributes
 
     worker-type: b-largegpu
-    expires-after: "90 days"
     worker:
         max-run-time: 2592000
         artifacts:
