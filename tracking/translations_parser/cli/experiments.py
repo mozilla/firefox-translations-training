@@ -122,10 +122,10 @@ def main() -> None:
 
     last_index = None
     for index, (path, files) in enumerate(file_groups.items(), start=1):
-        logger.info(f"Parsing folder {path}")
+        logger.info(f"Parsing folder {path.resolve()}")
         parents = path.parts[len(prefix) :]
         if len(parents) < 3:
-            logger.warning(f"Skipping folder {path}: Unexpected folder structure")
+            logger.warning(f"Skipping folder {path.resolve()}: Unexpected folder structure")
             continue
         project, group, *name = parents
         base_name = name[0]

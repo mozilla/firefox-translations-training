@@ -99,7 +99,7 @@ def test_experiments(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
         # teacher-finetuned0
         (
             logging.INFO,
-            "Parsing folder /home/valentin/dev/firefox-translations-training/tests/data/experiments/models/en-nl/prod/teacher-finetuned0",
+            f"Parsing folder {samples_dir}/experiments/models/en-nl/prod/teacher-finetuned0",
         ),
         (logging.INFO, "Reading metrics file mtdata_Neulab-tedtalks_test-1-eng-nld.metrics"),
         (logging.INFO, "Reading metrics file flores_devtest.metrics"),
@@ -110,7 +110,7 @@ def test_experiments(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
         # teacher-finetuned1
         (
             logging.INFO,
-            "Parsing folder /home/valentin/dev/firefox-translations-training/tests/data/experiments/models/en-nl/prod/teacher-finetuned1",
+            f"Parsing folder {samples_dir}/experiments/models/en-nl/prod/teacher-finetuned1",
         ),
         (logging.INFO, "Reading metrics file mtdata_Neulab-tedtalks_test-1-eng-nld.metrics"),
         (logging.INFO, "Reading metrics file flores_devtest.metrics"),
@@ -121,7 +121,7 @@ def test_experiments(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
         # student
         (
             logging.INFO,
-            "Parsing folder /home/valentin/dev/firefox-translations-training/tests/data/experiments/models/en-nl/prod/student",
+            f"Parsing folder {samples_dir}/experiments/models/en-nl/prod/student",
         ),
         (logging.INFO, "Reading metrics file mtdata_Neulab-tedtalks_test-1-eng-nld.metrics"),
         (logging.INFO, "Reading metrics file flores_devtest.metrics"),
