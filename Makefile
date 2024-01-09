@@ -185,14 +185,33 @@ endif
 
 # Downloads Marian training logs for a Taskcluster task group
 download-logs:
+	mkdir -p data/taskcluster-logs
 	poetry install --only taskcluster
-	python utils/tc_marian_logs.py --output=$$(pwd)/logs --task-group-id=$(LOGS_TASK_GROUP)
+	poetry run python utils/taskcluster_downloader.py \
+		--output=data/taskcluster-logs/$(LOGS_TASK_GROUP) \
+		--mode=logs \
+		--task-group-id=$(LOGS_TASK_GROUP)
+
+# Downloads evaluation results from Taskcluster task group to a CSV file
+# This includes BLEU and chrF metrics for each dataset and trained model
+download-evals:
+	mkdir -p data/taskcluster-logs
+	poetry install --only taskcluster
+	poetry run python utils/taskcluster_downloader.py \
+		--output=data/taskcluster-evals/$(LOGS_TASK_GROUP) \
+		--mode=evals \
+		--task-group-id=$(LOGS_TASK_GROUP)
+
 
 # Runs Tensorboard for Marian training logs in ./logs directory
 # then go to http://localhost:6006
 tensorboard:
+	mkdir -p data/tensorboard-logs
 	poetry install --only tensorboard
-	marian-tensorboard --offline -f logs/*.log
+	poetry run marian-tensorboard \
+		--offline \
+		--log-file data/taskcluster-logs/**/*.log \
+		--work-dir data/tensorboard-logs
 
 # Run the GitHub pages Jekyll theme locally.
 # TODO - This command would be better to be run in a docker container, as the

@@ -1,0 +1,87 @@
+---
+trust-domain: "translations"
+task-priority: low
+task-deadline-after: 60 days
+task-expires-after: 90 days
+treeherder:
+    group-names:
+        "I": "Docker images"
+        "Fetch": "Fetching tasks"
+
+taskgraph:
+    register: translations_taskgraph:register
+    decision-parameters: "translations_taskgraph.parameters:get_decision_parameters"
+    repositories:
+        firefox_translations_training:
+            name: "firefox-translations-training"
+
+workers:
+    aliases:
+        # Use for quick tasks that don't require GPUs, eg: linting, tests
+        b-cpu:
+            provisioner: '{trust-domain}-{level}'
+            implementation: docker-worker
+            os: linux
+            worker-type: 'b-linux-large-gcp'
+        # Use for tasks that don't require GPUs, but need lots of disk space
+        # eg: dataset cleaning & merging
+        b-cpu-largedisk:
+            provisioner: '{trust-domain}-{level}'
+            implementation: docker-worker
+            os: linux
+            worker-type: 'b-linux-large-gcp-300gb'
+        # Use for quick tasks that need a GPU, eg: evaluate
+        b-gpu:
+            provisioner: '{trust-domain}-{level}'
+            implementation: generic-worker
+            os: linux
+            worker-type: 'b-linux-v100-gpu'
+        # Use for tasks that need lots of GPU power, but not lots of disk space
+        # eg: translation & scoring
+        b-largegpu:
+            provisioner: '{trust-domain}-{level}'
+            implementation: generic-worker
+            os: linux
+            worker-type: 'b-linux-v100-gpu-4'
+        # Use for tasks that needs lots of GPU power and increased disk space
+        # eg: bicleaner
+        b-largegpu-largedisk:
+            provisioner: '{trust-domain}-{level}'
+            implementation: generic-worker
+            os: linux
+            worker-type: 'b-linux-v100-gpu-4-300gb'
+        # Use for tasks that need lots of GPU power and immensive amounts of disk space
+        # eg: training
+        b-largegpu-xlargedisk:
+            provisioner: '{trust-domain}-{level}'
+            implementation: generic-worker
+            os: linux
+            worker-type: 'b-linux-v100-gpu-4-1tb'
+        images:
+            provisioner: '{trust-domain}-{level}'
+            implementation: docker-worker
+            os: linux
+            worker-type: '{alias}-gcp'
+
+# Keys are worker type, and align with the `worker-type` entries in the
+# `worker.aliases` above.
+worker-configuration:
+    b-linux-v100-gpu:
+        env:
+            GPUS: "0"
+            WORKSPACE: "12000"
+
+    b-linux-v100-gpu-4:
+        env:
+            GPUS: "0 1 2 3"
+            WORKSPACE: "12000"
+
+    b-linux-v100-gpu-4-300gb:
+        env:
+            GPUS: "0 1 2 3"
+            WORKSPACE: "12000"
+
+    b-linux-v100-gpu-4-1tb:
+        env:
+            GPUS: "0 1 2 3"
+            WORKSPACE: "12000"

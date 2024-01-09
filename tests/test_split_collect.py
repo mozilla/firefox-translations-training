@@ -7,19 +7,16 @@ import subprocess
 
 import pytest
 import sh
+from fixtures import DataDir
 
-from pipeline.translate.splitter import split_file
+from pipeline.translate.splitter import main as split_file
 
 COMPRESSION_CMD = "zstdmt"
 
-OUTPUT_DIR = "tests_data"
-
 
 @pytest.fixture(scope="function")
-def clean():
-    if os.path.exists(OUTPUT_DIR):
-        shutil.rmtree(OUTPUT_DIR)
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+def data_dir():
+    return DataDir("test_split_collect")
 
 
 def generate_dataset(length, path):
@@ -54,65 +51,75 @@ def read_file(path):
         return f.read()
 
 
-def test_split_collect_mono(clean):
+def test_split_collect_mono(data_dir):
     os.environ["COMPRESSION_CMD"] = COMPRESSION_CMD
     length = 1234
-    path = os.path.join(OUTPUT_DIR, "mono.in")
-    output = os.path.join(OUTPUT_DIR, "mono.output")
+    path = data_dir.join("mono.in")
+    output = data_dir.join("mono.output")
     output_compressed = f"{output}.zst"
     generate_dataset(length, path)
 
     split_file(
-        mono_path=f"{path}.zst",
-        output_dir=OUTPUT_DIR,
-        num_parts=10,
-        compression_cmd=COMPRESSION_CMD,
+        [
+            f"--output_dir={data_dir.path}",
+            "--num_parts=10",
+            f"--compression_cmd={COMPRESSION_CMD}",
+            f"{path}.zst",
+        ]
     )
 
-    expected_files = set([f"{OUTPUT_DIR}/file.{i}.zst" for i in range(1, 11)])
-    assert set(glob.glob(f"{OUTPUT_DIR}/file.*.zst")) == expected_files
+    # file.1.zst, file.2.zst ... file.10.zst
+    expected_files = set([data_dir.join(f"file.{i}.zst") for i in range(1, 11)])
+    assert set(glob.glob(data_dir.join("file.*.zst"))) == expected_files
 
-    imitate_translate(OUTPUT_DIR, suffix=".out")
+    imitate_translate(data_dir.path, suffix=".out")
     subprocess.run(
-        ["pipeline/translate/collect.sh", OUTPUT_DIR, output_compressed, f"{path}.zst"], check=True
+        ["pipeline/translate/collect.sh", data_dir.path, output_compressed, f"{path}.zst"],
+        check=True,
     )
 
     decompress(output_compressed)
     assert read_file(path) == read_file(output)
 
 
-def test_split_collect_corpus(clean):
+def test_split_collect_corpus(data_dir):
     os.environ["COMPRESSION_CMD"] = COMPRESSION_CMD
     length = 1234
-    path_src = os.path.join(OUTPUT_DIR, "corpus.src.in")
-    path_trg = os.path.join(OUTPUT_DIR, "corpus.trg.in")
-    output = os.path.join(OUTPUT_DIR, "corpus.src.output")
+    path_src = data_dir.join("corpus.src.in")
+    path_trg = data_dir.join("corpus.trg.in")
+    output = data_dir.join("corpus.src.output")
     output_compressed = f"{output}.zst"
     generate_dataset(length, path_src)
     generate_dataset(length, path_trg)
 
     split_file(
-        mono_path=f"{path_src}.zst",
-        output_dir=OUTPUT_DIR,
-        num_parts=10,
-        compression_cmd=COMPRESSION_CMD,
+        [
+            f"--output_dir={data_dir.path}",
+            "--num_parts=10",
+            f"--compression_cmd={COMPRESSION_CMD}",
+            f"{path_src}.zst",
+        ]
     )
     split_file(
-        mono_path=f"{path_trg}.zst",
-        output_dir=OUTPUT_DIR,
-        num_parts=10,
-        compression_cmd=COMPRESSION_CMD,
-        output_suffix=".ref",
+        [
+            f"--output_dir={data_dir.path}",
+            "--num_parts=10",
+            f"--compression_cmd={COMPRESSION_CMD}",
+            "--output_suffix=.ref",
+            f"{path_trg}.zst",
+        ]
     )
 
-    expected_files = set([f"{OUTPUT_DIR}/file.{i}.zst" for i in range(1, 11)]) | set(
-        [f"{OUTPUT_DIR}/file.{i}.ref.zst" for i in range(1, 11)]
+    # file.1.zst, file.2.zst ... file.10.zst
+    # file.1.ref.zst, file.2.ref.zst ... file.10.ref.zst
+    expected_files = set([data_dir.join(f"file.{i}.zst") for i in range(1, 11)]) | set(
+        [data_dir.join(f"file.{i}.ref.zst") for i in range(1, 11)]
     )
-    assert set(glob.glob(f"{OUTPUT_DIR}/file.*.zst")) == expected_files
+    assert set(glob.glob(data_dir.join("file.*.zst"))) == expected_files
 
-    imitate_translate(OUTPUT_DIR, suffix=".nbest.out")
+    imitate_translate(data_dir.path, suffix=".nbest.out")
     subprocess.run(
-        ["pipeline/translate/collect.sh", OUTPUT_DIR, output_compressed, f"{path_src}.zst"],
+        ["pipeline/translate/collect.sh", data_dir.path, output_compressed, f"{path_src}.zst"],
         check=True,
     )
 

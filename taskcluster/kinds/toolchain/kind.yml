@@ -1,0 +1,122 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+loader: taskgraph.loader.transform:loader
+
+kind-dependencies:
+    - fetch
+
+transforms:
+    - taskgraph.transforms.run:transforms
+    - taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+task-defaults:
+    worker-type: b-cpu
+    worker:
+        docker-image: {"in-tree": "toolchain-build"}
+        max-run-time: 3600
+        env: {}
+    run:
+        using: toolchain-script
+
+tasks:
+    cuda-toolkit:
+        description: CUDA Toolkit preparation
+        run:
+            script: build-cuda-toolkit.sh
+            resources:
+                - taskcluster/scripts/toolchain/build-cuda-toolkit.sh
+            toolchain-artifact: public/build/cuda-toolkit.tar.zst
+        fetches:
+            fetch:
+                - cuda
+
+    marian:
+        description: Marian
+        worker-type: b-cpu
+        run:
+            script: build-marian.sh
+            resources:
+                - taskcluster/scripts/toolchain/build-marian.sh
+                - pipeline/setup/compile-marian.sh
+            toolchain-artifact: public/build/marian.tar.zst
+        fetches:
+            fetch:
+                - marian
+            toolchain:
+                - cuda-toolkit
+
+    browsermt-marian:
+        description: Browsermt Marian
+        worker-type: b-cpu
+        run:
+            script: build-marian.sh
+            arguments:
+                - browsermt.patch
+            resources:
+                - taskcluster/scripts/toolchain/build-marian.sh
+                - taskcluster/scripts/toolchain/browsermt.patch
+                - pipeline/setup/compile-marian.sh
+            toolchain-artifact: public/build/marian.tar.zst
+        fetches:
+            fetch:
+                - browsermt-marian
+            toolchain:
+                - cuda-toolkit
+
+    fast-align:
+        description: fast_align
+        run:
+            script: build-fast-align.sh
+            resources:
+                - taskcluster/scripts/toolchain/build-fast-align.sh
+            toolchain-artifact: public/build/fast-align.tar.zst
+        fetches:
+            fetch:
+                - fast-align
+
+    preprocess:
+        description: preprocess
+        run:
+            script: build-preprocess.sh
+            resources:
+                - taskcluster/scripts/toolchain/build-preprocess.sh
+            toolchain-artifact: public/build/dedupe.tar.zst
+        fetches:
+            fetch:
+                - preprocess
+
+    extract-lex:
+        description: extract-lex
+        run:
+            script: build-extract-lex.sh
+            resources:
+                - taskcluster/scripts/toolchain/build-extract-lex.sh
+            toolchain-artifact: public/build/extract_lex.tar.zst
+        fetches:
+            fetch:
+                - extract-lex
+
+    kenlm:
+        description: kenlm
+        run:
+            script: build-kenlm.sh
+            resources:
+                - taskcluster/scripts/toolchain/build-kenlm.sh
+            toolchain-artifact: public/build/kenlm-0.0.0-cp310-cp310-linux_x86_64.whl
+        fetches:
+            fetch:
+                - kenlm
+
+    hunspell:
+        description: build hunspell binary wheel
+        run:
+            script: build-hunspell.sh
+            resources:
+                - taskcluster/scripts/toolchain/build-hunspell.sh
+            toolchain-artifact: public/build/hunspell-0.5.5-cp310-cp310-linux_x86_64.whl
+        fetches:
+            fetch:
+                - hunspell

@@ -1,0 +1,248 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.from_datasets:per_dataset
+    - translations_taskgraph.transforms.worker_env
+    - taskgraph.transforms.task_context
+    - translations_taskgraph.transforms.cast_to
+    - taskgraph.transforms.chunking
+    - taskgraph.transforms.run:transforms
+    - translations_taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - dataset
+    - train-backwards
+    - train-teacher
+    - train-student
+    - finetune-student
+    - alignments
+    - toolchain
+
+task-defaults:
+    attributes:
+        cache:
+            resources:
+                - pipeline/eval/eval-gpu.sh
+                - pipeline/eval/eval.sh
+    dataset-config:
+        category: test
+        substitution-fields:
+            - description
+            - name
+            - dependencies
+            - fetches
+            - worker.env
+            - task-context
+            - run.command
+    task-context:
+        substitution-fields:
+            - run.command
+        from-parameters:
+            best_model: training_config.experiment.best-model
+            src_locale: training_config.experiment.src
+            trg_locale: training_config.experiment.trg
+            split_chunks: training_config.experiment.teacher-ensemble
+    worker-type: b-gpu
+    worker:
+        artifacts:
+            - name: public/build
+              path: artifacts
+              type: directory
+        max-run-time: 2592000
+        env:
+            SRC: "{src_locale}"
+            TRG: "{trg_locale}"
+            COMPRESSION_CMD: zstdmt
+            ARTIFACT_EXT: zst
+
+    # Don't run unless explicitly scheduled
+    run-on-tasks-for: []
+
+    run:
+        using: run-task
+        # The two sed commands here are the unfortunate result of us consuming
+        # a marian config that was produced by an earlier step. These configs
+        # have hardcoded absolute paths to the models they were trained on,
+        # and end invalid when used on a different machine. In theory it is
+        # possible to adjust them at generation time to use relative paths,
+        # but in practice we have not been able to make this work.
+        command:
+            - bash
+            - -c
+            - >-
+                pip install -r $VCS_PATH/pipeline/eval/requirements/eval.txt &&
+                export PATH=$PATH:~/.local/bin &&
+                export MARIAN=$MOZ_FETCHES_DIR &&
+                export BMT_MARIAN=$MOZ_FETCHES_DIR &&
+                sed -i -e "s,- .*fetches,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
+                sed -i -e "s,- .*artifacts,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
+                {pipeline_script}
+                {pipeline_args1}
+                $MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz.decoder.yml
+                $MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz
+
+tasks:
+    backward-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}:
+        description: backwards evaluation for {dataset_sanitized} {src_locale}-{trg_locale}
+        attributes:
+            stage: evaluate-backwards
+            dataset-category: test
+            cache:
+                type: evaluate-backwards
+        task-context:
+            substitution-fields:
+                - fetches.train-backwards
+            from-object:
+                pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
+                pipeline_args1: >-
+                    $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    $MOZ_FETCHES_DIR/{dataset_sanitized}
+                    {trg_locale}
+                    {src_locale}
+
+        dependencies:
+            dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
+            train-backwards: train-backwards-{src_locale}-{trg_locale}
+        fetches:
+            dataset:
+                - artifact: "{dataset_sanitized}.{src_locale}.zst"
+                  extract: false
+                - artifact: "{dataset_sanitized}.{trg_locale}.zst"
+                  extract: false
+            train-backwards:
+                - artifact: final.model.npz.best-{best_model}.npz
+                  extract: false
+                - artifact: final.model.npz.best-{best_model}.npz.decoder.yml
+                  extract: false
+                - artifact: vocab.spm
+                  extract: false
+            toolchain:
+                - marian
+
+    teacher-{provider}-{dataset}-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}:
+        description: teacher evaluation for {dataset} {src_locale}-{trg_locale} {this_chunk}/{total_chunks}
+        attributes:
+            stage: evaluate-teacher
+            dataset-category: test
+            cache:
+                type: evaluate-teacher
+        task-context:
+            substitution-fields:
+                - fetches.train-teacher
+                - chunk.total-chunks
+            from-object:
+                pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
+                pipeline_args1: >-
+                    $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    $MOZ_FETCHES_DIR/{dataset_sanitized}
+                    {src_locale}
+                    {trg_locale}
+        cast-to:
+            int:
+                - chunk.total-chunks
+
+        chunk:
+            total-chunks: "{split_chunks}"
+            substitution-fields:
+                - name
+                - description
+                - dependencies.train-teacher
+
+        dependencies:
+            dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
+            train-teacher: train-teacher-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}
+        fetches:
+            dataset:
+                - artifact: "{dataset_sanitized}.{src_locale}.zst"
+                  extract: false
+                - artifact: "{dataset_sanitized}.{trg_locale}.zst"
+                  extract: false
+            train-teacher:
+                - artifact: final.model.npz.best-{best_model}.npz
+                  extract: false
+                - artifact: final.model.npz.best-{best_model}.npz.decoder.yml
+                  extract: false
+                - artifact: vocab.spm
+                  extract: false
+            toolchain:
+                - marian
+
+    student-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}:
+        description: student evaluation for {dataset_sanitized} {src_locale}-{trg_locale}
+        attributes:
+            stage: evaluate-student
+            dataset-category: test
+            cache:
+                type: evaluate-student
+        task-context:
+            substitution-fields:
+                - fetches.train-student
+            from-object:
+                pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
+                pipeline_args1: >-
+                    $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    $MOZ_FETCHES_DIR/{dataset_sanitized}
+                    {src_locale}
+                    {trg_locale}
+
+        dependencies:
+            dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
+            train-student: train-student-{src_locale}-{trg_locale}
+        fetches:
+            dataset:
+                - artifact: "{dataset_sanitized}.{src_locale}.zst"
+                  extract: false
+                - artifact: "{dataset_sanitized}.{trg_locale}.zst"
+                  extract: false
+            train-student:
+                - artifact: final.model.npz.best-{best_model}.npz
+                  extract: false
+                - artifact: final.model.npz.best-{best_model}.npz.decoder.yml
+                  extract: false
+                - artifact: vocab.spm
+                  extract: false
+            toolchain:
+                - marian
+
+    finetuned-student-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}:
+        description: finetuned-student evaluation for {dataset_sanitized} {src_locale}-{trg_locale}
+        attributes:
+            stage: evaluate-finetuned-student
+            dataset-category: test
+            cache:
+                type: evaluate-finetuned-student
+        task-context:
+            substitution-fields:
+                - fetches.finetune-student
+            from-object:
+                pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
+                pipeline_args1: >-
+                    $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    $MOZ_FETCHES_DIR/{dataset_sanitized}
+                    {src_locale}
+                    {trg_locale}
+
+        dependencies:
+            dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
+            finetune-student: finetune-student-{src_locale}-{trg_locale}
+        fetches:
+            dataset:
+                - artifact: "{dataset_sanitized}.{src_locale}.zst"
+                  extract: false
+                - artifact: "{dataset_sanitized}.{trg_locale}.zst"
+                  extract: false
+            finetune-student:
+                - artifact: final.model.npz.best-{best_model}.npz
+                  extract: false
+                - artifact: final.model.npz.best-{best_model}.npz.decoder.yml
+                  extract: false
+                - artifact: vocab.spm
+                  extract: false
+            toolchain:
+                - marian
