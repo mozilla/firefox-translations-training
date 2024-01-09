@@ -303,7 +303,6 @@ to be translated by the teacher model
                         "type": "array",
                         "description": """
 to be translated by the backward model to augment teacher corpus with back-translations
-leave empty to skip augmentation step (high resource languages)
 """,
                         "items": {
                             "type": "string",
