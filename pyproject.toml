@@ -16,8 +16,7 @@ black = "^23.7.0"
 ruff = "^0.0.287"
 
 [tool.poetry.group.opuscleaner.dependencies]
-# use the latest main, 0.3.1 conflicts with OpusTrainer
-opuscleaner = {git = "https://github.com/hplt-project/OpusCleaner.git", rev="24014c47200cf78aa4d1ba001df24c31f554b1b9"}
+opuscleaner = "0.4.0"
 
 [tool.poetry.group.taskcluster.dependencies]
 taskcluster = "^56.0.3"
