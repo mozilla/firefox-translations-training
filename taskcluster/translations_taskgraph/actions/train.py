@@ -164,6 +164,7 @@ def validate_pretrained_models(params):
                     # pretrained models hosted elsewhere.
                     "pretrained-models": {
                         "type": "object",
+                        "additionalProperties": False,
                         "properties": {
                             "train-teacher": {
                                 "type": "object",
