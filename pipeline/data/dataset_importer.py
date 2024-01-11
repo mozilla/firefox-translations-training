@@ -162,7 +162,7 @@ def run_import(type: str, dataset: str, output_prefix: str):
         # mtdata_EU-eac_forms-1-eng-lit
         # flores_aug-title_devtest
         # sacrebleu_aug-upper-strict_wmt19
-        match = re.search(r"^([\w-]*)_(aug[a-z\-]*)?_?(.+)$", dataset)
+        match = re.search(r"^([\w-]*?)_(aug[a-z\-]*)?_?(.+)$", dataset)
 
         if not match:
             raise ValueError(
