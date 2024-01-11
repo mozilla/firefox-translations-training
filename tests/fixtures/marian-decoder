@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+"""
+marian-decoder test fixture
+
+Do not rely on marian-decoder in tests. This mocks marian-decoder by uppercasing the
+source sentences, and saving the arguments to marian-decoder.args.txt.
+"""
+
+import fileinput
+import json
+import os
+import sys
+
+artifacts_dir = os.environ.get("TEST_ARTIFACTS")
+
+if not artifacts_dir:
+    raise Exception("TEST_ARTIFACTS was not set.")
+
+if not os.path.exists(artifacts_dir):
+    raise Exception("The TEST_ARTIFACTS directory did not exist")
+
+# Write the arguments to disk
+arguments = sys.argv[1:]
+with open(os.path.join(artifacts_dir, "marian-decoder.args.txt"), "w") as file:
+    json.dump(arguments, file)
+
+# Output the input but uppercase.
+for line in sys.stdin:
+    print(line.upper(), end="")
