@@ -113,7 +113,9 @@ def main() -> None:
     # Ignore files with a different name than "train.log"
     file_groups = {
         path: list(files)
-        for path, files in groupby(directory.glob("**/train.log"), lambda path: path.parent)
+        for path, files in groupby(
+            sorted(directory.glob("**/train.log")), lambda path: path.parent
+        )
     }
     logger.info(f"Reading {len(file_groups)} train.log data")
     prefix = os.path.commonprefix([path.parts for path in file_groups])

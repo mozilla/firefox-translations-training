@@ -96,6 +96,17 @@ def test_experiments(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
     experiments_publish.main()
     assert [(level, message) for _module, level, message in caplog.record_tuples] == [
         (logging.INFO, "Reading 3 train.log data"),
+        # student
+        (
+            logging.INFO,
+            f"Parsing folder {samples_dir}/experiments/models/en-nl/prod/student",
+        ),
+        (logging.INFO, "Reading metrics file mtdata_Neulab-tedtalks_test-1-eng-nld.metrics"),
+        (logging.INFO, "Reading metrics file flores_devtest.metrics"),
+        (logging.INFO, "Reading logs stream."),
+        (logging.INFO, "Successfully parsed 1002 lines"),
+        (logging.INFO, "Found 550 training entries"),
+        (logging.INFO, "Found 108 validation entries"),
         # teacher-finetuned0
         (
             logging.INFO,
@@ -118,17 +129,6 @@ def test_experiments(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
         (logging.INFO, "Successfully parsed 1000 lines"),
         (logging.INFO, "Found 573 training entries"),
         (logging.INFO, "Found 191 validation entries"),
-        # student
-        (
-            logging.INFO,
-            f"Parsing folder {samples_dir}/experiments/models/en-nl/prod/student",
-        ),
-        (logging.INFO, "Reading metrics file mtdata_Neulab-tedtalks_test-1-eng-nld.metrics"),
-        (logging.INFO, "Reading metrics file flores_devtest.metrics"),
-        (logging.INFO, "Reading logs stream."),
-        (logging.INFO, "Successfully parsed 1002 lines"),
-        (logging.INFO, "Found 550 training entries"),
-        (logging.INFO, "Found 108 validation entries"),
         # Group extra logs
         (
             logging.INFO,
