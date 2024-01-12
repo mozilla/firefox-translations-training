@@ -27,6 +27,7 @@ def compress(compression_cmd: str, file_path: str):
         command = [compression_cmd, "--rm", file_path]
     subprocess.run(command, check=True)
 
+
 def split_file(
     mono_path: str, output_dir: str, num_parts: int, compression_cmd: str, output_suffix: str = ""
 ):
