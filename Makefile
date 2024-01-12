@@ -227,3 +227,7 @@ serve-docs:
 	&& rbenv shell                  \
 	&& bundle install               \
 	&& bundle exec jekyll serve
+
+preflight-check:
+	poetry install --only utils
+	poetry run python -W ignore utils/preflight_check.py

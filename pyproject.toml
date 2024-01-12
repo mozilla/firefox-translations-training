@@ -30,6 +30,7 @@ sacrebleu="2.0.0"
 mtdata="0.3.2"
 requests="2.26.0"
 humanize = "^4.9.0"
+blessed = "^1.20.0"
 
 [tool.poetry.group.tests.dependencies]
 sacrebleu="2.0.0"
@@ -43,6 +44,7 @@ requests-mock = "^1.11.0"
 sh = "^2.0.6"
 zstandard = "^0.22.0"
 translations_parser = {path="./tracking/", develop=true}
+taskcluster-taskgraph = "^7.0.3"
 
 [tool.black]
 extend-exclude= "/3rd_party"
