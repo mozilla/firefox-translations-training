@@ -150,6 +150,7 @@ black-fix:
 # Runs ruff, a linter for python.
 lint:
 	poetry install --only lint --no-root
+	poetry run ruff --version
 	poetry run ruff check .
 
 # Runs ruff, but also fixes the errors.
