@@ -13,7 +13,7 @@ pip-tools = "^7.3.0"
 black = "^23.7.0"
 
 [tool.poetry.group.lint.dependencies]
-ruff = "^0.0.287"
+ruff = "^0.1.13"
 translations_parser = {path="./tracking/", develop=true}
 
 [tool.poetry.group.opuscleaner.dependencies]
