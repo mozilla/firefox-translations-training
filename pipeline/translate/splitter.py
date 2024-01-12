@@ -18,6 +18,15 @@ from contextlib import ExitStack
 from typing import Optional
 
 
+def compress(compression_cmd: str, file_path: str):
+    print(f"Compressing {file_path} with {compression_cmd}")
+
+    if compression_cmd == "gzip":
+        command = [compression_cmd, file_path]
+    else:
+        command = [compression_cmd, "--rm", file_path]
+    subprocess.run(command, check=True)
+
 def split_file(
     mono_path: str, output_dir: str, num_parts: int, compression_cmd: str, output_suffix: str = ""
 ):
@@ -50,8 +59,7 @@ def split_file(
             if current_line_count == 0 or current_line_count >= lines_per_part:
                 if current_file is not None:
                     current_file.close()
-                    print(f"Compressing {current_name} with {compression_cmd}")
-                    subprocess.run([compression_cmd, "--rm", current_name], check=True)
+                    compress(compression_cmd, current_name)
 
                 current_name = f"{output_dir}/file.{file_index}{output_suffix}"
                 current_file = stack.enter_context(open(current_name, "w"))
@@ -63,8 +71,7 @@ def split_file(
             current_line_count += 1
 
     # decompress the last file after closing
-    subprocess.run([compression_cmd, "--rm", current_name], check=True)
-    print(f"Compressing {current_name} with {compression_cmd}")
+    compress(compression_cmd, current_name)
 
     print("Done")
 
