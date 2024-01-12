@@ -39,7 +39,6 @@ requests="2.26.0"
 pytest="7.4.3"
 # use the latest main, switch to PyPi when released
 opustrainer = {git = "https://github.com/hplt-project/OpusTrainer.git", rev="9133e1525c7ee37f53ea14ee6a180152bf7ea192"}
-pytest-clarity = "^1.0.1"
 requests-mock = "^1.11.0"
 sh = "^2.0.6"
 zstandard = "^0.22.0"
