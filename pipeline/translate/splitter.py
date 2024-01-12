@@ -29,7 +29,7 @@ def compress(compression_cmd: str, file_path: str):
 
 
 def split_file(
-        mono_path: str, output_dir: str, num_parts: int, compression_cmd: str, output_suffix: str = ""
+    mono_path: str, output_dir: str, num_parts: int, compression_cmd: str, output_suffix: str = ""
 ):
     os.makedirs(output_dir, exist_ok=True)
 
