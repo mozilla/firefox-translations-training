@@ -1,7 +1,6 @@
 disp-freq: 1000
-# use default learning rate 0.0002 for transformer-big https://github.com/marian-nmt/marian-dev/blob/master/src/common/aliases.cpp
-# adjust learning rate if needed
-# learn-rate: 0.0003 # Turn this down if you get a diverged model, maybe 0.0001
+# default learning rate for transformer-big is 0.0002 https://github.com/marian-nmt/marian-dev/blob/master/src/common/aliases.cpp
+learn-rate: 0.0003 # Turn this down if you get a diverged model, maybe 0.0001
 optimizer-delay: 2 # Roughly GPU devices * optimizer-delay = 8, but keep as an integer
 lr-report: True
 save-freq: 5000
