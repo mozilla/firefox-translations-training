@@ -22,38 +22,39 @@ task-defaults:
     cwd: '{checkout}'
 
 tasks:
-  snakemake-dry-run:
-    # Ensure that the snakemake workflow is still executing correctly, even though
-    # taskcluster is the preferred execution environment.
-    worker-type: b-cpu
-    worker:
-      max-run-time: 3600
-      docker-image: {in-tree: test}
-    run-on-tasks-for: ["github-push", "github-pull-request"]
-    optimization:
-        skip-unless-changed:
-            - pipeline/**
-            - envs/**
-            - configs/**
-    run:
-      command:
-        - bash
-        - -c
-        - >-
-          echo "Setting environment variables"                              &&
-          export CONDA_PATH=/builds/worker/artifacts/mambaforge             &&
-          export SNAKEMAKE_OUTPUT_CACHE=/builds/worker/artifacts/mambaforge &&
-          export REPORTS=/builds/worker/artifacts/reports                   &&
-          export MODELS=/builds/worker/artifacts/models                     &&
-
-          echo "Install necessary dependencies"                             &&
-          make conda                                                        &&
-          make snakemake                                                    &&
-          make git-modules                                                  &&
-
-          echo "Start the dry run"                                          &&
-          make dry-run                                                      &&
-          make test-dry-run
+  # See issue: https://github.com/mozilla/firefox-translations-training/issues/363
+  #  snakemake-dry-run:
+#    # Ensure that the snakemake workflow is still executing correctly, even though
+#    # taskcluster is the preferred execution environment.
+#    worker-type: b-cpu
+#    worker:
+#      max-run-time: 3600
+#      docker-image: {in-tree: test}
+#    run-on-tasks-for: ["github-push", "github-pull-request"]
+#    optimization:
+#        skip-unless-changed:
+#            - pipeline/**
+#            - envs/**
+#            - configs/**
+#    run:
+#      command:
+#        - bash
+#        - -c
+#        - >-
+#          echo "Setting environment variables"                              &&
+#          export CONDA_PATH=/builds/worker/artifacts/mambaforge             &&
+#          export SNAKEMAKE_OUTPUT_CACHE=/builds/worker/artifacts/mambaforge &&
+#          export REPORTS=/builds/worker/artifacts/reports                   &&
+#          export MODELS=/builds/worker/artifacts/models                     &&
+#
+#          echo "Install necessary dependencies"                             &&
+#          make conda                                                        &&
+#          make snakemake                                                    &&
+#          make git-modules                                                  &&
+#
+#          echo "Start the dry run"                                          &&
+#          make dry-run                                                      &&
+#          make test-dry-run
 
   black:
     # Run python's black formatter, which formats python files.
