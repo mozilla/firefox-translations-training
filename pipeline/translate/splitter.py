@@ -21,7 +21,7 @@ from typing import Optional
 def compress(compression_cmd: str, file_path: str):
     print(f"Compressing {file_path} with {compression_cmd}")
 
-    if compression_cmd == "gzip":
+    if compression_cmd in ["gzip", "pigz"]:
         command = [compression_cmd, file_path]
     else:
         command = [compression_cmd, "--rm", file_path]
@@ -29,7 +29,7 @@ def compress(compression_cmd: str, file_path: str):
 
 
 def split_file(
-    mono_path: str, output_dir: str, num_parts: int, compression_cmd: str, output_suffix: str = ""
+        mono_path: str, output_dir: str, num_parts: int, compression_cmd: str, output_suffix: str = ""
 ):
     os.makedirs(output_dir, exist_ok=True)
 
