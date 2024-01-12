@@ -86,7 +86,7 @@ def main(args: Optional[list[str]] = None) -> None:
     parser.add_argument("--output_dir", type=str, help="Output directory to store split files")
     parser.add_argument("--num_parts", type=int, help="Number of parts to split the file into")
     parser.add_argument(
-        "--compression_cmd", type=str, help="Compression command (e.g., gzip, zstd)"
+        "--compression_cmd", type=str, help="Compression command (e.g., pigz, gzip, zstd)"
     )
     parser.add_argument(
         "--output_suffix", type=str, help="A suffix for output files, for example .ref", default=""
