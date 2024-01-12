@@ -1,0 +1,23 @@
+[build-system]
+requires = [ "setuptools>=61.2",]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "translations_parser"
+version = "0.1.0"
+description = "A training log parser for the Mozilla translation ML tool"
+requires-python = ">=3.10"
+dependencies = [
+  "PyYAML==6.0.1",
+  "wandb==0.16.1",
+]
+
+[project.scripts]
+parse_tc_logs = "translations_parser.cli.taskcluster:main"
+parse_experiment_dir = "translations_parser.cli.experiments:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+namespaces = false

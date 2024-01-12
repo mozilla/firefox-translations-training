@@ -29,6 +29,11 @@ An orchestrator is responsible for workflow management and parallelization.
 - [Snakemake](https://snakemake.github.io/) - a file based orchestrator that can be used to run the pipeline locally or on a Slurm cluster. 
   [Usage instructions](docs/snakemake.md). (The integration will not be actively maintained, since Mozilla is switching to Taskcluster)
 
+## Experiment tracking
+
+Marian training metrics are parsed from logs and published using a custom module within the `tracking` directory.
+More information is available [here](docs/tracking.md).
+
 ## Learning resources
 
 - High level overview [post on Mozilla Hacks](https://hacks.mozilla.org/2022/06/training-efficient-neural-network-models-for-firefox-translations/)
