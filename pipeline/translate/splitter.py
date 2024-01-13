@@ -20,12 +20,11 @@ from typing import Optional
 
 def compress(compression_cmd: str, file_path: str):
     print(f"Compressing {file_path} with {compression_cmd}")
+    subprocess.run([compression_cmd, file_path], check=True)
 
-    if compression_cmd in ["gzip", "pigz"]:
-        command = [compression_cmd, file_path]
-    else:
-        command = [compression_cmd, "--rm", file_path]
-    subprocess.run(command, check=True)
+    # gzip and pigz remove the file by default, but zstd does not
+    if os.path.isfile(file_path):
+        os.remove(file_path)
 
 
 def split_file(
