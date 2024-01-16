@@ -22,7 +22,7 @@ def compress(compression_cmd: str, file_path: str):
     print(f"Compressing {file_path} with {compression_cmd}")
     subprocess.run([compression_cmd, file_path], check=True)
 
-    # gzip and pigz remove the file by default, but zstd does not
+    # gzip and pigz remove the file by default, but zstd does not.
     if os.path.isfile(file_path):
         os.remove(file_path)
 
