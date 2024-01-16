@@ -13,7 +13,7 @@ pip-tools = "^7.3.0"
 black = "^23.7.0"
 
 [tool.poetry.group.lint.dependencies]
-ruff = "^0.0.287"
+ruff = "^0.1.13"
 translations_parser = {path="./tracking/", develop=true}
 
 [tool.poetry.group.opuscleaner.dependencies]
@@ -30,6 +30,7 @@ sacrebleu="2.0.0"
 mtdata="0.3.2"
 requests="2.26.0"
 humanize = "^4.9.0"
+blessed = "^1.20.0"
 
 [tool.poetry.group.tests.dependencies]
 sacrebleu="2.0.0"
@@ -38,11 +39,11 @@ requests="2.26.0"
 pytest="7.4.3"
 # use the latest main, switch to PyPi when released
 opustrainer = {git = "https://github.com/hplt-project/OpusTrainer.git", rev="9133e1525c7ee37f53ea14ee6a180152bf7ea192"}
-pytest-clarity = "^1.0.1"
 requests-mock = "^1.11.0"
 sh = "^2.0.6"
 zstandard = "^0.22.0"
 translations_parser = {path="./tracking/", develop=true}
+taskcluster-taskgraph = "^7.0.3"
 
 [tool.black]
 extend-exclude= "/3rd_party"
