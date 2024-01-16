@@ -1,0 +1,68 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - taskgraph.transforms.task_context
+    - taskgraph.transforms.run:transforms
+    - translations_taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+task-defaults:
+    attributes:
+        stage: bicleaner-model
+        src_locale: "{src_locale}"
+        trg_locale: "{trg_locale}"
+        cache:
+            resources:
+                - pipeline/bicleaner/download_pack.py
+
+    task-context:
+        substitution-fields:
+            - run.command
+
+    worker:
+        max-run-time: 86400
+        env:
+            SRC: "{src_locale}"
+            TRG: "{trg_locale}"
+            COMPRESSION_CMD: zstdmt
+            ARTIFACT_EXT: zst
+
+    # Don't run unless explicitly scheduled
+    run-on-tasks-for: []
+
+    run:
+        using: run-task
+        command:
+            - bash
+            - -c
+            - >-
+                pip install $MOZ_FETCHES_DIR/hunspell-0.5.5-cp310-cp310-linux_x86_64.whl &&
+                pip install $MOZ_FETCHES_DIR/kenlm-0.0.0-cp310-cp310-linux_x86_64.whl &&
+                pip install -r $VCS_PATH/pipeline/bicleaner/requirements/bicleaner-ai.txt &&
+                export PATH=$PATH:~/.local/bin &&
+                python3 $VCS_PATH/pipeline/bicleaner/download_pack.py
+                --src={src_locale}
+                --trg={trg_locale}
+                --compression_cmd=zstdmt
+                artifacts/bilceaner-ai-{src_locale}-{trg_locale}.zst
+
+tasks:
+    "bicleaner-ai-model-{src_locale}-{trg_locale}":
+        description: bicleaner-ai model for {src_locale}-{trg_locale}
+        worker-type: b-cpu
+        worker:
+            artifacts:
+                - name: public/build
+                  path: artifacts
+                  type: directory
+        attributes:
+            cache:
+                type: bicleaner-ai-model
+                resources:
+                    - pipeline/bicleaner/requirements/bicleaner-ai.txt
+

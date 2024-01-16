@@ -73,7 +73,6 @@ task-defaults:
             # 1) prefix for input data
             # 2) prefix for output data
             # 3) bicleaner threshold
-            # 4) bicleaner type
             # 5) number of threads to use - auto means nproc
             # 6) "pack dir" - which needs to be where the `bicleaner-src-trg` fetch was unpacked to
             - >-
@@ -85,9 +84,8 @@ task-defaults:
                 $MOZ_FETCHES_DIR/{dataset_sanitized}
                 artifacts/{dataset_sanitized}
                 {bicleaner_threshold}
-                {bicleaner_type}
                 {bicleaner_threads}
-                $MOZ_FETCHES_DIR/pack
+                $MOZ_FETCHES_DIR/bicleaner-ai-{src_locale}-{trg_locale}
     dependencies:
         "{provider}": clean-corpus-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
     fetches:
@@ -102,31 +100,6 @@ task-defaults:
               extract: false
 
 tasks:
-    "{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}":
-        description: bicleaner for {provider} {dataset_sanitized} dataset {src_locale}-{trg_locale}
-        worker-type: b-cpu-largedisk
-        worker:
-            docker-image: {"in-tree": "train"}
-            artifacts:
-                - name: public/build
-                  path: /builds/worker/artifacts
-                  type: directory
-        attributes:
-            cleaning-type: bicleaner
-            cache:
-                type: bicleaner
-                resources:
-                    - pipeline/bicleaner/requirements/bicleaner.txt
-        fetches:
-            fetch:
-                - bicleaner-{src_locale}-{trg_locale}
-        task-context:
-            from-object:
-                bicleaner_type: bicleaner
-                bicleaner_reqs: $VCS_PATH/pipeline/bicleaner/requirements/bicleaner.txt
-                # auto = use `nproc` value
-                bicleaner_threads: auto
-
     ai-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}:
         description: bicleaner-ai for {provider} {dataset_sanitized} dataset {src_locale}-{trg_locale}
         worker-type: b-largegpu-largedisk
@@ -135,12 +108,6 @@ tasks:
                 - name: public/build
                   path: artifacts
                   type: directory
-        dataset-config:
-            exclude-locales:
-                - src: en
-                  trg: ru
-                - src: ru
-                  trg: en
         attributes:
             cleaning-type: bicleaner-ai
             cache:
@@ -148,12 +115,11 @@ tasks:
                 resources:
                     - pipeline/bicleaner/requirements/bicleaner-ai.txt
         fetches:
-            fetch:
-                - bicleaner-ai-{src_locale}-{trg_locale}
+            bicleaner-ai-model-{src_locale}-{trg_locale}:
+                - bicleaner-ai-{src_locale}-{trg_locale}.zst
 
         task-context:
             from-object:
-                bicleaner_type: bicleaner-ai
                 bicleaner_reqs: $VCS_PATH/pipeline/bicleaner/requirements/bicleaner-ai.txt
                 # TODO: set this to a sensible value based on number of GPUs?
                 # or maybe it should also be `auto`?

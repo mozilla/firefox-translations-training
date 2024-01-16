@@ -154,15 +154,13 @@ else:
 
 # bicleaner
 
-bicleaner_type = packs.find(src, trg)
-bicleaner_env = "envs/bicleaner-ai.yml" if bicleaner_type == 'bicleaner-ai' else 'envs/bicleaner.yml'
+# todo: move to setting if needed
+use_bicleaner = True
 
-if bicleaner_type:
+if use_bicleaner:
     clean_corpus_prefix = f'{biclean}/corpus'
-    use_bicleaner = True
 else:
     clean_corpus_prefix = f'{clean}/corpus'
-    use_bicleaner = False
 
 clean_corpus_src = f'{clean_corpus_prefix}.{src}.gz'
 clean_corpus_trg = f'{clean_corpus_prefix}.{trg}.gz'
@@ -341,17 +339,19 @@ if use_bicleaner:
         threads: 1
         input: rules.kenlm.output
         output: directory(f"{biclean}/pack")
-        shell: '''bash pipeline/bicleaner/download-pack.sh "{output}" {bicleaner_type} >> {log} 2>&1'''
+        params: src=src, trg=trg
+        shell: '''python pipeline/bicleaner/download_pack.py \
+                --src={params.src} --trg={params.trg} "{output}" >> {log} 2>&1'''
 
     rule bicleaner:
-        message: f"Cleaning corpus using {bicleaner_type}"
+        message: f"Cleaning corpus using Bicleaner AI"
         log: f"{log_dir}/bicleaner/{{dataset}}.log"
         conda: bicleaner_env
 #       group: "bicleaner"
-        threads: gpus_num * 2 if bicleaner_type == "bicleaner-ai" else workflow.cores
-        resources: gpu=gpus_num if bicleaner_type == "bicleaner-ai" else 0
+        threads: gpus_num * 2
+        resources: gpu=gpus_num
         input: ancient(rules.kenlm.output), multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz"),
-                pack_dir=rules.bicleaner_pack.output
+                pack=rules.bicleaner_pack.output
         output: multiext(f"{biclean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
         params:
             prefix_input=f"{clean}/corpus/{{dataset}}",prefix_output=f"{biclean}/corpus/{{dataset}}",
@@ -359,8 +359,8 @@ if use_bicleaner:
                                             if wildcards.dataset in bicl_dataset_thresholds
                                             else bicl_default_threshold
         shell: '''bash pipeline/bicleaner/bicleaner.sh \
-                    "{params.prefix_input}" "{params.prefix_output}" {params.threshold} {bicleaner_type} {threads} \
-                    "{input.pack_dir}" >> {log} 2>&1'''
+                    "{params.prefix_input}" "{params.prefix_output}" {params.threshold} {threads} \
+                    "{input.pack}" >> {log} 2>&1'''
 
 rule merge_corpus:
     message: "Merging clean parallel datasets"

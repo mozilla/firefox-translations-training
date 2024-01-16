@@ -5,17 +5,11 @@ parent: Data cleaning
 ---
 # Bicleaner
 
-Bicleaner is a tool that aims at detecting noisy sentence pairs in a parallel corpus. The classifier scores parallel sentences from 0 to 1 where 0 means a very noisy translation and 1 is a good translation. In the pipeline, Bicleaner AI will be used first if [the language is available][ai-releases], otherwise it will fallback to the original non-AI Bicleaner.
-
-See:
-  * [https://github.com/bitextor/bicleaner-ai](https://github.com/bitextor/bicleaner-ai)
-  * [https://github.com/bitextor/bicleaner](https://github.com/bitextor/bicleaner)
+[Bicleaner AI](https://github.com/bitextor/bicleaner-ai) is a tool that aims at detecting noisy sentence pairs in a parallel corpus. 
+If specialized model for a language pair is not available it will fallback to downloading multilingual en-xx model.
 
 For supported languages see:
   * [Bicleaner AI Releases][ai-releases]
-  * [Bicleaner Releases][releases]
-
-New language releases should be added to: `taskcluster/ci/fetch/bicleaner.yml`
 
 ## How to configure for training
 
