@@ -20,12 +20,7 @@ from typing import Optional
 
 
 def _run_download(src: str, trg: str, dir: str) -> subprocess.CompletedProcess:
-    # cmd = 'bicleaner-ai-download'
-    cmd = [
-        "python",
-        "/Users/epavlov/mozilla/source/origin/bicleaner-ai/src/bicleaner_ai/bicleaner_ai_download.py",
-    ]
-    return subprocess.run(cmd + [trg, src, "full", dir], capture_output=True, check=False)
+    return subprocess.run(['bicleaner-ai-download', trg, src, "full", dir], capture_output=True, check=False)
 
 
 def _compress_dir(dir_path: str, compression_cmd: str) -> str:
