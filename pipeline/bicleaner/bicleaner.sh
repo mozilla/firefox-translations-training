@@ -52,6 +52,12 @@ else
     export scol=2
     export tcol=1
   fi
+  # disable hard rules for multilingual model
+  if [ ${model_source_lang} == "xx" ] || [ ${model_target_lang} == "xx" ]; then
+    export hardrules="--disable_hardrules"
+  else
+    export hardrules=""
+  fi
 
   #Export cuda visible devices if empty or not set
   if [ -z "${CUDA_VISIBLE_DEVICES:-}" ]; then
@@ -69,7 +75,7 @@ else
        biclean() {
                export CUDA_VISIBLE_ARRAY=(${CUDA_VISIBLE_DEVICES//,/ })
                export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_ARRAY[$(($2-1))]}
-               bicleaner-ai-classify --disable_hardrules --scol ${scol} --tcol ${tcol} - - $1
+               bicleaner-ai-classify ${hardrules} --scol ${scol} --tcol ${tcol} - - $1
        }
        export -f biclean
        # {%} is a 1-indexed job slot number from GNU parallel.  We use that as the 1-indexed offset in CUDA_VISIBLE_ARRAY
@@ -78,7 +84,7 @@ else
        ${COMPRESSION_CMD} >"${output_prefix}.scored.${ARTIFACT_EXT}"
   else
    paste <(${COMPRESSION_CMD} -dc "${corpus_prefix}.${SRC}.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${corpus_prefix}.${TRG}.${ARTIFACT_EXT}") |
-     bicleaner-ai-classify --disable_hardrules --scol ${scol} --tcol ${tcol} --processes "${threads}"  - - "${pack_dir}"/*.yaml |
+     bicleaner-ai-classify ${hardrules} --scol ${scol} --tcol ${tcol} --processes "${threads}"  - - "${pack_dir}"/*.yaml |
      ${COMPRESSION_CMD} >"${output_prefix}.scored.${ARTIFACT_EXT}"
   fi
 
