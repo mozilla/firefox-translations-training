@@ -11,6 +11,8 @@ nav_order: 7
 It feeds training data to Marian and provides the ability to do useful manipulations with the data, 
 such as shuffling, mixing multiple datasets in the specified proportion, splitting training into multiple stages and augmentation.
 
+See [this paper](https://arxiv.org/pdf/2311.14838.pdf) for more details and recommendations on how to set augmentation values.
+
 ## Data augmentation
 
 Data augmentation helps make translation models more robust, which is especially useful for usage with noisy internet pages.
