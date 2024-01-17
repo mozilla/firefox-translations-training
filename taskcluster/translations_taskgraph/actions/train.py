@@ -345,6 +345,8 @@ def train_action(parameters, graph_config, input, task_group_id, task_id):
     parameters["target_tasks_method"] = "train-target-tasks"
     parameters["optimize_target_tasks"] = True
     parameters["tasks_for"] = "action"
+    if "existing_tasks" in input:
+        parameters["existing_tasks"] = input.pop("existing_tasks")
     parameters["training_config"] = input
 
     validate_pretrained_models(parameters)
