@@ -18,6 +18,15 @@ from contextlib import ExitStack
 from typing import Optional
 
 
+def compress(compression_cmd: str, file_path: str):
+    print(f"Compressing {file_path} with {compression_cmd}")
+    subprocess.run([compression_cmd, file_path], check=True)
+
+    # gzip and pigz remove the file by default, but zstd does not.
+    if os.path.isfile(file_path):
+        os.remove(file_path)
+
+
 def split_file(
     mono_path: str, output_dir: str, num_parts: int, compression_cmd: str, output_suffix: str = ""
 ):
@@ -50,8 +59,7 @@ def split_file(
             if current_line_count == 0 or current_line_count >= lines_per_part:
                 if current_file is not None:
                     current_file.close()
-                    print(f"Compressing {current_name} with {compression_cmd}")
-                    subprocess.run([compression_cmd, "--rm", current_name], check=True)
+                    compress(compression_cmd, current_name)
 
                 current_name = f"{output_dir}/file.{file_index}{output_suffix}"
                 current_file = stack.enter_context(open(current_name, "w"))
@@ -63,8 +71,7 @@ def split_file(
             current_line_count += 1
 
     # decompress the last file after closing
-    subprocess.run([compression_cmd, "--rm", current_name], check=True)
-    print(f"Compressing {current_name} with {compression_cmd}")
+    compress(compression_cmd, current_name)
 
     print("Done")
 
@@ -78,7 +85,7 @@ def main(args: Optional[list[str]] = None) -> None:
     parser.add_argument("--output_dir", type=str, help="Output directory to store split files")
     parser.add_argument("--num_parts", type=int, help="Number of parts to split the file into")
     parser.add_argument(
-        "--compression_cmd", type=str, help="Compression command (e.g., gzip, zstd)"
+        "--compression_cmd", type=str, help="Compression command (e.g., pigz, gzip, zstd)"
     )
     parser.add_argument(
         "--output_suffix", type=str, help="A suffix for output files, for example .ref", default=""

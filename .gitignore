@@ -142,3 +142,7 @@ dmypy.json
 # Jekyll files.
 /docs/_site
 .jekyll-cache
+
+# Tracking
+output
+wandb

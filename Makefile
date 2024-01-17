@@ -121,17 +121,17 @@ dag:
 # OpusCleaner is a data cleaner for training corpus
 # More details are in docs/cleaning.md
 opuscleaner-ui:
-	poetry install --only opuscleaner
+	poetry install --only opuscleaner --no-root
 	opuscleaner-server serve --host=0.0.0.0 --port=8000
 
 # Utils to find corpus etc
 install-utils:
-	poetry install --only utils
+	poetry install --only utils --no-root
 
 # Black is a code formatter for Python files. Running this command will check that
 # files are correctly formatted, but not fix them.
 black:
-	poetry install --only black
+	poetry install --only black --no-root
 	@if poetry run black . --check --diff; then \
 		echo "The python code formatting is correct."; \
 	else \
@@ -144,17 +144,18 @@ black:
 
 # Runs black, but also fixes the errors.
 black-fix:
-	poetry install --only black
+	poetry install --only black --no-root
 	poetry run black .
 
 # Runs ruff, a linter for python.
 lint:
-	poetry install --only lint
+	poetry install --only lint --no-root
+	poetry run ruff --version
 	poetry run ruff check .
 
 # Runs ruff, but also fixes the errors.
 lint-fix:
-	poetry install --only lint
+	poetry install --only lint --no-root
 	poetry run ruff check . --fix
 
 # Fix all automatically fixable errors. This is useful to run before pushing.
@@ -164,7 +165,7 @@ fix-all:
 
 # Run unit tests
 run-tests:
-	poetry install --only tests --only utils
+	poetry install --only tests --only utils --no-root
 	PYTHONPATH=$$(pwd) poetry run pytest tests -vv
 
 # Validates Taskcluster task graph locally
@@ -186,7 +187,7 @@ endif
 # Downloads Marian training logs for a Taskcluster task group
 download-logs:
 	mkdir -p data/taskcluster-logs
-	poetry install --only taskcluster
+	poetry install --only taskcluster --no-root
 	poetry run python utils/taskcluster_downloader.py \
 		--output=data/taskcluster-logs/$(LOGS_TASK_GROUP) \
 		--mode=logs \
@@ -196,7 +197,7 @@ download-logs:
 # This includes BLEU and chrF metrics for each dataset and trained model
 download-evals:
 	mkdir -p data/taskcluster-logs
-	poetry install --only taskcluster
+	poetry install --only taskcluster --no-root
 	poetry run python utils/taskcluster_downloader.py \
 		--output=data/taskcluster-evals/$(LOGS_TASK_GROUP) \
 		--mode=evals \
@@ -207,7 +208,7 @@ download-evals:
 # then go to http://localhost:6006
 tensorboard:
 	mkdir -p data/tensorboard-logs
-	poetry install --only tensorboard
+	poetry install --only tensorboard --no-root
 	poetry run marian-tensorboard \
 		--offline \
 		--log-file data/taskcluster-logs/**/*.log \
@@ -227,3 +228,7 @@ serve-docs:
 	&& rbenv shell                  \
 	&& bundle install               \
 	&& bundle exec jekyll serve
+
+preflight-check:
+	poetry install --only utils --no-root
+	poetry run python -W ignore utils/preflight_check.py

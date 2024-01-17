@@ -164,6 +164,7 @@ def validate_pretrained_models(params):
                     # pretrained models hosted elsewhere.
                     "pretrained-models": {
                         "type": "object",
+                        "additionalProperties": False,
                         "properties": {
                             "train-teacher": {
                                 "type": "object",
@@ -303,7 +304,6 @@ to be translated by the teacher model
                         "type": "array",
                         "description": """
 to be translated by the backward model to augment teacher corpus with back-translations
-leave empty to skip augmentation step (high resource languages)
 """,
                         "items": {
                             "type": "string",
