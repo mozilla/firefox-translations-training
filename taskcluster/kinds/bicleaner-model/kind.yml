@@ -11,58 +11,56 @@ transforms:
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
 
-task-defaults:
-    attributes:
-        stage: bicleaner-model
-        src_locale: "{src_locale}"
-        trg_locale: "{trg_locale}"
-        cache:
-            resources:
-                - pipeline/bicleaner/download_pack.py
-
-    task-context:
-        substitution-fields:
-            - run.command
-
-    worker:
-        max-run-time: 86400
-        env:
-            SRC: "{src_locale}"
-            TRG: "{trg_locale}"
-            COMPRESSION_CMD: zstdmt
-            ARTIFACT_EXT: zst
-
-    # Don't run unless explicitly scheduled
-    run-on-tasks-for: []
-
-    run:
-        using: run-task
-        command:
-            - bash
-            - -c
-            - >-
-                pip install $MOZ_FETCHES_DIR/hunspell-0.5.5-cp310-cp310-linux_x86_64.whl &&
-                pip install $MOZ_FETCHES_DIR/kenlm-0.0.0-cp310-cp310-linux_x86_64.whl &&
-                pip install -r $VCS_PATH/pipeline/bicleaner/requirements/bicleaner-ai.txt &&
-                export PATH=$PATH:~/.local/bin &&
-                python3 $VCS_PATH/pipeline/bicleaner/download_pack.py
-                --src={src_locale}
-                --trg={trg_locale}
-                --compression_cmd=zstdmt
-                artifacts/bilceaner-ai-{src_locale}-{trg_locale}.zst
-
 tasks:
-    "bicleaner-ai-model-{src_locale}-{trg_locale}":
+    bicleaner-model:
+        label: bicleaner-model-{src_locale}-{trg_locale}
         description: bicleaner-ai model for {src_locale}-{trg_locale}
+        attributes:
+            stage: bicleaner-model
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
+            cache:
+                type: bicleaner-model
+                resources:
+                    - pipeline/bicleaner/download_pack.py
+                    - pipeline/bicleaner/requirements/bicleaner-ai.txt
+        task-context:
+            from-parameters:
+                src_locale: training_config.experiment.src
+                trg_locale: training_config.experiment.trg
+            substitution-fields:
+                - description
+                - name
+                - attributes
+                - run.command
         worker-type: b-cpu
+        expires-after: "90 days"
         worker:
+            docker-image: {in-tree: toolchain-build}
             artifacts:
                 - name: public/build
                   path: artifacts
                   type: directory
-        attributes:
-            cache:
-                type: bicleaner-ai-model
-                resources:
-                    - pipeline/bicleaner/requirements/bicleaner-ai.txt
+            max-run-time: 86400
+
+
+        # Don't run unless explicitly scheduled
+        run-on-tasks-for: []
+
+        run:
+            using: run-task
+            command:
+                - bash
+                - -c
+                - >-
+                    pip install $MOZ_FETCHES_DIR/hunspell-0.5.5-cp310-cp310-linux_x86_64.whl &&
+                    pip install $MOZ_FETCHES_DIR/kenlm-0.0.0-cp310-cp310-linux_x86_64.whl &&
+                    pip install -r $VCS_PATH/pipeline/bicleaner/requirements/bicleaner-ai.txt &&
+                    export PATH=$PATH:~/.local/bin &&
+                    python3 $VCS_PATH/pipeline/bicleaner/download_pack.py
+                    --src={src_locale}
+                    --trg={trg_locale}
+                    --compression_cmd=zstdmt
+                    artifacts/bilceaner-ai-{src_locale}-{trg_locale}.zst
+
 
