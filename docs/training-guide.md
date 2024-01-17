@@ -157,6 +157,9 @@ marian-args:
     early-stopping: 20
 ```
 
+Make sure to set `optimizer-delay` so that GPU devices * optimizer-delay = 8. 
+It makes training more stable.
+
 ### Decoding (translation)
 
 `mini-batch-words` can be set depending on available GPU memory and the number of teachers.
