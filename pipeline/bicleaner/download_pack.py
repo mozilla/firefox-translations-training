@@ -41,7 +41,6 @@ def _compress_dir(dir_path: str, compression_cmd: str) -> str:
 
     compressed_path = tarball_path + comp_ext
     subprocess.run([compression_cmd, tarball_path], check=True)
-    os.remove(dir_path)
 
     return compressed_path
 
