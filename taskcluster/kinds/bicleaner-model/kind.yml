@@ -43,7 +43,7 @@ tasks:
             docker-image: {in-tree: toolchain-build}
             artifacts:
                 - name: public/build
-                  path: artifacts
+                  path: /builds/worker/artifacts
                   type: directory
             max-run-time: 86400
 
@@ -65,7 +65,7 @@ tasks:
                     --src={src_locale}
                     --trg={trg_locale}
                     --compression_cmd=zstdmt
-                    /builds/worker/artifacts/bilceaner-ai-{src_locale}-{trg_locale}.tar.zst
+                    artifacts/bilceaner-ai-{src_locale}-{trg_locale}.tar.zst
 
         fetches:
             toolchain:
