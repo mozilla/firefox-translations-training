@@ -10,7 +10,7 @@ train:
 
 # TODO: augment corpus before decoding or reduce augmentation rate
 # TODO: https://github.com/mozilla/firefox-translations-training/issues/272
-#modifiers:
+modifiers:
 - UpperCase: 0.07 # Apply randomly to 7% of sentences
 - TitleCase: 0.05
 # TODO: enable typos, issue https://github.com/mozilla/firefox-translations-training/issues/262
