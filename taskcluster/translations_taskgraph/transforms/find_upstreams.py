@@ -63,16 +63,16 @@ def get_cleaning_type(upstreams):
     candidates = set()
 
     for upstream in upstreams:
-        if upstream.kind not in ("clean-corpus",):
+        if upstream.kind not in ("clean-corpus", "bicleaner"):
             continue
 
         candidates.add(upstream.attributes["cleaning-type"])
 
-    for type_ in ("bicleaner-ai", "clean-corpus"):
+    for type_ in ("bicleaner-ai", "bicleaner", "clean-corpus"):
         if type_ in candidates:
             return type_
 
-    raise Exception("Unable to find cleaning type!")
+    raise Exception(f"Unable to find cleaning type!")
 
 
 @by_locales.add
