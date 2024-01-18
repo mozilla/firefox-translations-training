@@ -100,7 +100,6 @@ tasks:
                 cleaning-type:
                     by-cleaning-type:
                         bicleaner-ai: bicleaner-ai
-                        bicleaner: bicleaner
                         clean-corpus: clean-corpus
 
         task-context:
