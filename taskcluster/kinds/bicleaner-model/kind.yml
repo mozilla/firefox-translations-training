@@ -11,6 +11,9 @@ transforms:
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
 
+kind-dependencies:
+    - toolchain
+
 tasks:
     bicleaner-model:
         label: bicleaner-model-{src_locale}-{trg_locale}
@@ -64,4 +67,7 @@ tasks:
                     --compression_cmd=zstdmt
                     artifacts/bilceaner-ai-{src_locale}-{trg_locale}.zst
 
-
+        fetches:
+            toolchain:
+                - hunspell
+                - kenlm
