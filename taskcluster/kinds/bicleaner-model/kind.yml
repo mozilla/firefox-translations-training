@@ -65,7 +65,7 @@ tasks:
                     --src={src_locale}
                     --trg={trg_locale}
                     --compression_cmd=zstdmt
-                    artifacts/bilceaner-ai-{src_locale}-{trg_locale}.zst
+                    /builds/worker/artifacts/bilceaner-ai-{src_locale}-{trg_locale}.tar.zst
 
         fetches:
             toolchain:

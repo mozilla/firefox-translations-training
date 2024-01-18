@@ -118,7 +118,7 @@ tasks:
                 - artifact: "{dataset_sanitized}.{trg_locale}.zst"
                   extract: false
             bicleaner-model:
-                - artifact: bicleaner-ai-{src_locale}-{trg_locale}.zst
+                - artifact: bicleaner-ai-{src_locale}-{trg_locale}.tar.zst
                   extract: true
 
 
