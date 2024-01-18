@@ -31,6 +31,7 @@ tasks:
             substitution-fields:
                 - description
                 - name
+                - label
                 - attributes
                 - run.command
         worker-type: b-cpu
