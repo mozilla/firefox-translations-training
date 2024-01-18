@@ -20,7 +20,9 @@ from typing import Optional
 
 
 def _run_download(src: str, trg: str, dir: str) -> subprocess.CompletedProcess:
-    return subprocess.run(['bicleaner-ai-download', trg, src, "full", dir], capture_output=True, check=False)
+    return subprocess.run(
+        ["bicleaner-ai-download", trg, src, "full", dir], capture_output=True, check=False
+    )
 
 
 def _compress_dir(dir_path: str, compression_cmd: str) -> str:
@@ -86,9 +88,7 @@ def main(args: Optional[list[str]] = None) -> None:
     parser.add_argument("--trg", type=str, help="Target language code")
     parser.add_argument(
         "--compression_cmd",
-        type=Optional[str],
-        required=False,
-        default=None,
+        type=str,
         help="Compression command (eg. pigz, zstd). "
         "Optional, if not provided the directory will not be compressed",
     )
