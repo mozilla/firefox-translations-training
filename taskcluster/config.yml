@@ -97,3 +97,13 @@ worker-configuration:
         env:
             GPUS: "0 1 2 3"
             WORKSPACE: "12000"
+
+    b-linux-v100-gpu-4-300gb-standard:
+        env:
+            GPUS: "0 1 2 3"
+            WORKSPACE: "12000"
+
+    b-linux-v100-gpu-4-1tb-standard:
+        env:
+            GPUS: "0 1 2 3"
+            WORKSPACE: "12000"
