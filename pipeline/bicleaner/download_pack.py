@@ -47,6 +47,8 @@ def _compress_dir(dir_path: str, compression_cmd: str) -> str:
 
 def donwload(src: str, trg: str, output_path: str, compression_cmd: str) -> None:
     tmp_dir = tempfile.gettempdir()
+    original_src = src
+    original_trg = trg
 
     print(f"Downloading a model for {src}-{trg}")
     result = _run_download(src, trg, tmp_dir)
@@ -68,13 +70,16 @@ def donwload(src: str, trg: str, output_path: str, compression_cmd: str) -> None
         result.check_returncode()
 
     # Compress downloaded pack and
-    pack_dir = os.path.join(tmp_dir, f"{src}-{trg}")
+    pack_path = os.path.join(tmp_dir, f"{src}-{trg}")
+    new_name = os.path.join(tmp_dir, f"bicleaner-ai-{original_src}-{original_trg}")
+    os.rename(pack_path, new_name)
+    pack_path = new_name
     if compression_cmd:
-        pack_dir = _compress_dir(pack_dir, compression_cmd)
+        pack_path = _compress_dir(pack_path, compression_cmd)
     # move to the expected path
-    print(f"Moving {pack_dir} to {output_path}")
+    print(f"Moving {pack_path} to {output_path}")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    os.rename(pack_dir, output_path)
+    os.rename(pack_path, output_path)
     print("Done")
 
 
