@@ -55,7 +55,7 @@ class Metric:
 
     @classmethod
     def from_file(cls, model_name: str, metrics_file: Path):
-        logger.info(f"Reading metrics file {metrics_file.name}")
+        logger.debug(f"Reading metrics file {metrics_file.name}")
         values = []
         try:
             with metrics_file.open("r") as f:
@@ -77,6 +77,7 @@ class Metric:
             bleu_detok=bleu_detok,
         )
 
+    @classmethod
     def from_tc_context(cls, model_name: str, dataset: str, lines: Sequence[str]):
         """
         Try reading a metric from Taskcluster logs, looking for two

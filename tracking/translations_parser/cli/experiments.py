@@ -88,11 +88,15 @@ def publish_group_logs(
     quantized_metrics = sorted(
         Path("/".join([*prefix, project, group, "evaluation", "speed"])).glob("*.metrics")
     )
-    evaluation_metrics = sorted((logs_dir / "eval_").glob("eval*.log"))
-    if not quantized_metrics:
-        logger.warning(f"Quantized metrics not found for group {group}.")
-    if not evaluation_metrics:
-        logger.warning(f"Evaluation metrics not found for group {group}")
+    evaluation_metrics = sorted((logs_dir / "eval").glob("eval*.log"))
+    if quantized_metrics:
+        logger.info(f"Found {len(quantized_metrics)} quantized metrics")
+    else:
+        logger.warning(f"No quantized metric found for group {group}, skipping")
+    if evaluation_metrics:
+        logger.info(f"Found {len(evaluation_metrics)} evaluation metrics")
+    else:
+        logger.warning(f"No evaluation metrics not found for group {group}, skipping")
 
     # Add "quantized" metrics
     metrics = []
@@ -118,7 +122,7 @@ def publish_group_logs(
         with file.open("r") as f:
             lines = f.readlines()
         try:
-            metrics.append(Metric.from_file(model_name, dataset, lines))
+            metrics.append(Metric.from_tc_context(model_name, dataset, lines))
         except ValueError as e:
             logger.error(f"Could not parse metrics from {file.resolve()}: {e}")
 
@@ -135,8 +139,17 @@ def publish_group_logs(
     )
     if publisher.wandb is None:
         return
+
+    # Publish all evaluation metrics to a table
     if metrics:
-        publisher.handle_metrics(metrics)
+        table = wandb.Table(
+            columns=["Model", "dataset", "BLEU", "chrF"],
+            data=[
+                [metric.model_name, metric.dataset, metric.bleu_detok, metric.chrf]
+                for metric in metrics
+            ],
+        )
+        publisher.wandb.log({"metrics": table})
 
     # Publish logs directory content as artifacts
     if logs_dir.is_dir():
