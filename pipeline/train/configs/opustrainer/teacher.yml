@@ -10,7 +10,7 @@ stages:
 pretrain:
   - original 0.6
   - backtranslated 0.4
-  - until original 2
+  - until backtranslated 2
 
 # Fine-tuning only on original clean corpus until the early stopping
 finetune:
