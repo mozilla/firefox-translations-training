@@ -75,14 +75,14 @@ def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None
     new_name = os.path.join(tmp_dir, f"bicleaner-ai-{original_src}-{original_trg}")
     if os.path.isdir(new_name):
         shutil.rmtree(new_name)
-    os.rename(pack_path, new_name)
+    shutil.move(pack_path, new_name)
     pack_path = new_name
     if compression_cmd:
         pack_path = _compress_dir(pack_path, compression_cmd)
     # move to the expected path
     print(f"Moving {pack_path} to {output_path}")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    os.rename(pack_path, output_path)
+    shutil.move(pack_path, output_path)
     print("Done")
 
 
