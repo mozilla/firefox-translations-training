@@ -13,6 +13,7 @@ Example:
 
 import argparse
 import os
+import shutil
 import subprocess
 import tarfile
 import tempfile
@@ -72,6 +73,8 @@ def donwload(src: str, trg: str, output_path: str, compression_cmd: str) -> None
     # Compress downloaded pack and
     pack_path = os.path.join(tmp_dir, f"{src}-{trg}")
     new_name = os.path.join(tmp_dir, f"bicleaner-ai-{original_src}-{original_trg}")
+    if os.path.isdir(new_name):
+        shutil.rmtree(new_name)
     os.rename(pack_path, new_name)
     pack_path = new_name
     if compression_cmd:
