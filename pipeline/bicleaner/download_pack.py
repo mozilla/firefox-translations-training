@@ -46,7 +46,7 @@ def _compress_dir(dir_path: str, compression_cmd: str) -> str:
     return compressed_path
 
 
-def donwload(src: str, trg: str, output_path: str, compression_cmd: str) -> None:
+def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None:
     tmp_dir = tempfile.gettempdir()
     original_src = src
     original_trg = trg
@@ -107,7 +107,7 @@ def main(args: Optional[list[str]] = None) -> None:
 
     parsed_args = parser.parse_args(args)
 
-    donwload(
+    download(
         src=parsed_args.src,
         trg=parsed_args.trg,
         output_path=parsed_args.output_path,
