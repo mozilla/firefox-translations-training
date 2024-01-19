@@ -15,7 +15,11 @@ METRIC_LOG_RE = re.compile(
     r"|".join(
         [
             r"\+ tee .+\.metrics",
+            r"\+ tee .+\.en",
             r"\+ sacrebleu .+",
+            r"\+ .+\/marian-decoder .+",
+            # Ignore potential comments
+            r"^sacreBLEU:",
         ]
     )
 )
