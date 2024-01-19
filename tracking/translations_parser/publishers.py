@@ -129,17 +129,17 @@ class WandB(Publisher):
             # Publish a bar chart (a table with values will also be available from W&B)
             self.wandb.log(
                 {
-                    f"{metric.name.capitalize()} summary": wandb.plot.bar(
+                    f"{metric.dataset.capitalize()}": wandb.plot.bar(
                         wandb.Table(
                             columns=["Metric", "Value"],
                             data=[
-                                [f"{metric.name} - {key}", getattr(metric, key)]
+                                [key, getattr(metric, key)]
                                 for key in ("chrf", "bleu_detok")
                             ],
                         ),
                         "Metric",
                         "Value",
-                        title=f"{metric.name.capitalize()} summary",
+                        title=f"{metric.dataset.capitalize()} summary",
                     )
                 }
             )

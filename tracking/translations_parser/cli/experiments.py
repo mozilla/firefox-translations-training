@@ -24,6 +24,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Keywords to split eval filenames into model and dataset
+DATASET_KEYWORDS = ["flores", "mtdata", "sacrebleu"]
+
 
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Publish multiple experiments to Weight & Biases")
@@ -51,7 +54,7 @@ def parse_experiment(
     metrics = []
     if metrics_dir:
         for metrics_file in metrics_dir.glob("*.metrics"):
-            metrics.append(Metric.from_file(metrics_file))
+            metrics.append(Metric.from_file(model_name=name, metrics_file=metrics_file))
 
     with logs_file.open("r") as f:
         lines = (line.strip() for line in f.readlines())
@@ -71,16 +74,55 @@ def parse_experiment(
 
 
 def publish_group_logs(
+    prefix: str,
     project: str,
     group: str,
-    logs_dir: Path,
-    metrics_dir: Path,
 ) -> None:
     """
     Publish all files within `logs_dir` to W&B artifacts for a specific group.
-    A fake W&B run named `group_logs` is created to publish artifacts.
-    If a metrics directory is set, initially read and publish each `.metrics` values.
+    A fake W&B run named `group_logs` is created to publish those artifacts among
+    with all evaluation files (quantized + experiments).
     """
+    logs_dir = Path("/".join([*prefix[:-1], "logs", project, group]))
+    # Old experiments use `speed` directory for quantized metrics
+    quantized_metrics = sorted(
+        Path("/".join([*prefix, project, group, "evaluation", "speed"])).glob("*.metrics")
+    )
+    evaluation_metrics = sorted((logs_dir / "eval_").glob("eval*.log"))
+    if not quantized_metrics:
+        logger.warning(f"Quantized metrics not found for group {group}.")
+    if not evaluation_metrics:
+        logger.warning(f"Evaluation metrics not found for group {group}")
+
+    # Add "quantized" metrics
+    metrics = []
+    for file in quantized_metrics:
+        metrics.append(Metric.from_file("quantized", file))
+    # Add experiment (runs) metrics
+    for file in evaluation_metrics:
+        model_name = file.stem.lstrip("eval_")
+        dataset = ""
+        # File names usually have a structure like "eval_<model_name>_<dataset>.log
+        # model_name can be the name of a run, or the evaluation pre-trained model.
+        for keyword in DATASET_KEYWORDS:
+            if keyword in model_name:
+                index = model_name.index(keyword)
+                model_name, dataset = model_name[:index].strip("_"), model_name[index:]
+                break
+            else:
+                continue
+        if not dataset:
+            logger.warning(
+                f"No dataset could be extracted from file {file.name}. Please ensure DATASET_KEYWORDS is up to date."
+            )
+        with file.open("r") as f:
+            lines = f.readlines()
+        try:
+            metrics.append(Metric.from_file(model_name, dataset, lines))
+        except ValueError as e:
+            logger.error(f"Could not parse metrics from {file.resolve()}: {e}")
+
+    # Start publication
     publisher = WandB(
         project=project,
         group=group,
@@ -93,13 +135,10 @@ def publish_group_logs(
     )
     if publisher.wandb is None:
         return
-    # Add "speed" metrics
-    metrics = []
-    for metrics_file in metrics_dir.glob("*.metrics"):
-        metrics.append(Metric.from_file(metrics_file))
     if metrics:
         publisher.handle_metrics(metrics)
-    # Add logs dir content as artifacts
+
+    # Publish logs directory content as artifacts
     if logs_dir.is_dir():
         artifact = wandb.Artifact(name=group, type="logs")
         artifact.add_dir(local_path=str(logs_dir.resolve()))
@@ -153,17 +192,8 @@ def main() -> None:
                 # May occur when handling a single run
                 else (project, group)
             )
-            logs_dir = Path("/".join([*prefix[:-1], "logs", last_project, last_group]))
-            metrics_dir = Path(
-                "/".join([*prefix, last_project, last_group, "evaluation", "speed"])
+            logger.info(
+                f"Publishing '{last_project}/{last_group}' evaluation metrics and files (fake run 'group_logs')"
             )
-            if logs_dir.exists() or next(metrics_dir.glob("*.metrics"), None) is None:
-                logger.info(
-                    f"Publishing '{last_project}' group '{last_group}' metrics and files to a last fake run 'group_logs'"
-                )
-                publish_group_logs(last_project, last_group, logs_dir, metrics_dir)
-            else:
-                logger.warning(
-                    "No extra logs nor metrics found for this project, skipping 'group_logs' fake run."
-                )
+            publish_group_logs(prefix, last_project, last_group)
         last_index = (project, group)
