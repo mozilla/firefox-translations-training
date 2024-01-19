@@ -57,6 +57,18 @@ workers:
             implementation: generic-worker
             os: linux
             worker-type: 'b-linux-v100-gpu-4-1tb'
+        # Use for tasks that needs lots of GPU power, increased disk space, and higher reliability
+        b-largegpu-largedisk-standard:
+            provisioner: '{trust-domain}-{level}'
+            implementation: generic-worker
+            os: linux
+            worker-type: 'b-linux-v100-gpu-4-300gb-standard'
+        # Use for tasks that needs lots of GPU power, increased disk space, and higher reliability
+        b-largegpu-xlargedisk-standard:
+            provisioner: '{trust-domain}-{level}'
+            implementation: generic-worker
+            os: linux
+            worker-type: 'b-linux-v100-gpu-4-1tb-standard'
         images:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
