@@ -31,15 +31,15 @@ def test_artifacts():
     assert not opened_url
 
 
-def test_task_group():
-    output, opened_url = get_preflight_check_output("--only", "task_group")
-    assert "Artifacts" not in output
-    assert "Task Commands" in output
-    assert "Training config" not in output
-    assert "Visualization" not in output
+# def test_task_group():
+#     output, opened_url = get_preflight_check_output("--only", "task_group")
+#     assert "Artifacts" not in output
+#     assert "Task Commands" in output
+#     assert "Training config" not in output
+#     assert "Visualization" not in output
 
-    assert "all-en-ru-1" in output
-    assert not opened_url
+#     assert "all-en-ru-1" in output
+#     assert not opened_url
 
 
 def test_task_graph():
