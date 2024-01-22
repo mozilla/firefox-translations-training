@@ -16,145 +16,114 @@ kind-dependencies:
     - clean-corpus
     - fetch
     - toolchain
+    - bicleaner-model
 
-task-defaults:
-    attributes:
-        dataset-category: train
-        stage: bicleaner
-        cache:
-            resources:
-                - pipeline/bicleaner/bicleaner.sh
+tasks:
+    ai-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}:
+        description: bicleaner-ai for {provider} {dataset_sanitized} dataset {src_locale}-{trg_locale}
+        attributes:
+            dataset-category: train
+            stage: bicleaner
+            cleaning-type: bicleaner-ai
+            cache:
+                type: bicleaner-ai
+                resources:
+                    - pipeline/bicleaner/bicleaner.sh
+                    - pipeline/bicleaner/requirements/bicleaner-ai.txt
+                from-parameters:
+                    bicleaner_threshold:
+                        - training_config.experiment.bicleaner.dataset-thresholds.{dataset}
+                        - training_config.experiment.bicleaner.default-threshold
+
+        dataset-config:
+            category: train
+            substitution-fields:
+                - description
+                - name
+                - dependencies
+                - fetches
+                - worker.env
+                - attributes.cache.from-parameters.bicleaner_threshold
+                - task-context.from-parameters.bicleaner_threshold
+                - run.command
+
+
+        task-context:
             from-parameters:
                 bicleaner_threshold:
                     - training_config.experiment.bicleaner.dataset-thresholds.{dataset}
                     - training_config.experiment.bicleaner.default-threshold
-    dataset-config:
-        category: train
-        substitution-fields:
-            - description
-            - name
-            - dependencies
-            - fetches
-            - worker.env
-            - attributes.cache.from-parameters.bicleaner_threshold
-            - task-context.from-parameters.bicleaner_threshold
-            - run.command
-
-    task-context:
-        from-parameters:
-            bicleaner_threshold:
-                - training_config.experiment.bicleaner.dataset-thresholds.{dataset}
-                - training_config.experiment.bicleaner.default-threshold
-        substitution-fields:
-            - run.command
-
-    worker:
-        max-run-time: 86400
-        env:
-            SRC: "{src_locale}"
-            TRG: "{trg_locale}"
-            # It would be preferable to use $MOZ_FETCHES_DIR here, but these don't
-            # get interpreted.
-            CUDA_DIR: fetches/cuda-toolkit
-            CUDNN_DIR: fetches/cuda-toolkit
-            COMPRESSION_CMD: zstdmt
-            ARTIFACT_EXT: zst
-
-    # Don't run unless explicitly scheduled
-    run-on-tasks-for: []
-
-    run:
-        using: run-task
-        command:
-            - bash
-            - -c
-            # We can't inline comments for the args to `bicleaner.sh`, so they're explained
-            # here instead:
-            # 1) prefix for input data
-            # 2) prefix for output data
-            # 3) bicleaner threshold
-            # 4) bicleaner type
-            # 5) number of threads to use - auto means nproc
-            # 6) "pack dir" - which needs to be where the `bicleaner-src-trg` fetch was unpacked to
-            - >-
-                pip install $MOZ_FETCHES_DIR/hunspell-0.5.5-cp310-cp310-linux_x86_64.whl &&
-                pip install $MOZ_FETCHES_DIR/kenlm-0.0.0-cp310-cp310-linux_x86_64.whl &&
-                pip install -r {bicleaner_reqs} &&
-                export PATH=$PATH:~/.local/bin &&
-                $VCS_PATH/pipeline/bicleaner/bicleaner.sh
-                $MOZ_FETCHES_DIR/{dataset_sanitized}
-                artifacts/{dataset_sanitized}
-                {bicleaner_threshold}
-                {bicleaner_type}
-                {bicleaner_threads}
-                $MOZ_FETCHES_DIR/pack
-    dependencies:
-        "{provider}": clean-corpus-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
-    fetches:
-        toolchain:
-            - hunspell
-            - kenlm
-            - cuda-toolkit
-        "{provider}":
-            - artifact: "{dataset_sanitized}.{src_locale}.zst"
-              extract: false
-            - artifact: "{dataset_sanitized}.{trg_locale}.zst"
-              extract: false
-
-tasks:
-    "{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}":
-        description: bicleaner for {provider} {dataset_sanitized} dataset {src_locale}-{trg_locale}
-        worker-type: b-cpu-largedisk
-        worker:
-            docker-image: {"in-tree": "train"}
-            artifacts:
-                - name: public/build
-                  path: /builds/worker/artifacts
-                  type: directory
-        attributes:
-            cleaning-type: bicleaner
-            cache:
-                type: bicleaner
-                resources:
-                    - pipeline/bicleaner/requirements/bicleaner.txt
-        fetches:
-            fetch:
-                - bicleaner-{src_locale}-{trg_locale}
-        task-context:
+            substitution-fields:
+                - run.command
             from-object:
-                bicleaner_type: bicleaner
-                bicleaner_reqs: $VCS_PATH/pipeline/bicleaner/requirements/bicleaner.txt
-                # auto = use `nproc` value
+                bicleaner_reqs: $VCS_PATH/pipeline/bicleaner/requirements/bicleaner-ai.txt
+                # TODO: set this to a sensible value based on number of GPUs?
+                # or maybe it should also be `auto`?
                 bicleaner_threads: auto
 
-    ai-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}:
-        description: bicleaner-ai for {provider} {dataset_sanitized} dataset {src_locale}-{trg_locale}
         worker-type: b-largegpu-largedisk
         worker:
             artifacts:
                 - name: public/build
                   path: artifacts
                   type: directory
-        dataset-config:
-            exclude-locales:
-                - src: en
-                  trg: ru
-                - src: ru
-                  trg: en
-        attributes:
-            cleaning-type: bicleaner-ai
-            cache:
-                type: bicleaner-ai
-                resources:
-                    - pipeline/bicleaner/requirements/bicleaner-ai.txt
-        fetches:
-            fetch:
-                - bicleaner-ai-{src_locale}-{trg_locale}
+            max-run-time: 86400
+            env:
+                SRC: "{src_locale}"
+                TRG: "{trg_locale}"
+                # It would be preferable to use $MOZ_FETCHES_DIR here, but these don't
+                # get interpreted.
+                CUDA_DIR: fetches/cuda-toolkit
+                CUDNN_DIR: fetches/cuda-toolkit
+                COMPRESSION_CMD: zstdmt
+                ARTIFACT_EXT: zst
 
-        task-context:
-            from-object:
-                bicleaner_type: bicleaner-ai
-                bicleaner_reqs: $VCS_PATH/pipeline/bicleaner/requirements/bicleaner-ai.txt
-                # TODO: set this to a sensible value based on number of GPUs?
-                # or maybe it should also be `auto`?
-                bicleaner_threads: auto
+        # Don't run unless explicitly scheduled
+        run-on-tasks-for: []
+
+        run:
+            using: run-task
+            command:
+                - bash
+                - -c
+                # We can't inline comments for the args to `bicleaner.sh`, so they're explained
+                # here instead:
+                # 1) prefix for input data
+                # 2) prefix for output data
+                # 3) bicleaner threshold
+                # 5) number of threads to use - auto means nproc
+                # 6) "pack dir" - which needs to be where the `bicleaner-src-trg` fetch was unpacked to
+                - >-
+                    pip install $MOZ_FETCHES_DIR/hunspell-0.5.5-cp310-cp310-linux_x86_64.whl &&
+                    pip install $MOZ_FETCHES_DIR/kenlm-0.0.0-cp310-cp310-linux_x86_64.whl &&
+                    pip install -r {bicleaner_reqs} &&
+                    export PATH=$PATH:~/.local/bin &&
+                    $VCS_PATH/pipeline/bicleaner/bicleaner.sh
+                    $MOZ_FETCHES_DIR/{dataset_sanitized}
+                    artifacts/{dataset_sanitized}
+                    {bicleaner_threshold}
+                    {bicleaner_threads}
+                    $MOZ_FETCHES_DIR/bicleaner-ai-{src_locale}-{trg_locale}
+        dependencies:
+            "{provider}": clean-corpus-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
+            bicleaner-model: bicleaner-model-{src_locale}-{trg_locale}
+        fetches:
+            toolchain:
+                - hunspell
+                - kenlm
+                - cuda-toolkit
+            "{provider}":
+                - artifact: "{dataset_sanitized}.{src_locale}.zst"
+                  extract: false
+                - artifact: "{dataset_sanitized}.{trg_locale}.zst"
+                  extract: false
+            bicleaner-model:
+                - artifact: bicleaner-ai-{src_locale}-{trg_locale}.tar.zst
+                  extract: true
+
+
+
+
+
+
+

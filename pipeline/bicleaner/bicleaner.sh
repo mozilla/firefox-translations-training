@@ -1,6 +1,6 @@
 #!/bin/bash
 ##
-# Cleans corpus using bicleaner-ai or bicleaner
+# Cleans corpus using bicleaner-ai
 #
 # See:
 #   docs/bicleaner.md
@@ -21,9 +21,8 @@ export LD_LIBRARY_PATH=${CUDA_DIR}/lib64:${CUDNN_DIR}:${LD_LIBRARY_PATH:+LD_LIBR
 corpus_prefix=$1
 output_prefix=$2
 bicleaner_threshold=$3
-type=$4
-threads=$5
-pack_dir=$6
+threads=$4
+pack_dir=$5
 
 COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
@@ -40,24 +39,24 @@ if [ "${bicleaner_threshold}" == "0" ] || [ "${bicleaner_threshold}" == "0.0" ];
   cp "${corpus_prefix}.${SRC}.${ARTIFACT_EXT}" "${output_prefix}.${SRC}.${ARTIFACT_EXT}"
   cp "${corpus_prefix}.${TRG}.${ARTIFACT_EXT}" "${output_prefix}.${TRG}.${ARTIFACT_EXT}"
 else
-  if [ "${type}" == 'bicleaner-ai' ]; then
-    echo "### Using bicleaner-ai"
-    cmd=bicleaner-ai-classify
-  elif [ "${type}" == 'bicleaner' ]; then
-    echo "### Using bicleaner"
-    cmd=bicleaner-classify
-  else
-    echo "### Unsupported type: ${type}"
-    exit 1
-  fi
 
   export scol=1
   export tcol=2
-  # Older bicleaner versions have a $src-$trg.yaml
-  # Newer versions have metadata.yaml
-  if grep "source_lang" ${pack_dir}/*.yaml | grep -q "${TRG}"; then
+  # Get model src-trg from metadata.yaml
+  model_source_lang=$(grep "source_lang" ${pack_dir}/*.yaml | awk '{print $2}')
+  model_target_lang=$(grep "target_lang" ${pack_dir}/*.yaml | awk '{print $2}')
+  # for example if SRC-TRG = en-ru
+  # the model can be: en-ru, ru-en, en-xx
+  if [ ${model_source_lang} == ${TRG} ] || [ ${model_target_lang} == ${SRC} ]; then
+    # swap columns
     export scol=2
     export tcol=1
+  fi
+  # disable hard rules for multilingual model
+  if [ ${model_source_lang} == "xx" ] || [ ${model_target_lang} == "xx" ]; then
+    export hardrules="--disable_hardrules"
+  else
+    export hardrules=""
   fi
 
   #Export cuda visible devices if empty or not set
@@ -66,7 +65,7 @@ else
   fi
 
   echo "### Classifying"
-  if [[ "${type}" == 'bicleaner-ai' && ${#CUDA_VISIBLE_DEVICES} > 1 ]]; then # Use gnu-parallel'd bicleaner-ai if we have more than 1 GPU
+  if [ ${#CUDA_VISIBLE_DEVICES} -gt 1 ]; then # Use gnu-parallel'd bicleaner-ai if we have more than 1 GPU
        #Convert CUDA_VISIBLE_DEVICES to an array
        export CUDA_VISIBLE_ARRAY=(${CUDA_VISIBLE_DEVICES//,/ })
        #Turn on tensorflow logging in bicleaner-ai
@@ -76,7 +75,7 @@ else
        biclean() {
                export CUDA_VISIBLE_ARRAY=(${CUDA_VISIBLE_DEVICES//,/ })
                export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_ARRAY[$(($2-1))]}
-               bicleaner-ai-classify --scol ${scol} --tcol ${tcol} - - $1
+               bicleaner-ai-classify ${hardrules} --scol ${scol} --tcol ${tcol} - - $1
        }
        export -f biclean
        # {%} is a 1-indexed job slot number from GNU parallel.  We use that as the 1-indexed offset in CUDA_VISIBLE_ARRAY
@@ -85,7 +84,7 @@ else
        ${COMPRESSION_CMD} >"${output_prefix}.scored.${ARTIFACT_EXT}"
   else
    paste <(${COMPRESSION_CMD} -dc "${corpus_prefix}.${SRC}.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${corpus_prefix}.${TRG}.${ARTIFACT_EXT}") |
-     ${cmd} --scol ${scol} --tcol ${tcol} --processes "${threads}"  - - "${pack_dir}"/*.yaml |
+     bicleaner-ai-classify ${hardrules} --scol ${scol} --tcol ${tcol} --processes "${threads}"  - - "${pack_dir}"/*.yaml |
      ${COMPRESSION_CMD} >"${output_prefix}.scored.${ARTIFACT_EXT}"
   fi
 
@@ -93,6 +92,10 @@ else
   ${COMPRESSION_CMD} -dc "${output_prefix}.scored.${ARTIFACT_EXT}" |
     awk -v threshold=${bicleaner_threshold} -F"\t" '{if ($3>threshold) {print $0}}' |
     ${COMPRESSION_CMD} >"${output_prefix}.best.${ARTIFACT_EXT}"
+
+  ${COMPRESSION_CMD} -dc "${output_prefix}.scored.${ARTIFACT_EXT}" |
+    awk -v threshold=${bicleaner_threshold} -F"\t" '{if ($3<=threshold) {print $0}}' |
+    ${COMPRESSION_CMD} >"${output_prefix}.filtered.${ARTIFACT_EXT}"
 
   echo "Lines before filtering: $(${COMPRESSION_CMD} -dc "${output_prefix}.scored.${ARTIFACT_EXT}" | wc -l)"
   echo "Lines after filtering: $(${COMPRESSION_CMD} -dc "${output_prefix}.best.${ARTIFACT_EXT}" | wc -l)"
