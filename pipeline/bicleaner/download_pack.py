@@ -20,6 +20,10 @@ import tempfile
 from typing import Optional
 
 
+# bicleaner-ai-download downloads the latest models from Hugging Face / Github
+# If a new model is released and you want to invalidate Taskcluster caches,
+# change this file since it is a part of the cache digest
+# The last model was added to https://huggingface.co/bitextor on Aug 29, 2023
 def _run_download(src: str, trg: str, dir: str) -> subprocess.CompletedProcess:
     return subprocess.run(
         ["bicleaner-ai-download", trg, src, "full", dir], capture_output=True, check=False
