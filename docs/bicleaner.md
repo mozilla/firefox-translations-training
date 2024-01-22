@@ -8,7 +8,7 @@ parent: Data cleaning
 
 [Bicleaner AI](https://github.com/bitextor/bicleaner-ai) is a tool that aims at detecting noisy sentence pairs in a parallel corpus. 
 The classifier scores parallel sentences from 0 to 1 where 0 means a very noisy translation and 1 is a good translation.
-If specialized model for a language pair is not available it will fallback to downloading multilingual en-xx model.
+If a specialized model for a language pair is not available it will fallback to downloading a multilingual en-xx model.
 
 For supported languages see:
   * [Bicleaner AI Releases][ai-releases]
