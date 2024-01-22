@@ -1,17 +1,20 @@
 import os
-import shutil
 import tarfile
 from subprocess import CompletedProcess
 
 import pytest
 import sh
 import yaml
+from fixtures import DataDir
 from pytest import fixture
 
 from pipeline.bicleaner import download_pack
 from pipeline.bicleaner.download_pack import main as download_model
 
-OUTPUT_DIR = "data/tests"
+
+@pytest.fixture(scope="function")
+def data_dir():
+    return DataDir("test_bicleaner")
 
 
 @fixture(scope="session")
@@ -48,11 +51,10 @@ def decompress(path):
         ("en", "ru", "en", "xx"),
     ],
 )
-def test_model_download(params, init):
-    shutil.rmtree(OUTPUT_DIR, ignore_errors=True)
+def test_model_download(params, init, data_dir):
     src, trg, model_src, model_trg = params
-    target_path = os.path.join(OUTPUT_DIR, f"bicleaner-ai-{src}-{trg}.tar.zst")
-    decompressed_path = os.path.join(OUTPUT_DIR, f"bicleaner-ai-{src}-{trg}")
+    target_path = data_dir.join(f"bicleaner-ai-{src}-{trg}.tar.zst")
+    decompressed_path = data_dir.join(f"bicleaner-ai-{src}-{trg}")
     meta_path = os.path.join(decompressed_path, "metadata.yaml")
 
     download_model([f"--src={src}", f"--trg={trg}", "--compression_cmd=zstd", target_path])
