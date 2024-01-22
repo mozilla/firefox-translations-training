@@ -67,7 +67,8 @@ tasks:
                 - name: public/build
                   path: artifacts
                   type: directory
-            max-run-time: 86400
+            # 7 days. yes, it can take a while to clean a huge dataset
+            max-run-time: 604800
             env:
                 SRC: "{src_locale}"
                 TRG: "{trg_locale}"
