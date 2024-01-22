@@ -9,7 +9,7 @@ import yaml
 from pytest import fixture
 
 from pipeline.bicleaner import download_pack
-from pipeline.bicleaner.download_pack import main as donwload_model
+from pipeline.bicleaner.download_pack import main as download_model
 
 OUTPUT_DIR = "data/tests"
 
@@ -55,7 +55,7 @@ def test_model_download(params, init):
     decompressed_path = os.path.join(OUTPUT_DIR, f"bicleaner-ai-{src}-{trg}")
     meta_path = os.path.join(decompressed_path, "metadata.yaml")
 
-    donwload_model([f"--src={src}", f"--trg={trg}", "--compression_cmd=zstd", target_path])
+    download_model([f"--src={src}", f"--trg={trg}", "--compression_cmd=zstd", target_path])
 
     assert os.path.isfile(target_path)
     decompress(target_path)
