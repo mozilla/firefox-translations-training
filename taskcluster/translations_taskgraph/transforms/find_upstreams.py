@@ -68,7 +68,7 @@ def get_cleaning_type(upstreams):
 
         candidates.add(upstream.attributes["cleaning-type"])
 
-    for type_ in ("bicleaner-ai", "bicleaner", "clean-corpus"):
+    for type_ in ("bicleaner-ai", "clean-corpus"):
         if type_ in candidates:
             return type_
 
