@@ -33,9 +33,9 @@ def _run_download(src: str, trg: str, dir: str) -> subprocess.CompletedProcess:
 def _compress_dir(dir_path: str, compression_cmd: str) -> str:
     print(f"Compressing {dir_path}")
     if compression_cmd not in ["gzip", "zstd", "zstdmt", "pigz"]:
-        raise ValueError("Unsupported compression tool.")
+        raise ValueError(f"Unsupported compression tool {compression_cmd}.")
 
-    tarball_path = dir_path + ".tar"
+    tarball_path = f"{dir_path}.tar"
     with tarfile.open(tarball_path, "w") as tar:
         tar.add(dir_path, arcname=os.path.basename(dir_path))
 
@@ -74,7 +74,7 @@ def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None
 
         result.check_returncode()
 
-    # Compress downloaded pack and
+    # Compress downloaded pack
     pack_path = os.path.join(tmp_dir, f"{src}-{trg}")
     new_name = os.path.join(tmp_dir, f"bicleaner-ai-{original_src}-{original_trg}")
     if os.path.isdir(new_name):
@@ -83,7 +83,7 @@ def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None
     pack_path = new_name
     if compression_cmd:
         pack_path = _compress_dir(pack_path, compression_cmd)
-    # move to the expected path
+    # Move to the expected path
     print(f"Moving {pack_path} to {output_path}")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     shutil.move(pack_path, output_path)
