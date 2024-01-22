@@ -9,12 +9,12 @@
 # An "experiment" is an individual training run.
 experiment:
   # Provide an identifiable name for your experiment.
-  name: baseline_en_ru
+  name: en_ca_baseline_jan2024
 
   # The source and target languages. This is the language tag part of the
   # BCP 47 locale identifier.
   src: en
-  trg: ru
+  trg: ca
 
   # The metric to use for computing the best model validation.
   #   cross-entropy, ce-mean-words, perplexity, valid-script, translation, bleu,
@@ -22,26 +22,25 @@ experiment:
   # See: https://github.com/marian-nmt/marian/blob/65bf82ffce52f4854295d8b98482534f176d494e/src/common/config_parser.cpp#L588-L592
   best-model: chrf
 
-  # Use the Opus Cleaner tool on the data cleaning step.
-  # https://github.com/hplt-project/OpusCleaner
-  use-opuscleaner: "true"
+  # Disable opus cleaner since this is a baseline run.
+  use-opuscleaner: "false"
 
   # Bicleaner is a tool that aims at detecting noisy sentence pairs in a parallel corpus.
   # See: docs/bicleaner.md
   bicleaner:
     default-threshold: 0.5
     dataset-thresholds:
-      opus_CCAligned/v1: 0.7
-      opus_LinguaTools-WikiTitles/v2014: 0.7
-      opus_OpenSubtitles/v2018: 0.8           # Example of a higher filtering level.
-      opus_ParaCrawl/v9: 0.0                  # Example of cleaning being disabled.
-      opus_WikiMatrix/v1: 0.7
-      opus_bible-uedin/v1: 0.7
+      opus_NLLB/v1: 0.0              # This should already be clean.
+      opus_OpenSubtitles/v2018: 0.8  # This is dirty per bicleaner.md
 
   # Limits the maximum sentences use in the monolingual data for both the source and target
   # languages.
   mono-max-sentences-src: 100_000_000
   mono-max-sentences-trg: 20_000_000
+
+  # The number of sentences split out into separate files for the monolingual data.
+  # Also see taskcluster.split-chunks below.
+  split-length: 2_000_000
 
   # How many bytes of the corpus are sampled to be used in SentencePiece
   # tokenization training.
@@ -51,10 +50,10 @@ experiment:
   # See: docs/teacher-ensemble.md
   teacher-ensemble: 2
 
-  # Path to a pretrained backward model (optional).
+  # TODO(docs) - What is this?
   backward-model: NOT-YET-SUPPORTED
 
-  # Path to a pretrained vocabulary (optional).
+  # TODO(docs) - What is this?
   vocab: NOT-YET-SUPPORTED
 
 # The lists of datasets. Each dataset is defined by a corpus key. This key is formed
@@ -62,34 +61,31 @@ experiment:
 #
 # TODO(docs) - Document augmentation in corpus keys.
 #
-# To find datasets run:
-#  poetry run utils/find_corpus.py en ru
+# running:
+#  utils/find_corpus.py
 datasets:
   # The datasets used for validation while training. These should not be the same
   # ones used in test or train. This is what is used to determine when to stop training.
   devtest:
-    - flores_dev
-    - sacrebleu_wmt08
-    - mtdata_Neulab-tedtalks_dev-1-eng-hun
+    # 997 sentences
+    - flores_devtest
 
   # The datasets used for the final evaluation to determine the quality of the trained
   # model.
   test:
-    - flores_devtest
-    - sacrebleu_wmt09
-    - mtdata_Neulab-tedtalks_test-1-eng-hun
+    # 1012 sentences
+    - flores_dev
 
   # The parallel training data.
   train:
-    - opus_Books/v1
-    - opus_CCAligned/v1
-    - opus_CCMatrix/v1
-    - opus_DGT/v2019
-    - opus_ECB/v1
-    - opus_ECDC/v2016-03-16
-    - opus_ELITR-ECA/v1
-    - opus_ELRC-2019-EUIPO_2017/v1
-    - opus_ELRC-2715-EMEA/v1
+    # I skimmed through a sampling of this data (Maybe a few thousand entries) and it
+    # seemed pretty high quality.
+    # There were 21,284,430 sentence pairs
+    - opus_NLLB/v1
+
+    # This dataset has a lot of very short translations, which is probably good.
+    # There are 482,598 sentence pairs.
+    - opus_OpenSubtitles/v2018
 
   # Monolingual data sources for the source language.
   mono-src:
@@ -110,33 +106,24 @@ datasets:
     - news-crawl_news.2007
 
   # Monolingual data sources for the target language.
-  mono-trg:
-    - news-crawl_news.2021
-    - news-crawl_news.2020
-    - news-crawl_news.2019
-    - news-crawl_news.2018
-    - news-crawl_news.2017
-    - news-crawl_news.2016
-    - news-crawl_news.2015
-    - news-crawl_news.2014
-    - news-crawl_news.2013
-    - news-crawl_news.2012
-    - news-crawl_news.2011
-    - news-crawl_news.2010
-    - news-crawl_news.2009
-    - news-crawl_news.2008
-    - news-crawl_news.2007
+  # There is no mono available.
+  mono-trg: []
 
 # Arguments that are provided to Marian, the underlying machine learning system used
 # to train language.
 # https://marian-nmt.github.io/docs/cmd/marian/
 marian-args:
+  # Decoding arguments are GPU-dependent. See:
+  # https://mozilla.github.io/firefox-translations-training/training-guide.html#decoding-translation
   decoding-backward:
     beam-size: '12'
     mini-batch-words: '2000'
   decoding-teacher:
     mini-batch-words: '4000'
     precision: float16
+
+  # Early stopping can be adjusted to ensure models converge. See:
+  # https://mozilla.github.io/firefox-translations-training/training-guide.html#model-training
   training-backward:
     early-stopping: '5'
   training-teacher:
