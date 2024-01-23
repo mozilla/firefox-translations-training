@@ -55,7 +55,9 @@ def parse_experiment(
     metrics = []
     if metrics_dir:
         for metrics_file in metrics_dir.glob("*.metrics"):
-            metrics.append(Metric.from_file(model_name=f"{group}.{name}", metrics_file=metrics_file))
+            metrics.append(
+                Metric.from_file(model_name=f"{group}.{name}", metrics_file=metrics_file)
+            )
 
     with logs_file.open("r") as f:
         lines = (line.strip() for line in f.readlines())
@@ -100,10 +102,11 @@ def publish_group_logs(
     else:
         logger.warning(f"No evaluation metrics not found for group {group}, skipping")
 
+    # Store metrics by run name
+    metrics = defaultdict(list)
     # Add "quantized" metrics
-    metrics = []
     for file in quantized_metrics:
-        metrics.append(Metric.from_file(f"{group}.quantized", file))
+        metrics["quantized"].append(Metric.from_file(f"{group}.quantized", file))
     # Add experiment (runs) metrics
     for file in evaluation_metrics:
         model_name = file.stem.lstrip("eval_")
@@ -115,7 +118,7 @@ def publish_group_logs(
                 index = model_name.index(keyword)
                 model_name, dataset = model_name[:index].strip("_"), model_name[index:]
                 # Prefix model name with group, so it is distinguishable among groups in W&B
-                model_name = f"{group}.{model_name}"
+                prefixed_name = f"{group}.{model_name}"
                 break
             else:
                 continue
@@ -126,25 +129,21 @@ def publish_group_logs(
         with file.open("r") as f:
             lines = f.readlines()
         try:
-            metrics.append(Metric.from_tc_context(model_name, dataset, lines))
+            metrics[model_name].append(Metric.from_tc_context(prefixed_name, dataset, lines))
         except ValueError as e:
             logger.error(f"Could not parse metrics from {file.resolve()}: {e}")
 
     # Publish missing runs (runs without training data)
-    missing_run_metrics = defaultdict(list)
-    for metric in metrics:
-        if metric.model_name in existing_runs:
-            continue
-        missing_run_metrics[metric.model_name].append(metric)
+    missing_run_metrics = {
+        name: metrics for name, metrics in metrics.items() if name not in existing_runs
+    }
 
     for model_name, model_metrics in missing_run_metrics.items():
         logger.info(f"Creating missing run {model_name} with associated metrics")
-        parser = TrainingParser(
-            [],
-            metrics=model_metrics,
-            publishers=[WandB(project=project, name=model_name, group=group)],
-        )
-        parser.run()
+        publisher = WandB(project=project, name=model_name, group=group)
+        publisher.open(TrainingParser(logs_iter=iter([]), publishers=[]))
+        publisher.handle_metrics(model_metrics)
+        publisher.close()
 
     # Start publication of `group_logs` fake run
     publisher = WandB(
@@ -157,16 +156,17 @@ def publish_group_logs(
         group=group,
         name="group_logs",
     )
-    if publisher.wandb is None:
-        return
 
     # Publish all evaluation metrics to a table
+    if publisher.wandb is None:
+        return
     if metrics:
         table = wandb.Table(
-            columns=["Model", "dataset", "BLEU", "chrF"],
+            columns=["Group", "Model", "Dataset", "BLEU", "chrF"],
             data=[
-                [metric.model_name, metric.dataset, metric.bleu_detok, metric.chrf]
-                for metric in metrics
+                [group, run_name, metric.dataset, metric.bleu_detok, metric.chrf]
+                for run_name, run_metrics in metrics.items()
+                for metric in run_metrics
             ],
         )
         publisher.wandb.log({"metrics": table})
@@ -215,7 +215,7 @@ def main() -> None:
                 logger.warning("Evaluation metrics files not found, skipping.")
             try:
                 parse_experiment(project, group, name, file, metrics_dir=metrics_dir)
-                existing_runs.append(f"{group}.{name}")
+                existing_runs.append(name)
             except Exception as e:
                 logger.error(f"An exception occured parsing {file}: {e}")
 

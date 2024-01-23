@@ -129,7 +129,7 @@ class WandB(Publisher):
             # Publish a bar chart (a table with values will also be available from W&B)
             self.wandb.log(
                 {
-                    metric.dataset.lower(): wandb.plot.bar(
+                    metric.dataset: wandb.plot.bar(
                         wandb.Table(
                             columns=["Metric", "Value"],
                             data=[[key, getattr(metric, key)] for key in ("bleu_detok", "chrf")],
