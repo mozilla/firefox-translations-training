@@ -128,6 +128,186 @@ def get_sacrebleu(source: str, target: str):
     print_yaml(names)
 
 
+def get_size(tags: list[str]) -> str:
+    size = next(
+        filter(
+            lambda tag: tag.startswith("size_categories:"),
+            tags,
+        ),
+        None,
+    )
+
+    if not size or size == "unknown":
+        return ""
+
+    # Lowercase the text since it's not consistent.
+    return size.replace("size_categories:", "").lower()
+
+
+def get_language_count(tags: list[str]):
+    count = 0
+    for tag in tags:
+        if tag.startswith("language:"):
+            count = count + 1
+    return count
+
+
+HF_DATASET_SIZES = {
+    "": 0,
+    "unknown": 0,
+    "n<1k": 1,
+    "1k<n<10k": 2,
+    "10k<100k": 3,
+    "10k<n<100k": 3,
+    "100k<n<1m": 4,
+    "1m<n<10m": 5,
+    "10m<n<100m": 6,
+    "100m<n<1b": 7,
+    "1b<n<10b": 8,
+    "10b<n<100b": 9,
+    "100b<n<1t": 10,
+}
+
+
+def get_huggingface_monolingual(language: str):
+    """
+    Returns monolingual datasets ordered by size. Datasets with few downloads are ignored
+    as they are probably low quality and not trustworthy.
+    """
+    from huggingface_hub import DatasetFilter, HfApi
+
+    api = HfApi()
+
+    datasets = list(
+        api.list_datasets(
+            filter=DatasetFilter(
+                #
+                language=language,
+                multilinguality="monolingual",
+            )
+        )
+    )
+    datasets.sort(key=lambda dataset: -dataset.downloads)
+    datasets.sort(key=lambda dataset: -HF_DATASET_SIZES.get(get_size(dataset.tags), 0))
+
+    print("")
+    print("┌─────────────────────────────────────────────────┐")
+    print("│ huggingface monolingual data                    │")
+    print("└─────────────────────────────────────────────────┘")
+    print_table(
+        [
+            ["ID", "Size", "Downloads"],
+            *[
+                [
+                    #
+                    f"https://huggingface.co/datasets/{dataset.id}",
+                    get_size(dataset.tags),
+                    dataset.downloads,
+                ]
+                for dataset in datasets
+                if is_useful_dataset(dataset)
+            ],
+        ]
+    )
+
+
+def get_huggingface_parallel(source: str, target: str):
+    """
+    Returns parallel datasets ordered by size. Datasets with few downloads are ignored
+    as they are probably low quality and not trustworthy.
+    """
+    from huggingface_hub import DatasetFilter, HfApi
+
+    api = HfApi()
+
+    datasets = list(
+        api.list_datasets(
+            filter=DatasetFilter(
+                #
+                language=[source, target],
+            )
+        )
+    )
+    datasets.sort(key=lambda dataset: -dataset.downloads)
+    datasets.sort(key=lambda dataset: -HF_DATASET_SIZES.get(get_size(dataset.tags), 0))
+
+    print("")
+    print(
+        "┌────────────────────────────────────────────────────────────────────────────────────────────────────┐"
+    )
+    print(
+        f"│ huggingface parallel data https://huggingface.co/datasets?language=language:{source},language:{target}"
+    )
+    print(
+        "└────────────────────────────────────────────────────────────────────────────────────────────────────┘"
+    )
+    print_table(
+        [
+            ["ID", "Size", "Downloads"],
+            *[
+                [
+                    #
+                    f"https://huggingface.co/datasets/{dataset.id}",
+                    get_size(dataset.tags),
+                    dataset.downloads,
+                ]
+                for dataset in datasets
+                if is_useful_dataset(dataset)
+            ],
+        ]
+    )
+
+
+def is_useful_dataset(dataset: any) -> bool:
+    """Determines if a dataset is useful or not."""
+    return (
+        "task_categories:automatic-speech-recognition" not in dataset.tags
+        and dataset.downloads > 5
+    )
+
+
+def get_huggingface_any(language: str):
+    """
+    Returns parallel datasets ordered by size. Datasets with few downloads are ignored
+    as they are probably low quality and not trustworthy.
+    """
+    from huggingface_hub import DatasetFilter, HfApi
+
+    api = HfApi()
+
+    datasets = list(
+        api.list_datasets(
+            filter=DatasetFilter(
+                #
+                language=language,
+            )
+        )
+    )
+
+    datasets.sort(key=lambda dataset: -dataset.downloads)
+    datasets.sort(key=lambda dataset: -HF_DATASET_SIZES.get(get_size(dataset.tags), 0))
+
+    print("")
+    print("┌─────────────────────────────────────────────────────────────────────────────┐")
+    print(f"│ huggingface any data https://huggingface.co/datasets?language=language:{language}")
+    print("└─────────────────────────────────────────────────────────────────────────────┘")
+    print_table(
+        [
+            ["ID", "Size", "Downloads"],
+            *[
+                [
+                    #
+                    f"https://huggingface.co/datasets/{dataset.id}",
+                    get_size(dataset.tags),
+                    dataset.downloads,
+                ]
+                for dataset in datasets
+                if is_useful_dataset(dataset)
+            ],
+        ]
+    )
+
+
 def get_remote_file_size(url: str) -> Optional[int]:
     try:
         response = requests.head(url, timeout=1)
@@ -257,6 +437,14 @@ def print_table(table: list[list[any]]):
 
 
 def main(args: Optional[list[str]] = None) -> None:
+    importers = [
+        "opus",
+        "sacrebleu",
+        "mtdata",
+        "huggingface_mono",
+        "huggingface_parallel",
+        "huggingface_any",
+    ]
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.RawTextHelpFormatter,  # Preserves whitespace in the help text.
@@ -264,7 +452,9 @@ def main(args: Optional[list[str]] = None) -> None:
     parser.add_argument("source", type=str, nargs="?", help="Source language code")
     parser.add_argument("target", type=str, nargs="?", help="Target language code")
     parser.add_argument(
-        "--importer", type=str, help="The importer to use: mtdata, opus, sacrebleu"
+        "--importer",
+        type=str,
+        help=f"The importer to use: {', '.join(importers)}",
     )
     parser.add_argument(
         "--download_url",
@@ -279,7 +469,7 @@ def main(args: Optional[list[str]] = None) -> None:
         parser.print_help()
         sys.exit(1)
 
-    if args.importer and args.importer not in ["opus", "sacrebleu", "mtdata"]:
+    if args.importer and args.importer not in importers:
         print(f'"{args.importer}" is not a valid importer.')
         sys.exit(1)
 
@@ -291,6 +481,15 @@ def main(args: Optional[list[str]] = None) -> None:
 
     if args.importer == "mtdata" or not args.importer:
         get_mtdata(args.source, args.target)
+
+    if args.importer == "huggingface_mono" or not args.importer:
+        get_huggingface_monolingual(args.target if args.source == "en" else args.source)
+
+    if args.importer == "huggingface_parallel" or not args.importer:
+        get_huggingface_parallel(args.source, args.target)
+
+    if args.importer == "huggingface_any" or not args.importer:
+        get_huggingface_any(args.target if args.source == "en" else args.source)
 
 
 if __name__ == "__main__":
