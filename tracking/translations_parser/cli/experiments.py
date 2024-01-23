@@ -55,7 +55,7 @@ def parse_experiment(
     metrics = []
     if metrics_dir:
         for metrics_file in metrics_dir.glob("*.metrics"):
-            metrics.append(Metric.from_file(model_name=name, metrics_file=metrics_file))
+            metrics.append(Metric.from_file(model_name=f"{group}.{name}", metrics_file=metrics_file))
 
     with logs_file.open("r") as f:
         lines = (line.strip() for line in f.readlines())
@@ -103,7 +103,7 @@ def publish_group_logs(
     # Add "quantized" metrics
     metrics = []
     for file in quantized_metrics:
-        metrics.append(Metric.from_file("quantized", file))
+        metrics.append(Metric.from_file(f"{group}.quantized", file))
     # Add experiment (runs) metrics
     for file in evaluation_metrics:
         model_name = file.stem.lstrip("eval_")
@@ -114,6 +114,8 @@ def publish_group_logs(
             if keyword in model_name:
                 index = model_name.index(keyword)
                 model_name, dataset = model_name[:index].strip("_"), model_name[index:]
+                # Prefix model name with group, so it is distinguishable among groups in W&B
+                model_name = f"{group}.{model_name}"
                 break
             else:
                 continue
@@ -213,7 +215,7 @@ def main() -> None:
                 logger.warning("Evaluation metrics files not found, skipping.")
             try:
                 parse_experiment(project, group, name, file, metrics_dir=metrics_dir)
-                existing_runs.append(name)
+                existing_runs.append(f"{group}.{name}")
             except Exception as e:
                 logger.error(f"An exception occured parsing {file}: {e}")
 
