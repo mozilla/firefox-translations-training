@@ -82,6 +82,8 @@ def test_eval_sh() -> None:
         # fmt: on
     ], "The marian arguments matched."
 
+    assert "0.4\n1.0\n" in test_data_dir.load("artifacts/wmt09.metrics")
+
 
 def test_eval_gpu_sh() -> None:
     test_data_dir, dataset_prefix, env = shared_setup(
@@ -119,6 +121,8 @@ def test_eval_gpu_sh() -> None:
         "--models", test_data_dir.join("fake_model.npz"),
         # fmt: on
     ], "The marian arguments matched."
+
+    assert "0.4\n1.0\n" in test_data_dir.load("artifacts/wmt09.metrics")
 
 
 def test_eval_quantized_sh() -> None:
@@ -160,3 +164,5 @@ def test_eval_quantized_sh() -> None:
         '--int8shiftAlphaAll',
         # fmt: on
     ], "The marian arguments matched."
+
+    assert "0.4\n1.0\n" in test_data_dir.load("artifacts/wmt09.metrics")
