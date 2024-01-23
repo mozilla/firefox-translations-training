@@ -9,6 +9,7 @@ Example:
 import argparse
 import logging
 import os
+from collections import defaultdict
 from itertools import groupby
 from pathlib import Path
 
@@ -77,6 +78,7 @@ def publish_group_logs(
     prefix: str,
     project: str,
     group: str,
+    existing_runs: list,
 ) -> None:
     """
     Publish all files within `logs_dir` to W&B artifacts for a specific group.
@@ -126,7 +128,23 @@ def publish_group_logs(
         except ValueError as e:
             logger.error(f"Could not parse metrics from {file.resolve()}: {e}")
 
-    # Start publication
+    # Publish missing runs (runs without training data)
+    missing_run_metrics = defaultdict(list)
+    for metric in metrics:
+        if metric.model_name in existing_runs:
+            continue
+        missing_run_metrics[metric.model_name].append(metric)
+
+    for model_name, model_metrics in missing_run_metrics.items():
+        logger.info(f"Creating missing run {model_name} with associated metrics")
+        parser = TrainingParser(
+            [],
+            metrics=model_metrics,
+            publishers=[WandB(project=project, name=model_name, group=group)],
+        )
+        parser.run()
+
+    # Start publication of `group_logs` fake run
     publisher = WandB(
         project=project,
         group=group,
@@ -175,6 +193,7 @@ def main() -> None:
         prefix = prefix[: prefix.index("models") + 1]
 
     last_index = None
+    existing_runs = []
     for index, (path, files) in enumerate(file_groups.items(), start=1):
         logger.info(f"Parsing folder {path.resolve()}")
         parents = path.parts[len(prefix) :]
@@ -194,6 +213,7 @@ def main() -> None:
                 logger.warning("Evaluation metrics files not found, skipping.")
             try:
                 parse_experiment(project, group, name, file, metrics_dir=metrics_dir)
+                existing_runs.append(name)
             except Exception as e:
                 logger.error(f"An exception occured parsing {file}: {e}")
 
@@ -208,5 +228,6 @@ def main() -> None:
             logger.info(
                 f"Publishing '{last_project}/{last_group}' evaluation metrics and files (fake run 'group_logs')"
             )
-            publish_group_logs(prefix, last_project, last_group)
+            publish_group_logs(prefix, last_project, last_group, existing_runs)
+            existing_runs = []
         last_index = (project, group)
