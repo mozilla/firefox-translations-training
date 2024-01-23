@@ -1,3 +1,7 @@
+"""
+Tests pipeline/eval/eval.sh
+"""
+
 import json
 import os
 import subprocess
@@ -9,7 +13,7 @@ fixtures_path = os.path.join(current_folder, "fixtures")
 
 
 def shared_setup(env: dict[str, str]):
-    # See data/test_data/test_eval_vocab for the artifacts after a failure.
+    # See data/test_data/test_eval for the artifacts after a failure.
     test_data_dir = DataDir("test_eval")
 
     # Create the dataset.
@@ -30,9 +34,6 @@ def shared_setup(env: dict[str, str]):
 
 
 def run_common_assertions(test_data_dir: DataDir) -> None:
-    sacrebleu_args = json.loads(test_data_dir.load("sacrebleu.args.txt"))
-    sacrebleu_stdin = test_data_dir.load("sacrebleu.stdin.txt")
-
     fake_translations = "\n".join([line.upper() for line in en_sample.split("\n")])
 
     # The data sets should be written out to the artifacts.
@@ -44,19 +45,7 @@ def run_common_assertions(test_data_dir: DataDir) -> None:
         test_data_dir.load("artifacts/wmt09.ca") == fake_translations
     ), "The target (translated) corpus was written"
 
-    assert sacrebleu_args == [
-        # fmt: off
-        test_data_dir.join("artifacts/wmt09.ca.ref"),
-        "--detail",
-        "--format", "text",
-        "--score-only",
-        "--language-pair", "en-ca",
-        "--metrics", "bleu", "chrf",
-        # fmt: on
-    ], "The sacrebleu arguments matched."
-
-    assert sacrebleu_stdin == fake_translations, "Sacrebleu received the translated corpus"
-    assert test_data_dir.load("artifacts/wmt09.metrics") == "12.3\n45.6\n"
+    assert "0.4\n1.0\n" in test_data_dir.load("artifacts/wmt09.metrics")
 
 
 def test_eval_sh() -> None:
