@@ -230,17 +230,6 @@ def print_yaml(names: list[str], exclude: list[str] = []):
         print("\n".join(sorted([f"    - {name}" for name in cleaned])))
 
 
-def run(source: str, target: str, importer: Optional[str]):
-    if importer == "opus" or not type:
-        get_opus(source, target)
-
-    if importer == "sacrebleu" or not type:
-        get_sacrebleu(source, target)
-
-    if importer == "mtdata" or not type:
-        get_mtdata(source, target)
-
-
 def print_table(table: list[list[any]]):
     """
     Nicely print a table, the first row is the header
