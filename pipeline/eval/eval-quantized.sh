@@ -61,7 +61,7 @@ bash eval.sh \
       --models "${model_path}" \
       --vocabs "${vocab}" "${vocab}" \
       `# The second parameter to the shortlist arguments specifies whether or not the` \
-      `# is validated by marian when loaded into memory.` \
+      `# shortlist is validated by marian when loaded into memory.` \
       --shortlist "${shortlist}" false \
       --int8shiftAlphaAll
 
