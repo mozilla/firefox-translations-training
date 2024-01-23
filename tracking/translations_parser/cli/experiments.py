@@ -55,9 +55,7 @@ def parse_experiment(
     metrics = []
     if metrics_dir:
         for metrics_file in metrics_dir.glob("*.metrics"):
-            metrics.append(
-                Metric.from_file(model_name=f"{group}.{name}", metrics_file=metrics_file)
-            )
+            metrics.append(Metric.from_file(metrics_file=metrics_file))
 
     with logs_file.open("r") as f:
         lines = (line.strip() for line in f.readlines())
@@ -106,7 +104,7 @@ def publish_group_logs(
     metrics = defaultdict(list)
     # Add "quantized" metrics
     for file in quantized_metrics:
-        metrics["quantized"].append(Metric.from_file(f"{group}.quantized", file))
+        metrics["quantized"].append(Metric.from_file(file))
     # Add experiment (runs) metrics
     for file in evaluation_metrics:
         model_name = file.stem.lstrip("eval_")
@@ -117,8 +115,6 @@ def publish_group_logs(
             if keyword in model_name:
                 index = model_name.index(keyword)
                 model_name, dataset = model_name[:index].strip("_"), model_name[index:]
-                # Prefix model name with group, so it is distinguishable among groups in W&B
-                prefixed_name = f"{group}.{model_name}"
                 break
             else:
                 continue
@@ -129,7 +125,7 @@ def publish_group_logs(
         with file.open("r") as f:
             lines = f.readlines()
         try:
-            metrics[model_name].append(Metric.from_tc_context(prefixed_name, dataset, lines))
+            metrics[model_name].append(Metric.from_tc_context(dataset, lines))
         except ValueError as e:
             logger.error(f"Could not parse metrics from {file.resolve()}: {e}")
 

@@ -50,7 +50,6 @@ class Metric:
     """Data extracted from a `.metrics` file"""
 
     # Evaluation identifiers
-    model_name: str
     dataset: str
     augmentation: str | None
     # Scores
@@ -58,7 +57,7 @@ class Metric:
     bleu_detok: float
 
     @classmethod
-    def from_file(cls, model_name: str, metrics_file: Path):
+    def from_file(cls, metrics_file: Path):
         logger.debug(f"Reading metrics file {metrics_file.name}")
         values = []
         try:
@@ -74,7 +73,6 @@ class Metric:
             raise ValueError(f"Metrics file could not be parsed: {e}")
         bleu_detok, chrf = values
         return cls(
-            model_name=model_name,
             dataset=metrics_file.stem,
             augmentation=None,
             chrf=chrf,
@@ -82,7 +80,7 @@ class Metric:
         )
 
     @classmethod
-    def from_tc_context(cls, model_name: str, dataset: str, lines: Sequence[str]):
+    def from_tc_context(cls, dataset: str, lines: Sequence[str]):
         """
         Try reading a metric from Taskcluster logs, looking for two
         successive floats after a line maching METRIC_LOG_RE.
@@ -98,7 +96,6 @@ class Metric:
                 continue
             bleu_detok, chrf = values
             return cls(
-                model_name=model_name,
                 dataset=dataset,
                 augmentation=None,
                 chrf=chrf,
