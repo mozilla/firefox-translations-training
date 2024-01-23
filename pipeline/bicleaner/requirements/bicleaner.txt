@@ -79,7 +79,7 @@ toolwrapper==2.1.0
     #   bicleaner-hardrules
 tqdm==4.65.0
     # via sacremoses
-urllib3==1.26.15
+urllib3==1.26.18
     # via fastspell
 
 # The following packages are considered to be unsafe in a requirements file:
