@@ -132,6 +132,12 @@ def test_experiments(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
             ),
             (logging.INFO, "Found 2 quantized metrics"),
             (logging.INFO, "Found 16 evaluation metrics"),
+            (20, "Creating missing run backward with associated metrics"),
+            (20, "Creating missing run quantized with associated metrics"),
+            (20, "Creating missing run student-finetuned with associated metrics"),
+            (20, "Creating missing run teacher-base0 with associated metrics"),
+            (20, "Creating missing run teacher-base1 with associated metrics"),
+            (20, "Creating missing run teacher-ensemble with associated metrics"),
         ]
     )
     log_calls, metrics_calls = [], []
@@ -145,11 +151,11 @@ def test_experiments(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
     # Custom calls for .metrics files publication
     assert set([list(v.keys())[0] for c in metrics_calls for v in c.args]) == set(
         [
-            "mtdata_neulab-tedtalks_test-1-eng-nld",
+            "mtdata_Neulab-tedtalks_test-1-eng-nld",
             "flores_devtest",
-            "mtdata_neulab-tedtalks_test-1-eng-nld",
+            "mtdata_Neulab-tedtalks_test-1-eng-nld",
             "flores_devtest",
-            "mtdata_neulab-tedtalks_test-1-eng-nld",
+            "mtdata_Neulab-tedtalks_test-1-eng-nld",
             "flores_devtest",
         ]
     )
