@@ -35,28 +35,28 @@ workers:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: 'b-linux-v100-gpu'
+            worker-type: 'b-linux-v100-gpu-4-300gb-relops813'
         # Use for tasks that need lots of GPU power, but not lots of disk space
         # eg: translation & scoring
         b-largegpu:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: 'b-linux-v100-gpu-4'
+            worker-type: 'b-linux-v100-gpu-4-300gb-relops813'
         # Use for tasks that needs lots of GPU power and increased disk space
         # eg: bicleaner
         b-largegpu-largedisk:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: 'b-linux-v100-gpu-4-300gb'
+            worker-type: 'b-linux-v100-gpu-4-300gb-relops813'
         # Use for tasks that need lots of GPU power and immensive amounts of disk space
         # eg: training
         b-largegpu-xlargedisk:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: 'b-linux-v100-gpu-4-1tb'
+            worker-type: 'b-linux-v100-gpu-4-300gb-relops813'
         images:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
@@ -76,7 +76,7 @@ worker-configuration:
             GPUS: "0 1 2 3"
             WORKSPACE: "12000"
 
-    b-linux-v100-gpu-4-300gb:
+    b-linux-v100-gpu-4-300gb-relops813:
         env:
             GPUS: "0 1 2 3"
             WORKSPACE: "12000"
