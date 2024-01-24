@@ -1,168 +1,155 @@
 """
-Tests pipeline/eval/eval.sh
+Tests evaluations
 """
 
 import json
 import os
-import subprocess
 
-from fixtures import DataDir, ca_sample, en_sample, fail_on_error
+from fixtures import DataDir, en_sample, ru_sample
+
+en_fake_translated = "\n".join([line.upper() for line in ru_sample.split("\n")])
+ru_fake_translated = "\n".join([line.upper() for line in en_sample.split("\n")])
 
 current_folder = os.path.dirname(os.path.abspath(__file__))
 fixtures_path = os.path.join(current_folder, "fixtures")
+root_path = os.path.abspath(os.path.join(current_folder, ".."))
 
 
-def shared_setup(env: dict[str, str]):
-    # See data/test_data/test_eval for the artifacts after a failure.
-    test_data_dir = DataDir("test_eval")
-
-    # Create the dataset.
-    dataset_prefix = test_data_dir.join("wmt09")
-    test_data_dir.create_zst("wmt09.en.zst", en_sample),
-    test_data_dir.create_zst("wmt09.ca.zst", ca_sample),
-
-    env = {
-        **os.environ,
-        **env,
-        "COMPRESSION_CMD": "zstd",
-        "ARTIFACT_EXT": "zst",
-        "TEST_ARTIFACTS": test_data_dir.path,
-        "PATH": fixtures_path + ":" + os.environ.get("PATH"),
-    }
-
-    return test_data_dir, dataset_prefix, env
+def create_test_data() -> DataDir:
+    # See /data/test_data/test_eval for the artifacts after a failure.
+    data_dir = DataDir("test_eval")
+    data_dir.create_zst("wmt09.en.zst", en_sample)
+    data_dir.create_zst("wmt09.ru.zst", ru_sample)
+    return data_dir
 
 
-def run_common_assertions(test_data_dir: DataDir) -> None:
-    fake_translations = "\n".join([line.upper() for line in en_sample.split("\n")])
-
-    # The data sets should be written out to the artifacts.
-    assert test_data_dir.load("artifacts/wmt09.en") == en_sample, "The source corpus was written"
-    assert (
-        test_data_dir.load("artifacts/wmt09.ca.ref") == ca_sample
-    ), "The target (reference) corpus was written"
-    assert (
-        test_data_dir.load("artifacts/wmt09.ca") == fake_translations
-    ), "The target (translated) corpus was written"
-
-    assert "0.4\n1.0\n" in test_data_dir.load("artifacts/wmt09.metrics")
-
-
-def test_eval_sh() -> None:
-    test_data_dir, dataset_prefix, env = shared_setup({})
-
-    command = [
-        "pipeline/eval/eval.sh",
-        test_data_dir.join("artifacts/wmt09"),  # artifacts_prefix
-        dataset_prefix,
-        "en",  # src
-        "ca",  # trg
-        fixtures_path,
-        test_data_dir.join("fake_config.yml"),
-        # Marian args:
-        "--models",
-        test_data_dir.join("fake_model.npz"),
-    ]
-
-    result = subprocess.run(command, env=env, stderr=subprocess.PIPE, check=False)
-    fail_on_error(result)
-
-    run_common_assertions(test_data_dir)
-
-    # Marian is passed a certain set of arguments. This can start failing if the marian
-    # arguments are adjusted.
-    marian_decoder_args = json.loads(test_data_dir.load("marian-decoder.args.txt"))
-    assert marian_decoder_args == [
-        # fmt: off
-        "--config", test_data_dir.join("fake_config.yml"),
-        "--quiet",
-        "--quiet-translation",
-        "--log",    test_data_dir.join("artifacts/wmt09.log"),
-        "--models", test_data_dir.join("fake_model.npz"),
-        # fmt: on
-    ], "The marian arguments matched."
-
-    assert "0.4\n1.0\n" in test_data_dir.load("artifacts/wmt09.metrics")
-
-
-def test_eval_gpu_sh() -> None:
-    test_data_dir, dataset_prefix, env = shared_setup(
-        {
-            "GPUS": "4",
+def run_normal_eval_task(data_dir: DataDir, task_name: str) -> None:
+    data_dir.run_task(
+        task_name,
+        env={
+            # This is where the marian_decoder_args will get stored.
+            "TEST_ARTIFACTS": data_dir.path,
+            # Replace marian with the one in the fixtures path.
             "MARIAN": fixtures_path,
-            "WORKSPACE": "1024",
-        }
+            # This is included via the poetry install
+            "COMPRESSION_CMD": "zstd",
+        },
     )
 
-    command = [
-        "pipeline/eval/eval-gpu.sh",
-        test_data_dir.join("artifacts/wmt09"),  # artifacts_prefix
-        dataset_prefix,
-        "en",  # src
-        "ca",  # trg
-        test_data_dir.join("fake_config.yml"),
-        test_data_dir.join("fake_model.npz"),
-    ]
 
-    result = subprocess.run(command, env=env, stderr=subprocess.PIPE, check=False)
-    fail_on_error(result)
+class Assert:
+    """
+    A collection of assertions for evaluation tests.
+    """
 
-    # Marian is passed a certain set of arguments. This can start failing if the marian
-    # arguments are adjusted.
-    marian_decoder_args = json.loads(test_data_dir.load("marian-decoder.args.txt"))
-    assert marian_decoder_args == [
-        # fmt: off
-        "--config", test_data_dir.join("fake_config.yml"),
-        "--quiet",
-        "--quiet-translation",
-        "--log", test_data_dir.join("artifacts/wmt09.log"),
-        '--workspace', '1024',
-        '--devices', '4',
-        "--models", test_data_dir.join("fake_model.npz"),
-        # fmt: on
-    ], "The marian arguments matched."
+    @staticmethod
+    def forward_eval(data_dir: DataDir, metrics: str) -> None:
+        """Assert en -> ru (forward translation)"""
+        assert data_dir.load("artifacts/wmt09.en") == en_sample
+        assert data_dir.load("artifacts/wmt09.ru.ref") == ru_sample
+        assert data_dir.load("artifacts/wmt09.ru") == ru_fake_translated
+        assert metrics in data_dir.load("artifacts/wmt09.metrics")
 
-    assert "0.4\n1.0\n" in test_data_dir.load("artifacts/wmt09.metrics")
+    @staticmethod
+    def backward_eval(data_dir: DataDir, metrics: str) -> None:
+        """Assert ru -> en (back translations)"""
+        assert data_dir.load("artifacts/wmt09.ru") == ru_sample
+        assert data_dir.load("artifacts/wmt09.en.ref") == en_sample
+        assert data_dir.load("artifacts/wmt09.en") == en_fake_translated
+        assert metrics in data_dir.load("artifacts/wmt09.metrics")
+
+    @staticmethod
+    def base_marian_args(
+        data_dir: DataDir, model_name: str = "final.model.npz.best-chrf.npz"
+    ) -> None:
+        """
+        Marian is passed a certain set of arguments. This assertion will need to be
+        updated if the Marian configuration changes.
+        """
+        marian_decoder_args = json.loads(data_dir.load("marian-decoder.args.txt"))
+
+        expected_args = [
+            "--config", data_dir.join("final.model.npz.best-chrf.npz.decoder.yml"),
+            "--quiet",
+            "--quiet-translation",
+            "--log", data_dir.join("artifacts/wmt09.log"),
+            '--workspace', '12000',
+            '--devices', '0',
+            "--models", data_dir.join(model_name),
+        ]  # fmt: skip
+
+        assert marian_decoder_args == expected_args, "The marian arguments matched."
+
+    @staticmethod
+    def quantized_marian_args(data_dir: DataDir) -> None:
+        """
+        The quantized arguments are somewhat different
+        """
+        marian_decoder_args = json.loads(data_dir.load("marian-decoder.args.txt"))
+
+        expected_args = [
+            "--config", os.path.join(root_path, "pipeline/quantize/decoder.yml"),
+            "--quiet",
+            "--quiet-translation",
+            "--log", data_dir.join("artifacts/wmt09.log"),
+            "--models", data_dir.join("model.intgemm.alphas.bin"),
+            '--vocabs', data_dir.join("vocab.spm"), data_dir.join("vocab.spm"),
+            '--shortlist', data_dir.join("lex.s2t.pruned"), 'false',
+            '--int8shiftAlphaAll',
+        ]  # fmt: skip
+
+        assert marian_decoder_args == expected_args, "The marian arguments matched."
 
 
-def test_eval_quantized_sh() -> None:
-    test_data_dir, dataset_prefix, env = shared_setup(
-        {
+def test_evaluate_backward() -> None:
+    data_dir = create_test_data()
+    run_normal_eval_task(data_dir, "evaluate-backward-sacrebleu-wmt09-en-ru")
+    Assert.backward_eval(data_dir, "0.4\n0.6")
+    Assert.base_marian_args(data_dir)
+
+
+def test_evaluate_finetuned() -> None:
+    data_dir = create_test_data()
+    run_normal_eval_task(data_dir, "evaluate-finetuned-student-sacrebleu-wmt09-en-ru")
+    Assert.forward_eval(data_dir, "0.4\n0.6")
+    Assert.base_marian_args(data_dir)
+
+
+def test_evaluate_student() -> None:
+    data_dir = create_test_data()
+    run_normal_eval_task(data_dir, "evaluate-student-sacrebleu-wmt09-en-ru")
+    Assert.forward_eval(data_dir, "0.4\n0.6")
+    Assert.base_marian_args(data_dir)
+
+
+def test_evaluate_teacher_ensemble() -> None:
+    data_dir = create_test_data()
+    run_normal_eval_task(
+        data_dir,
+        "evaluate-teacher-ensemble-sacrebleu-sacrebleu_wmt09-en-ru",
+    )
+    Assert.forward_eval(data_dir, "0.4\n0.6")
+    Assert.base_marian_args(data_dir, model_name="model*/*.npz")
+
+
+def test_evaluate_quantized() -> None:
+    """
+    This test is a little different as the quantized step requires a separate marian
+    configuration.
+    """
+    data_dir = create_test_data()
+
+    data_dir.run_task(
+        "evaluate-quantized-sacrebleu-wmt09-en-ru",
+        env={
+            # This is where the marian_decoder_args will get stored.
+            "TEST_ARTIFACTS": data_dir.path,
+            # Replace marian with the one in the fixtures path.
             "BMT_MARIAN": fixtures_path,
-            "SRC": "en",
-            "TRG": "ca",
-        }
+            # This is included via the poetry install
+            "COMPRESSION_CMD": "zstd",
+        },
     )
 
-    command = [
-        "pipeline/eval/eval-quantized.sh",
-        test_data_dir.join("fake_model.npz"),  # model_path
-        test_data_dir.join("fake_shortlist-lex.s2t.pruned"),  # shortlist
-        dataset_prefix,
-        test_data_dir.join("vocab.spm"),
-        test_data_dir.join("artifacts/wmt09"),  # artifacts_prefix
-        test_data_dir.join("fake_config.yml"),  # decoder_config
-    ]
-
-    result = subprocess.run(command, env=env, stderr=subprocess.PIPE, check=False)
-    fail_on_error(result)
-
-    # Marian is passed a certain set of arguments. This can start failing if the marian
-    # arguments are adjusted.
-    marian_decoder_args = json.loads(test_data_dir.load("marian-decoder.args.txt"))
-    assert marian_decoder_args == [
-        # fmt: off
-        "--config", test_data_dir.join("fake_config.yml"),
-        "--quiet",
-        "--quiet-translation",
-        "--log", test_data_dir.join("artifacts/wmt09.log"),
-        "--models", test_data_dir.join("fake_model.npz"),
-        '--vocabs',
-        test_data_dir.join('vocab.spm'),
-        test_data_dir.join('vocab.spm'),
-        '--shortlist', test_data_dir.join('fake_shortlist-lex.s2t.pruned'), 'false',
-        '--int8shiftAlphaAll',
-        # fmt: on
-    ], "The marian arguments matched."
-
-    assert "0.4\n1.0\n" in test_data_dir.load("artifacts/wmt09.metrics")
+    Assert.forward_eval(data_dir, "0.4\n0.6")
+    Assert.quantized_marian_args(data_dir)
