@@ -263,11 +263,6 @@ class TrainingParser:
         for publisher in self.publishers:
             publisher.open(self)
 
-        # Publish optional metrics
-        if self.metrics:
-            for publisher in self.publishers:
-                publisher.handle_metrics(self.metrics)
-
         # Run training and validation data parser
         self.parse_data(logs_iter)
         self.parsed = True
@@ -276,10 +271,14 @@ class TrainingParser:
         for publisher in self.publishers:
             try:
                 publisher.publish(self.output)
+                # Publish optional metrics
+                if self.metrics:
+                    publisher.handle_metrics(self.metrics)
             except Exception as e:
                 logger.error(f"Error publishing data using {publisher.__class__.__name__}: {e}")
-            finally:
-                publisher.close()
+
+        for publisher in self.publishers:
+            publisher.close()
 
     @property
     def logs_str(self) -> str:

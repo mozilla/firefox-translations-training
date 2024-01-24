@@ -87,13 +87,12 @@ tasks:
             command:
                 - bash
                 - -c
-                # We can't inline comments for the args to `bicleaner.sh`, so they're explained
-                # here instead:
+                # `bicleaner.sh` args:
                 # 1) prefix for input data
                 # 2) prefix for output data
                 # 3) bicleaner threshold
-                # 5) number of threads to use - auto means nproc
-                # 6) "pack dir" - which needs to be where the `bicleaner-src-trg` fetch was unpacked to
+                # 4) number of threads to use - auto means nproc
+                # 5) "pack dir" - which needs to be where the `bicleaner-src-trg` fetch was unpacked to
                 - >-
                     pip install $MOZ_FETCHES_DIR/hunspell-0.5.5-cp310-cp310-linux_x86_64.whl &&
                     pip install $MOZ_FETCHES_DIR/kenlm-0.0.0-cp310-cp310-linux_x86_64.whl &&
@@ -112,7 +111,7 @@ tasks:
             toolchain:
                 - hunspell
                 - kenlm
-                - cuda-toolkit
+                - cuda-toolkit-11
             "{provider}":
                 - artifact: "{dataset_sanitized}.{src_locale}.zst"
                   extract: false
