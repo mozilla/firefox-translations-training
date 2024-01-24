@@ -20,14 +20,14 @@ Instantly the wicked woman gave a loud cry of fear, and then, as Dorothy looked 
 “I’m very sorry, indeed,” said Dorothy, who was truly frightened to see the Witch actually melting away like brown sugar before her very eyes.
 """
 
-ca_sample = """La nena, en veure que havia perdut una de les seves boniques sabates, es va enfadar i va dir a la bruixa: "Torna'm la sabata!"
-"No ho faré", va replicar la Bruixa, "perquè ara és la meva sabata, i no la teva".
-"Ets una criatura dolenta!" va cridar la Dorothy. "No tens dret a treure'm la sabata".
-"Me'l guardaré, igualment", va dir la Bruixa, rient-se d'ella, "i algun dia t'agafaré l'altre també".
-Això va fer enfadar tant la Dorothy que va agafar la galleda d'aigua que hi havia a prop i la va llançar sobre la Bruixa, mullant-la de cap a peus.
-A l'instant, la malvada dona va fer un fort crit de por, i aleshores, mentre la Dorothy la mirava meravellada, la Bruixa va començar a encongir-se i a caure.
-"Mira què has fet!" ella va cridar. "D'aquí a un minut em fondreré".
-"Ho sento molt, de veritat", va dir la Dorothy, que es va espantar veritablement de veure que la Bruixa es va desfer com el sucre moreno davant els seus mateixos ulls.
+ru_sample = """Маленькая девочка, увидев, что потеряла одну из своих красивых туфелек, рассердилась и сказала Ведьме: «Верни мне мою туфельку!»
+«Я не буду, — парировала Ведьма, — потому что теперь это моя туфля, а не твоя».
+«Ты злое существо!» - воскликнула Дороти. «Ты не имеешь права забирать у меня туфлю».
+«Я все равно сохраню его, — сказала Ведьма, смеясь над ней, — и когда-нибудь я получу от тебя и другой».
+Это так разозлило Дороти, что она взяла стоявшее рядом ведро с водой и облила им Ведьму, обмочив ее с головы до ног.
+Мгновенно злая женщина громко вскрикнула от страха, а затем, когда Дороти с удивлением посмотрела на нее, Ведьма начала сжиматься и падать.
+«Посмотри, что ты наделал!» она закричала. «Через минуту я растаю».
+«Мне действительно очень жаль», — сказала Дороти, которая была по-настоящему напугана, увидев, что Ведьма тает, как коричневый сахар, у нее на глазах.
 """
 
 
