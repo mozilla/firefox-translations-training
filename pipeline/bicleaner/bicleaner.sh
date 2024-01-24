@@ -83,8 +83,9 @@ else
        parallel -j ${#CUDA_VISIBLE_ARRAY[@]} --pipe -k --block 10M biclean "${pack_dir}"/*.yaml {%} |
        ${COMPRESSION_CMD} >"${output_prefix}.scored.${ARTIFACT_EXT}"
   else
+   export BICLEANER_AI_THREADS=${threads}
    paste <(${COMPRESSION_CMD} -dc "${corpus_prefix}.${SRC}.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${corpus_prefix}.${TRG}.${ARTIFACT_EXT}") |
-     bicleaner-ai-classify ${hardrules} --scol ${scol} --tcol ${tcol} --processes "${threads}"  - - "${pack_dir}"/*.yaml |
+     bicleaner-ai-classify ${hardrules} --scol ${scol} --tcol ${tcol} "${threads}"  - - "${pack_dir}"/*.yaml |
      ${COMPRESSION_CMD} >"${output_prefix}.scored.${ARTIFACT_EXT}"
   fi
 
