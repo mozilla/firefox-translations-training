@@ -100,10 +100,23 @@ def get_taskgraph_parameters() -> Parameters:
     return parameters
 
 
+_last_config_path = None
+
+
 def run_taskgraph(cfg_path: str, parameters: Parameters) -> None:
     # The callback can be a few standard things like "cancel" and "rerun". Custom actions
     # can be created in taskcluster/translations_taskgraph/actions/ such as the train action.
     callback = "train"
+    cfg_path = os.path.realpath(cfg_path)
+    global _last_config_path  # noqa: PLW0602
+    if _last_config_path:
+        if cfg_path != _last_config_path:
+            raise Exception(
+                "Changing the config paths and re-running run_taskgraph is not supported."
+            )
+        # Don't regenerate the taskgraph for tests, as this can be slow. It's likely that
+        # tests will exercise this codepath.
+        return
     input = load_yml(cfg_path)
 
     # This command outputs the stdout. Ignore it here.
