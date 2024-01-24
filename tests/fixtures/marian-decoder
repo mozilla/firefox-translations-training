@@ -6,7 +6,6 @@ Do not rely on marian-decoder in tests. This mocks marian-decoder by uppercasing
 source sentences, and saving the arguments to marian-decoder.args.txt.
 """
 
-import fileinput
 import json
 import os
 import sys
