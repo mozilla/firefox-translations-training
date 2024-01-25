@@ -131,12 +131,17 @@ datasets:
 # to train language.
 # https://marian-nmt.github.io/docs/cmd/marian/
 marian-args:
+  # Decoding arguments are GPU-dependent. See:
+  # https://mozilla.github.io/firefox-translations-training/training-guide.html#decoding-translation
   decoding-backward:
     beam-size: '12'
     mini-batch-words: '2000'
   decoding-teacher:
     mini-batch-words: '4000'
     precision: float16
+
+  # Early stopping can be adjusted to ensure models converge. See:
+  # https://mozilla.github.io/firefox-translations-training/training-guide.html#model-training
   training-backward:
     early-stopping: '5'
   training-teacher:

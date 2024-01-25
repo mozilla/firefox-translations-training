@@ -146,7 +146,7 @@ for example [`teacher.train.yml`] and in the [`train.sh`] script.
 [train.sh]: https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/train.sh
 
 ### Model training
-I often increase early stopping for teachers to make sure the training converges.
+Early stopping can be increased to make sure that training converges.
 However, it depends on the language and might not bring much benefit but will make the training longer.
 So, you can start with `early-stopping: 20`, monitor the training and increase it if the model stops training too early.
 ```
@@ -158,13 +158,13 @@ marian-args:
     early-stopping: 20
 ```
 
-Make sure to set `optimizer-delay` so that GPU devices * optimizer-delay = 8. 
+Make sure to set `optimizer-delay` so that GPU devices * optimizer-delay = 8.
 It makes training more stable.
 
 ### Decoding (translation)
 
 `mini-batch-words` can be set depending on available GPU memory and the number of teachers.
-It affects the batch size and decoding speed for the `traslate` steps.
+It affects the batch size and decoding speed for the `translate` steps.
 ```
 marian-args:
 ...
@@ -190,8 +190,8 @@ marian-args:
 
 ### Data augmentation and curriculum learning
 
-You can adjust data augmentation settings to increase robustness of the translation and 
-tune how to mix back-translated corpus with the original one in the 
+You can adjust data augmentation settings to increase robustness of the translation and
+tune how to mix back-translated corpus with the original one in the
 [OpusTrainer configs](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/opustrainer/).
 
 See [OpusTrainer docs](opus-trainer.md) for more details.
