@@ -13,18 +13,7 @@ transforms:
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
-    # This kinds handles two different parts of the graph. The first is `merge-corpus`, which
-    # has three possible upstream tasks, in order of preference:
-    # 1) `bicleaner-ai` (from the `bicleaner` kind) is used if there is a bicleaner-ai data pack
-    #    for the language pair.
-    # 2) `bicleaner` (also from the `bicleaner` kind) is used if there is a non-ai bicleaner
-    #    data pack available
-    # 3) Otherwise, `clean` is the upstream and `bicleaner` is skipped altogether.
     - bicleaner
-    - clean-corpus
-    # The second part of the graph this kind handles is `merge-devset`. This step allows operates
-    # directly on datasets (skipping cleaning and/or bicleaning altogether).
-    - dataset
     - toolchain
 
 task-defaults:
@@ -100,8 +89,6 @@ tasks:
                 cleaning-type:
                     by-cleaning-type:
                         bicleaner-ai: bicleaner-ai
-                        bicleaner: bicleaner
-                        clean-corpus: clean-corpus
 
         task-context:
             from-object:

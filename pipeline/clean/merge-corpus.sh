@@ -30,6 +30,8 @@ else
   cat "${inputs[@]/%/.${TRG}.${ARTIFACT_EXT}}" >"${tmp}/corpus.${TRG}.dup.${ARTIFACT_EXT}"
 fi
 
+# See pipeline/translate/merge-corpus.sh for more information on the deduplication step.
+
 echo "### Deduplication"
 paste <(${COMPRESSION_CMD} -dc "${tmp}/corpus.${SRC}.dup.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${tmp}/corpus.${TRG}.dup.${ARTIFACT_EXT}") |
 ${BIN}/dedupe |
