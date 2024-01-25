@@ -38,8 +38,8 @@ experiment:
 
 ### Parallel corpus
 1. Go to [OPUS](https://opus.nlpl.eu/) and see how much data is available for the language pair
-2. Go to [statmt22](https://www.statmt.org/wmt22/translation-task.html), [statmt21](https://www.statmt.org/wmt21/translation-task.html) etc. 
-   and check if the language pair participated in a competition. 
+2. Go to [statmt22](https://www.statmt.org/wmt22/translation-task.html), [statmt21](https://www.statmt.org/wmt21/translation-task.html) etc.
+   and check if the language pair participated in a competition.
    If yes, there's a good chance some extra data is available for training.
 3. Use [find-corpus](https://github.com/mozilla/firefox-translations-training/tree/main/utils/find-corpus.py) tool to get OPUS datasets.
 Install [poetry](https://python-poetry.org/) first, then run:
@@ -51,9 +51,9 @@ python utils/find-corpus.py en ru opus
 ```
 python utils/find-corpus.py en ru mtdata
 ```
-6. Look what's there and remove old versions of datasets 
+6. Look what's there and remove old versions of datasets
    (for example there should be only mtdata paracrawl v9 left like `mtdata_ParaCrawl-paracrawl-9-eng-swe`)
-7. Deduplicate datasets between OPUS and mtdata (for example, remove `opus_ParaCrawl/v8`). 
+7. Deduplicate datasets between OPUS and mtdata (for example, remove `opus_ParaCrawl/v8`).
    If the versions are the same I prefer OPUS ones as a more stable resource.
 
 Copy the datasets in the training config:
@@ -64,9 +64,10 @@ datasets:
     - mtdata_Statmt-news_commentary-15-eng-rus
     ...
 ```
-It's hard to say how much data is required to train something useful. 
+It's hard to say how much data is required to train something useful.
 Probably, at least 10 million sentences. Ideally 100M+ to get the best quality.
 
+In the pipeline, the datasets will be deduplicated based on source and target sentences together using the [dedupe tool](https://github.com/kpu/preprocess). However, if different datasets contain the same source sentence, and different target sentences, they will all be retained.
 
 ### Evaluation datasets
 - There might be statmt datasets available. For example `sacrebleu_wmt20`.
