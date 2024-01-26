@@ -260,10 +260,7 @@ def get_huggingface_parallel(source: str, target: str):
 
 def is_useful_dataset(dataset: any) -> bool:
     """Determines if a dataset is useful or not."""
-    return (
-        "task_categories:automatic-speech-recognition" not in dataset.tags
-        and dataset.downloads > 5
-    )
+    return "task_categories:automatic-speech-recognition" not in dataset.tags
 
 
 def get_huggingface_any(language: str):
