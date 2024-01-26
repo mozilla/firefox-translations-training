@@ -105,6 +105,13 @@ def test_evaluate(params) -> None:
     # Test that text metrics get properly generated.
     assert f"{bleu}\n{chrf}\n" in data_dir.load("artifacts/wmt09.metrics")
 
+    # Test that the JSON metrics get properly generated.
+    bleu_json, chrf_json = json.loads(data_dir.load("artifacts/wmt09.metrics.json"))
+    assert bleu_json["name"] == "BLEU"
+    assert bleu_json["score"] == bleu
+    assert chrf_json["name"] == "chrF2"
+    assert chrf_json["score"] == chrf
+
     # Test that marian is given the proper arguments.
     marian_decoder_args = json.loads(data_dir.load("marian-decoder.args.txt"))
     assert marian_decoder_args == expected_marian_args, "The marian arguments matched."
