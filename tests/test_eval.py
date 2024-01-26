@@ -18,26 +18,26 @@ root_path = os.path.abspath(os.path.join(current_folder, ".."))
 
 def get_base_marian_args(data_dir: DataDir, model_name: str):
     return [
+        "--models", data_dir.join(model_name),
         "--config", data_dir.join("final.model.npz.best-chrf.npz.decoder.yml"),
         "--quiet",
         "--quiet-translation",
         "--log", data_dir.join("artifacts/wmt09.log"),
         '--workspace', '12000',
         '--devices', '4',
-        "--models", data_dir.join(model_name),
     ]  # fmt: skip
 
 
 def get_quantized_marian_args(data_dir: DataDir, model_name: str):
     return [
+        "--models", data_dir.join(model_name),
         "--config", os.path.join(root_path, "pipeline/quantize/decoder.yml"),
         "--quiet",
         "--quiet-translation",
         "--log", data_dir.join("artifacts/wmt09.log"),
-        "--models", data_dir.join(model_name),
+        '--int8shiftAlphaAll',
         '--vocabs', data_dir.join("vocab.spm"), data_dir.join("vocab.spm"),
         '--shortlist', data_dir.join("lex.s2t.pruned"), 'false',
-        '--int8shiftAlphaAll',
     ]  # fmt: skip
 
 

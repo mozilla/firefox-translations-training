@@ -24,8 +24,7 @@ task-defaults:
     attributes:
         cache:
             resources:
-                - pipeline/eval/eval-gpu.sh
-                - pipeline/eval/eval.sh
+                - pipeline/eval/eval.py
     dataset-config:
         category: test
         substitution-fields:
@@ -41,16 +40,8 @@ task-defaults:
             - run.command
             - fetches
         from-parameters:
-            best_model: training_config.experiment.best-model
             src_locale: training_config.experiment.src
             trg_locale: training_config.experiment.trg
-            # The two sed commands here are the unfortunate result of us consuming
-            # a marian config that was produced by an earlier step. These configs
-            # have hardcoded absolute paths to the models they were trained on,
-            # and end invalid when used on a different machine. In theory it is
-            # possible to adjust them at generation time to use relative paths,
-            # but in practice we have not been able to make this work.
-            pipeline_setup: >-
 
     worker-type: b-gpu
     worker:
@@ -60,10 +51,8 @@ task-defaults:
               type: directory
         max-run-time: 2592000
         env:
-            SRC: "{src_locale}"
-            TRG: "{trg_locale}"
-            COMPRESSION_CMD: zstdmt
-            ARTIFACT_EXT: zst
+            # This is a separate environment variable so tests can override it.
+            BMT_MARIAN: $MOZ_FETCHES_DIR
 
     # Don't run unless explicitly scheduled
     run-on-tasks-for: []
@@ -76,14 +65,17 @@ task-defaults:
             - >-
                 pip install -r $VCS_PATH/pipeline/eval/requirements/eval.txt &&
                 export PATH=$PATH:~/.local/bin &&
-                export MARIAN=$MOZ_FETCHES_DIR &&
-                export BMT_MARIAN=$MOZ_FETCHES_DIR &&
                 zstd --rm -d $MOZ_FETCHES_DIR/lex.s2t.pruned.zst &&
                 {pipeline_script}
                 {pipeline_args1}
-                $MOZ_FETCHES_DIR/vocab.spm
-                $TASK_WORKDIR/artifacts/{dataset_sanitized}
-                $TASK_WORKDIR/$VCS_PATH/pipeline/quantize/decoder.yml
+                --compression_cmd zstdmt
+                --artifact_ext    zst
+                --marian          $BMT_MARIAN
+                --marian_config   $TASK_WORKDIR/$VCS_PATH/pipeline/quantize/decoder.yml
+                --models          $MOZ_FETCHES_DIR/model.intgemm.alphas.bin
+                --model_variant   quantized
+                --vocab           "$MOZ_FETCHES_DIR/vocab.spm"
+                --shortlist       "$MOZ_FETCHES_DIR/lex.s2t.pruned"
 
 tasks:
     "{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}":
@@ -96,11 +88,12 @@ tasks:
 
         task-context:
             from-object:
-                pipeline_script: $VCS_PATH/pipeline/eval/eval-quantized.sh
+                pipeline_script: $VCS_PATH/pipeline/eval/eval.py
                 pipeline_args1: >-
-                    $MOZ_FETCHES_DIR/model.intgemm.alphas.bin
-                    $MOZ_FETCHES_DIR/lex.s2t.pruned
-                    $MOZ_FETCHES_DIR/{dataset_sanitized}
+                    --artifacts_prefix  $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    --dataset_prefix    $MOZ_FETCHES_DIR/{dataset_sanitized}
+                    --src               {src_locale}
+                    --trg               {trg_locale}
 
         dependencies:
             dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
@@ -121,4 +114,6 @@ tasks:
             alignments:
                 - artifact: lex.s2t.pruned.zst
             toolchain:
+                # Quantized models are only supported via the browsermt fork of Marian.
+                # https://github.com/browsermt/marian-dev
                 - browsermt-marian

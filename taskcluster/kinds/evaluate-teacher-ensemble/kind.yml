@@ -24,8 +24,7 @@ task-defaults:
     attributes:
         cache:
             resources:
-                - pipeline/eval/eval-gpu.sh
-                - pipeline/eval/eval.sh
+                - pipeline/eval/eval.py
     dataset-config:
         category: test
         substitution-fields:
@@ -51,10 +50,8 @@ task-defaults:
               type: directory
         max-run-time: 2592000
         env:
-            SRC: "{src_locale}"
-            TRG: "{trg_locale}"
-            COMPRESSION_CMD: zstdmt
-            ARTIFACT_EXT: zst
+            # This is a separate environment variable so tests can override it.
+            MARIAN: $MOZ_FETCHES_DIR
 
     # Don't run unless explicitly scheduled
     run-on-tasks-for: []
@@ -73,14 +70,18 @@ task-defaults:
             - >-
                 pip install -r $VCS_PATH/pipeline/eval/requirements/eval.txt &&
                 export PATH=$PATH:~/.local/bin &&
-                export MARIAN=$MOZ_FETCHES_DIR &&
-                export BMT_MARIAN=$MOZ_FETCHES_DIR &&
                 sed -i -e "s,- .*fetches,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
                 sed -i -e "s,- .*artifacts,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
                 {pipeline_script}
                 {pipeline_args1}
-                $MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz.decoder.yml
-                $MOZ_FETCHES_DIR/model*/*.npz
+                --compression_cmd zstdmt
+                --artifact_ext    zst
+                --marian          $MARIAN
+                --marian_config   $MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz.decoder.yml
+                --workspace       $WORKSPACE
+                --gpus            $GPUS
+                --models          "$MOZ_FETCHES_DIR/model*/*.npz"
+                --model_variant   gpu
 
 tasks:
     "{provider}-{dataset}-{src_locale}-{trg_locale}":
@@ -94,12 +95,12 @@ tasks:
             substitution-fields:
                 - fetches
             from-object:
-                pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
+                pipeline_script: $VCS_PATH/pipeline/eval/eval.py
                 pipeline_args1: >-
-                    $TASK_WORKDIR/artifacts/{dataset_sanitized}
-                    $MOZ_FETCHES_DIR/{dataset_sanitized}
-                    {src_locale}
-                    {trg_locale}
+                    --artifacts_prefix $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    --dataset_prefix   $MOZ_FETCHES_DIR/{dataset_sanitized}
+                    --src              {src_locale}
+                    --trg              {trg_locale}
 
         from-deps:
             group-by: all
