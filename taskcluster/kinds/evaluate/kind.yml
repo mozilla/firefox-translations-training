@@ -77,17 +77,18 @@ task-defaults:
                 export PATH=$PATH:~/.local/bin &&
                 sed -i -e "s,- .*fetches,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
                 sed -i -e "s,- .*artifacts,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
-                {pipeline_script}
-                {pipeline_args1}
-                --compression_cmd zstdmt
-                --artifact_ext    zst
-                --marian          $MARIAN
-                --marian_config   $MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz.decoder.yml
-                --model_variant   gpu
-                --workspace       $WORKSPACE
-                --gpus            $GPUS
-                --models          "$MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz"
-
+                $VCS_PATH/pipeline/eval/eval.py
+                {language_pair}
+                --compression_cmd   zstdmt
+                --artifact_ext      zst
+                --marian_config     "$MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz.decoder.yml"
+                --models            "$MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz"
+                --dataset_prefix    "$MOZ_FETCHES_DIR/{dataset_sanitized}"
+                --artifacts_prefix  "$TASK_WORKDIR/artifacts/{dataset_sanitized}"
+                --marian            "$MARIAN"
+                --workspace         $WORKSPACE
+                --gpus              $GPUS
+                --model_variant     gpu
 
 tasks:
     backward-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}:
@@ -101,12 +102,10 @@ tasks:
             substitution-fields:
                 - fetches.train-backwards
             from-object:
-                pipeline_script: $VCS_PATH/pipeline/eval/eval.py
-                pipeline_args1: >-
-                    --artifacts_prefix  $TASK_WORKDIR/artifacts/{dataset_sanitized}
-                    --dataset_prefix    $MOZ_FETCHES_DIR/{dataset_sanitized}
-                    --src               {trg_locale}
-                    --trg               {src_locale}
+                # Note the target and source locales are flipped for backward models.
+                language_pair: >-
+                    --src {trg_locale}
+                    --trg {src_locale}
 
         dependencies:
             dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
@@ -139,12 +138,9 @@ tasks:
                 - fetches.train-teacher
                 - chunk.total-chunks
             from-object:
-                pipeline_script: $VCS_PATH/pipeline/eval/eval.py
-                pipeline_args1: >-
-                    --artifacts_prefix  $TASK_WORKDIR/artifacts/{dataset_sanitized}
-                    --dataset_prefix    $MOZ_FETCHES_DIR/{dataset_sanitized}
-                    --src               {src_locale}
-                    --trg               {trg_locale}
+                language_pair: >-
+                    --src {src_locale}
+                    --trg {trg_locale}
         cast-to:
             int:
                 - chunk.total-chunks
@@ -186,12 +182,9 @@ tasks:
             substitution-fields:
                 - fetches.train-student
             from-object:
-                pipeline_script: $VCS_PATH/pipeline/eval/eval.py
-                pipeline_args1: >-
-                    --artifacts_prefix  $TASK_WORKDIR/artifacts/{dataset_sanitized}
-                    --dataset_prefix    $MOZ_FETCHES_DIR/{dataset_sanitized}
-                    --src               {src_locale}
-                    --trg               {trg_locale}
+                language_pair: >-
+                    --src {src_locale}
+                    --trg {trg_locale}
 
         dependencies:
             dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
@@ -223,12 +216,9 @@ tasks:
             substitution-fields:
                 - fetches.finetune-student
             from-object:
-                pipeline_script: $VCS_PATH/pipeline/eval/eval.py
-                pipeline_args1: >-
-                    --artifacts_prefix  $TASK_WORKDIR/artifacts/{dataset_sanitized}
-                    --dataset_prefix    $MOZ_FETCHES_DIR/{dataset_sanitized}
-                    --src               {src_locale}
-                    --trg               {trg_locale}
+                language_pair: >-
+                    --src {src_locale}
+                    --trg {trg_locale}
 
         dependencies:
             dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
