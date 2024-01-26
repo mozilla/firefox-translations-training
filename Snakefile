@@ -453,7 +453,7 @@ rule translate_mono_trg:
     threads: gpus_num * 2
     resources: gpu=gpus_num
     input:
-        bin=ancient(decoder), file=f'{translated}/mono_trg/file.{{part}}',
+        bin=ancient(decoder), file=f'{translated}/mono_trg/file.{{part}}.gz',
         vocab=vocab_path, model=f'{backward_dir}/{best_model}'
     output: f'{translated}/mono_trg/file.{{part}}.out'
     params: args = get_args("decoding-backward")
@@ -547,7 +547,7 @@ rule translate_corpus:
     resources: gpu=gpus_num
     input:
         ancient(decoder),
-        file=f'{translated}/corpus/file.{{part}}',
+        file=f'{translated}/corpus/file.{{part}}.gz',
         vocab=vocab_path,
         teacher_models=expand(f"{teacher_base_dir}{{ens}}/{best_model}",ens=ensemble)
     output: f'{translated}/corpus/file.{{part}}.nbest'
@@ -600,7 +600,7 @@ rule translate_mono_src:
     threads: gpus_num*2
     resources: gpu=gpus_num
     input:
-        file=f'{translated}/mono_src/file.{{part}}',vocab=vocab_path,
+        file=f'{translated}/mono_src/file.{{part}}.gz',vocab=vocab_path,
         teacher_models=expand(f"{teacher_base_dir}{{ens}}/{best_model}",ens=ensemble),
         bin=ancient(decoder)
     output: f'{translated}/mono_src/file.{{part}}.out'
