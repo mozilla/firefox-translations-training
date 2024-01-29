@@ -2,6 +2,8 @@
 ##
 # Merges datasets with shuffling.
 #
+# Kinds:
+#   taskcluster/kinds/merge-translated/kind.yml
 
 set -x
 set -euo pipefail
@@ -35,6 +37,20 @@ mkdir -p "${tmp_dir}"
 
 cat <(${COMPRESSION_CMD} -dc "${src1}") <(${COMPRESSION_CMD} -dc "${src2}") | ${COMPRESSION_CMD} >"${tmp_dir}/original.src.${ARTIFACT_EXT}"
 cat <(${COMPRESSION_CMD} -dc "${trg1}") <(${COMPRESSION_CMD} -dc "${trg2}") | ${COMPRESSION_CMD} >"${tmp_dir}/original.trg.${ARTIFACT_EXT}"
+
+# De-duplicating uses dedupe from: https://github.com/kpu/preprocess
+#
+# This utility deduplicates based on the 64-bit hash of the entire sentence pair, or
+# on one side of the sentence pair. The first encountered line is kept, duplicates later
+# on are removed.
+#
+#  Deduplication settings:
+#    -f [ --fields ] arg (=1-) Fields to use for key like cut -f
+#    -d [ --delim ] arg (=	)   Field delimiter
+#    -p [ --parallel ] arg     Filter parallel data using four files: in_en in_fr
+#                              out_en out_fr
+#  Deduplicate lines in a file: ./dedupe <in >out
+#  Deduplicate parallel data, removing if either side is non-unique ./bin/dedupe -p in_en in_fr out_en out_fr
 
 echo "#### Deduplicating"
 paste <(${COMPRESSION_CMD} -dc "${tmp_dir}/original.src.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${tmp_dir}/original.trg.${ARTIFACT_EXT}") |
