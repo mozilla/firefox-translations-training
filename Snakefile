@@ -2,7 +2,6 @@ import yaml
 import os
 
 from snakemake.utils import min_version
-from pipeline.bicleaner import packs
 
 
 min_version("6.6.1")
@@ -154,15 +153,13 @@ else:
 
 # bicleaner
 
-bicleaner_type = packs.find(src, trg)
-bicleaner_env = "envs/bicleaner-ai.yml" if bicleaner_type == 'bicleaner-ai' else 'envs/bicleaner.yml'
+# todo: move to setting if needed
+use_bicleaner = True
 
-if bicleaner_type:
+if use_bicleaner:
     clean_corpus_prefix = f'{biclean}/corpus'
-    use_bicleaner = True
 else:
     clean_corpus_prefix = f'{clean}/corpus'
-    use_bicleaner = False
 
 clean_corpus_src = f'{clean_corpus_prefix}.{src}.gz'
 clean_corpus_trg = f'{clean_corpus_prefix}.{trg}.gz'
@@ -327,7 +324,7 @@ if use_bicleaner:
     rule kenlm:
         message: "Installing kenlm"
         log: f"{log_dir}/kenlm.log"
-        conda: bicleaner_env
+        conda: 'envs/bicleaner.yml'
         threads: 4
 #        group: 'setup'
         output: directory(f"{bin}/kenlm")
@@ -336,22 +333,24 @@ if use_bicleaner:
     rule bicleaner_pack:
         message: f"Downloading language pack for bicleaner"
         log: f"{log_dir}/bicleaner_pack.log"
-        conda: bicleaner_env
+        conda: 'envs/bicleaner.yml'
 #        group: "clean_corpus"
         threads: 1
         input: rules.kenlm.output
         output: directory(f"{biclean}/pack")
-        shell: '''bash pipeline/bicleaner/download-pack.sh "{output}" {bicleaner_type} >> {log} 2>&1'''
+        params: src=src, trg=trg
+        shell: '''python pipeline/bicleaner/download_pack.py \
+                --src={params.src} --trg={params.trg} "{output}" >> {log} 2>&1'''
 
     rule bicleaner:
-        message: f"Cleaning corpus using {bicleaner_type}"
+        message: f"Cleaning corpus using Bicleaner AI"
         log: f"{log_dir}/bicleaner/{{dataset}}.log"
-        conda: bicleaner_env
+        conda: 'envs/bicleaner.yml'
 #       group: "bicleaner"
-        threads: gpus_num * 2 if bicleaner_type == "bicleaner-ai" else workflow.cores
-        resources: gpu=gpus_num if bicleaner_type == "bicleaner-ai" else 0
+        threads: gpus_num * 2
+        resources: gpu=gpus_num
         input: ancient(rules.kenlm.output), multiext(f"{clean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz"),
-                pack_dir=rules.bicleaner_pack.output
+                pack=rules.bicleaner_pack.output
         output: multiext(f"{biclean}/corpus/{{dataset}}", f".{src}.gz", f".{trg}.gz")
         params:
             prefix_input=f"{clean}/corpus/{{dataset}}",prefix_output=f"{biclean}/corpus/{{dataset}}",
@@ -359,8 +358,8 @@ if use_bicleaner:
                                             if wildcards.dataset in bicl_dataset_thresholds
                                             else bicl_default_threshold
         shell: '''bash pipeline/bicleaner/bicleaner.sh \
-                    "{params.prefix_input}" "{params.prefix_output}" {params.threshold} {bicleaner_type} {threads} \
-                    "{input.pack_dir}" >> {log} 2>&1'''
+                    "{params.prefix_input}" "{params.prefix_output}" {params.threshold} {threads} \
+                    "{input.pack}" >> {log} 2>&1'''
 
 rule merge_corpus:
     message: "Merging clean parallel datasets"
@@ -440,7 +439,11 @@ checkpoint split_mono_trg:
     threads: 1
     input: corpora=f"{clean}/mono.{trg}.gz", bin=ancient(deduper)
     output: directory(f'{translated}/mono_trg')
-    shell: 'bash pipeline/translate/split-mono.sh {input.corpora} {output} {split_chunks} >> {log} 2>&1'
+    shell: '''python pipeline/translate/splitter.py \
+                --output_dir={output} \
+                --num_parts={split_chunks} \
+                --compression_cmd=pigz \
+                {input.corpora} >> {log} 2>&1'''
 
 rule translate_mono_trg:
     message: "Translating monolingual trg dataset with backward model"
@@ -449,7 +452,7 @@ rule translate_mono_trg:
     threads: gpus_num * 2
     resources: gpu=gpus_num
     input:
-        bin=ancient(decoder), file=f'{translated}/mono_trg/file.{{part}}',
+        bin=ancient(decoder), file=f'{translated}/mono_trg/file.{{part}}.gz',
         vocab=vocab_path, model=f'{backward_dir}/{best_model}'
     output: f'{translated}/mono_trg/file.{{part}}.out'
     params: args = get_args("decoding-backward")
@@ -522,8 +525,18 @@ checkpoint split_corpus:
     threads: 1
     input: corpus_src=clean_corpus_src,corpus_trg=clean_corpus_trg
     output: directory(f"{translated}/corpus")
-    shell: '''bash pipeline/translate/split-corpus.sh \
-                {input.corpus_src} {input.corpus_trg} {output} {split_chunks} >> {log} 2>&1'''
+    shell: '''
+            python pipeline/translate/splitter.py \
+                --output_dir={output} \
+                --num_parts={split_chunks} \
+                --compression_cmd=pigz \
+                {input.corpus_src} >> {log} 2>&1
+            python pipeline/translate/splitter.py \
+                --output_dir={output} \
+                --num_parts={split_chunks} \
+                --compression_cmd=pigz \
+                {input.corpus_trg} >> {log} 2>&1
+            '''
 
 rule translate_corpus:
     message: "Translating corpus with teacher"
@@ -533,7 +546,7 @@ rule translate_corpus:
     resources: gpu=gpus_num
     input:
         ancient(decoder),
-        file=f'{translated}/corpus/file.{{part}}',
+        file=f'{translated}/corpus/file.{{part}}.gz',
         vocab=vocab_path,
         teacher_models=expand(f"{teacher_base_dir}{{ens}}/{best_model}",ens=ensemble)
     output: f'{translated}/corpus/file.{{part}}.nbest'
@@ -573,7 +586,11 @@ checkpoint split_mono_src:
     threads: 1
     input: corpora=f"{clean}/mono.{src}.gz", bin=ancient(deduper)
     output: directory(f'{translated}/mono_src')
-    shell: 'bash pipeline/translate/split-mono.sh {input.corpora} {output} {split_chunks} >> {log} 2>&1'
+    shell: '''python pipeline/translate/splitter.py \
+                --output_dir={output} \
+                --num_parts={split_chunks} \
+                --compression_cmd=pigz \
+                {input.corpora} >> {log} 2>&1'''
 
 rule translate_mono_src:
     message: "Translating monolingual src dataset with teacher"
@@ -582,7 +599,7 @@ rule translate_mono_src:
     threads: gpus_num*2
     resources: gpu=gpus_num
     input:
-        file=f'{translated}/mono_src/file.{{part}}',vocab=vocab_path,
+        file=f'{translated}/mono_src/file.{{part}}.gz',vocab=vocab_path,
         teacher_models=expand(f"{teacher_base_dir}{{ens}}/{best_model}",ens=ensemble),
         bin=ancient(decoder)
     output: f'{translated}/mono_src/file.{{part}}.out'

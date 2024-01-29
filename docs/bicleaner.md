@@ -5,17 +5,13 @@ parent: Data cleaning
 ---
 # Bicleaner
 
-Bicleaner is a tool that aims at detecting noisy sentence pairs in a parallel corpus. The classifier scores parallel sentences from 0 to 1 where 0 means a very noisy translation and 1 is a good translation. In the pipeline, Bicleaner AI will be used first if [the language is available][ai-releases], otherwise it will fallback to the original non-AI Bicleaner.
 
-See:
-  * [https://github.com/bitextor/bicleaner-ai](https://github.com/bitextor/bicleaner-ai)
-  * [https://github.com/bitextor/bicleaner](https://github.com/bitextor/bicleaner)
+[Bicleaner AI](https://github.com/bitextor/bicleaner-ai) is a tool that aims at detecting noisy sentence pairs in a parallel corpus. 
+The classifier scores parallel sentences from 0 to 1 where 0 means a very noisy translation and 1 is a good translation.
+If a specialized model for a language pair is not available it will fallback to downloading a multilingual en-xx model.
 
 For supported languages see:
   * [Bicleaner AI Releases][ai-releases]
-  * [Bicleaner Releases][releases]
-
-New language releases should be added to: `taskcluster/ci/fetch/bicleaner.yml`
 
 ## How to configure for training
 
@@ -48,3 +44,15 @@ The configuration specifies a default threshold and a per-dataset threshold. A s
 [ai-releases]: https://github.com/bitextor/bicleaner-ai-data/releases
 [releases]: https://github.com/bitextor/bicleaner-data/releases
 [Bicleaner AI: Bicleaner Goes Neural]: https://aclanthology.org/2022.lrec-1.87.pdf
+
+
+## Models and caching
+
+In the current implementation an appropriate model is downloaded for a language pair on demand and then cached. 
+For example for `en-ru` a multilingual `en-xx` will be downloaded since a dedicated model is not available for this pair.
+For `pt-en` `en-pt` will be downloaded since all the models have English as the first language.
+
+The downloaded model will be cached in Taskcluster under the requested language pair (`en-ru`, `pt-en`). 
+If a new model is added to [Hugging Face repo](https://huggingface.co/bitextor) it would be a good idea to invalidate
+the caches manually by editing `pipeline/bicleaner/download_pack.py`. 
+We do not do this automatically in the current implementation. We will rethink this strategy if this happens often.

@@ -10,9 +10,9 @@ train:
 
 # TODO: augment corpus before decoding or reduce augmentation rate
 # TODO: https://github.com/mozilla/firefox-translations-training/issues/272
-#modifiers:
-#- UpperCase: 0.1 # Apply randomly to 5% of sentences
-#- TitleCase: 0.1
+modifiers:
+- UpperCase: 0.07 # Apply randomly to 7% of sentences
+- TitleCase: 0.05
 # TODO: enable typos, issue https://github.com/mozilla/firefox-translations-training/issues/262
 #- Typos: 0.05
 # TODO: enable tags, currently doesn't work because of the issue with  tokenization

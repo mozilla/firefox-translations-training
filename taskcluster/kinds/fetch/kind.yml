@@ -13,6 +13,5 @@ task-defaults:
     docker-image: {in-tree: base}
 
 tasks-from:
-    - bicleaner.yml
     - python.yml
     - toolchains.yml

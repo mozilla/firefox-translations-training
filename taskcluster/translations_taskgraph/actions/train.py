@@ -64,6 +64,7 @@ def validate_pretrained_models(params):
                     "clean-corpus",
                     "clean-mono",
                     "bicleaner",
+                    "bicleaner-model",
                     "merge-corpus",
                     "merge-devset",
                     "merge-mono",

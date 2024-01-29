@@ -38,8 +38,8 @@ experiment:
 
 ### Parallel corpus
 1. Go to [OPUS](https://opus.nlpl.eu/) and see how much data is available for the language pair
-2. Go to [statmt22](https://www.statmt.org/wmt22/translation-task.html), [statmt21](https://www.statmt.org/wmt21/translation-task.html) etc. 
-   and check if the language pair participated in a competition. 
+2. Go to [statmt22](https://www.statmt.org/wmt22/translation-task.html), [statmt21](https://www.statmt.org/wmt21/translation-task.html) etc.
+   and check if the language pair participated in a competition.
    If yes, there's a good chance some extra data is available for training.
 3. Use [find-corpus](https://github.com/mozilla/firefox-translations-training/tree/main/utils/find-corpus.py) tool to get OPUS datasets.
 Install [poetry](https://python-poetry.org/) first, then run:
@@ -51,9 +51,9 @@ python utils/find-corpus.py en ru opus
 ```
 python utils/find-corpus.py en ru mtdata
 ```
-6. Look what's there and remove old versions of datasets 
+6. Look what's there and remove old versions of datasets
    (for example there should be only mtdata paracrawl v9 left like `mtdata_ParaCrawl-paracrawl-9-eng-swe`)
-7. Deduplicate datasets between OPUS and mtdata (for example, remove `opus_ParaCrawl/v8`). 
+7. Deduplicate datasets between OPUS and mtdata (for example, remove `opus_ParaCrawl/v8`).
    If the versions are the same I prefer OPUS ones as a more stable resource.
 
 Copy the datasets in the training config:
@@ -64,9 +64,10 @@ datasets:
     - mtdata_Statmt-news_commentary-15-eng-rus
     ...
 ```
-It's hard to say how much data is required to train something useful. 
+It's hard to say how much data is required to train something useful.
 Probably, at least 10 million sentences. Ideally 100M+ to get the best quality.
 
+In the pipeline, the datasets will be deduplicated based on source and target sentences together using the [dedupe tool](https://github.com/kpu/preprocess). However, if different datasets contain the same source sentence, and different target sentences, they will all be retained.
 
 ### Evaluation datasets
 - There might be statmt datasets available. For example `sacrebleu_wmt20`.
@@ -145,7 +146,7 @@ for example [`teacher.train.yml`] and in the [`train.sh`] script.
 [train.sh]: https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/train.sh
 
 ### Model training
-I often increase early stopping for teachers to make sure the training converges.
+Early stopping can be increased to make sure that training converges.
 However, it depends on the language and might not bring much benefit but will make the training longer.
 So, you can start with `early-stopping: 20`, monitor the training and increase it if the model stops training too early.
 ```
@@ -157,10 +158,13 @@ marian-args:
     early-stopping: 20
 ```
 
+Make sure to set `optimizer-delay` so that GPU devices * optimizer-delay = 8.
+It makes training more stable.
+
 ### Decoding (translation)
 
 `mini-batch-words` can be set depending on available GPU memory and the number of teachers.
-It affects the batch size and decoding speed for the `traslate` steps.
+It affects the batch size and decoding speed for the `translate` steps.
 ```
 marian-args:
 ...
@@ -186,8 +190,8 @@ marian-args:
 
 ### Data augmentation and curriculum learning
 
-You can adjust data augmentation settings to increase robustness of the translation and 
-tune how to mix back-translated corpus with the original one in the 
+You can adjust data augmentation settings to increase robustness of the translation and
+tune how to mix back-translated corpus with the original one in the
 [OpusTrainer configs](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/opustrainer/).
 
 See [OpusTrainer docs](opus-trainer.md) for more details.

@@ -27,6 +27,13 @@ RUN apt-get update -qq \
                           python3-yaml \
                           locales \
                           git \
+                          tmux \
+                          htop \
+                          vim \
+                          nano \
+                          zstd \
+                          screen \
+                          curl \
     && apt-get clean
 
 RUN locale-gen "$LANG"
