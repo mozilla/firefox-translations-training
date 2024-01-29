@@ -79,14 +79,15 @@ def get_cleaning_type(upstreams):
 def resolve_keyed_by_fields(config, jobs):
     for job in jobs:
         upstreams_config = job["upstreams-config"]
-        cleaning_type = get_cleaning_type(config.kind_dependencies_tasks.values())
+        if upstreams_config.get("upstream-task-attributes", {}).get("cleaning-type"):
+            cleaning_type = get_cleaning_type(config.kind_dependencies_tasks.values())
 
-        resolve_keyed_by(
-            upstreams_config,
-            "upstream-task-attributes.cleaning-type",
-            item_name=job["description"],
-            **{"cleaning-type": cleaning_type},
-        )
+            resolve_keyed_by(
+                upstreams_config,
+                "upstream-task-attributes.cleaning-type",
+                item_name=job["description"],
+                **{"cleaning-type": cleaning_type},
+            )
 
         yield job
 

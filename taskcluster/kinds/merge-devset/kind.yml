@@ -12,10 +12,7 @@ transforms:
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
 
-# todo: why bicleaner and clean-corpus are required here? it doesn't work without them
 kind-dependencies:
-    - bicleaner
-    - clean-corpus
     - dataset
     - toolchain
 
