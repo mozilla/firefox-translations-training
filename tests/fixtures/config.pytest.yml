@@ -23,11 +23,13 @@ datasets:
   test:
     - flores_devtest
     - sacrebleu_wmt09
+    - sacrebleu_wmt19
     - mtdata_Neulab-tedtalks_test-1-eng-rus
   train:
     - opus_Books/v1
     - opus_CCAligned/v1
     - opus_CCMatrix/v1
+    - opus_ELRC-3075-wikipedia_health/v1
   mono-src:
     - news-crawl_news.2021
     - news-crawl_news.2020
