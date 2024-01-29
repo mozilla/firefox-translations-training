@@ -19,6 +19,7 @@ chmod +x $CUDA_INSTALLER
 # in the current working directory. The files we care about
 # will end up in `pkg/builds`.
 EXTRACT_DIR="$(pwd)/cuda-toolkit"
-$CUDA_INSTALLER --toolkit --toolkitpath=$EXTRACT_DIR --silent
+# it complains on compiler version check on Ubuntu 22 for cuda toolkit 11.2. overriding helps
+$CUDA_INSTALLER --toolkit --toolkitpath=$EXTRACT_DIR --silent --override
 
 tar --zstd -cf $TARFILE.zst cuda-toolkit

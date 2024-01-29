@@ -111,7 +111,7 @@ tasks:
             toolchain:
                 - hunspell
                 - kenlm
-                - cuda-toolkit
+                - cuda-toolkit-11
             "{provider}":
                 - artifact: "{dataset_sanitized}.{src_locale}.zst"
                   extract: false

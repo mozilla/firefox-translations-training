@@ -1,5 +1,7 @@
 import os
 import shutil
+import sys
+from subprocess import CompletedProcess
 
 import zstandard as zstd
 
@@ -50,7 +52,13 @@ class DataDir:
         print("Tests are using the subdirectory:", self.path)
 
     def join(self, name: str):
+        """Create a folder or file name by joining it to the test directory."""
         return os.path.join(self.path, name)
+
+    def load(self, name: str):
+        """Load a text file"""
+        with open(self.join(name), "r") as file:
+            return file.read()
 
     def create_zst(self, name: str, contents: str) -> str:
         """
@@ -71,3 +79,28 @@ class DataDir:
             file.write(compressed_data)
 
         return zst_path
+
+    def create_file(self, name: str, contents: str) -> str:
+        """
+        Creates a text file and returns the path to it.
+        """
+        text_path = os.path.join(self.path, name)
+        if not os.path.exists(self.path):
+            raise Exception(f"Directory for the text file does not exist: {self.path}")
+        if os.path.exists(text_path):
+            raise Exception(f"A file already exists and would be overwritten: {text_path}")
+
+        print("Writing a text file to: ", text_path)
+        with open(text_path, "w") as file:
+            file.write(contents)
+
+        return text_path
+
+
+def fail_on_error(result: CompletedProcess[bytes]):
+    """When a process fails, surface the stderr."""
+    if not result.returncode == 0:
+        for line in result.stderr.decode("utf-8").split("\n"):
+            print(line, file=sys.stderr)
+
+        raise Exception(f"{result.args[0]} exited with a status code: {result.returncode}")
