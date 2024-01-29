@@ -2,7 +2,6 @@ import yaml
 import os
 
 from snakemake.utils import min_version
-from pipeline.bicleaner import packs
 
 
 min_version("6.6.1")
@@ -325,7 +324,7 @@ if use_bicleaner:
     rule kenlm:
         message: "Installing kenlm"
         log: f"{log_dir}/kenlm.log"
-        conda: bicleaner_env
+        conda: 'envs/bicleaner.yml'
         threads: 4
 #        group: 'setup'
         output: directory(f"{bin}/kenlm")
@@ -334,7 +333,7 @@ if use_bicleaner:
     rule bicleaner_pack:
         message: f"Downloading language pack for bicleaner"
         log: f"{log_dir}/bicleaner_pack.log"
-        conda: bicleaner_env
+        conda: 'envs/bicleaner.yml'
 #        group: "clean_corpus"
         threads: 1
         input: rules.kenlm.output
@@ -346,7 +345,7 @@ if use_bicleaner:
     rule bicleaner:
         message: f"Cleaning corpus using Bicleaner AI"
         log: f"{log_dir}/bicleaner/{{dataset}}.log"
-        conda: bicleaner_env
+        conda: 'envs/bicleaner.yml'
 #       group: "bicleaner"
         threads: gpus_num * 2
         resources: gpu=gpus_num
