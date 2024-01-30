@@ -2,17 +2,19 @@ import gzip
 import os
 
 import pytest
-from fixtures import DataDir
+from fixtures import DataDir, get_mocked_downloads
 
 SRC = "ru"
 TRG = "en"
 ARTIFACT_EXT = "gz"
 COMPRESSION_CMD = "pigz"
+CURRENT_FOLDER = os.path.dirname(os.path.abspath(__file__))
 
 os.environ["ARTIFACT_EXT"] = ARTIFACT_EXT
 os.environ["COMPRESSION_CMD"] = COMPRESSION_CMD
 os.environ["SRC"] = SRC
 os.environ["TRG"] = TRG
+
 
 from pipeline.data.dataset_importer import run_import
 
@@ -59,7 +61,12 @@ def data_dir():
 def test_basic_corpus_import(importer, dataset, data_dir):
     data_dir.run_task(
         f"dataset-{importer}-{dataset}-en-ru",
-        env={"COMPRESSION_CMD": COMPRESSION_CMD, "ARTIFACT_EXT": ARTIFACT_EXT},
+        env={
+            "COMPRESSION_CMD": COMPRESSION_CMD,
+            "ARTIFACT_EXT": ARTIFACT_EXT,
+            "WGET": os.path.join(CURRENT_FOLDER, "fixtures/wget"),
+            "MOCKED_DOWNLOADS": get_mocked_downloads(),
+        },
     )
 
     prefix = data_dir.join(f"artifacts/{dataset}")

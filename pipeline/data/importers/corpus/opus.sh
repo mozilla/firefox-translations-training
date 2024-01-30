@@ -15,6 +15,7 @@ dataset=$4
 
 COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
+WGET="${WGET:-wget}" # This can be overridden by tests.
 
 name=${dataset%%/*}
 name_and_version="${dataset//[^A-Za-z0-9_- ]/_}"
@@ -24,8 +25,8 @@ mkdir -p "${tmp}"
 
 archive_path="${tmp}/${name}.txt.zip"
 
-wget -O "${archive_path}" "https://object.pouta.csc.fi/OPUS-${dataset}/moses/${src}-${trg}.txt.zip" ||
-  wget -O "${archive_path}" "https://object.pouta.csc.fi/OPUS-${dataset}/moses/${trg}-${src}.txt.zip"
+${WGET} -O "${archive_path}" "https://object.pouta.csc.fi/OPUS-${dataset}/moses/${src}-${trg}.txt.zip" ||
+  ${WGET} -O "${archive_path}" "https://object.pouta.csc.fi/OPUS-${dataset}/moses/${trg}-${src}.txt.zip"
 unzip -o "${archive_path}" -d "${tmp}"
 
 for lang in ${src} ${trg}; do

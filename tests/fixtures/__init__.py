@@ -300,3 +300,18 @@ def get_task_command_and_env(task_name: str, script=None) -> tuple[str, dict[str
 
     # Return the full command.
     return command_parts, env
+
+
+def get_mocked_downloads() -> str:
+    corpus_samples = os.path.abspath(os.path.join(FIXTURES_PATH, "../data/corpus_samples"))
+    return json.dumps(
+        {
+            "https://dl.fbaipublicfiles.com/flores101/dataset/flores101_dataset.tar.gz": os.path.join(
+                corpus_samples, "flores101_dataset.tar.gz"
+            ),
+            "https://object.pouta.csc.fi/OPUS-ELRC-3075-wikipedia_health/v1/moses/en-ru.txt.zip": os.path.join(
+                corpus_samples, "en-ru.txt.zip"
+            ),
+            "https://object.pouta.csc.fi/OPUS-ELRC-3075-wikipedia_health/v1/moses/ru-en.txt.zip": "404",
+        }
+    )
