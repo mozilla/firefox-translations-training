@@ -1,13 +1,13 @@
 #!/bin/bash
 ##
-# Use custom dataset that is already downloaded to a local disk
+# Use local dataset that is already downloaded.
 # Local path prefix without `.<lang_code>.gz` should be specified as a "dataset" parameter
 #
 
 set -x
 set -euo pipefail
 
-echo "###### Copying custom corpus"
+echo "###### Copying local corpus"
 
 src=$1
 trg=$2
@@ -18,4 +18,4 @@ cp "${dataset}.${src}.gz" "${output_prefix}.${src}.gz"
 cp "${dataset}.${trg}.gz" "${output_prefix}.${trg}.gz"
 
 
-echo "###### Done: Copying custom corpus"
+echo "###### Done: Copying local corpus"
