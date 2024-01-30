@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+"""
+This is a test fixture which mocks wget.
+
+Set the MOCKED_DOWNLOADS environment variable to a JSON object mapping a URL to a file path.
+"""
+
+import argparse
+import json
+import os
+import shutil
+
+if not os.environ.get("MOCKED_DOWNLOADS"):
+    raise Exception(
+        "The mocked_wget utility expected the MOCKED_DOWNLOADS environment variable to be set."
+    )
+
+
+mocked_downloads = json.loads(os.environ.get("MOCKED_DOWNLOADS"))
+
+if not isinstance(mocked_downloads, dict):
+    raise Exception(
+        "Expected the mocked downloads to be a json object mapping the URL to file path"
+    )
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "-O", "--output-document", dest="output", help="The output path", required=True
+)
+parser.add_argument("url", help="The url to download")
+
+args = parser.parse_args()
+
+print("[mocked wget]", args.url)
+
+source_file = mocked_downloads.get(args.url)
+if not source_file:
+    print("[mocked wget] MOCKED_DOWNLOADS:", mocked_downloads)
+    raise Exception(f"Received a URL that was not in MOCKED_DOWNLOADS {args.url}")
+
+if source_file == "404":
+    print("[mocked wget]: Mocking a 404")
+    # 8 is what wget gives as an exit code in this case.
+    os.sys.exit(8)
+
+if not os.path.exists(source_file):
+    raise Exception(f"The source file specified did not exist {source_file}")
+
+print("[mocked wget] copying the file")
+print(f"[mocked wget] from: {source_file}")
+print(f"[mocked wget] to: {args.output}")
+
+shutil.copyfile(source_file, args.output)
+
+print("[mocked wget] Success")

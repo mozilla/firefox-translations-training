@@ -16,11 +16,12 @@ dataset=$4
 
 COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
+WGET="${WGET:-wget}" # This can be overridden by tests.
 
 tmp="$(mktemp -d)/flores/${dataset}"
 mkdir -p "${tmp}"
 
-wget -O "${tmp}/flores101_dataset.tar.gz" "https://dl.fbaipublicfiles.com/flores101/dataset/flores101_dataset.tar.gz"
+${WGET} -O "${tmp}/flores101_dataset.tar.gz" "https://dl.fbaipublicfiles.com/flores101/dataset/flores101_dataset.tar.gz"
 tar -xzf "${tmp}/flores101_dataset.tar.gz" -C "${tmp}" --no-same-owner
 
 flores_code() {

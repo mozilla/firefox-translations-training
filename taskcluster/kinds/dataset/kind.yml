@@ -68,7 +68,7 @@ tasks:
                     python3 $VCS_PATH/pipeline/data/dataset_importer.py
                     --type corpus
                     --dataset {dataset}
-                    --output_prefix /builds/worker/artifacts/{dataset_sanitized}
+                    --output_prefix $TASK_WORKDIR/artifacts/{dataset_sanitized}
 
     sacrebleu:
         description: Fetch sacrebleu dataset
@@ -92,7 +92,7 @@ tasks:
                     python3 -u $VCS_PATH/pipeline/data/dataset_importer.py
                     --type corpus
                     --dataset {dataset}
-                    --output_prefix /builds/worker/artifacts/{dataset_sanitized} 2>&1
+                    --output_prefix $TASK_WORKDIR/artifacts/{dataset_sanitized} 2>&1
 
     opus:
         description: Fetch opus dataset
@@ -117,7 +117,7 @@ tasks:
                     python3 $VCS_PATH/pipeline/data/dataset_importer.py
                     --type corpus
                     --dataset {dataset}
-                    --output_prefix /builds/worker/artifacts/{dataset_sanitized}
+                    --output_prefix $TASK_WORKDIR/artifacts/{dataset_sanitized}
 
     mtdata:
         description: Fetch mtdata dataset
@@ -141,7 +141,7 @@ tasks:
                     python3 $VCS_PATH/pipeline/data/dataset_importer.py
                     --type corpus
                     --dataset {dataset}
-                    --output_prefix /builds/worker/artifacts/{dataset_sanitized}
+                    --output_prefix $TASK_WORKDIR/artifacts/{dataset_sanitized}
 
     news-crawl-{src_locale}:
         description: Fetch news-crawl dataset for {src_locale}
@@ -172,7 +172,7 @@ tasks:
                     {dataset}
                     {src_locale}
                     {max_sent_src}
-                    /builds/worker/artifacts/{dataset_sanitized}.{src_locale}.zst
+                    $TASK_WORKDIR/artifacts/{dataset_sanitized}.{src_locale}.zst
 
     news-crawl-{trg_locale}:
         description: Fetch news-crawl dataset for {trg_locale}
@@ -203,4 +203,4 @@ tasks:
                     {dataset}
                     {trg_locale}
                     {max_sent_trg}
-                    /builds/worker/artifacts/{dataset_sanitized}.{trg_locale}.zst
+                    $TASK_WORKDIR/artifacts/{dataset_sanitized}.{trg_locale}.zst

@@ -19,5 +19,3 @@ curl -L "http://data.statmt.org/news-crawl/${lang}/${dataset}.${lang}.shuffled.d
     gunzip | ${COMPRESSION_CMD} -c > "${output_prefix}.${ARTIFACT_EXT}"
 
 echo "###### Done: Downloading WMT newscrawl monolingual data"
-
-

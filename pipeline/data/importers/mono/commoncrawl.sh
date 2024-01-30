@@ -11,8 +11,9 @@ echo "###### Downloading commoncrawl monolingual data"
 lang=$1
 output_prefix=$2
 dataset=$3
+WGET="${WGET:-wget}" # This can be overridden by tests.
 
-wget -O "${output_prefix}.xz" \
+${WGET} -O "${output_prefix}.xz" \
     "http://web-language-models.s3-website-us-east-1.amazonaws.com/${dataset}/deduped/${lang}.xz"
 xzcat "${output_prefix}.xz" | pigz >"${output_prefix}.gz"
 
