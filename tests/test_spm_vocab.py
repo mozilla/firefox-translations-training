@@ -4,7 +4,7 @@ import subprocess
 import sys
 
 import pytest
-from fixtures import DataDir, ca_sample, en_sample
+from fixtures import DataDir, en_sample, ru_sample
 
 current_folder = os.path.dirname(os.path.abspath(__file__))
 fixtures_path = os.path.join(current_folder, "fixtures")
@@ -28,7 +28,7 @@ def run_spm_test(arguments: list[str]) -> list[str]:
     command = [
         "pipeline/train/spm-vocab.sh",
         test_data_dir.create_zst("corpus.en.zst", en_sample),
-        test_data_dir.create_zst("corpus.ca.zst", ca_sample),
+        test_data_dir.create_zst("corpus.ru.zst", ru_sample),
         test_data_dir.join("vocab.spm"),
         *arguments,
     ]
