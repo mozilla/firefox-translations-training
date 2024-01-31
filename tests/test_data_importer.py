@@ -1,13 +1,13 @@
-import gzip
 import os
 
 import pytest
+import zstandard as zstd
 from fixtures import DataDir, get_mocked_downloads
 
 SRC = "ru"
 TRG = "en"
-ARTIFACT_EXT = "gz"
-COMPRESSION_CMD = "pigz"
+ARTIFACT_EXT = "zst"
+COMPRESSION_CMD = "zstd"
 CURRENT_FOLDER = os.path.dirname(os.path.abspath(__file__))
 
 os.environ["ARTIFACT_EXT"] = ARTIFACT_EXT
@@ -24,7 +24,7 @@ AUG_MIN_RATE = 0.01
 
 
 def read_lines(path):
-    with gzip.open(path, "rt") as f:
+    with zstd.open(path, "rt") as f:
         return f.readlines()
 
 
@@ -70,8 +70,8 @@ def test_basic_corpus_import(importer, dataset, data_dir):
     )
 
     prefix = data_dir.join(f"artifacts/{dataset}")
-    output_src = f"{prefix}.ru.gz"
-    output_trg = f"{prefix}.en.gz"
+    output_src = f"{prefix}.ru.{ARTIFACT_EXT}"
+    output_trg = f"{prefix}.en.{ARTIFACT_EXT}"
 
     assert os.path.exists(output_src)
     assert os.path.exists(output_trg)
