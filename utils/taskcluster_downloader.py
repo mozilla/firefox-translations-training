@@ -50,7 +50,7 @@ def donwload_logs(group_id, output):
     group = queue.listTaskGroup(group_id)
 
     for task in group["tasks"]:
-        if task["status"]["state"] != "completed" and task["status"]["state"] != "running":
+        if task["status"]["state"] not in ("completed", "running"):
             continue
 
         label = task["task"]["tags"]["kind"]
@@ -69,22 +69,20 @@ def donwload_logs(group_id, output):
         url = queue.buildUrl("getLatestArtifact", task_id, "public/logs/live.log")
         resp = requests.get(url, stream=True, timeout=5)
         print(f"Downloading {url}")
-        lines = []
-        try:
-            for line in resp.iter_lines():
-                lines.append(line.decode())
-        except requests.exceptions.ConnectionError:
-            pass
 
         log_lines = []
         start_writing = False
-        for l in lines:
-            if "[marian]" in l:
-                start_writing = True
+        try:
+            for line in resp.iter_lines():
+                line_str = line.decode()
 
-            if start_writing:
-                l = re.sub(r"\[task .*Z\] ", "", l)
-                log_lines.append(l)
+                if "[marian]" in line_str:
+                    start_writing = True
+
+                if start_writing:
+                    log_lines.append(re.sub(r"\[task .*Z\] ", "", line_str))
+        except requests.exceptions.ConnectionError:
+            pass
 
         print(f"Writing to {output_path}")
         with open(output_path, "w") as f:
