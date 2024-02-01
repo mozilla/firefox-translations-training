@@ -8,9 +8,13 @@ Example:
 
 import argparse
 import logging
+import tempfile
+from collections import defaultdict
+from pathlib import Path
 
 import taskcluster
 from taskcluster.download import downloadArtifactToBuf
+from translations_parser.data import Metric
 from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import WandB
 
@@ -20,6 +24,7 @@ logging.basicConfig(
 )
 
 KIND_TAG_TARGET = ("train", "finetune")
+queue = taskcluster.Queue({"rootUrl": "https://firefox-ci-tc.services.mozilla.com"})
 
 
 def get_args() -> argparse.Namespace:
@@ -41,7 +46,7 @@ def get_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def get_logs(task, queue):
+def get_logs(task: dict) -> list[str]:
     """Retrieve training logs from Taskcluster"""
     task_id = task["status"]["taskId"]
     logger.info(f"Downloading logs for task {task_id}")
@@ -53,6 +58,49 @@ def get_logs(task, queue):
     return log.tobytes().decode().split("\n")
 
 
+def publish_task(
+    project: str, group: str, name: str, task: dict, config: dict, metrics: list[Metric]
+) -> None:
+    parser = TrainingParser(
+        get_logs(task),
+        publishers=[
+            WandB(
+                project=project,
+                group=group,
+                name=name,
+                tags=["taskcluster"],
+                config=config,
+            )
+        ],
+        skip_marian_context=True,
+        metrics=metrics,
+    )
+    parser.run()
+
+
+def get_metrics_from_task(task: dict) -> list[Metric]:
+    task_id = task["status"]["taskId"]
+    logger.debug(f"Retrieving artifacts from eval task {task_id}")
+    metrics = []
+    for artifact in queue.listLatestArtifacts(task_id)["artifacts"]:
+        if not artifact["name"].endswith(".metrics"):
+            continue
+        log, _ = downloadArtifactToBuf(
+            taskId=task_id,
+            name=artifact["name"],
+            queueService=queue,
+        )
+
+        tag = task["task"]["tags"]["label"]
+        with tempfile.TemporaryDirectory() as d:
+            file = Path(d) / f"{tag}.txt"
+            with file.open("wb") as f:
+                f.write(log.tobytes())
+                f.flush()
+                metrics.append(Metric.from_file(Path(f.name), sep="-"))
+    return metrics
+
+
 def main() -> None:
     args = get_args()
 
@@ -60,7 +108,6 @@ def main() -> None:
         logger.setLevel(args.loglevel)
 
     logger.info(f"Retrieving task group {args.group_id}")
-    queue = taskcluster.Queue({"rootUrl": "https://firefox-ci-tc.services.mozilla.com"})
     # Ensure task group is readable
     queue.getTaskGroup(args.group_id)
     # Read project and experiment name
@@ -80,33 +127,47 @@ def main() -> None:
         resp = queue.listTaskGroup(args.group_id, {"continuationToken": continuation_token})
         tasks.extend(resp["tasks"])
         continuation_token = resp.get("continuationToken")
-    tasks = [
-        t
-        for t in tasks
-        if t["status"]["state"] == "completed"
-        and "vocab" not in t["task"]["tags"]["kind"]
-        and any(t["task"]["tags"]["kind"].startswith(target) for target in KIND_TAG_TARGET)
-    ]
-    if not tasks:
-        raise Exception(f"No valid training task found for task group {args.group_id}")
-
-    logger.info(f"Found {len(tasks)} completed training tasks")
-
+    # Map tasks by categories
+    tasks_groups = defaultdict(list)
     for task in tasks:
-        lines = get_logs(task, queue)
-        parser = TrainingParser(
-            lines,
-            publishers=[
-                WandB(
-                    project=project,
-                    group=group_name,
-                    tags=["taskcluster"],
-                    name=task["task"]["tags"]["kind"],
-                    config=config,
-                )
-            ],
-            skip_marian_context=True,
-            # TODO parse metrics
-            metrics=None,
+        # Exclude non completed or vocab tasks
+        if task["status"]["state"] == "completed" and "vocab" not in task["task"]["tags"]["kind"]:
+            name = task["task"]["tags"]["kind"]
+            prefix = name.split("-")[0]
+            if prefix == "train":
+                # Remove "train-" prefix from training task only to avoid duplicates
+                name = name[6:]
+            task["name"] = name
+            tasks_groups[prefix].append(task)
+
+    train_tasks = sum(
+        [tasks for key, tasks in tasks_groups.items() if key in KIND_TAG_TARGET], start=[]
+    )
+
+    if not train_tasks:
+        logger.warning("No completed training task found for group {args.group_id}")
+    else:
+        logger.info(f"Found {len(train_tasks)} completed training tasks")
+
+    metrics_tasks = {task["status"]["taskId"]: task for task in tasks_groups["evaluate"]}
+
+    for task in train_tasks:
+        # Associate metrics to each runs (evaluate tasks that depends on the training task)
+        dependent_tasks = []
+        for eval_id, eval_task in metrics_tasks.items():
+            if task["status"]["taskId"] in eval_task["task"]["dependencies"]:
+                dependent_tasks.append(eval_id)
+        metrics = sum(
+            [get_metrics_from_task(metrics_tasks.pop(task_id)) for task_id in dependent_tasks],
+            start=[],
         )
-        parser.run(),
+        publish_task(
+            project=project,
+            group=group_name,
+            name=task["name"],
+            task=task,
+            config=config,
+            metrics=metrics,
+        )
+
+    # TODO Group and publish remaining metrics

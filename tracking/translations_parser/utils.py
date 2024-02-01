@@ -1,6 +1,13 @@
+import logging
 import re
 from collections.abc import Sequence
 from datetime import datetime
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(levelname)s] %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 # Keywords used to split eval filenames into model and dataset
 DATASET_KEYWORDS = ["flores", "mtdata", "sacrebleu"]
@@ -16,10 +23,10 @@ def extract_dataset_from_tag(tag, sep="_") -> tuple[str, str, str | None]:
     """
     prefix, *name = tag.split(sep, 1)
     if len(name) != 1:
-        raise ValueError("Tag could not be parsed: '{tag}'.")
+        raise ValueError(f"Tag could not be parsed: '{tag}'.")
     model_name = name[0]
-    # Eventually remvoe suffix
-    name = TAG_PROJECT_SUFFIX_REGEX.sub("", name)
+    # Eventually remove suffix
+    name = TAG_PROJECT_SUFFIX_REGEX.sub("", model_name)
     dataset = ""
     aug = None
     for keyword in DATASET_KEYWORDS:
@@ -34,6 +41,11 @@ def extract_dataset_from_tag(tag, sep="_") -> tuple[str, str, str | None]:
         if "aug" in model_name:
             index = model_name.index("aug")
             dataset, aug = dataset[:index].rstrip(sep), dataset[index:]
+    else:
+        logger.warning(
+            f"No dataset could be extracted from {tag}."
+            " Please ensure utils.DATASET_KEYWORDS is up to date."
+        )
     return model_name, dataset, aug
 
 

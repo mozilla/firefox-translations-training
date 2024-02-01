@@ -19,15 +19,13 @@ import yaml
 from translations_parser.data import Metric
 from translations_parser.parser import TrainingParser
 from translations_parser.publishers import WandB
+from translations_parser.utils import extract_dataset_from_tag
 
 logging.basicConfig(
     level=logging.INFO,
     format="[%(levelname)s] %(message)s",
 )
 logger = logging.getLogger(__name__)
-
-# Keywords to split eval filenames into model and dataset
-DATASET_KEYWORDS = ["flores", "mtdata", "sacrebleu"]
 
 
 def get_args() -> argparse.Namespace:
@@ -107,21 +105,7 @@ def publish_group_logs(
         metrics["quantized"].append(Metric.from_file(file))
     # Add experiment (runs) metrics
     for file in evaluation_metrics:
-        model_name = file.stem.lstrip("eval_")
-        dataset = ""
-        # File names usually have a structure like "eval_<model_name>_<dataset>.log
-        # model_name can be the name of a run, or the evaluation pre-trained model.
-        for keyword in DATASET_KEYWORDS:
-            if keyword in model_name:
-                index = model_name.index(keyword)
-                model_name, dataset = model_name[:index].strip("_"), model_name[index:]
-                break
-            else:
-                continue
-        if not dataset:
-            logger.warning(
-                f"No dataset could be extracted from file {file.name}. Please ensure DATASET_KEYWORDS is up to date."
-            )
+        model_name, dataset, aug = extract_dataset_from_tag(file.stem)
         with file.open("r") as f:
             lines = f.readlines()
         try:

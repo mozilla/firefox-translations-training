@@ -5,6 +5,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Sequence
 
+from translations_parser.utils import extract_dataset_from_tag
+
 logging.basicConfig(
     level=logging.INFO,
     format="[%(levelname)s] %(message)s",
@@ -57,7 +59,7 @@ class Metric:
     bleu_detok: float
 
     @classmethod
-    def from_file(cls, metrics_file: Path):
+    def from_file(cls, metrics_file: Path, sep="_"):
         logger.debug(f"Reading metrics file {metrics_file.name}")
         values = []
         try:
@@ -72,15 +74,16 @@ class Metric:
         except Exception as e:
             raise ValueError(f"Metrics file could not be parsed: {e}")
         bleu_detok, chrf = values
+        _, dataset, augmentation = extract_dataset_from_tag(metrics_file.stem, sep=sep)
         return cls(
-            dataset=metrics_file.stem,
-            augmentation=None,
+            dataset=dataset,
+            augmentation=augmentation,
             chrf=chrf,
             bleu_detok=bleu_detok,
         )
 
     @classmethod
-    def from_tc_context(cls, dataset: str, lines: Sequence[str]):
+    def from_tc_context(cls, dataset: str, lines: Sequence[str], augmentation: str | None = None):
         """
         Try reading a metric from Taskcluster logs, looking for two
         successive floats after a line maching METRIC_LOG_RE.
@@ -97,7 +100,7 @@ class Metric:
             bleu_detok, chrf = values
             return cls(
                 dataset=dataset,
-                augmentation=None,
+                augmentation=augmentation,
                 chrf=chrf,
                 bleu_detok=bleu_detok,
             )
