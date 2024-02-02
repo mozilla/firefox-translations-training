@@ -1,6 +1,7 @@
 #!/bin/bash
 ##
 # Train a model.
+# "cache bust"
 #
 
 set -x
