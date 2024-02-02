@@ -1,5 +1,40 @@
+import re
 from collections.abc import Sequence
 from datetime import datetime
+
+# Keywords used to split eval filenames into model and dataset
+DATASET_KEYWORDS = ["flores", "mtdata", "sacrebleu"]
+
+# Tags usually ends with project (e.g. `en-nl` or `eng-nld`)
+TAG_PROJECT_SUFFIX_REGEX = re.compile(r"((-\w{2}){2}|(-\w{3}){2})$")
+
+
+def extract_dataset_from_tag(tag, sep="_") -> tuple[str, str, str | None]:
+    """
+    Experiment tag usually has a structure like "<prefix>_<model_name>_<dataset>_<?augmentation>_<project>"
+    This function removes the prefix and suffix, and try to split model, dataset and optional augmentation.
+    """
+    prefix, *name = tag.split(sep, 1)
+    if len(name) != 1:
+        raise ValueError("Tag could not be parsed: '{tag}'.")
+    model_name = name[0]
+    # Eventually remvoe suffix
+    name = TAG_PROJECT_SUFFIX_REGEX.sub("", name)
+    dataset = ""
+    aug = None
+    for keyword in DATASET_KEYWORDS:
+        if keyword in model_name:
+            index = model_name.index(keyword)
+            model_name, dataset = model_name[:index].rstrip(sep), model_name[index:]
+            break
+        else:
+            continue
+    if dataset:
+        # Look for augmentation information in the second part of the tag (dataset)
+        if "aug" in model_name:
+            index = model_name.index("aug")
+            dataset, aug = dataset[:index].rstrip(sep), dataset[index:]
+    return model_name, dataset, aug
 
 
 def taskcluster_log_filter(headers: Sequence[Sequence[str]]) -> bool:
