@@ -1,6 +1,7 @@
 #!/bin/bash
 ##
 # Basic cleaning of monolingual corpora.
+# cache bust
 #
 # This script takes in a an archive file, e.g. /builds/worker/artifacts/news_2007.en.zst
 # and rewrites in place using a variety of cleaning rules including:
