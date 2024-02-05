@@ -79,6 +79,54 @@ def test_basic_corpus_import(importer, dataset, data_dir):
     assert len(read_lines(output_trg)) > 0
 
 
+@pytest.mark.parametrize(
+    "importer,dataset",
+    [
+        ("news-crawl", "news_2021"),
+    ],
+)
+def test_mono_source_import(importer, dataset, data_dir):
+    data_dir.run_task(
+        f"dataset-{importer}-{dataset}-en",
+        env={
+            "COMPRESSION_CMD": COMPRESSION_CMD,
+            "ARTIFACT_EXT": ARTIFACT_EXT,
+            "WGET": os.path.join(CURRENT_FOLDER, "fixtures/wget"),
+            "MOCKED_DOWNLOADS": get_mocked_downloads(),
+        },
+    )
+
+    prefix = data_dir.join(f"artifacts/{dataset}")
+    mono_data = f"{prefix}.en.{ARTIFACT_EXT}"
+
+    assert os.path.exists(mono_data)
+    assert len(read_lines(mono_data)) > 0
+
+
+@pytest.mark.parametrize(
+    "importer,dataset",
+    [
+        ("news-crawl", "news_2021"),
+    ],
+)
+def test_mono_target_import(importer, dataset, data_dir):
+    data_dir.run_task(
+        f"dataset-{importer}-{dataset}-ru",
+        env={
+            "COMPRESSION_CMD": COMPRESSION_CMD,
+            "ARTIFACT_EXT": ARTIFACT_EXT,
+            "WGET": os.path.join(CURRENT_FOLDER, "fixtures/wget"),
+            "MOCKED_DOWNLOADS": get_mocked_downloads(),
+        },
+    )
+
+    prefix = data_dir.join(f"artifacts/{dataset}")
+    mono_data = f"{prefix}.ru.{ARTIFACT_EXT}"
+
+    assert os.path.exists(mono_data)
+    assert len(read_lines(mono_data)) > 0
+
+
 augmentation_params = [
     ("sacrebleu_aug-upper_wmt19", is_upper_case, AUG_MIN_RATE, AUG_MAX_RATE),
     ("sacrebleu_aug-upper-strict_wmt19", is_upper_case, 1.0, 1.0),
