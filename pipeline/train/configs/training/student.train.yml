@@ -20,4 +20,5 @@ optimizer-params: [0.9, 0.98, 1e-09]
 save-freq: 5000
 valid-freq: 5000
 valid-mini-batch: 64
+# subword regularization
 sentencepiece-alphas: 0.5
