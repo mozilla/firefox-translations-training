@@ -28,8 +28,7 @@ task-defaults:
     attributes:
         cache:
             resources:
-                - pipeline/eval/eval-gpu.sh
-                - pipeline/eval/eval.sh
+                - pipeline/eval/eval.py
     dataset-config:
         category: test
         substitution-fields:
@@ -56,10 +55,8 @@ task-defaults:
               type: directory
         max-run-time: 2592000
         env:
-            SRC: "{src_locale}"
-            TRG: "{trg_locale}"
-            COMPRESSION_CMD: zstdmt
-            ARTIFACT_EXT: zst
+            # This is a separate environment variable so tests can override it.
+            MARIAN: $MOZ_FETCHES_DIR
 
     # Don't run unless explicitly scheduled
     run-on-tasks-for: []
@@ -78,14 +75,20 @@ task-defaults:
             - >-
                 pip install -r $VCS_PATH/pipeline/eval/requirements/eval.txt &&
                 export PATH=$PATH:~/.local/bin &&
-                export MARIAN=$MOZ_FETCHES_DIR &&
-                export BMT_MARIAN=$MOZ_FETCHES_DIR &&
                 sed -i -e "s,- .*fetches,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
                 sed -i -e "s,- .*artifacts,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
-                {pipeline_script}
-                {pipeline_args1}
-                $MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz.decoder.yml
-                $MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz
+                $VCS_PATH/pipeline/eval/eval.py
+                {language_pair}
+                --compression_cmd   zstdmt
+                --artifact_ext      zst
+                --marian_config     "$MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz.decoder.yml"
+                --models            "$MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz"
+                --dataset_prefix    "$MOZ_FETCHES_DIR/{dataset_sanitized}"
+                --artifacts_prefix  "$TASK_WORKDIR/artifacts/{dataset_sanitized}"
+                --marian            "$MARIAN"
+                --workspace         $WORKSPACE
+                --gpus              $GPUS
+                --model_variant     gpu
 
 tasks:
     backward-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}:
@@ -99,12 +102,10 @@ tasks:
             substitution-fields:
                 - fetches.train-backwards
             from-object:
-                pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
-                pipeline_args1: >-
-                    $TASK_WORKDIR/artifacts/{dataset_sanitized}
-                    $MOZ_FETCHES_DIR/{dataset_sanitized}
-                    {trg_locale}
-                    {src_locale}
+                # Note the target and source locales are flipped for backward models.
+                language_pair: >-
+                    --src {trg_locale}
+                    --trg {src_locale}
 
         dependencies:
             dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
@@ -137,12 +138,9 @@ tasks:
                 - fetches.train-teacher
                 - chunk.total-chunks
             from-object:
-                pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
-                pipeline_args1: >-
-                    $TASK_WORKDIR/artifacts/{dataset_sanitized}
-                    $MOZ_FETCHES_DIR/{dataset_sanitized}
-                    {src_locale}
-                    {trg_locale}
+                language_pair: >-
+                    --src {src_locale}
+                    --trg {trg_locale}
         cast-to:
             int:
                 - chunk.total-chunks
@@ -184,12 +182,9 @@ tasks:
             substitution-fields:
                 - fetches.train-student
             from-object:
-                pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
-                pipeline_args1: >-
-                    $TASK_WORKDIR/artifacts/{dataset_sanitized}
-                    $MOZ_FETCHES_DIR/{dataset_sanitized}
-                    {src_locale}
-                    {trg_locale}
+                language_pair: >-
+                    --src {src_locale}
+                    --trg {trg_locale}
 
         dependencies:
             dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
@@ -221,12 +216,9 @@ tasks:
             substitution-fields:
                 - fetches.finetune-student
             from-object:
-                pipeline_script: $VCS_PATH/pipeline/eval/eval-gpu.sh
-                pipeline_args1: >-
-                    $TASK_WORKDIR/artifacts/{dataset_sanitized}
-                    $MOZ_FETCHES_DIR/{dataset_sanitized}
-                    {src_locale}
-                    {trg_locale}
+                language_pair: >-
+                    --src {src_locale}
+                    --trg {trg_locale}
 
         dependencies:
             dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
