@@ -21,3 +21,4 @@ quantize-bits: 8
 save-freq: 500
 valid-freq: 500
 valid-mini-batch: 16
+sentencepiece-alphas: 0.5

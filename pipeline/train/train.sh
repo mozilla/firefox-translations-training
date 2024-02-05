@@ -108,7 +108,6 @@ opustrainer-train \
     --valid-log "${model_dir}/valid.log" \
     --log "${model_dir}/train.log" \
     --shuffle batches \
-    --sentencepiece-alphas 0.1 \
     --no-restore-corpus \
     --valid-reset-stalled \
     --sharding local \
