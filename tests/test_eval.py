@@ -60,7 +60,7 @@ def test_evaluate(params) -> None:
     data_dir.create_zst("wmt09.ru.zst", ru_sample)
 
     bleu = 0.4
-    chrf = 0.6
+    chrf = 0.64
 
     if model_type == "base":
         expected_marian_args = get_base_marian_args(data_dir, model_name)
@@ -106,11 +106,15 @@ def test_evaluate(params) -> None:
     assert f"{bleu}\n{chrf}\n" in data_dir.load("artifacts/wmt09.metrics")
 
     # Test that the JSON metrics get properly generated.
-    bleu_json, chrf_json = json.loads(data_dir.load("artifacts/wmt09.metrics.json"))
-    assert bleu_json["name"] == "BLEU"
-    assert bleu_json["score"] == bleu
-    assert chrf_json["name"] == "chrF2"
-    assert chrf_json["score"] == chrf
+    metrics_json = json.loads(data_dir.load("artifacts/wmt09.metrics.json"))
+
+    assert metrics_json["bleu"]["details"]["name"] == "BLEU"
+    assert metrics_json["bleu"]["details"]["score"] == bleu
+    assert metrics_json["bleu"]["score"] == bleu
+
+    assert metrics_json["chrf"]["details"]["name"] == "chrF2"
+    assert metrics_json["chrf"]["details"]["score"] == chrf
+    assert metrics_json["chrf"]["score"] == chrf
 
     # Test that marian is given the proper arguments.
     marian_decoder_args = json.loads(data_dir.load("marian-decoder.args.txt"))

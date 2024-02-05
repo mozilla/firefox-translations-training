@@ -48,6 +48,9 @@ import subprocess
 from textwrap import dedent, indent
 from typing import Optional
 
+from sacrebleu.metrics.bleu import BLEU, BLEUScore
+from sacrebleu.metrics.chrf import CHRF, CHRFScore
+
 
 def run_bash_oneliner(command: str):
     """
@@ -215,42 +218,53 @@ def main(args_list: Optional[list[str]] = None) -> None:
 
         # The translations be "tee"ed out to the artifacts, e.g. $artifacts/wmt09.ca
         | tee "{target_file}"
-
-        # Take in the translations via stdin and run the evaluation using sacrebleu.
-        # The translations will be compared to the original corpus via the target_ref_file
-        | sacrebleu "{target_ref_file}"
-            --language-pair {language_pair}
-            --metrics bleu chrf
-
-        # Finally, tee out the metrics to the json file.
-        | tee "{metrics_json}"
         """
     )
 
-    print(f"Look up the bleu and chrf from the output files from: {metrics_json}")
-    bleu = None
-    chrf = None
-    metrics: list[dict[str, object]]
-    with open(metrics_json) as f:
-        metrics = json.load(f)
-        print("Metrics: ", metrics)
-        for metric in metrics:
-            # Example json: [
-            #   {
+    with open(target_ref_file, "r") as file:
+        target_ref_lines = file.readlines()
+    with open(target_file, "r") as file:
+        target_lines = file.readlines()
+
+    compute_bleu = BLEU(trg_lang=trg)
+    compute_chrf = CHRF()
+
+    print("Computing the BLEU score.")
+    bleu_score: BLEUScore = compute_bleu.corpus_score(target_lines, [target_ref_lines])
+    bleu_details = json.loads(
+        bleu_score.format(signature=compute_bleu.get_signature().format(), is_json=True)
+    )
+
+    print("Computing the chrF score.")
+    chrf_score: CHRFScore = compute_chrf.corpus_score(target_lines, [target_ref_lines])
+    chrf_details = json.loads(
+        chrf_score.format(signature=compute_chrf.get_signature().format(), is_json=True)
+    )
+
+    data = {
+        "bleu": {
+            "score": bleu_details["score"],
+            # Example details:
+            # {
             #     "name": "BLEU",
             #     "score": 0.4,
             #     "signature": "nrefs:1|case:mixed|eff:no|tok:13a|smooth:exp|version:2.0.0",
-            #     "verbose_score": "13.5/0.2/0.1/0.1 (BP = 0.955 ratio = 0.956 hyp_len = 215 ref_len = 225)",
+            #     "verbose_score": "15.6/0.3/0.2/0.1 (BP = 0.823 ratio = 0.837 hyp_len = 180 ref_len = 215)",
             #     "nrefs": "1",
             #     "case": "mixed",
             #     "eff": "no",
             #     "tok": "13a",
             #     "smooth": "exp",
             #     "version": "2.0.0"
-            #   },
-            #   {
+            # }
+            "details": bleu_details,
+        },
+        "chrf": {
+            "score": chrf_details["score"],
+            # Example details:
+            # {
             #     "name": "chrF2",
-            #     "score": 1.0,
+            #     "score": 0.64,
             #     "signature": "nrefs:1|case:mixed|eff:yes|nc:6|nw:0|space:no|version:2.0.0",
             #     "nrefs": "1",
             #     "case": "mixed",
@@ -259,23 +273,18 @@ def main(args_list: Optional[list[str]] = None) -> None:
             #     "nw": "0",
             #     "space": "no",
             #     "version": "2.0.0"
-            #   }
-            # ]
-            if metric["name"] == "BLEU":
-                bleu = metric["score"]
-            elif metric["name"] == "chrF2":
-                chrf = metric["score"]
-            else:
-                raise Exception("Could not find the BLEU or chrF2 in the sacrebleu metrics")
+            # }
+            "details": chrf_details,
+        },
+    }
 
-    if bleu is None:
-        raise Exception("Could not find the BLEU score")
-    if chrf is None:
-        raise Exception("Could not find the chrF score")
+    print(f"Writing {metrics_json}")
+    with open(metrics_json, "w") as file:
+        file.write(json.dumps(data, indent=2))
 
-    print(f'Saving the metrics in the older "text" format: {metrics_file}')
+    print(f'Writing the metrics in the older "text" format: {metrics_file}')
     with open(metrics_file, "w") as file:
-        file.write(f"{bleu}\n{chrf}\n")
+        file.write(f"{bleu_details['score']}\n{chrf_details['score']}\n")
 
 
 if __name__ == "__main__":
