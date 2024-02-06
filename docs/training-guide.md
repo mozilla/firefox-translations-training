@@ -171,7 +171,7 @@ sentencepiece-alphas: 0.5
 SentencePiece alphas control the alpha parameter in subword sampling for the unigram model. 
 It improves robustness of the model, especially for unseen domains. 
 
-If not specified, Marian does not run Sentencepiece sampling (corresponds to `alpha=1`). 
+If not specified, Marian does not run SentencePiece sampling (corresponds to `alpha=1`). 
 Lower values (`0.1`, `0.2`) increase randomization and might benefit lower resource languages with less diverse datasets. 
 However, the model might not train at all if the alpha is too low. 
 The recommended value to start with is `0.5`.
