@@ -22,7 +22,7 @@ modifiers:
 - UpperCase: 0.07 # Apply randomly to 7% of sentences
 - TitleCase: 0.05
 - Typos: 0.05
-- Noise: 0.01
+- Noise: 0.0005
   min_word_length: 2 # Minimum word length for each word in the noisy sentence
   max_word_length: 5 # Maximum word length for each word in the noisy sentence
   max_words: 6 # Maximum number of words in each noisy sentence
