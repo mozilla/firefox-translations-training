@@ -99,6 +99,7 @@ def test_mono_source_import(importer, dataset, data_dir):
     prefix = data_dir.join(f"artifacts/{dataset}")
     mono_data = f"{prefix}.en.{ARTIFACT_EXT}"
 
+    data_dir.print_tree()
     assert os.path.exists(mono_data)
     assert len(read_lines(mono_data)) > 0
 
@@ -123,6 +124,7 @@ def test_mono_target_import(importer, dataset, data_dir):
     prefix = data_dir.join(f"artifacts/{dataset}")
     mono_data = f"{prefix}.ru.{ARTIFACT_EXT}"
 
+    data_dir.print_tree()
     assert os.path.exists(mono_data)
     assert len(read_lines(mono_data)) > 0
 
@@ -144,6 +146,7 @@ def test_specific_augmentation(params, data_dir):
 
     run_import("corpus", dataset, prefix)
 
+    data_dir.print_tree()
     assert os.path.exists(output_src)
     assert os.path.exists(output_trg)
 
@@ -161,6 +164,7 @@ def test_augmentation_mix(data_dir):
 
     run_import("corpus", dataset, prefix)
 
+    data_dir.print_tree()
     assert os.path.exists(output_src)
     assert os.path.exists(output_trg)
 

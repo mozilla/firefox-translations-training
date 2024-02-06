@@ -176,6 +176,32 @@ class DataDir:
         )
         fail_on_error(result)
 
+    def print_tree(self):
+        """
+        Print a tree view of the data directory, which is useful for debugging test failures.
+        """
+        span_len = 90
+        span = "─" * span_len
+        print(f"┌{span}┐")
+
+        for root, dirs, files in os.walk(self.path):
+            level = root.replace(self.path, "").count(os.sep)
+            indent = " " * 4 * (level)
+            folder_text = f"│ {indent}{os.path.basename(root)}/"
+            print(f"{folder_text.ljust(span_len)} │")
+            subindent = " " * 4 * (level + 1)
+
+            if len(files) == 0 and len(dirs) == 0:
+                empty_text = f"│ {subindent} <empty folder>"
+                print(f"{empty_text.ljust(span_len)} │")
+            for file in files:
+                file_text = f"│ {subindent}{file}"
+                bytes = f"{os.stat(os.path.join(root, file)).st_size} bytes"
+
+                print(f"{file_text.ljust(span_len - len(bytes))}{bytes} │")
+
+        print(f"└{span}┘")
+
 
 def fail_on_error(result: CompletedProcess[bytes]):
     """When a process fails, surface the stderr."""
