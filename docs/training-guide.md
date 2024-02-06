@@ -168,7 +168,7 @@ It makes training more stable.
 ```
 sentencepiece-alphas: 0.5
 ```
-Sentenpiece alphas control the alpha parameter in subword sampling for the unigram model. 
+SentencePiece alphas control the alpha parameter in subword sampling for the unigram model. 
 It improves robustness of the model, especially for unseen domains. 
 
 If not specified, Marian does not run Sentencepiece sampling (corresponds to `alpha=1`). 
