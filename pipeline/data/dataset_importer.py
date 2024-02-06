@@ -16,6 +16,7 @@ import subprocess
 import sys
 from typing import Iterable, List
 
+from opustrainer.modifiers.noise import NoiseModifier
 from opustrainer.modifiers.surface import TitleCaseModifier, UpperCaseModifier
 from opustrainer.modifiers.typos import TypoModifier
 from opustrainer.types import Modifier
@@ -45,17 +46,16 @@ class CompositeModifier:
 MIX_PROB = 0.1  # 10% will be augmented in the mix
 
 modifier_map = {
-    "aug-typos": TypoModifier(MIX_PROB),
-    "aug-title": TitleCaseModifier(MIX_PROB),
-    "aug-title-strict": TitleCaseModifier(1.0),
-    "aug-upper": UpperCaseModifier(MIX_PROB),
-    "aug-upper-strict": UpperCaseModifier(1.0),
+    "aug-typos": TypoModifier(1.0),
+    "aug-title": TitleCaseModifier(1.0),
+    "aug-upper": UpperCaseModifier(1.0),
+    "aug-noise": NoiseModifier(1.0),
     "aug-mix": CompositeModifier(
         [
-            # TODO: enable typos, issue https://github.com/mozilla/firefox-translations-training/issues/262
-            # TypoModifier(NOISE_RATE),
+            TypoModifier(MIX_PROB),
             TitleCaseModifier(MIX_PROB),
             UpperCaseModifier(MIX_PROB),
+            NoiseModifier(MIX_PROB),
         ]
     ),
 }
