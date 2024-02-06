@@ -3,8 +3,6 @@
 set -x
 set -euo pipefail
 
-[[ -v MOZ_FETCHES_DIR ]] || { echo "MOZ_FETCHES_DIR is not set"; exit 1; }
-
 pushd `dirname $0`/../../.. &>/dev/null
 VCS_ROOT=$(pwd)
 popd &>/dev/null
@@ -27,13 +25,10 @@ pretrained_model_mode=${10}
 pretrained_model_type=${11}
 extra_params=( "${@:12}" )
 
-if [ "$pretrained_model_mode" == "None" ]; then
-    vocab="$MOZ_FETCHES_DIR/vocab.spm"
-else
-    vocab="$TASK_WORKDIR/artifacts/vocab.spm"
+if [ "$pretrained_model_mode" != "use" ]; then
+    # MOZ_FETCHES_DIR is not required for the "use" pretrained model mode
+    [[ -v MOZ_FETCHES_DIR ]] || { echo "MOZ_FETCHES_DIR is not set"; exit 1; }
 fi
-
-export MARIAN=$MOZ_FETCHES_DIR
 
 case "$pretrained_model_mode" in
     "use")
@@ -41,6 +36,14 @@ case "$pretrained_model_mode" in
         exit 0
         ;;
     "continue"|"init"|"None")
+        if [ "$pretrained_model_mode" == "None" ]; then
+            vocab="$MOZ_FETCHES_DIR/vocab.spm"
+        else
+            vocab="$TASK_WORKDIR/artifacts/vocab.spm"
+        fi
+
+        export MARIAN=$MOZ_FETCHES_DIR
+
         if [ "$pretrained_model_mode" == "init" ]; then
             extra_params+=("--pretrained-model" "$TASK_WORKDIR/artifacts/final.model.npz.best-$best_model_metric.npz" "--no-restore-corpus")
         fi
