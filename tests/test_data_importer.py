@@ -79,15 +79,14 @@ def test_basic_corpus_import(importer, dataset, data_dir):
     assert len(read_lines(output_trg)) > 0
 
 
-augmentation_params = [
-    ("sacrebleu_aug-upper_wmt19", is_upper_case, AUG_MIN_RATE, AUG_MAX_RATE),
-    ("sacrebleu_aug-upper-strict_wmt19", is_upper_case, 1.0, 1.0),
-    ("sacrebleu_aug-title_wmt19", is_title_case, AUG_MIN_RATE, AUG_MAX_RATE),
-    ("sacrebleu_aug-title-strict_wmt19", is_title_case, 1.0, 1.0),
-]
-
-
-@pytest.mark.parametrize("params", augmentation_params, ids=[d[0] for d in augmentation_params])
+@pytest.mark.parametrize(
+    "params",
+    [
+        ("sacrebleu_aug-upper_wmt19", is_upper_case, 1.0, 1.0),
+        ("sacrebleu_aug-title_wmt19", is_title_case, 1.0, 1.0),
+    ],
+    ids=["upper", "title"],
+)
 def test_specific_augmentation(params, data_dir):
     dataset, check_func, min_rate, max_rate = params
     prefix = data_dir.join(dataset)
