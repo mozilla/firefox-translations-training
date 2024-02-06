@@ -177,7 +177,7 @@ However, the model might not train at all if the alpha is too low.
 The recommended value to start with is `0.5`.
 
 More details:
-- [Sentecepiece readme](https://github.com/google/sentencepiece?tab=readme-ov-file#subword-regularization-and-bpe-dropout)
+- [SentencePiece readme](https://github.com/google/sentencepiece?tab=readme-ov-file#subword-regularization-and-bpe-dropout)
 - Paper [Subword Regularization: Improving Neural Network Translation Models with Multiple Subword Candidates](https://arxiv.org/pdf/1804.10959.pdf)
 
 ### Decoding (translation)
