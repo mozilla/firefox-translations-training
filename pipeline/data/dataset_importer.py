@@ -11,10 +11,11 @@ Example:
 
 import argparse
 import os
+import random
 import re
 import subprocess
 import sys
-from typing import Iterable, List
+from typing import Dict, Iterable, List
 
 from opustrainer.modifiers.noise import NoiseModifier
 from opustrainer.modifiers.surface import TitleCaseModifier, UpperCaseModifier
@@ -45,14 +46,35 @@ class CompositeModifier:
 
 MIX_PROB = 0.1  # 10% will be augmented in the mix
 
+
+def get_typos_probs(all_zeros=False) -> Dict[str, float]:
+    # select 4 random types of typos
+    typos = set(random.choices(list(TypoModifier.modifiers.keys()), k=4))
+    # set probability 1 for selected typos and 0 for the rest
+    probs = {
+        typo: 1.0 if not all_zeros and typo in typos else 0.0
+        for typo in TypoModifier.modifiers.keys()
+    }
+    return probs
+
+
 modifier_map = {
-    "aug-typos": TypoModifier(1.0),
-    "aug-title": TitleCaseModifier(1.0),
-    "aug-upper": UpperCaseModifier(1.0),
-    "aug-noise": NoiseModifier(1.0),
-    "aug-mix": CompositeModifier(
+    "aug-typos": lambda: TypoModifier(1.0, **get_typos_probs()),
+    "aug-title": lambda: TitleCaseModifier(1.0),
+    "aug-upper": lambda: UpperCaseModifier(1.0),
+    "aug-noise": lambda: NoiseModifier(1.0),
+    "aug-mix": lambda: CompositeModifier(
         [
-            TypoModifier(MIX_PROB),
+            # disable typos based on prob, see issue https://github.com/hplt-project/OpusTrainer/issues/49
+            # TODO: remove when fixed
+            TypoModifier(
+                MIX_PROB,
+                **(
+                    get_typos_probs()
+                    if MIX_PROB > random.random()
+                    else get_typos_probs(all_zeros=True)
+                ),
+            ),
             TitleCaseModifier(MIX_PROB),
             UpperCaseModifier(MIX_PROB),
             NoiseModifier(MIX_PROB),
@@ -88,8 +110,6 @@ def augment(output_prefix: str, aug_modifer: str):
     if aug_modifer not in modifier_map:
         raise ValueError(f"Invalid modifier {aug_modifer}. Allowed values: {modifier_map.keys()}")
 
-    modifer = modifier_map[aug_modifer]
-
     # file paths for compressed and uncompressed corpus
     uncompressed_src = f"{output_prefix}.{SRC}"
     uncompressed_trg = f"{output_prefix}.{TRG}"
@@ -97,7 +117,11 @@ def augment(output_prefix: str, aug_modifer: str):
     compressed_trg = f"{output_prefix}.{TRG}.{COMP_EXT}"
 
     corpus = read_corpus_tsv(compressed_src, compressed_trg, uncompressed_src, uncompressed_trg)
-    modified = list(modifer(corpus))
+    modified = []
+    for line in corpus:
+        # recreate modifier for each line to apply randomization (for typos)
+        modifier = modifier_map[aug_modifer]()
+        modified += modifier([line])
     write_modified(modified, uncompressed_src, uncompressed_trg)
 
 
