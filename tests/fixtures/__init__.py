@@ -4,7 +4,6 @@ import re
 import shlex
 import shutil
 import subprocess
-import sys
 from subprocess import CompletedProcess
 from typing import Optional, Union
 
@@ -171,7 +170,6 @@ class DataDir:
                 **env,
             },
             cwd=root_path,
-            stderr=subprocess.PIPE,
             check=False,
         )
         fail_on_error(result)
@@ -206,9 +204,6 @@ class DataDir:
 def fail_on_error(result: CompletedProcess[bytes]):
     """When a process fails, surface the stderr."""
     if not result.returncode == 0:
-        for line in result.stderr.decode("utf-8").split("\n"):
-            print(line, file=sys.stderr)
-
         raise Exception(f"{result.args[0]} exited with a status code: {result.returncode}")
 
 
