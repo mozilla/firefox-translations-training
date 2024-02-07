@@ -49,7 +49,7 @@ MIX_PROB = 0.1  # 10% will be augmented in the mix
 
 def get_typos_probs(all_zeros=False) -> Dict[str, float]:
     # select 4 random types of typos
-    typos = set(random.choices(list(TypoModifier.modifiers.keys()), k=4))
+    typos = set(random.sample(list(TypoModifier.modifiers.keys()), k=4))
     # set probability 1 for selected typos and 0 for the rest
     probs = {
         typo: 1.0 if not all_zeros and typo in typos else 0.0
