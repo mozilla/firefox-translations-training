@@ -2,7 +2,7 @@ import os
 
 import pytest
 import zstandard as zstd
-from fixtures import DataDir, get_mocked_downloads
+from fixtures import DataDir, en_sample, get_mocked_downloads, ru_sample
 
 SRC = "ru"
 TRG = "en"
@@ -56,6 +56,7 @@ def data_dir():
         ("opus", "ELRC-3075-wikipedia_health_v1"),
         ("flores", "dev"),
         ("sacrebleu", "wmt19"),
+        ("bucket", "releng-translations-dev_data_en-ru_pytest-dataset"),
     ],
 )
 def test_basic_corpus_import(importer, dataset, data_dir):
@@ -80,12 +81,13 @@ def test_basic_corpus_import(importer, dataset, data_dir):
 
 
 @pytest.mark.parametrize(
-    "importer,dataset",
+    "importer,dataset,first_line",
     [
-        ("news-crawl", "news_2021"),
+        ("news-crawl", "news_2021", 5),
+        ("bucket", "releng-translations-dev_data_en-ru_pytest-dataset", 0),
     ],
 )
-def test_mono_source_import(importer, dataset, data_dir):
+def test_mono_source_import(importer, dataset, first_line, data_dir):
     data_dir.run_task(
         f"dataset-{importer}-{dataset}-en",
         env={
@@ -100,17 +102,23 @@ def test_mono_source_import(importer, dataset, data_dir):
     mono_data = f"{prefix}.en.{ARTIFACT_EXT}"
 
     data_dir.print_tree()
+
+    en_lines = en_sample.splitlines(keepends=True)
+
     assert os.path.exists(mono_data)
-    assert len(read_lines(mono_data)) > 0
+    source_lines = read_lines(mono_data)
+    assert len(source_lines) == len(en_lines)
+    assert source_lines[0] == en_lines[first_line], "The data is shuffled."
 
 
 @pytest.mark.parametrize(
-    "importer,dataset",
+    "importer,dataset,first_line",
     [
-        ("news-crawl", "news_2021"),
+        ("news-crawl", "news_2021", 5),
+        ("bucket", "releng-translations-dev_data_en-ru_pytest-dataset", 0),
     ],
 )
-def test_mono_target_import(importer, dataset, data_dir):
+def test_mono_target_import(importer, dataset, first_line, data_dir):
     data_dir.run_task(
         f"dataset-{importer}-{dataset}-ru",
         env={
@@ -124,9 +132,12 @@ def test_mono_target_import(importer, dataset, data_dir):
     prefix = data_dir.join(f"artifacts/{dataset}")
     mono_data = f"{prefix}.ru.{ARTIFACT_EXT}"
 
+    ru_lines = ru_sample.splitlines(keepends=True)
+
     data_dir.print_tree()
-    assert os.path.exists(mono_data)
-    assert len(read_lines(mono_data)) > 0
+    source_lines = read_lines(mono_data)
+    assert len(source_lines) == len(ru_lines)
+    assert source_lines[0] == ru_lines[first_line], "The data is shuffled."
 
 
 augmentation_params = [
