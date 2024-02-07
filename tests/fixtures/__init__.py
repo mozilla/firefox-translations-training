@@ -341,5 +341,9 @@ def get_mocked_downloads() -> str:
                 get_path("pytest-dataset.en.gz"),
             "http://data.statmt.org/news-crawl/ru/news.2021.ru.shuffled.deduped.gz":
                 get_path("pytest-dataset.ru.gz"),
+            "gs://releng-translations-dev/data/en-ru/pytest-dataset.en.zst":
+                get_path("pytest-dataset.en.zst"),
+            "gs://releng-translations-dev/data/en-ru/pytest-dataset.ru.zst":
+                get_path("pytest-dataset.ru.zst"),
         }
     )  # fmt: skip

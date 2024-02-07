@@ -22,6 +22,14 @@ mkdir -p "${dir}"
 
 name=${dataset#*_}
 type=${dataset%%_*}
-bash "importers/corpus/${type}.sh" "${SRC}" "${TRG}" "${output_prefix}" "${name}"
+
+# Choose either the .sh or .py script.
+if [[ -f "importers/corpus/${type}.py" ]]; then
+  script="python importers/corpus/${type}.py"
+else
+  script="bash importers/corpus/${type}.sh"
+fi
+
+${script} "${SRC}" "${TRG}" "${output_prefix}" "${name}"
 
 echo "###### Done: Downloading dataset ${dataset}"
