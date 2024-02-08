@@ -84,7 +84,7 @@ cd firefox-translations-training
 7. **(Cluster mode)** It might require further tuning of requested resources in `Snakemake` file:
     - Use `threads` for a rule to adjust parallelism
     - Use `resources: mem_mb=<memory>` to adjust total memory requirements per task 
-      (default is set in `profile/slurm-moz/config.yaml`)
+      (default is set in `profiles/slurm-moz/config.yaml`)
 
 ## Installation
 

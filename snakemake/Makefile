@@ -13,7 +13,6 @@ TARGET=
 REPORTS?=../reports
 # for tensorboard
 MODELS?=../models
-LOGS_TASK_GROUP?=
 
 ###
 
