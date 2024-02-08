@@ -47,12 +47,12 @@ class CompositeModifier:
 MIX_PROB = 0.1  # 10% will be augmented in the mix
 
 
-def get_typos_probs(all_zeros=False) -> Dict[str, float]:
+def get_typos_probs() -> Dict[str, float]:
     # select 4 random types of typos
     typos = set(random.sample(list(TypoModifier.modifiers.keys()), k=4))
     # set probability 1 for selected typos and 0 for the rest
     probs = {
-        typo: 1.0 if not all_zeros and typo in typos else 0.0
+        typo: 1.0 if typo in typos else 0.0
         for typo in TypoModifier.modifiers.keys()
     }
     return probs
@@ -65,15 +65,9 @@ modifier_map = {
     "aug-noise": lambda: NoiseModifier(1.0),
     "aug-mix": lambda: CompositeModifier(
         [
-            # disable typos based on prob, see issue https://github.com/hplt-project/OpusTrainer/issues/49
-            # TODO: remove when fixed
             TypoModifier(
                 MIX_PROB,
-                **(
-                    get_typos_probs()
-                    if MIX_PROB > random.random()
-                    else get_typos_probs(all_zeros=True)
-                ),
+                **get_typos_probs()
             ),
             TitleCaseModifier(MIX_PROB),
             UpperCaseModifier(MIX_PROB),
