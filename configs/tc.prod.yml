@@ -106,8 +106,8 @@ datasets:
     - news-crawl_news.2007
 
   # Monolingual data sources for the target language.
-  # There is no mono available.
-  mono-trg: []
+  mono-trg:
+    - bucket_releng-translations-dev/data/en-ca/catalan_textual_corpus.ca.zst
 
 # Arguments that are provided to Marian, the underlying machine learning system used
 # to train language.
