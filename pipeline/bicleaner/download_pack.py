@@ -25,9 +25,7 @@ from typing import Optional
 # change this file since it is a part of the cache digest
 # The last model was added to https://huggingface.co/bitextor on Aug 29, 2023
 def _run_download(src: str, trg: str, dir: str) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        ["bicleaner-ai-download", trg, src, "full", dir], capture_output=True, check=False
-    )
+    return subprocess.run(["bicleaner-ai-download", trg, src, "full", dir], check=False)
 
 
 def _compress_dir(dir_path: str, compression_cmd: str) -> str:
