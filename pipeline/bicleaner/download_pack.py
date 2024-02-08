@@ -89,11 +89,11 @@ def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None
         result = _run_download(src, trg, tmp_dir)
         print_tree(tmp_dir)
 
-        if result.returncode != 0 and "language pack does not exist" in str(result.stderr):
+        if result.returncode != 0:
             print("Failed. Downloading multilingual model en-xx")
             src = "en"
             trg = "xx"
-            # fallback to multilingual model if language pair is not supported
+            print("fallback to multilingual model if language pair is not supported")
             result = _run_download(src, trg, tmp_dir)
 
         result.check_returncode()
