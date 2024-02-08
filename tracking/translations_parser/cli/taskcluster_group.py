@@ -8,6 +8,7 @@ Example:
 
 import argparse
 import logging
+import re
 import tempfile
 from collections import defaultdict
 from pathlib import Path
@@ -24,6 +25,7 @@ logging.basicConfig(
 )
 
 KIND_TAG_TARGET = ("train", "finetune")
+MULTIPLE_TRAIN_SUFFIX = re.compile(r"(-\d+)/\d+$")
 queue = taskcluster.Queue({"rootUrl": "https://firefox-ci-tc.services.mozilla.com"})
 
 
@@ -80,7 +82,7 @@ def publish_task(
 
 def get_metrics_from_task(task: dict) -> list[Metric]:
     task_id = task["status"]["taskId"]
-    logger.debug(f"Retrieving artifacts from eval task {task_id}")
+    logger.info(f"Retrieving artifacts from evaluation task {task_id}")
     metrics = []
     for artifact in queue.listLatestArtifacts(task_id)["artifacts"]:
         if not artifact["name"].endswith(".metrics"):
@@ -92,6 +94,9 @@ def get_metrics_from_task(task: dict) -> list[Metric]:
         )
 
         tag = task["task"]["tags"]["label"]
+        # Remove eventual slashes (e.g. <task_tag>-1/2) that cannot be written to the filesystem
+        tag = MULTIPLE_TRAIN_SUFFIX.sub("", tag)
+
         with tempfile.TemporaryDirectory() as d:
             file = Path(d) / f"{tag}.txt"
             with file.open("wb") as f:
@@ -137,7 +142,12 @@ def main() -> None:
             if prefix == "train":
                 # Remove "train-" prefix from training task only to avoid duplicates
                 name = name[6:]
-            task["name"] = name
+            # Teacher training may run multiple times (e.g. "-1/2" prefix)
+            suffix = ""
+            label = task["task"]["tags"].get("label")
+            if label and (re_match := MULTIPLE_TRAIN_SUFFIX.search(label)):
+                (suffix,) = re_match.groups()
+            task["name"] = name + suffix
             tasks_groups[prefix].append(task)
 
     train_tasks = sum(
