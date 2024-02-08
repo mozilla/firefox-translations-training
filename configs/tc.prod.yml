@@ -107,7 +107,7 @@ datasets:
 
   # Monolingual data sources for the target language.
   mono-trg:
-    - bucket_releng-translations-dev/data/en-ca/catalan_textual_corpus.ca.zst
+    - bucket_releng-translations-dev/data/en-ca/catalan_textual_corpus
 
 # Arguments that are provided to Marian, the underlying machine learning system used
 # to train language.
