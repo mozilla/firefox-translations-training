@@ -48,6 +48,30 @@ def _compress_dir(dir_path: str, compression_cmd: str) -> str:
     return compressed_path
 
 
+def print_tree(path):
+    span_len = 90
+    span = "─" * span_len
+    print(f"┌{span}┐")
+
+    for root, dirs, files in os.walk(path):
+        level = root.replace(path, "").count(os.sep)
+        indent = " " * 4 * (level)
+        folder_text = f"│ {indent}{os.path.basename(root)}/"
+        print(f"{folder_text.ljust(span_len)} │")
+        subindent = " " * 4 * (level + 1)
+
+        if len(files) == 0 and len(dirs) == 0:
+            empty_text = f"│ {subindent} <empty folder>"
+            print(f"{empty_text.ljust(span_len)} │")
+        for file in files:
+            file_text = f"│ {subindent}{file}"
+            bytes = f"{os.stat(os.path.join(root, file)).st_size} bytes"
+
+            print(f"{file_text.ljust(span_len - len(bytes))}{bytes} │")
+
+    print(f"└{span}┘")
+
+
 def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None:
     tmp_dir = tempfile.gettempdir()
     original_src = src
@@ -55,6 +79,7 @@ def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None
 
     print(f"Downloading a model for {src}-{trg}")
     result = _run_download(src, trg, tmp_dir)
+    print_tree(tmp_dir)
 
     if result.returncode == 0:
         print("Success")
@@ -62,6 +87,7 @@ def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None
         src, trg = trg, src
         print(f"Failed. Trying {src}-{trg}")
         result = _run_download(src, trg, tmp_dir)
+        print_tree(tmp_dir)
 
         if result.returncode != 0 and "language pack does not exist" in str(result.stderr):
             print("Failed. Downloading multilingual model en-xx")
@@ -75,8 +101,14 @@ def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None
     # Compress downloaded pack
     pack_path = os.path.join(tmp_dir, f"{src}-{trg}")
     new_name = os.path.join(tmp_dir, f"bicleaner-ai-{original_src}-{original_trg}")
+    print("pack_path", pack_path)
+    print("new_name", new_name)
+
     if os.path.isdir(new_name):
+        print("rmtree", new_name)
         shutil.rmtree(new_name)
+
+    print_tree(tmp_dir)
     shutil.move(pack_path, new_name)
     pack_path = new_name
     if compression_cmd:
