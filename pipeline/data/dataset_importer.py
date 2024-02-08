@@ -51,10 +51,7 @@ def get_typos_probs() -> Dict[str, float]:
     # select 4 random types of typos
     typos = set(random.sample(list(TypoModifier.modifiers.keys()), k=4))
     # set probability 1 for selected typos and 0 for the rest
-    probs = {
-        typo: 1.0 if typo in typos else 0.0
-        for typo in TypoModifier.modifiers.keys()
-    }
+    probs = {typo: 1.0 if typo in typos else 0.0 for typo in TypoModifier.modifiers.keys()}
     return probs
 
 
@@ -65,10 +62,7 @@ modifier_map = {
     "aug-noise": lambda: NoiseModifier(1.0),
     "aug-mix": lambda: CompositeModifier(
         [
-            TypoModifier(
-                MIX_PROB,
-                **get_typos_probs()
-            ),
+            TypoModifier(MIX_PROB, **get_typos_probs()),
             TitleCaseModifier(MIX_PROB),
             UpperCaseModifier(MIX_PROB),
             NoiseModifier(MIX_PROB),
