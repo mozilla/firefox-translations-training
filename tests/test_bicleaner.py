@@ -43,7 +43,7 @@ def decompress(path):
 
 
 @pytest.mark.parametrize(
-    "params",
+    "src,trg,model_src,model_trg",
     [
         ("en", "pt", "en", "pt"),
         ("pt", "en", "en", "pt"),
@@ -51,8 +51,7 @@ def decompress(path):
         ("en", "ru", "en", "xx"),
     ],
 )
-def test_model_download(params, init, data_dir):
-    src, trg, model_src, model_trg = params
+def test_model_download(src, trg, model_src, model_trg, init, data_dir):
     target_path = data_dir.join(f"bicleaner-ai-{src}-{trg}.tar.zst")
     decompressed_path = data_dir.join(f"bicleaner-ai-{src}-{trg}")
     meta_path = os.path.join(decompressed_path, "metadata.yaml")

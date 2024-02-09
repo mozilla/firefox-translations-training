@@ -120,7 +120,7 @@ because they are relatively clean, and the pipeline supports automatic downloadi
     ...
 ```
 
-### Custom datasets
+### Custom local datasets
 
 It is also possible to use manually downloaded datasets with prefix `custom_<file_path>`.
 

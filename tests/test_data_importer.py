@@ -1,13 +1,13 @@
-import gzip
 import os
 
 import pytest
-from fixtures import DataDir, get_mocked_downloads
+import zstandard as zstd
+from fixtures import DataDir, en_sample, get_mocked_downloads, ru_sample
 
 SRC = "ru"
 TRG = "en"
-ARTIFACT_EXT = "gz"
-COMPRESSION_CMD = "pigz"
+ARTIFACT_EXT = "zst"
+COMPRESSION_CMD = "zstd"
 CURRENT_FOLDER = os.path.dirname(os.path.abspath(__file__))
 
 os.environ["ARTIFACT_EXT"] = ARTIFACT_EXT
@@ -24,7 +24,7 @@ AUG_MIN_RATE = 0.01
 
 
 def read_lines(path):
-    with gzip.open(path, "rt") as f:
+    with zstd.open(path, "rt") as f:
         return f.readlines()
 
 
@@ -56,6 +56,7 @@ def data_dir():
         ("opus", "ELRC-3075-wikipedia_health_v1"),
         ("flores", "dev"),
         ("sacrebleu", "wmt19"),
+        ("bucket", "releng-translations-dev_data_en-ru_pytest-dataset"),
     ],
 )
 def test_basic_corpus_import(importer, dataset, data_dir):
@@ -70,13 +71,73 @@ def test_basic_corpus_import(importer, dataset, data_dir):
     )
 
     prefix = data_dir.join(f"artifacts/{dataset}")
-    output_src = f"{prefix}.ru.gz"
-    output_trg = f"{prefix}.en.gz"
+    output_src = f"{prefix}.ru.{ARTIFACT_EXT}"
+    output_trg = f"{prefix}.en.{ARTIFACT_EXT}"
 
     assert os.path.exists(output_src)
     assert os.path.exists(output_trg)
     assert len(read_lines(output_src)) > 0
     assert len(read_lines(output_trg)) > 0
+
+
+@pytest.mark.parametrize(
+    "importer,dataset,first_line",
+    [
+        ("news-crawl", "news_2021", 5),
+        ("bucket", "releng-translations-dev_data_en-ru_pytest-dataset", 0),
+    ],
+)
+def test_mono_source_import(importer, dataset, first_line, data_dir):
+    data_dir.run_task(
+        f"dataset-{importer}-{dataset}-en",
+        env={
+            "COMPRESSION_CMD": COMPRESSION_CMD,
+            "ARTIFACT_EXT": ARTIFACT_EXT,
+            "WGET": os.path.join(CURRENT_FOLDER, "fixtures/wget"),
+            "MOCKED_DOWNLOADS": get_mocked_downloads(),
+        },
+    )
+
+    prefix = data_dir.join(f"artifacts/{dataset}")
+    mono_data = f"{prefix}.en.{ARTIFACT_EXT}"
+
+    data_dir.print_tree()
+
+    en_lines = en_sample.splitlines(keepends=True)
+
+    assert os.path.exists(mono_data)
+    source_lines = read_lines(mono_data)
+    assert len(source_lines) == len(en_lines)
+    assert source_lines[0] == en_lines[first_line], "The data is shuffled."
+
+
+@pytest.mark.parametrize(
+    "importer,dataset,first_line",
+    [
+        ("news-crawl", "news_2021", 5),
+        ("bucket", "releng-translations-dev_data_en-ru_pytest-dataset", 0),
+    ],
+)
+def test_mono_target_import(importer, dataset, first_line, data_dir):
+    data_dir.run_task(
+        f"dataset-{importer}-{dataset}-ru",
+        env={
+            "COMPRESSION_CMD": COMPRESSION_CMD,
+            "ARTIFACT_EXT": ARTIFACT_EXT,
+            "WGET": os.path.join(CURRENT_FOLDER, "fixtures/wget"),
+            "MOCKED_DOWNLOADS": get_mocked_downloads(),
+        },
+    )
+
+    prefix = data_dir.join(f"artifacts/{dataset}")
+    mono_data = f"{prefix}.ru.{ARTIFACT_EXT}"
+
+    ru_lines = ru_sample.splitlines(keepends=True)
+
+    data_dir.print_tree()
+    source_lines = read_lines(mono_data)
+    assert len(source_lines) == len(ru_lines)
+    assert source_lines[0] == ru_lines[first_line], "The data is shuffled."
 
 
 augmentation_params = [
@@ -96,6 +157,7 @@ def test_specific_augmentation(params, data_dir):
 
     run_import("corpus", dataset, prefix)
 
+    data_dir.print_tree()
     assert os.path.exists(output_src)
     assert os.path.exists(output_trg)
 
@@ -113,6 +175,7 @@ def test_augmentation_mix(data_dir):
 
     run_import("corpus", dataset, prefix)
 
+    data_dir.print_tree()
     assert os.path.exists(output_src)
     assert os.path.exists(output_trg)
 
