@@ -17,10 +17,9 @@ modifiers:
   min_word_length: 2 # Minimum word length for each word in the noisy sentence
   max_word_length: 5 # Maximum word length for each word in the noisy sentence
   max_words: 6 # Maximum number of words in each noisy sentence
-# TODO: enable inline noise, currently doesn't work because it requires space tokenized alignments
-# TODO: https://github.com/mozilla/firefox-translations-training/issues/261
-#- Tags: 0.05
-#  augment: 1
+- Tags: 0.05
+  augment: 1
+  vocab: <vocab>
 
 seed: 1111
 # parallel sentences + token alignments
