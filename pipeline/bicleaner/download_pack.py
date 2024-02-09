@@ -50,39 +50,68 @@ def _compress_dir(dir_path: str, compression_cmd: str) -> str:
     return compressed_path
 
 
+def check_result(result: subprocess.CompletedProcess):
+    """Checks the return code, and outputs the stdout and stderr if it fails."""
+    if result.returncode != 0:
+        print(result.stdout)
+        print(result.stderr)
+        result.check_returncode()
+
+
 def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None:
-    tmp_dir = tempfile.gettempdir()
+    tmp_dir = os.path.join(tempfile.gettempdir(), "bicleaner")
+    if not os.path.exists(tmp_dir):
+        os.mkdir(tmp_dir)
+
     original_src = src
     original_trg = trg
 
-    print(f"Downloading a model for {src}-{trg}")
+    # Attempt to download a model.
+    # 1: src-trg
+    # 2: trg-src
+    # 3: multilingual model
+    print(f"Attempt 1 of 3: Downloading a model for {src}-{trg}")
     result = _run_download(src, trg, tmp_dir)
 
-    if result.returncode == 0:
-        print("Success")
+    pack_path = os.path.join(tmp_dir, f"{src}-{trg}")
+    if os.path.exists(pack_path):
+        check_result(result)
+        print(f"The model for {src}-{trg} existed")
     else:
         src, trg = trg, src
-        print(f"Failed. Trying {src}-{trg}")
+        print(f"Attempt 2 of 3. Downloading a model for {src}-{trg}")
         result = _run_download(src, trg, tmp_dir)
 
-        if result.returncode != 0 and "language pack does not exist" in str(result.stderr):
-            print("Failed. Downloading multilingual model en-xx")
+        pack_path = os.path.join(tmp_dir, f"{src}-{trg}")
+
+        if os.path.exists(pack_path):
+            check_result(result)
+            print(f"The model for {src}-{trg} existed")
+        else:
+            print("Attempt 3 of 3. Downloading the multilingual model en-xx")
             src = "en"
             trg = "xx"
-            # fallback to multilingual model if language pair is not supported
             result = _run_download(src, trg, tmp_dir)
 
-        result.check_returncode()
+            pack_path = os.path.join(tmp_dir, f"{src}-{trg}")
+            if not os.path.exists(pack_path):
+                check_result(result)
+                raise Exception("Could not download the multilingual model.")
 
-    # Compress downloaded pack
-    pack_path = os.path.join(tmp_dir, f"{src}-{trg}")
+    print("Compress the downloaded pack.")
     new_name = os.path.join(tmp_dir, f"bicleaner-ai-{original_src}-{original_trg}")
+    print("pack_path: ", pack_path)
+    print("new_name: ", new_name)
+
     if os.path.isdir(new_name):
+        print("rmtree", new_name)
         shutil.rmtree(new_name)
+
     shutil.move(pack_path, new_name)
     pack_path = new_name
     if compression_cmd:
         pack_path = _compress_dir(pack_path, compression_cmd)
+
     # Move to the expected path
     print(f"Moving {pack_path} to {output_path}")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
