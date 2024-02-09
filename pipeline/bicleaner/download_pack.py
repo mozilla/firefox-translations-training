@@ -83,7 +83,10 @@ def check_result(result: subprocess.CompletedProcess):
 
 
 def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None:
-    tmp_dir = tempfile.gettempdir()
+    tmp_dir = os.path.join(tempfile.gettempdir(), "bicleaner")
+    if not os.path.exists(tmp_dir):
+        os.mkdir(tmp_dir)
+
     original_src = src
     original_trg = trg
 
@@ -93,7 +96,7 @@ def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None
     # 3: multilingual model
     print(f"Attempt 1 of 3: Downloading a model for {src}-{trg}")
     result = _run_download(src, trg, tmp_dir)
-    print_tree(tmp_dir)
+    # print_tree(tmp_dir)
 
     pack_path = os.path.join(tmp_dir, f"{src}-{trg}")
     if os.path.exists(pack_path):
@@ -103,7 +106,7 @@ def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None
         src, trg = trg, src
         print(f"Attempt 2 of 3. Downloading a model for {src}-{trg}")
         result = _run_download(src, trg, tmp_dir)
-        print_tree(tmp_dir)
+        # print_tree(tmp_dir)
 
         pack_path = os.path.join(tmp_dir, f"{src}-{trg}")
 
@@ -114,10 +117,11 @@ def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None
             print("Attempe 3 of 3. Downloading the multilingual model en-xx")
             src = "en"
             trg = "xx"
-            print("fallback to multilingual model if language pair is not supported")
             result = _run_download(src, trg, tmp_dir)
 
+            pack_path = os.path.join(tmp_dir, f"{src}-{trg}")
             if not os.path.exists(pack_path):
+                print_tree(tmp_dir)
                 check_result(result)
                 raise Exception("Could not download the multilingual model.")
 
@@ -130,7 +134,7 @@ def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None
         print("rmtree", new_name)
         shutil.rmtree(new_name)
 
-    print_tree(tmp_dir)
+    # print_tree(tmp_dir)
     shutil.move(pack_path, new_name)
     pack_path = new_name
     if compression_cmd:
