@@ -10,8 +10,8 @@ parent: Orchestrators
 This section included the instructions on how to run the pipeline 
 using [Snakemake](https://snakemake.github.io/) orchestrator (locally or on a Slurm cluster).
 
-**NOTICE: Mozilla is switching to Taskcluster for model training 
-and the Snakemake pipeline will be less actively maintained in the future. Feel free to contirbute if you find bugs.**
+**NOTICE: Mozilla has switched to Taskcluster for model training, and the Snakemake pipeline is not maintained. 
+Feel free to contribute if you find bugs.**
 
 Snakemake workflow manager infers the DAG of tasks implicitly from the specified inputs and outputs of the steps. 
 The workflow manager checks which files are missing and runs the corresponding jobs either locally or on a cluster depending on the configuration. 
@@ -83,7 +83,7 @@ cd firefox-translations-training
 7. **(Cluster mode)** It might require further tuning of requested resources in `Snakemake` file:
     - Use `threads` for a rule to adjust parallelism
     - Use `resources: mem_mb=<memory>` to adjust total memory requirements per task 
-      (default is set in `profile/slurm-moz/config.yaml`)
+      (default is set in `profiles/slurm-moz/config.yaml`)
 
 ## Installation
 
