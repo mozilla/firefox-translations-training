@@ -78,8 +78,12 @@ for index in "${!datasets[@]}"; do
     sed -i -e "s#<dataset${index}>#${tsv_dataset}#g" "${new_config}"
 done
 
-# Replace the path to vocab (required for alignments to work)
+# Replace the path to vocab and custom detokenizer languages
+# OpusTrainer users alignments tokenized with Moses for inline noise (Tags modifier)
+# then detokenises them and coverts to SentencePiece tokeinized ones using the vocab to feed to Marian
 sed -i -e "s#<vocab>#${vocab}#g" "${new_config}"
+sed -i -e "s#<src>#${SRC}#g" "${new_config}"
+sed -i -e "s#<trg>#${TRG}#g" "${new_config}"
 
 # if the training set is a tsv, validation set also has to be a tsv
 echo "### Converting validation sets to tsv"
