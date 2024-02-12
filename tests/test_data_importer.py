@@ -1,13 +1,13 @@
-import gzip
 import os
 
 import pytest
+import zstandard as zstd
 from fixtures import DataDir, get_mocked_downloads
 
 SRC = "ru"
 TRG = "en"
-ARTIFACT_EXT = "gz"
-COMPRESSION_CMD = "pigz"
+ARTIFACT_EXT = "zst"
+COMPRESSION_CMD = "zstd"
 CURRENT_FOLDER = os.path.dirname(os.path.abspath(__file__))
 
 os.environ["ARTIFACT_EXT"] = ARTIFACT_EXT
@@ -24,7 +24,7 @@ AUG_MIN_RATE = 0.01
 
 
 def read_lines(path):
-    with gzip.open(path, "rt") as f:
+    with zstd.open(path, "rt") as f:
         return f.readlines()
 
 
@@ -70,13 +70,42 @@ def test_basic_corpus_import(importer, dataset, data_dir):
     )
 
     prefix = data_dir.join(f"artifacts/{dataset}")
-    output_src = f"{prefix}.ru.gz"
-    output_trg = f"{prefix}.en.gz"
+    output_src = f"{prefix}.ru.{ARTIFACT_EXT}"
+    output_trg = f"{prefix}.en.{ARTIFACT_EXT}"
 
     assert os.path.exists(output_src)
     assert os.path.exists(output_trg)
     assert len(read_lines(output_src)) > 0
     assert len(read_lines(output_trg)) > 0
+
+
+@pytest.mark.skip(
+    reason="This works locally, but fails in CI. It will soon be replaced with python. See #420"
+)
+@pytest.mark.parametrize(
+    "language,importer,dataset",
+    [
+        ("en", "news-crawl", "news_2021"),
+        ("ru", "news-crawl", "news_2021"),
+    ],
+)
+def test_mono_source_import(language, importer, dataset, data_dir):
+    data_dir.run_task(
+        f"dataset-{importer}-{dataset}-{language}",
+        env={
+            "COMPRESSION_CMD": COMPRESSION_CMD,
+            "ARTIFACT_EXT": ARTIFACT_EXT,
+            "WGET": os.path.join(CURRENT_FOLDER, "fixtures/wget"),
+            "MOCKED_DOWNLOADS": get_mocked_downloads(),
+        },
+    )
+
+    prefix = data_dir.join(f"artifacts/{dataset}")
+    mono_data = f"{prefix}.{language}.{ARTIFACT_EXT}"
+
+    data_dir.print_tree()
+    assert os.path.exists(mono_data)
+    assert len(read_lines(mono_data)) > 0
 
 
 augmentation_params = [
@@ -96,6 +125,7 @@ def test_specific_augmentation(params, data_dir):
 
     run_import("corpus", dataset, prefix)
 
+    data_dir.print_tree()
     assert os.path.exists(output_src)
     assert os.path.exists(output_trg)
 
@@ -113,6 +143,7 @@ def test_augmentation_mix(data_dir):
 
     run_import("corpus", dataset, prefix)
 
+    data_dir.print_tree()
     assert os.path.exists(output_src)
     assert os.path.exists(output_trg)
 

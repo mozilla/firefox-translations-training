@@ -4,7 +4,6 @@ import re
 import shlex
 import shutil
 import subprocess
-import sys
 from subprocess import CompletedProcess
 from typing import Optional, Union
 
@@ -171,18 +170,40 @@ class DataDir:
                 **env,
             },
             cwd=root_path,
-            stderr=subprocess.PIPE,
             check=False,
         )
         fail_on_error(result)
+
+    def print_tree(self):
+        """
+        Print a tree view of the data directory, which is useful for debugging test failures.
+        """
+        span_len = 90
+        span = "─" * span_len
+        print(f"┌{span}┐")
+
+        for root, dirs, files in os.walk(self.path):
+            level = root.replace(self.path, "").count(os.sep)
+            indent = " " * 4 * (level)
+            folder_text = f"│ {indent}{os.path.basename(root)}/"
+            print(f"{folder_text.ljust(span_len)} │")
+            subindent = " " * 4 * (level + 1)
+
+            if len(files) == 0 and len(dirs) == 0:
+                empty_text = f"│ {subindent} <empty folder>"
+                print(f"{empty_text.ljust(span_len)} │")
+            for file in files:
+                file_text = f"│ {subindent}{file}"
+                bytes = f"{os.stat(os.path.join(root, file)).st_size} bytes"
+
+                print(f"{file_text.ljust(span_len - len(bytes))}{bytes} │")
+
+        print(f"└{span}┘")
 
 
 def fail_on_error(result: CompletedProcess[bytes]):
     """When a process fails, surface the stderr."""
     if not result.returncode == 0:
-        for line in result.stderr.decode("utf-8").split("\n"):
-            print(line, file=sys.stderr)
-
         raise Exception(f"{result.args[0]} exited with a status code: {result.returncode}")
 
 
@@ -304,14 +325,21 @@ def get_task_command_and_env(task_name: str, script=None) -> tuple[str, dict[str
 
 def get_mocked_downloads() -> str:
     corpus_samples = os.path.abspath(os.path.join(FIXTURES_PATH, "../data/corpus_samples"))
+
+    def get_path(name: str):
+        return os.path.join(corpus_samples, name)
+
     return json.dumps(
         {
-            "https://dl.fbaipublicfiles.com/flores101/dataset/flores101_dataset.tar.gz": os.path.join(
-                corpus_samples, "flores101_dataset.tar.gz"
-            ),
-            "https://object.pouta.csc.fi/OPUS-ELRC-3075-wikipedia_health/v1/moses/en-ru.txt.zip": os.path.join(
-                corpus_samples, "en-ru.txt.zip"
-            ),
-            "https://object.pouta.csc.fi/OPUS-ELRC-3075-wikipedia_health/v1/moses/ru-en.txt.zip": "404",
+            "https://dl.fbaipublicfiles.com/flores101/dataset/flores101_dataset.tar.gz":
+                get_path("flores101_dataset.tar.gz"),
+            "https://object.pouta.csc.fi/OPUS-ELRC-3075-wikipedia_health/v1/moses/en-ru.txt.zip":
+                get_path("en-ru.txt.zip"),
+            "https://object.pouta.csc.fi/OPUS-ELRC-3075-wikipedia_health/v1/moses/ru-en.txt.zip":
+                "404",
+            "http://data.statmt.org/news-crawl/en/news.2021.en.shuffled.deduped.gz":
+                get_path("pytest-dataset.en.gz"),
+            "http://data.statmt.org/news-crawl/ru/news.2021.ru.shuffled.deduped.gz":
+                get_path("pytest-dataset.ru.gz"),
         }
-    )
+    )  # fmt: skip
