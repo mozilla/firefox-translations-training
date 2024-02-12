@@ -83,14 +83,15 @@ def test_basic_corpus_import(importer, dataset, data_dir):
     reason="This works locally, but fails in CI. It will soon be replaced with python. See #420"
 )
 @pytest.mark.parametrize(
-    "importer,dataset",
+    "language,importer,dataset",
     [
-        ("news-crawl", "news_2021"),
+        ("en", "news-crawl", "news_2021"),
+        ("ru", "news-crawl", "news_2021"),
     ],
 )
-def test_mono_source_import(importer, dataset, data_dir):
+def test_mono_source_import(language, importer, dataset, data_dir):
     data_dir.run_task(
-        f"dataset-{importer}-{dataset}-en",
+        f"dataset-{importer}-{dataset}-{language}",
         env={
             "COMPRESSION_CMD": COMPRESSION_CMD,
             "ARTIFACT_EXT": ARTIFACT_EXT,
@@ -100,35 +101,7 @@ def test_mono_source_import(importer, dataset, data_dir):
     )
 
     prefix = data_dir.join(f"artifacts/{dataset}")
-    mono_data = f"{prefix}.en.{ARTIFACT_EXT}"
-
-    data_dir.print_tree()
-    assert os.path.exists(mono_data)
-    assert len(read_lines(mono_data)) > 0
-
-
-@pytest.mark.skip(
-    reason="This works locally, but fails in CI. It will soon be replaced with python. See #420"
-)
-@pytest.mark.parametrize(
-    "importer,dataset",
-    [
-        ("news-crawl", "news_2021"),
-    ],
-)
-def test_mono_target_import(importer, dataset, data_dir):
-    data_dir.run_task(
-        f"dataset-{importer}-{dataset}-ru",
-        env={
-            "COMPRESSION_CMD": COMPRESSION_CMD,
-            "ARTIFACT_EXT": ARTIFACT_EXT,
-            "WGET": os.path.join(CURRENT_FOLDER, "fixtures/wget"),
-            "MOCKED_DOWNLOADS": get_mocked_downloads(),
-        },
-    )
-
-    prefix = data_dir.join(f"artifacts/{dataset}")
-    mono_data = f"{prefix}.ru.{ARTIFACT_EXT}"
+    mono_data = f"{prefix}.{language}.{ARTIFACT_EXT}"
 
     data_dir.print_tree()
     assert os.path.exists(mono_data)
