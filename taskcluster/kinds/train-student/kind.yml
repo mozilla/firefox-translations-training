@@ -17,7 +17,8 @@ kind-dependencies:
     - merge-devset
     - cefilter
     - train-vocab
-    - alignments
+    - alignments-student
+    - shortlist
     - toolchain
 
 tasks:
@@ -92,7 +93,7 @@ tasks:
             train-vocab: train-vocab-{src_locale}-{trg_locale}
             merge-devset: merge-devset-{src_locale}-{trg_locale}
             cefilter: cefilter-{src_locale}-{trg_locale}
-            alignments: alignments-{src_locale}-{trg_locale}
+            alignments: alignments-student-{src_locale}-{trg_locale}
 
         fetches:
             toolchain:
