@@ -19,6 +19,10 @@ import tarfile
 import tempfile
 from typing import Optional
 
+from pipeline.common.logging import get_logger
+
+logger = get_logger(__file__)
+
 
 # bicleaner-ai-download downloads the latest models from Hugging Face / Github
 # If a new model is released and you want to invalidate Taskcluster caches,
@@ -31,7 +35,7 @@ def _run_download(src: str, trg: str, dir: str) -> subprocess.CompletedProcess:
 
 
 def _compress_dir(dir_path: str, compression_cmd: str) -> str:
-    print(f"Compressing {dir_path}")
+    logger.info(f"Compressing {dir_path}")
     if compression_cmd not in ["gzip", "zstd", "zstdmt", "pigz"]:
         raise ValueError(f"Unsupported compression tool {compression_cmd}.")
 
@@ -70,16 +74,16 @@ def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None
     # 1: src-trg
     # 2: trg-src
     # 3: multilingual model
-    print(f"Attempt 1 of 3: Downloading a model for {src}-{trg}")
+    logger.info(f"Attempt 1 of 3: Downloading a model for {src}-{trg}")
     result = _run_download(src, trg, tmp_dir)
 
     pack_path = os.path.join(tmp_dir, f"{src}-{trg}")
     if os.path.exists(pack_path):
         check_result(result)
-        print(f"The model for {src}-{trg} existed")
+        logger.info(f"The model for {src}-{trg} existed")
     else:
         src, trg = trg, src
-        print(f"Attempt 2 of 3. Downloading a model for {src}-{trg}")
+        logger.info(f"Attempt 2 of 3. Downloading a model for {src}-{trg}")
         result = _run_download(src, trg, tmp_dir)
 
         pack_path = os.path.join(tmp_dir, f"{src}-{trg}")
@@ -88,7 +92,7 @@ def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None
             check_result(result)
             print(f"The model for {src}-{trg} existed")
         else:
-            print("Attempt 3 of 3. Downloading the multilingual model en-xx")
+            logger.info("Attempt 3 of 3. Downloading the multilingual model en-xx")
             src = "en"
             trg = "xx"
             result = _run_download(src, trg, tmp_dir)
@@ -98,13 +102,13 @@ def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None
                 check_result(result)
                 raise Exception("Could not download the multilingual model.")
 
-    print("Compress the downloaded pack.")
+    logger.info("Compress the downloaded pack.")
     new_name = os.path.join(tmp_dir, f"bicleaner-ai-{original_src}-{original_trg}")
-    print("pack_path: ", pack_path)
-    print("new_name: ", new_name)
+    logger.info(f'pack_path: "{pack_path}"')
+    logger.info(f'new_name: "{new_name}"')
 
     if os.path.isdir(new_name):
-        print("rmtree", new_name)
+        logger.info(f"rmtree {new_name}")
         shutil.rmtree(new_name)
 
     shutil.move(pack_path, new_name)
@@ -113,10 +117,10 @@ def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None
         pack_path = _compress_dir(pack_path, compression_cmd)
 
     # Move to the expected path
-    print(f"Moving {pack_path} to {output_path}")
+    logger.info(f"Moving {pack_path} to {output_path}")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     shutil.move(pack_path, output_path)
-    print("Done")
+    logger.info("Done")
 
 
 def main(args: Optional[list[str]] = None) -> None:
