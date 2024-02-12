@@ -27,6 +27,7 @@ def get_defaults(_):
                 "best-model": "chrf",
                 "use-opuscleaner": "true",
                 "bicleaner": {
+                    "disable": "true",
                     "default-threshold": 0.5,
                     "dataset-thresholds": {
                         "opus_ada83/v1": 0.0,
@@ -126,6 +127,7 @@ extend_parameters_schema(
                 Required("best-model"): str,
                 Required("use-opuscleaner"): str,
                 Required("bicleaner"): {
+                    Required("disable"): str,
                     Required("default-threshold"): float,
                     Optional("dataset-thresholds"): {
                         str: float,

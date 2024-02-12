@@ -6,24 +6,20 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.skip_unless_pipeline_changed
+    - translations_taskgraph.transforms.modify_graph
     - taskgraph.transforms.task_context
-    - taskgraph.transforms.from_deps
-    - translations_taskgraph.transforms.dependency_dummies
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
-    - export
-    - evaluate
-    - evaluate-quantized
-    - evaluate-teacher-ensemble
-    - modify-graph
+    - clean-corpus
+    - bicleaner
+    - merge-corpus
 
 tasks:
     all:
-        description: Dummy task that ensures all parts of training pipeline will run
+        description: Modify upstream parts of the graph
         attributes:
-            stage: all-pr
+            stage: all
             src_locale: "{src_locale}"
             trg_locale: "{trg_locale}"
         
@@ -34,9 +30,6 @@ tasks:
             substitution-fields:
                 - attributes
 
-        run-on-tasks-for: ["github-pull-request"]
+        run-on-tasks-for: []
+        expires-after: "90 days"
         worker-type: succeed
-
-        from-deps:
-            unique-kinds: false
-            group-by: all

@@ -144,6 +144,9 @@ def validate_pretrained_models(params):
                     },
                     "bicleaner": {
                         "properties": {
+                            "disable": {
+                                "type": "string",
+                            },
                             "default-threshold": {
                                 "type": "number",
                                 "description": "bicleaner threshold",
