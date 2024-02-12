@@ -54,7 +54,7 @@ def parse_experiment(
     metrics = []
     if metrics_dir:
         for metrics_file in metrics_dir.glob("*.metrics"):
-            metrics.append(Metric.from_file(metrics_file=metrics_file))
+            metrics.append(Metric.from_file(metrics_file, dataset=metrics_file.stem))
 
     with logs_file.open("r") as f:
         lines = (line.strip() for line in f.readlines())
@@ -102,7 +102,7 @@ def publish_group_logs(
     metrics = defaultdict(list)
     # Add "quantized" metrics
     for file in quantized_metrics:
-        metrics["quantized"].append(Metric.from_file(file))
+        metrics["quantized"].append(Metric.from_file(file, dataset=file.stem))
     # Add experiment (runs) metrics
     for file in evaluation_metrics:
         model_name, dataset, aug = extract_dataset_from_tag(file.stem)

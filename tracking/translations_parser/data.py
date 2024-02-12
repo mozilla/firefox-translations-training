@@ -59,7 +59,17 @@ class Metric:
     bleu_detok: float
 
     @classmethod
-    def from_file(cls, metrics_file: Path, sep="_"):
+    def from_file(
+        cls,
+        metrics_file: Path,
+        sep="_",
+        dataset: str | None = None,
+        augmentation: str | None = None,
+    ):
+        """
+        Instanciate a Metric from a `.metrics` file.
+        In case no dataset is set, detects it from the filename.
+        """
         logger.debug(f"Reading metrics file {metrics_file.name}")
         values = []
         try:
@@ -74,7 +84,8 @@ class Metric:
         except Exception as e:
             raise ValueError(f"Metrics file could not be parsed: {e}")
         bleu_detok, chrf = values
-        _, dataset, augmentation = extract_dataset_from_tag(metrics_file.stem, sep=sep)
+        if dataset is None:
+            _, dataset, augmentation = extract_dataset_from_tag(metrics_file.stem, sep=sep)
         return cls(
             dataset=dataset,
             augmentation=augmentation,
