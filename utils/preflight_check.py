@@ -433,30 +433,29 @@ def main(
     parameters = get_taskgraph_parameters()
     run_taskgraph(parsed_args.config, get_taskgraph_parameters())
 
-    match Choices[parsed_args.only] if parsed_args.only else None:
-        case Choices.task_group:
-            pretty_print_task_graph()
-        case Choices.artifacts:
-            pretty_print_artifacts_dir()
-        case Choices.training_config:
-            pretty_print_training_config(get_taskgraph_parameters())
-        case Choices.graph:
-            serve_taskgraph_file(
-                parsed_args.graph_url,
-                parsed_args.open_graph,
-                parsed_args.persist_graph,
-                open_in_browser,
-            )
-        case None:
-            pretty_print_task_graph()
-            pretty_print_artifacts_dir()
-            pretty_print_training_config(parameters)
-            serve_taskgraph_file(
-                parsed_args.graph_url,
-                parsed_args.open_graph,
-                parsed_args.persist_graph,
-                open_in_browser,
-            )
+    if parsed_args.only == Choices.task_group:
+        pretty_print_task_graph()
+    elif parsed_args.only == Choices.artifacts:
+        pretty_print_artifacts_dir()
+    elif parsed_args.only == Choices.training_config:
+        pretty_print_training_config(get_taskgraph_parameters())
+    elif parsed_args.only == Choices.graph:
+        serve_taskgraph_file(
+            parsed_args.graph_url,
+            parsed_args.open_graph,
+            parsed_args.persist_graph,
+            open_in_browser,
+        )
+    elif parsed_args.only is None:
+        pretty_print_task_graph()
+        pretty_print_artifacts_dir()
+        pretty_print_training_config(parameters)
+        serve_taskgraph_file(
+            parsed_args.graph_url,
+            parsed_args.open_graph,
+            parsed_args.persist_graph,
+            open_in_browser,
+        )
 
 
 if __name__ == "__main__":
