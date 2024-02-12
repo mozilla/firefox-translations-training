@@ -9,6 +9,7 @@ import argparse
 import json
 import os
 import shutil
+import sys
 
 if not os.environ.get("MOCKED_DOWNLOADS"):
     raise Exception(
@@ -32,7 +33,8 @@ parser.add_argument("url", help="The url to download")
 
 args = parser.parse_args()
 
-print("[mocked wget]", args.url)
+if not args.output == "-":
+    print("[mocked wget]", args.url, file=sys.stderr)
 
 source_file = mocked_downloads.get(args.url)
 if not source_file:
@@ -47,10 +49,14 @@ if source_file == "404":
 if not os.path.exists(source_file):
     raise Exception(f"The source file specified did not exist {source_file}")
 
-print("[mocked wget] copying the file")
-print(f"[mocked wget] from: {source_file}")
-print(f"[mocked wget] to: {args.output}")
+if args.output == "-":
+    with open(source_file, "rb") as file:
+        sys.stdout.buffer.write(file.read())
+else:
+    print("[mocked wget] copying the file")
+    print(f"[mocked wget] from: {source_file}")
+    print(f"[mocked wget] to: {args.output}")
 
-shutil.copyfile(source_file, args.output)
+    shutil.copyfile(source_file, args.output)
 
-print("[mocked wget] Success")
+    print("[mocked wget] Success")
