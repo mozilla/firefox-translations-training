@@ -14,6 +14,8 @@ from itertools import groupby
 from pathlib import Path
 
 import wandb
+import yaml
+
 from translations_parser.data import Metric
 from translations_parser.parser import TrainingParser
 from translations_parser.publishers import WandB
@@ -66,7 +68,6 @@ def parse_experiment(
                 project=project,
                 name=name,
                 group=group,
-                config={"logs_file": logs_file},
             )
         ],
     )
@@ -132,7 +133,6 @@ def publish_group_logs(
     missing_run_metrics = {
         name: metrics for name, metrics in metrics.items() if name not in existing_runs
     }
-
     for model_name, model_metrics in missing_run_metrics.items():
         logger.info(f"Creating missing run {model_name} with associated metrics")
         publisher = WandB(project=project, name=model_name, group=group)
@@ -140,22 +140,38 @@ def publish_group_logs(
         publisher.handle_metrics(model_metrics)
         publisher.close()
 
-    # Start publication of `group_logs` fake run
+    # Publication of the `group_logs` fake run
+    config = {}
+    config_path = Path("/".join([*prefix[:-1], "experiments", project, group, "config.yml"]))
+    if not config_path.is_file():
+        logger.warning(f"No configuration file at {config_path}, skipping.")
+    else:
+        # Publish the YAML configuration as configuration on the group run
+        with config_path.open("r") as f:
+            data = f.read()
+        try:
+            config.update(yaml.safe_load(data))
+        except Exception as e:
+            logger.error(f"Config could not be read at {config_path}: {e}")
+
     publisher = WandB(
         project=project,
         group=group,
         name="group_logs",
+        notes=(
+            "Experiments summary for the group.\n"
+            "The configuration section contains `config.yaml` values, logs "
+            "are uploaded as artifacts and all metrics are reported in a table."
+        ),
     )
     publisher.wandb = wandb.init(
         project=project,
         group=group,
         name="group_logs",
+        config=config,
     )
-
-    # Publish all evaluation metrics to a table
-    if publisher.wandb is None:
-        return
     if metrics:
+        # Publish all evaluation metrics to a table
         table = wandb.Table(
             columns=["Group", "Model", "Dataset", "BLEU", "chrF"],
             data=[
@@ -165,12 +181,12 @@ def publish_group_logs(
             ],
         )
         publisher.wandb.log({"metrics": table})
-
-    # Publish logs directory content as artifacts
     if logs_dir.is_dir():
+        # Publish logs directory content as artifacts
         artifact = wandb.Artifact(name=group, type="logs")
         artifact.add_dir(local_path=str(logs_dir.resolve()))
         publisher.wandb.log_artifact(artifact)
+
     publisher.wandb.finish()
 
 

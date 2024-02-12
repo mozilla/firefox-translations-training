@@ -5,6 +5,7 @@ import subprocess as sp
 import sys
 
 import yaml
+
 from snakemake.logging import logger
 from snakemake.utils import read_job_properties
 
