@@ -17,7 +17,7 @@ kind-dependencies:
 
 tasks:
     "{src_locale}-{trg_locale}":
-        description: alignment for student training corpus {src_locale}-{trg_locale}
+        description: alignments for student training corpus {src_locale}-{trg_locale}
         attributes:
             dataset-category: train
             stage: alignment
@@ -27,7 +27,6 @@ tasks:
                 type: alignment
                 resources:
                     - pipeline/alignments/generate-space-alignment.sh
-                    - pipeline/alignments/requirements/alignments.txt
         task-context:
             from-parameters:
                 src_locale: training_config.experiment.src
@@ -66,11 +65,9 @@ tasks:
                 - >-
                     export BIN=$MOZ_FETCHES_DIR &&
                     export PATH=$PATH:$MOZ_FETCHES_DIR &&
-                    pip install -r $VCS_PATH/pipeline/alignments/requirements/alignments.txt &&
                     $VCS_PATH/pipeline/alignments/generate-space-alignment.sh
                     $MOZ_FETCHES_DIR/corpus
                     /builds/worker/artifacts/corpus
-                    auto
 
 
         dependencies:

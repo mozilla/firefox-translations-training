@@ -27,7 +27,6 @@ task-defaults:
             type: alignment
             resources:
                 - pipeline/alignments/generate-space-alignment.sh
-                - pipeline/alignments/requirements/alignments.txt
     task-context:
         from-parameters:
             src_locale: training_config.experiment.src
@@ -67,11 +66,9 @@ task-defaults:
             - >-
                 export BIN=$MOZ_FETCHES_DIR &&
                 export PATH=$PATH:$MOZ_FETCHES_DIR &&
-                pip install -r $VCS_PATH/pipeline/alignments/requirements/alignments.txt &&
                 $VCS_PATH/pipeline/alignments/generate-space-alignment.sh
                 $MOZ_FETCHES_DIR/{corpus_name}
                 /builds/worker/artifacts/{corpus_name}
-                auto
 
     fetches:
         toolchain:
@@ -81,7 +78,7 @@ tasks:
 
 
     "original-{src_locale}-{trg_locale}":
-        description: alignment for teacher's original parallel training corpus {src_locale}-{trg_locale}
+        description: alignments for teacher's original parallel training corpus {src_locale}-{trg_locale}
 
         task-context:
             from-object:
@@ -99,7 +96,7 @@ tasks:
 
 
     "backtranslated-{src_locale}-{trg_locale}":
-        description: alignment for teacher's backtranslated training corpus {src_locale}-{trg_locale}
+        description: alignments for teacher's backtranslated training corpus {src_locale}-{trg_locale}
 
         task-context:
             from-object:

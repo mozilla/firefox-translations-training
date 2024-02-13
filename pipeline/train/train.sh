@@ -19,7 +19,7 @@ valid_set_prefix=$6
 model_dir=$7
 vocab=$8
 best_model_metric=$9
-# comma separated alignment paths that correspond to each training dataset
+# comma separated alignment paths that correspond to each training dataset (required for Tags modifier)
 # or None to train without alignments
 alignments=${10}
 extra_params=( "${@:11}" )
@@ -55,15 +55,12 @@ for index in "${!datasets[@]}"; do
 
     if [ "${alignments}" != "None" ] ; then
       train_aln="${alns[index]}"
-      # alignments are currently used only for student that uses one stage of training
       echo "### Generating tsv dataset with alignments ${alignments}"
       paste <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${src}.${ARTIFACT_EXT}") \
             <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${trg}.${ARTIFACT_EXT}") \
             <(${COMPRESSION_CMD} -dc "${train_aln}") \
             >"${tsv_dataset}"
       rm "${train_aln}"
-      # when using tsv, marian requires --guided-alignments argument to be an index of the alignments in the tsv file
-      extra_params+=("--guided-alignment" "2")
     else
       echo "### Generating tsv dataset"
       # OpusTrainer supports only tsv and gzip
@@ -78,10 +75,11 @@ for index in "${!datasets[@]}"; do
     sed -i -e "s#<dataset${index}>#${tsv_dataset}#g" "${new_config}"
 done
 
-# Replace the path to vocab and custom detokenizer languages
-# OpusTrainer users alignments tokenized with Moses for inline noise (Tags modifier)
-# then detokenises them and coverts to SentencePiece tokeinized ones using the vocab to feed to Marian
+# Replace the path to vocab
+# OpusTrainer uses space tokenized alignments for inline noise (Tags modifier)
+# then detokenizes them and coverts to SentencePiece tokenized ones using the vocab to feed to Marian
 sed -i -e "s#<vocab>#${vocab}#g" "${new_config}"
+# Replace source and target languages. This can be useful for custom detokenizer parameter in Tags
 sed -i -e "s#<src>#${SRC}#g" "${new_config}"
 sed -i -e "s#<trg>#${TRG}#g" "${new_config}"
 

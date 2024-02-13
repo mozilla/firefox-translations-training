@@ -19,10 +19,9 @@ modifiers:
   max_word_length: 5 # Maximum word length for each word in the noisy sentence
   max_words: 6 # Maximum number of words in each noisy sentence
 # generates inline noise (emojis etc.) matching position in source and target using alignments
+# spm_vocab argument: retokenize alignments from spaces to Sentencepiece subwords and feed to Marian
 - Tags: 0.05
   augment: 1
-  custom_detok_src: <src>
-  custom_detok_trg: <trg>
   spm_vocab: <vocab>
 
 seed: 1111
