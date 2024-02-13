@@ -23,7 +23,7 @@ modifiers:
   augment: 1
   custom_detok_src: <src>
   custom_detok_trg: <trg>
-  vocab: <vocab>
+  spm_vocab: <vocab>
 
 seed: 1111
 # parallel sentences + token alignments
