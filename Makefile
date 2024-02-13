@@ -32,6 +32,7 @@ black:
 
 # Runs black, but also fixes the errors.
 black-fix:
+	export PYTHONPATH=$$(pwd):$$(pwd)/tracking
 	poetry install --only black --no-root
 	poetry run black .
 
@@ -43,6 +44,7 @@ lint:
 
 # Runs ruff, but also fixes the errors.
 lint-fix:
+	export PYTHONPATH=$$(pwd):$$(pwd)/tracking
 	poetry install --only lint --no-root
 	poetry run ruff check . --fix
 
