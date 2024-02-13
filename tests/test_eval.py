@@ -18,26 +18,26 @@ root_path = os.path.abspath(os.path.join(current_folder, ".."))
 
 def get_base_marian_args(data_dir: DataDir, model_name: str):
     return [
+        "--models", data_dir.join(model_name),
         "--config", data_dir.join("final.model.npz.best-chrf.npz.decoder.yml"),
         "--quiet",
         "--quiet-translation",
         "--log", data_dir.join("artifacts/wmt09.log"),
         '--workspace', '12000',
         '--devices', '4',
-        "--models", data_dir.join(model_name),
     ]  # fmt: skip
 
 
 def get_quantized_marian_args(data_dir: DataDir, model_name: str):
     return [
+        "--models", data_dir.join(model_name),
         "--config", os.path.join(root_path, "pipeline/quantize/decoder.yml"),
         "--quiet",
         "--quiet-translation",
         "--log", data_dir.join("artifacts/wmt09.log"),
-        "--models", data_dir.join(model_name),
+        '--int8shiftAlphaAll',
         '--vocabs', data_dir.join("vocab.spm"), data_dir.join("vocab.spm"),
         '--shortlist', data_dir.join("lex.s2t.pruned"), 'false',
-        '--int8shiftAlphaAll',
     ]  # fmt: skip
 
 
@@ -60,7 +60,7 @@ def test_evaluate(params) -> None:
     data_dir.create_zst("wmt09.ru.zst", ru_sample)
 
     bleu = 0.4
-    chrf = 0.6
+    chrf = 0.64
 
     if model_type == "base":
         expected_marian_args = get_base_marian_args(data_dir, model_name)
@@ -104,6 +104,17 @@ def test_evaluate(params) -> None:
 
     # Test that text metrics get properly generated.
     assert f"{bleu}\n{chrf}\n" in data_dir.load("artifacts/wmt09.metrics")
+
+    # Test that the JSON metrics get properly generated.
+    metrics_json = json.loads(data_dir.load("artifacts/wmt09.metrics.json"))
+
+    assert metrics_json["bleu"]["details"]["name"] == "BLEU"
+    assert metrics_json["bleu"]["details"]["score"] == bleu
+    assert metrics_json["bleu"]["score"] == bleu
+
+    assert metrics_json["chrf"]["details"]["name"] == "chrF2"
+    assert metrics_json["chrf"]["details"]["score"] == chrf
+    assert metrics_json["chrf"]["score"] == chrf
 
     # Test that marian is given the proper arguments.
     marian_decoder_args = json.loads(data_dir.load("marian-decoder.args.txt"))

@@ -8,8 +8,10 @@ import enum
 import os
 import re
 
+import requests
+
 import taskcluster
-from taskcluster.download import downloadArtifactToBuf, downloadArtifactToFile
+from taskcluster.download import downloadArtifactToBuf
 
 TC_MOZILLA = "https://firefox-ci-tc.services.mozilla.com"
 
@@ -48,7 +50,7 @@ def donwload_logs(group_id, output):
     group = queue.listTaskGroup(group_id)
 
     for task in group["tasks"]:
-        if task["status"]["state"] != "completed":
+        if task["status"]["state"] not in ("completed", "running"):
             continue
 
         label = task["task"]["tags"]["kind"]
@@ -64,14 +66,27 @@ def donwload_logs(group_id, output):
         os.makedirs(output, exist_ok=True)
         output_path = os.path.join(output, f"{task_obj_label}.log")
 
-        print(f"Downloading {output_path}")
-        with open(output_path, "wb") as f:
-            downloadArtifactToFile(
-                f,
-                taskId=task["status"]["taskId"],
-                name="public/build/train.log",
-                queueService=queue,
-            )
+        url = queue.buildUrl("getLatestArtifact", task_id, "public/logs/live.log")
+        resp = requests.get(url, stream=True, timeout=5)
+        print(f"Downloading {url}")
+
+        log_lines = []
+        start_writing = False
+        try:
+            for line in resp.iter_lines():
+                line_str = line.decode()
+
+                if "[marian]" in line_str:
+                    start_writing = True
+
+                if start_writing:
+                    log_lines.append(re.sub(r"\[task .*Z\] ", "", line_str))
+        except requests.exceptions.ConnectionError:
+            pass
+
+        print(f"Writing to {output_path}")
+        with open(output_path, "w") as f:
+            f.write("\n".join(log_lines))
 
 
 def donwload_evals(group_id, output):

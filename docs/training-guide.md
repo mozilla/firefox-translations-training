@@ -146,6 +146,8 @@ for example [`teacher.train.yml`] and in the [`train.sh`] script.
 [train.sh]: https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/train.sh
 
 ### Model training
+
+#### Early stopping
 Early stopping can be increased to make sure that training converges.
 However, it depends on the language and might not bring much benefit but will make the training longer.
 So, you can start with `early-stopping: 20`, monitor the training and increase it if the model stops training too early.
@@ -158,8 +160,25 @@ marian-args:
     early-stopping: 20
 ```
 
-Make sure to set `optimizer-delay` so that GPU devices * optimizer-delay = 8.
+#### Optimizer delay
+Make sure to set `optimizer-delay` so that `GPU devices * optimizer-delay = 8`.
 It makes training more stable.
+
+#### Subword regularization
+```
+sentencepiece-alphas: 0.5
+```
+SentencePiece alphas control the alpha parameter in subword sampling for the unigram model. 
+It improves robustness of the model, especially for unseen domains. 
+
+If not specified, Marian does not run SentencePiece sampling (corresponds to `alpha=1`). 
+Lower values (`0.1`, `0.2`) increase randomization and might benefit lower resource languages with less diverse datasets. 
+However, the model might not train at all if the alpha is too low. 
+The recommended value to start with is `0.5`.
+
+More details:
+- [SentencePiece readme](https://github.com/google/sentencepiece?tab=readme-ov-file#subword-regularization-and-bpe-dropout)
+- Paper [Subword Regularization: Improving Neural Network Translation Models with Multiple Subword Candidates](https://arxiv.org/pdf/1804.10959.pdf)
 
 ### Decoding (translation)
 

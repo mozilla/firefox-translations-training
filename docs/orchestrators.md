@@ -18,4 +18,5 @@ Supported orchestrators:
 - [Snakemake](https://snakemake.github.io/) - a file based orchestrator that can be used to run the pipeline locally or on a Slurm cluster. 
   [Usage instructions](snakemake.md). 
 
-Mozilla is currently switching to Taskcluster and the Snakemake workflow will be less actively maintained in the future.
+Mozilla has switched to Taskcluster for model training, and the Snakemake pipeline is not maintained. 
+Feel free to contribute if you find bugs.
