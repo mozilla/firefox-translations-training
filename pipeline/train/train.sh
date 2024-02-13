@@ -80,8 +80,8 @@ done
 # then detokenizes them and coverts to SentencePiece tokenized ones using the vocab to feed to Marian
 sed -i -e "s#<vocab>#${vocab}#g" "${new_config}"
 # Replace source and target languages. This can be useful for custom detokenizer parameter in Tags
-sed -i -e "s#<src>#${SRC}#g" "${new_config}"
-sed -i -e "s#<trg>#${TRG}#g" "${new_config}"
+sed -i -e "s#<src>#${src}#g" "${new_config}"
+sed -i -e "s#<trg>#${trg}#g" "${new_config}"
 
 # if the training set is a tsv, validation set also has to be a tsv
 echo "### Converting validation sets to tsv"
