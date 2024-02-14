@@ -155,7 +155,7 @@ def main() -> None:
     )
 
     if not train_tasks:
-        logger.warning("No completed training task found for group {args.group_id}")
+        logger.warning(f"No completed training task found for group {args.group_id}")
     else:
         logger.info(f"Found {len(train_tasks)} completed training tasks")
 

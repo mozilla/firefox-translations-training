@@ -1,12 +1,13 @@
 import csv
 import logging
 from abc import ABC
+from collections import defaultdict
 from pathlib import Path
 from typing import Sequence
 
 import wandb
-
 from translations_parser.data import Metric, TrainingEpoch, TrainingLog, ValidationEpoch
+from translations_parser.utils import extract_dataset_from_tag
 
 logging.basicConfig(
     level=logging.INFO,
@@ -156,3 +157,97 @@ class WandB(Publisher):
             self.wandb.log_artifact(artifact)
 
         self.wandb.finish()
+
+    @classmethod
+    def publish_group_logs(
+        cls,
+        logs_parent_folder: str,
+        project: str,
+        group: str,
+        existing_runs: list[str] | None = None,
+    ) -> None:
+        """
+        Publish files within `logs_dir` to W&B artifacts for a specific group.
+        A fake W&B run named `group_logs` is created to publish those artifacts
+        among with all evaluation files (quantized + experiments).
+        If existing run is set, runs found not specified in this list will also
+        be published to W&B.
+        """
+        from translations_parser.parser import TrainingParser
+
+        logs_dir = Path("/".join([*logs_parent_folder[:-1], "logs", project, group]))
+        # Old experiments use `speed` directory for quantized metrics
+        quantized_metrics = sorted(
+            Path("/".join([*logs_parent_folder, project, group, "evaluation", "speed"])).glob(
+                "*.metrics"
+            )
+        )
+        evaluation_metrics = sorted((logs_dir / "eval").glob("eval*.log"))
+        if quantized_metrics:
+            logger.info(f"Found {len(quantized_metrics)} quantized metrics")
+        else:
+            logger.warning(f"No quantized metric found for group {group}, skipping")
+        if evaluation_metrics:
+            logger.info(f"Found {len(evaluation_metrics)} evaluation metrics")
+        else:
+            logger.warning(f"No evaluation metrics not found for group {group}, skipping")
+
+        # Store metrics by run name
+        metrics = defaultdict(list)
+        # Add "quantized" metrics
+        for file in quantized_metrics:
+            metrics["quantized"].append(Metric.from_file(file, dataset=file.stem))
+        # Add experiment (runs) metrics
+        for file in evaluation_metrics:
+            model_name, dataset, aug = extract_dataset_from_tag(file.stem)
+            with file.open("r") as f:
+                lines = f.readlines()
+            try:
+                metrics[model_name].append(Metric.from_tc_context(dataset, lines))
+            except ValueError as e:
+                logger.error(f"Could not parse metrics from {file.resolve()}: {e}")
+
+        # Publish missing runs (runs without training data)
+        missing_run_metrics = {}
+        if existing_runs is not None:
+            missing_run_metrics = {
+                name: metrics for name, metrics in metrics.items() if name not in existing_runs
+            }
+
+        for model_name, model_metrics in missing_run_metrics.items():
+            logger.info(f"Creating missing run {model_name} with associated metrics")
+            publisher = cls(project=project, name=model_name, group=group)
+            publisher.open(TrainingParser(logs_iter=iter([]), publishers=[]))
+            publisher.handle_metrics(model_metrics)
+            publisher.close()
+
+        # Start publication of `group_logs` fake run
+        publisher = cls(
+            project=project,
+            group=group,
+            name="group_logs",
+        )
+        publisher.wandb = wandb.init(
+            project=project,
+            group=group,
+            name="group_logs",
+        )
+
+        # Publish all evaluation metrics to a table
+        if metrics:
+            table = wandb.Table(
+                columns=["Group", "Model", "Dataset", "BLEU", "chrF"],
+                data=[
+                    [group, run_name, metric.dataset, metric.bleu_detok, metric.chrf]
+                    for run_name, run_metrics in metrics.items()
+                    for metric in run_metrics
+                ],
+            )
+            publisher.wandb.log({"metrics": table})
+
+        # Publish logs directory content as artifacts
+        if logs_dir.is_dir():
+            artifact = wandb.Artifact(name=group, type="logs")
+            artifact.add_dir(local_path=str(logs_dir.resolve()))
+            publisher.wandb.log_artifact(artifact)
+        publisher.wandb.finish()
