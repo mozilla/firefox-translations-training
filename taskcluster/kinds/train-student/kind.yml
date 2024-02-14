@@ -86,6 +86,7 @@ tasks:
                     $MOZ_FETCHES_DIR/corpus.aln.zst
                     None
                     None
+                    None
                     {marian_args}
 
         dependencies:

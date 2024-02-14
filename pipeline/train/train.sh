@@ -22,7 +22,9 @@ best_model_metric=$9
 # comma separated alignment paths that correspond to each training dataset
 # or None to train without alignments
 alignments=${10}
-extra_params=( "${@:11}" )
+# random seed, optional, can be None
+seed=${11}
+extra_params=( "${@:12}" )
 
 COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
@@ -80,6 +82,8 @@ done
 
 # Replace the path to vocab (required for alignments to work)
 sed -i -e "s#<vocab>#${vocab}#g" "${new_config}"
+# Replace the random seed for teachers
+sed -i -e "s#<seed>#${seed}#g" "${new_config}"
 
 # if the training set is a tsv, validation set also has to be a tsv
 echo "### Converting validation sets to tsv"
