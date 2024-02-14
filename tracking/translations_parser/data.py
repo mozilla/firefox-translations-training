@@ -25,6 +25,7 @@ METRIC_LOG_RE = re.compile(
         ]
     )
 )
+TC_PREFIX_RE = re.compile(r"^\[task [0-9\-TZ:\.]+\]")
 
 
 @dataclass
@@ -100,10 +101,12 @@ class Metric:
         successive floats after a line maching METRIC_LOG_RE.
         """
         for index, line in enumerate(lines):
-            if not METRIC_LOG_RE.match(line):
+            # Remove eventual Taskcluster prefix
+            clean_line = TC_PREFIX_RE.sub("", line).strip()
+            if not METRIC_LOG_RE.match(clean_line):
                 continue
             try:
-                values = [float(val) for val in lines[index + 1 : index + 3]]
+                values = [float(TC_PREFIX_RE.sub("", val)) for val in lines[index + 1 : index + 3]]
             except ValueError:
                 continue
             if len(values) != 2:

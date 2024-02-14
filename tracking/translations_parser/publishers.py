@@ -165,6 +165,7 @@ class WandB(Publisher):
         project: str,
         group: str,
         existing_runs: list[str] | None = None,
+        tag_sep: str = "_",
     ) -> None:
         """
         Publish files within `logs_dir` to W&B artifacts for a specific group.
@@ -199,7 +200,7 @@ class WandB(Publisher):
             metrics["quantized"].append(Metric.from_file(file, dataset=file.stem))
         # Add experiment (runs) metrics
         for file in evaluation_metrics:
-            model_name, dataset, aug = extract_dataset_from_tag(file.stem)
+            model_name, dataset, aug = extract_dataset_from_tag(file.stem, tag_sep)
             with file.open("r") as f:
                 lines = f.readlines()
             try:

@@ -14,7 +14,7 @@ from collections import defaultdict
 from pathlib import Path
 
 import taskcluster
-from taskcluster.download import downloadArtifactToBuf
+from taskcluster.download import downloadArtifactToBuf, downloadArtifactToFile
 from translations_parser.data import Metric
 from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import WandB
@@ -171,13 +171,31 @@ def main() -> None:
             [get_metrics_from_task(metrics_tasks.pop(task_id)) for task_id in dependent_tasks],
             start=[],
         )
+        run = task["name"]
         publish_task(
             project=project,
             group=group_name,
-            name=task["name"],
+            name=run,
             task=task,
             config=config,
             metrics=metrics,
         )
 
-    # TODO Group and publish remaining metrics
+    # Group and publish missing runs with metrics via the logs publication
+    with tempfile.TemporaryDirectory() as d:
+        logs_folder = Path(d) / "logs"
+        eval_folder = logs_folder / project / group_name / "eval"
+        eval_folder.mkdir(parents=True, exist_ok=True)
+        for task in metrics_tasks.values():
+            filename = task["task"]["tags"]["label"]
+            # evaluate-teacher-flores-flores_aug-typos_devtest-lt-en-1/2
+            logger.info(filename)
+            with (eval_folder / f"{filename}.log").open("wb") as f:
+                downloadArtifactToFile(
+                    f,
+                    taskId=task["status"]["taskId"],
+                    name="public/logs/live.log",
+                    queueService=queue,
+                )
+        parents = str(logs_folder.resolve()).strip().split("/")
+        WandB.publish_group_logs(parents, project, group_name, existing_runs=[], tag_sep="-")
