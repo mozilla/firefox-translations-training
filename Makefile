@@ -70,7 +70,9 @@ ifndef BASE_REV
 	$(error BASE_REV must be defined)
 endif
 	pip3 install -r taskcluster/requirements.txt
-	taskgraph full -p "taskcluster/test/params" -o "$(OUTPUT_DIR)" --diff "$(BASE_REV)" -J
+	# --output-file takes a base file name which has specific parameter file names appended to it for each
+	# diff done.
+	taskgraph full -p "taskcluster/test/params" --output-file "$(OUTPUT_DIR)/diff" --diff "$(BASE_REV)" -J
 
 # Downloads Marian training logs for a Taskcluster task group
 download-logs:
