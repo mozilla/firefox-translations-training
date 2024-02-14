@@ -15,6 +15,45 @@ taskgraph:
         firefox_translations_training:
             name: "firefox-translations-training"
 
+# The list of valid stages that can be used with `target-stage and `start-stage`.
+# These get attached to tasks in `kinds`.
+valid-stages:
+    - clean-corpus
+    - clean-mono
+    - bicleaner
+    - bicleaner-model
+    - merge-corpus
+    - merge-devset
+    - merge-mono
+    - train-vocab
+    - train-backwards
+    - evaluate-backwards
+    - split-corpus
+    - split-mono
+    - translate-mono-trg
+    - collect-mono-trg
+    - train-teacher
+    - evaluate-teacher
+    - evaluate-finetuned-teacher
+    - translate-corpus
+    - extract-best
+    - collect-corpus
+    - translate-mono-src
+    - collect-mono-src
+    - merge-translated
+    - score
+    - cefilter
+    - alignments
+    - train-student
+    - evaluate-student
+    - finetune-student
+    - evaluate-finetuned-student
+    - quantize
+    - evaluate-quantized
+    - export
+    - evaluate-teacher-ensemble
+    - all
+
 workers:
     aliases:
         # Use for quick tasks that don't require GPUs, eg: linting, tests
