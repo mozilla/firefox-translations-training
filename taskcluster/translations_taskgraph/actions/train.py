@@ -17,7 +17,10 @@ TRAIN_ON_PROJECTS = (
 
 
 def can_train(parameters):
-    return parameters["head_repository"] in TRAIN_ON_PROJECTS
+    return parameters["head_repository"] in TRAIN_ON_PROJECTS or (
+        parameters["base_repository"] in TRAIN_ON_PROJECTS
+        and parameters["tasks_for"].startswith("github-pull-request")
+    )
 
 
 defaults = get_defaults("")["training_config"]
