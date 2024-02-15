@@ -5,6 +5,8 @@
 from taskgraph.actions.registry import register_callback_action
 from taskgraph.decision import taskgraph_decision
 from taskgraph.parameters import Parameters
+from taskgraph.taskgraph import TaskGraph
+from taskgraph.util.taskcluster import get_ancestors, get_artifact
 
 from translations_taskgraph.parameters import get_defaults
 
@@ -54,49 +56,34 @@ def validate_pretrained_models(params):
     schema=lambda graph_config: {
         "type": "object",
         "properties": {
+            "previous_group_ids": {
+                "type": "array",
+                "description": """Optional: an array of taskIds of decision or action
+tasks from the previous group(s) to use to populate our `previous_group_kinds`.
+Tasks specified here will be used as long as their label matches a needed task, and that
+task is upstream of `start-stage`. (That is to say: even if a task from one of these groups
+has a cache digest that doesn't match what the downstream task wants, it will still be used. This
+can be used for quick iteration of functionality where the quality of the outputs is not important.)""",
+                "items": {
+                    "type": "string",
+                },
+            },
+            "start-stage": {
+                "type": "string",
+                "description": """Optional: The stage of the pipeline to begin at, provided replacements
+can be found for tasks upstream of this stage. Usually used in conjunction with `previous_group_ids`
+which allows for specifying task group ids to fetch existing tasks from.""",
+                "default": "",
+                # We need to allow for no stage to be specified, in additional to all of the
+                # valid stages.
+                "enum": graph_config["valid-stages"] + [""],
+            },
             "target-stage": {
                 "type": "string",
                 "description": """The stage of the pipeline to run until
 (any stages this choice depends on will be automatically included).""",
                 "default": defaults["target-stage"],
-                # TODO: this should probably be specified in ci/config.yml
-                "enum": [
-                    "clean-corpus",
-                    "clean-mono",
-                    "bicleaner",
-                    "bicleaner-model",
-                    "merge-corpus",
-                    "merge-devset",
-                    "merge-mono",
-                    "train-vocab",
-                    "train-backwards",
-                    "evaluate-backwards",
-                    "split-corpus",
-                    "split-mono",
-                    "translate-mono-trg",
-                    "collect-mono-trg",
-                    "train-teacher",
-                    "evaluate-teacher",
-                    "evaluate-finetuned-teacher",
-                    "translate-corpus",
-                    "extract-best",
-                    "collect-corpus",
-                    "translate-mono-src",
-                    "collect-mono-src",
-                    "merge-translated",
-                    "score",
-                    "cefilter",
-                    "alignments",
-                    "train-student",
-                    "evaluate-student",
-                    "finetune-student",
-                    "evaluate-finetuned-student",
-                    "quantize",
-                    "evaluate-quantized",
-                    "export",
-                    "evaluate-teacher-ensemble",
-                    "all",
-                ],
+                "enum": graph_config["valid-stages"],
             },
             "experiment": {
                 "type": "object",
@@ -342,6 +329,37 @@ def train_action(parameters, graph_config, input, task_group_id, task_id):
     # etc.
 
     parameters = dict(parameters)
+
+    start_stage = input.pop("start-stage", None)
+    if start_stage:
+        if "previous_group_ids" not in input:
+            raise Exception(
+                "'previous_group_ids' is required to use 'start-stage' (otherwise we can't skip earlier tasks)"
+            )
+
+        previous_group_ids = input.pop("previous_group_ids")
+
+        # First, we create one big graph out of all of the tasks from the specified group IDs.
+        label_to_task_id = {}
+        combined_full_task_graph = {}
+        for graph_id in previous_group_ids:
+            label_to_task_id.update(get_artifact(graph_id, "public/label-to-taskid.json"))
+            full_task_graph = get_artifact(graph_id, "public/full-task-graph.json")
+            combined_full_task_graph.update(full_task_graph)
+        _, combined_full_task_graph = TaskGraph.from_json(combined_full_task_graph)
+
+        # Next, we find the task id(s) corresponding of the tasks that match the stage
+        # we want to start at.
+        start_task_ids = []
+        for label, task in combined_full_task_graph.tasks.items():
+            if task.attributes.get("stage") == start_stage:
+                start_task_ids.append(label_to_task_id[label])
+
+        # Finally, we walk up the graph from our starting point and add any tasks found
+        # as `existing_tasks`. These map task labels (eg: train-backwards-ru-en) to
+        # task ids, and will be used instead of scheduling new tasks for any tasks with
+        # an identical name.
+        parameters["existing_tasks"] = get_ancestors(start_task_ids)
 
     parameters["target_tasks_method"] = "train-target-tasks"
     parameters["optimize_target_tasks"] = True
