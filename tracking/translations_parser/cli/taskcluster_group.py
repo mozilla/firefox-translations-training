@@ -60,9 +60,7 @@ def get_logs(task: dict) -> list[str]:
     return log.tobytes().decode().split("\n")
 
 
-def publish_task(
-    project: str, group: str, name: str, task: dict, metrics: list[Metric]
-) -> None:
+def publish_task(project: str, group: str, name: str, task: dict, metrics: list[Metric]) -> None:
     parser = TrainingParser(
         get_logs(task),
         publishers=[
@@ -73,7 +71,6 @@ def publish_task(
                 tags=["taskcluster"],
             )
         ],
-        skip_marian_context=True,
         metrics=metrics,
     )
     parser.run()
