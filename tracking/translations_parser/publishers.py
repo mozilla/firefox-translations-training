@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Sequence
 
 import wandb
+import yaml
+
 from translations_parser.data import Metric, TrainingEpoch, TrainingLog, ValidationEpoch
 from translations_parser.utils import extract_dataset_from_tag
 
@@ -161,7 +163,7 @@ class WandB(Publisher):
     @classmethod
     def publish_group_logs(
         cls,
-        logs_parent_folder: str,
+        logs_parent_folder: list[str],
         project: str,
         group: str,
         existing_runs: list[str] | None = None,
@@ -222,7 +224,22 @@ class WandB(Publisher):
             publisher.handle_metrics(model_metrics)
             publisher.close()
 
-        # Start publication of `group_logs` fake run
+        # Publication of the `group_logs` fake run
+        config = {}
+        config_path = Path(
+            "/".join([*logs_parent_folder[:-1], "experiments", project, group, "config.yml"])
+        )
+        if not config_path.is_file():
+            logger.warning(f"No configuration file at {config_path}, skipping.")
+        else:
+            # Publish the YAML configuration as configuration on the group run
+            with config_path.open("r") as f:
+                data = f.read()
+            try:
+                config.update(yaml.safe_load(data))
+            except Exception as e:
+                logger.error(f"Config could not be read at {config_path}: {e}")
+
         publisher = cls(
             project=project,
             group=group,
@@ -232,10 +249,11 @@ class WandB(Publisher):
             project=project,
             group=group,
             name="group_logs",
+            config=config,
         )
 
-        # Publish all evaluation metrics to a table
         if metrics:
+            # Publish all evaluation metrics to a table
             table = wandb.Table(
                 columns=["Group", "Model", "Dataset", "BLEU", "chrF"],
                 data=[
@@ -246,8 +264,8 @@ class WandB(Publisher):
             )
             publisher.wandb.log({"metrics": table})
 
-        # Publish logs directory content as artifacts
         if logs_dir.is_dir():
+            # Publish logs directory content as artifacts
             artifact = wandb.Artifact(name=group, type="logs")
             artifact.add_dir(local_path=str(logs_dir.resolve()))
             publisher.wandb.log_artifact(artifact)
