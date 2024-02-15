@@ -27,5 +27,7 @@ modifiers:
   max_word_length: 5 # Maximum word length for each word in the noisy sentence
   max_words: 6 # Maximum number of words in each noisy sentence
 
-seed: 1111
+
+# random seed should be different for different teacher models
+seed: <seed>
 num_fields: 2
