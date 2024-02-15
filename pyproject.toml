@@ -39,7 +39,7 @@ mtdata="0.3.2"
 requests="2.26.0"
 pytest="7.4.3"
 # use the latest main, switch to PyPi when released
-opustrainer = {git = "https://github.com/hplt-project/OpusTrainer.git", rev="9133e1525c7ee37f53ea14ee6a180152bf7ea192"}
+opustrainer = {git = "https://github.com/hplt-project/OpusTrainer.git", rev="c966d7b353d6b3c6a09d9573f1ab6ba3221c1d21"}
 requests-mock = "^1.11.0"
 sh = "^2.0.6"
 zstandard = "^0.22.0"

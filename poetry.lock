@@ -1915,8 +1915,8 @@ typo = "0.1.5"
 [package.source]
 type = "git"
 url = "https://github.com/hplt-project/OpusTrainer.git"
-reference = "9133e1525c7ee37f53ea14ee6a180152bf7ea192"
-resolved_reference = "9133e1525c7ee37f53ea14ee6a180152bf7ea192"
+reference = "c966d7b353d6b3c6a09d9573f1ab6ba3221c1d21"
+resolved_reference = "c966d7b353d6b3c6a09d9573f1ab6ba3221c1d21"
 
 [[package]]
 name = "packaging"
@@ -3773,4 +3773,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "f40b2383ba105036dca33b317913ea6bff866d92ce3c7fff1ee28989df6d2060"
+content-hash = "98a4ba0a5622fb1e61eab3393822a763cae6a3162f017333ae15a0090ecfa8e7"

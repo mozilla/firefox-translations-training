@@ -23,8 +23,9 @@ Supported augmentations:
 - **Upper case** - make some sentences from the dataset upper case
 - **Title case** - use title case for some sentences from the dataset
 - **Typos** - add random typos in some words
-- **Tags** - add emojis and other random Unicode symbols in the source and target sentences 
-  (requires alignments information for the training corpus)
+- **Noise** - inserts lines with random unicode noise 
+- **Tags (inline noise)** - add emojis and other random Unicode symbols in the source and target sentences 
+  (requires space tokenized alignments for the training corpus)
 
 It is possible to specify the probability of augmentation 
 (which will roughly correspond to the percentage of augmented sentences):
@@ -73,16 +74,26 @@ modifiers:
 - UpperCase: 0.1 # Apply randomly to 10% of sentences
 - TitleCase: 0.1
 - Typos: 0.05
+- Noise: 0.0005
+  min_word_length: 2 # Minimum word length for each word in the noisy sentence
+  max_word_length: 5 # Maximum word length for each word in the noisy sentence
+  max_words: 6 # Maximum number of words in each noisy sentence
 - Tags: 0.05
-  augment: 0.05
-  replace: 0.05
-  spm_vocab: <vocab>
-  
+  augment: 1
 seed: 1111
 
 # parallel sentences + token alignments
 num_fields: 3
 ```
+
+## Models
+
+Current strategy is to run as many supported augmentations as possible for the teacher 
+and student models and skip augmentaiton entirely for the backward model. 
+This is mostly based on the intuition that we do not need the backward model to be robust and would rather prioritize quality that is usually affected by the noisier data.
+Even though the student is supposed to learn on the exact output of the teacher model, training on augmented data seems to be working in practice.
+
+We might rethink this strategy in future after running more experiments.
 
 
 ## Evaluation
@@ -105,17 +116,15 @@ For example:
 
 ### Supported modifiers
 
-`aug-typos` - applies typos with a probability of 0.1
+`aug-typos` - applies 4 random typos to all sentences in the dataset
 
-`aug-title` - applies title case with probability 0.1
+`aug-title` - applies title case to the whole dataset
 
-`aug-title-strict` - applies title case to all sentences
+`aug-upper` -  applies upper case to the whole dataset
 
-`aug-upper` -  applies upper case with probability 0.1
+`aug-noise` -  generates extra lines with noise (1 line of noise for each line of the dataset, so the dataset becomes twice longer)
 
-`aug-upper-strict` - applies upper case to all sentences
-
-`aug-mix` - applies, title case and upper case sequentially with 0.1 probability each
+`aug-mix` - applies all the existing modifiers with 0.1 probability each
 
 ### Example training config
 ```yaml
@@ -127,9 +136,8 @@ For example:
     - flores_devtest
     - flores_aug-mix_devtest
     - flores_aug-title_devtest
-    - flores_aug-title-strict_devtest
     - flores_aug-upper_devtest
-    - flores_aug-upper-strict_devtest
     - flores_aug-typos_devtest
+    - flores_aug-noise_devtest
 ```
 

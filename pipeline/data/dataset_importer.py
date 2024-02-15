@@ -11,11 +11,13 @@ Example:
 
 import argparse
 import os
+import random
 import re
 import subprocess
 import sys
-from typing import Iterable, List
+from typing import Dict, Iterable, List
 
+from opustrainer.modifiers.noise import NoiseModifier
 from opustrainer.modifiers.surface import TitleCaseModifier, UpperCaseModifier
 from opustrainer.modifiers.typos import TypoModifier
 from opustrainer.types import Modifier
@@ -44,18 +46,26 @@ class CompositeModifier:
 
 MIX_PROB = 0.1  # 10% will be augmented in the mix
 
+
+def get_typos_probs() -> Dict[str, float]:
+    # select 4 random types of typos
+    typos = set(random.sample(list(TypoModifier.modifiers.keys()), k=4))
+    # set probability 1 for selected typos and 0 for the rest
+    probs = {typo: 1.0 if typo in typos else 0.0 for typo in TypoModifier.modifiers.keys()}
+    return probs
+
+
 modifier_map = {
-    "aug-typos": TypoModifier(MIX_PROB),
-    "aug-title": TitleCaseModifier(MIX_PROB),
-    "aug-title-strict": TitleCaseModifier(1.0),
-    "aug-upper": UpperCaseModifier(MIX_PROB),
-    "aug-upper-strict": UpperCaseModifier(1.0),
-    "aug-mix": CompositeModifier(
+    "aug-typos": lambda: TypoModifier(1.0, **get_typos_probs()),
+    "aug-title": lambda: TitleCaseModifier(1.0),
+    "aug-upper": lambda: UpperCaseModifier(1.0),
+    "aug-noise": lambda: NoiseModifier(1.0),
+    "aug-mix": lambda: CompositeModifier(
         [
-            # TODO: enable typos, issue https://github.com/mozilla/firefox-translations-training/issues/262
-            # TypoModifier(NOISE_RATE),
+            TypoModifier(MIX_PROB, **get_typos_probs()),
             TitleCaseModifier(MIX_PROB),
             UpperCaseModifier(MIX_PROB),
+            NoiseModifier(MIX_PROB),
         ]
     ),
 }
@@ -88,8 +98,6 @@ def augment(output_prefix: str, aug_modifer: str):
     if aug_modifer not in modifier_map:
         raise ValueError(f"Invalid modifier {aug_modifer}. Allowed values: {modifier_map.keys()}")
 
-    modifer = modifier_map[aug_modifer]
-
     # file paths for compressed and uncompressed corpus
     uncompressed_src = f"{output_prefix}.{SRC}"
     uncompressed_trg = f"{output_prefix}.{TRG}"
@@ -97,7 +105,11 @@ def augment(output_prefix: str, aug_modifer: str):
     compressed_trg = f"{output_prefix}.{TRG}.{COMP_EXT}"
 
     corpus = read_corpus_tsv(compressed_src, compressed_trg, uncompressed_src, uncompressed_trg)
-    modified = list(modifer(corpus))
+    modified = []
+    for line in corpus:
+        # recreate modifier for each line to apply randomization (for typos)
+        modifier = modifier_map[aug_modifer]()
+        modified += modifier([line])
     write_modified(modified, uncompressed_src, uncompressed_trg)
 
 

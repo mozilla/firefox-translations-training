@@ -8,19 +8,21 @@ train:
   - original 1.0
   - until original inf # General training until marian early stops
 
-# TODO: augment corpus before decoding or reduce augmentation rate
-# TODO: https://github.com/mozilla/firefox-translations-training/issues/272
+
 modifiers:
 - UpperCase: 0.07 # Apply randomly to 7% of sentences
 - TitleCase: 0.05
-# TODO: enable typos, issue https://github.com/mozilla/firefox-translations-training/issues/262
+# do not use typos modifier for the student, it causes issues with alignments
 #- Typos: 0.05
-# TODO: enable tags, currently doesn't work because of the issue with  tokenization
+# TODO: enable noise for student when we switch to space tokenized alignments for Tags
+#- Noise: 0.0005
+#  min_word_length: 2 # Minimum word length for each word in the noisy sentence
+#  max_word_length: 5 # Maximum word length for each word in the noisy sentence
+#  max_words: 6 # Maximum number of words in each noisy sentence
+# TODO: enable inline noise, currently doesn't work because it requires space tokenized alignments
 # TODO: https://github.com/mozilla/firefox-translations-training/issues/261
 #- Tags: 0.05
-#  augment: 0.05
-#  replace: 0.05
-#  spm_vocab: <vocab>
+#  augment: 1
 
 seed: 1111
 # parallel sentences + token alignments
