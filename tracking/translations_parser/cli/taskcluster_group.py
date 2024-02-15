@@ -61,7 +61,7 @@ def get_logs(task: dict) -> list[str]:
 
 
 def publish_task(
-    project: str, group: str, name: str, task: dict, config: dict, metrics: list[Metric]
+    project: str, group: str, name: str, task: dict, metrics: list[Metric]
 ) -> None:
     parser = TrainingParser(
         get_logs(task),
@@ -71,7 +71,6 @@ def publish_task(
                 group=group,
                 name=name,
                 tags=["taskcluster"],
-                config=config,
             )
         ],
         skip_marian_context=True,
@@ -177,7 +176,6 @@ def main() -> None:
             group=group_name,
             name=run,
             task=task,
-            config=config,
             metrics=metrics,
         )
 
