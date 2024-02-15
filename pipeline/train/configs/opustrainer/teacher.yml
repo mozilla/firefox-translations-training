@@ -24,5 +24,7 @@ modifiers:
 # TODO: enable typos, issue https://github.com/mozilla/firefox-translations-training/issues/262
 #- Typos: 0.05
 
-seed: 1111
+
+# random seed should be different for different teacher models
+seed: <seed>
 num_fields: 2

@@ -84,6 +84,7 @@ tasks:
                     $TASK_WORKDIR/artifacts
                     {best_model}
                     $MOZ_FETCHES_DIR/corpus.aln.zst
+                    0
                     None
                     None
                     {marian_args}

@@ -89,6 +89,7 @@ tasks:
                     $TASK_WORKDIR/artifacts
                     {best_model}
                     None
+                    0
                     {pretrained_backward_mode}
                     {pretrained_backward_type}
                     {marian_args}

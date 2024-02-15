@@ -34,6 +34,7 @@ tasks:
             substitution-fields:
                 - name
                 - description
+                - run.command
         cast-to:
             int:
                 - chunk.total-chunks
@@ -107,6 +108,7 @@ tasks:
                     $TASK_WORKDIR/artifacts
                     {best_model}
                     None
+                    {{this_chunk}}
                     {pretrained_teacher_mode}
                     {pretrained_teacher_type}
                     {marian_args}
