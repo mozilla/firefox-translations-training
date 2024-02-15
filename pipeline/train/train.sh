@@ -22,7 +22,7 @@ best_model_metric=$9
 # comma separated alignment paths that correspond to each training dataset
 # or None to train without alignments
 alignments=${10}
-# random seed, optional, can be None
+# random seed, UINT
 seed=${11}
 extra_params=( "${@:12}" )
 
@@ -120,6 +120,7 @@ opustrainer-train \
     --overwrite \
     --keep-best \
     --tsv \
+    --seed ${seed} \
     "${extra_params[@]}"
 
 cp "${model_dir}/model.npz.best-${best_model_metric}.npz" "${model_dir}/final.model.npz.best-${best_model_metric}.npz"
