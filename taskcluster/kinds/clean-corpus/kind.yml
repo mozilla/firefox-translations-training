@@ -70,7 +70,6 @@ tasks:
                 ARTIFACT_EXT: zst
 
         # there might be intermittent issues with OpusCleaner, specifically FastText model downloading can fail
-        # todo: check exist codes
         retry-exit-status:
             - 1
 
