@@ -19,7 +19,6 @@ install-utils:
 # Black is a code formatter for Python files. Running this command will check that
 # files are correctly formatted, but not fix them.
 black:
-	export PYTHONPATH=$$(pwd):$$(pwd)/tracking
 	poetry install --only black --no-root
 	@if poetry run black . --check --diff; then \
 		echo "The python code formatting is correct."; \
@@ -33,20 +32,17 @@ black:
 
 # Runs black, but also fixes the errors.
 black-fix:
-	export PYTHONPATH=$$(pwd):$$(pwd)/tracking
 	poetry install --only black --no-root
 	poetry run black .
 
 # Runs ruff, a linter for python.
 lint:
-	export PYTHONPATH=$$(pwd):$$(pwd)/tracking
 	poetry install --only lint --no-root
 	poetry run ruff --version
 	poetry run ruff check .
 
 # Runs ruff, but also fixes the errors.
 lint-fix:
-	export PYTHONPATH=$$(pwd):$$(pwd)/tracking
 	poetry install --only lint --no-root
 	poetry run ruff check . --fix
 
