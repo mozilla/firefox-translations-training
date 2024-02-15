@@ -13,6 +13,8 @@ import tempfile
 from collections import defaultdict
 from pathlib import Path
 
+import yaml
+
 import taskcluster
 from taskcluster.download import downloadArtifactToBuf, downloadArtifactToFile
 from translations_parser.data import Metric
@@ -184,7 +186,6 @@ def main() -> None:
         for task in metrics_tasks.values():
             filename = task["task"]["tags"]["label"]
             # evaluate-teacher-flores-flores_aug-typos_devtest-lt-en-1/2
-            logger.info(filename)
             with (eval_folder / f"{filename}.log").open("wb") as f:
                 downloadArtifactToFile(
                     f,
@@ -192,5 +193,11 @@ def main() -> None:
                     name="public/logs/live.log",
                     queueService=queue,
                 )
+        # Dump experiment config so it is published on group_logs
+        config_path = Path(d) / "experiments" / project / group_name / "config.yml"
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+        with config_path.open("w") as f:
+            yaml.dump(config, f)
+
         parents = str(logs_folder.resolve()).strip().split("/")
         WandB.publish_group_logs(parents, project, group_name, existing_runs=[], tag_sep="-")
