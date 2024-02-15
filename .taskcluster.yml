@@ -172,9 +172,9 @@ tasks:
                               'isPullRequest':
                                   - 'assume:repo:github.com/${event.pull_request.base.repo.full_name}:${tasks_for[7:]}'
                               'tasks_for == "action"':
-                                  - 'assume:repo:${repoUrl[8:]}:action:${action.action_perm}'
+                                  - 'assume:repo:${baseRepoUrl[8:]}:action:${action.action_perm}'
                               'tasks_for == "pr-action"':
-                                  - 'assume:repo:${repoUrl[8:]}:pr-action:${action.action_perm}'
+                                  - 'assume:repo:${baseRepoUrl[8:]}:pr-action:${action.action_perm}'
                               $default:
                                   - 'assume:repo:${repoUrl[8:]}:cron:${cron.job_name}'
     
