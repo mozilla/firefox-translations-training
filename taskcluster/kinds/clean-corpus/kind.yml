@@ -56,8 +56,8 @@ tasks:
                 - run.command
         worker:
             docker-image: {"in-tree": "train"}
-            # 7 days. yes, it can take a while to clean a huge dataset
-            max-run-time: 604800
+            # 12 hours (OpusCleaner can get stuck)
+            max-run-time: 43200
             artifacts:
                 - name: public/build
                   path: /builds/worker/artifacts
@@ -68,7 +68,10 @@ tasks:
                 USE_OPUSCLEANER: "{use_opuscleaner}"
                 COMPRESSION_CMD: zstdmt
                 ARTIFACT_EXT: zst
-    
+            # there might be intermittent issues with OpusCleaner, specifically FastText model downloading can fail
+            retry-exit-status:
+                - 1
+
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
     
