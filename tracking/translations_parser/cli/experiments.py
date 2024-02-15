@@ -13,9 +13,9 @@ from collections import defaultdict
 from itertools import groupby
 from pathlib import Path
 
+import wandb
 import yaml
 
-import wandb
 from translations_parser.data import Metric
 from translations_parser.parser import TrainingParser
 from translations_parser.publishers import WandB
