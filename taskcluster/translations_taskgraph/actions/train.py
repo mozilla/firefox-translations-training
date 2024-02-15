@@ -52,7 +52,7 @@ def validate_pretrained_models(params):
     generic=False,
     order=500,
     context=[],
-    available=can_train,
+    available=True,
     schema=lambda graph_config: {
         "type": "object",
         "properties": {
