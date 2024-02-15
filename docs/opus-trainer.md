@@ -86,6 +86,15 @@ seed: 1111
 num_fields: 3
 ```
 
+## Models
+
+Current strategy is to run as many supported augmentations as possible for the teacher 
+and student models and skip augmentaiton entirely for the backward model. 
+This is mostly based on the intuition that we do not need the backward model to be robust and would rather prioritize quality that is usually affected by the noisier data.
+Even though the student is supposed to learn on the exact output of the teacher model, training on augmented data seems to be working in practice.
+
+We might rethink this strategy in future after running more experiments.
+
 
 ## Evaluation
 

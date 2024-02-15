@@ -15,49 +15,51 @@ tasks:
               $switch:
                   'tasks_for == "github-push"': '${event.pusher.email}'
                   'tasks_for[:19] == "github-pull-request"': '${event.pull_request.user.login}@users.noreply.github.com'
-                  'tasks_for in ["cron", "action"]': '${tasks_for}@noreply.mozilla.org'
+                  'tasks_for in ["cron", "action", "pr-action"]': '${tasks_for}@noreply.mozilla.org'
           baseRepoUrl:
               $switch:
                   'tasks_for == "github-push"': '${event.repository.html_url}'
                   'tasks_for[:19] == "github-pull-request"': '${event.pull_request.base.repo.html_url}'
                   'tasks_for in ["cron", "action"]': '${repository.url}'
+                  'tasks_for == "pr-action"': '${repository.base_url}'
           repoUrl:
               $switch:
                   'tasks_for == "github-push"': '${event.repository.html_url}'
                   'tasks_for[:19] == "github-pull-request"': '${event.pull_request.head.repo.html_url}'
-                  'tasks_for in ["cron", "action"]': '${repository.url}'
+                  'tasks_for in ["cron", "action", "pr-action"]': '${repository.url}'
           project:
               $switch:
                   'tasks_for == "github-push"': '${event.repository.name}'
                   'tasks_for[:19] == "github-pull-request"': '${event.pull_request.head.repo.name}'
-                  'tasks_for in ["cron", "action"]': '${repository.project}'
+                  'tasks_for in ["cron", "action", "pr-action"]': '${repository.project}'
           head_branch:
               $switch:
                   'tasks_for[:19] == "github-pull-request"': ${event.pull_request.head.ref}
                   'tasks_for == "github-push"': ${event.ref}
                   'tasks_for == "github-release"': '${event.release.target_commitish}'
-                  'tasks_for in ["action", "cron"]': '${push.branch}'
+                  'tasks_for in ["action", "cron", "pr-action"]': '${push.branch}'
           base_ref:
               $switch:
                   'tasks_for[:19] == "github-pull-request"': ${event.pull_request.base.ref}
                   'tasks_for == "github-push" && event.base_ref': ${event.base_ref}
                   'tasks_for == "github-push"': ${event.ref}
                   'tasks_for in ["cron", "action"]': '${push.branch}'
+                  'tasks_for == "pr-action"': '${push.base_branch}'
           head_ref:
               $switch:
                   'tasks_for[:19] == "github-pull-request"': ${event.pull_request.head.ref}
                   'tasks_for == "github-push"': ${event.ref}
-                  'tasks_for in ["cron", "action"]': '${push.branch}'
+                  'tasks_for in ["cron", "action", "pr-action"]': '${push.branch}'
           base_sha:
               $switch:
                   'tasks_for == "github-push"': '${event.before}'
                   'tasks_for[:19] == "github-pull-request"': '${event.pull_request.base.sha}'
-                  'tasks_for in ["cron", "action"]': '${push.revision}'
+                  'tasks_for in ["cron", "action", "pr-action"]': '${push.revision}'
           head_sha:
               $switch:
                   'tasks_for == "github-push"': '${event.after}'
                   'tasks_for[:19] == "github-pull-request"': '${event.pull_request.head.sha}'
-                  'tasks_for in ["cron", "action"]': '${push.revision}'
+                  'tasks_for in ["cron", "action", "pr-action"]': '${push.revision}'
           ownTaskId:
               $switch:
                   '"github" in tasks_for': {$eval: as_slugid("decision_task")}
@@ -81,15 +83,15 @@ tasks:
                   else: ${head_ref}
           in:
               $if: >
-                  tasks_for in ["action", "cron", "github-push"]
+                  tasks_for in ["action", "pr-action", "cron", "github-push"]
                   || (isPullRequest && pullRequestAction in ["opened", "reopened", "synchronize"])
               then:
                   $let:
                       level: 1
                   in:
-                      taskId: {$if: 'tasks_for != "action"', then: '${ownTaskId}'}
+                      taskId: {$if: 'tasks_for != "action" && tasks_for != "pr-action"', then: '${ownTaskId}'}
                       taskGroupId:
-                          $if: 'tasks_for == "action"'
+                          $if: 'tasks_for in ["action", "pr-action"]'
                           then:
                               '${action.taskGroupId}'
                           else:
@@ -112,6 +114,11 @@ tasks:
                                             ${action.description}
     
                                             Action triggered by clientID `${clientId}`
+                                    'tasks_for == "pr-action"':
+                                        name: "PR action: ${action.title}"
+                                        description: |
+                                            ${action.description}
+                                            PR action triggered by clientID `${clientId}`
                                     $default:
                                         name: "Decision Task for cron job ${cron.job_name}"
                                         description: 'Created by a [cron task](https://firefox-ci-tc.services.mozilla.com/tasks/${cron.task_id})'
@@ -124,7 +131,7 @@ tasks:
                               'tasks_for == "github-push" || isPullRequest':
                                   createdForUser: "${ownerEmail}"
                                   kind: decision-task
-                              'tasks_for == "action"':
+                              'tasks_for in ["action", "pr-action"]':
                                   createdForUser: '${ownerEmail}'
                                   kind: 'action-callback'
                               'tasks_for == "cron"':
@@ -165,7 +172,9 @@ tasks:
                               'isPullRequest':
                                   - 'assume:repo:github.com/${event.pull_request.base.repo.full_name}:${tasks_for[7:]}'
                               'tasks_for == "action"':
-                                  - 'assume:repo:${repoUrl[8:]}:action:${action.action_perm}'
+                                  - 'assume:repo:${baseRepoUrl[8:]}:action:${action.action_perm}'
+                              'tasks_for == "pr-action"':
+                                  - 'assume:repo:${baseRepoUrl[8:]}:pr-action:${action.action_perm}'
                               $default:
                                   - 'assume:repo:${repoUrl[8:]}:cron:${cron.job_name}'
     
@@ -176,7 +185,7 @@ tasks:
                           $switch:
                               'tasks_for == "cron"': low
                               'tasks_for == "github-push"|| isPullRequest': very-low
-                              $default: lowest  # tasks_for == 'action'
+                              $default: lowest  # tasks_for in ['action', 'pr-action']
                       retries: 5
     
                       payload:
@@ -204,7 +213,7 @@ tasks:
                                       - $if: 'isPullRequest'
                                         then:
                                             ${normProjectUpper}_PULL_REQUEST_NUMBER: '${event.pull_request.number}'
-                                      - $if: 'tasks_for == "action"'
+                                      - $if: 'tasks_for in ["action", "pr-action"]'
                                         then:
                                             ACTION_TASK_GROUP_ID: '${action.taskGroupId}'  # taskGroupId of the target task
                                             ACTION_TASK_ID: {$json: {$eval: 'taskId'}}  # taskId of the target task (JSON-encoded)
@@ -229,7 +238,7 @@ tasks:
                                   - $let:
                                         extraArgs: {$if: 'tasks_for == "cron"', then: '${cron.quoted_args}', else: ''}
                                     in:
-                                        $if: 'tasks_for == "action"'
+                                        $if: 'tasks_for in ["action", "pr-action"]'
                                         then: >
                                             cd /builds/worker/checkouts/src &&
                                             ln -s /builds/worker/artifacts artifacts &&
@@ -277,7 +286,7 @@ tasks:
                                         then:
                                           symbol: D
                                         else:
-                                          $if: 'tasks_for == "action"'
+                                          $if: 'tasks_for in ["action", "pr-action"]'
                                           then:
                                               groupName: 'action-callback'
                                               groupSymbol: AC
@@ -285,7 +294,7 @@ tasks:
                                           else:
                                               groupSymbol: cron
                                               symbol: "${cron.job_symbol}"
-                              - $if: 'tasks_for == "action"'
+                              - $if: 'tasks_for in ["action", "pr-action"]'
                                 then:
                                   parent: '${action.taskGroupId}'
                                   action:

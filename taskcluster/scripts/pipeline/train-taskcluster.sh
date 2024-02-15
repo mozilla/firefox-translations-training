@@ -21,9 +21,10 @@ valid_set_prefix=$6
 model_dir=$7
 best_model_metric=$8
 alignments=$9
-pretrained_model_mode=${10}
-pretrained_model_type=${11}
-extra_params=( "${@:12}" )
+seed=${10}
+pretrained_model_mode=${11}
+pretrained_model_type=${12}
+extra_params=( "${@:13}" )
 
 if [ "$pretrained_model_mode" != "use" ]; then
     # MOZ_FETCHES_DIR is not required for the "use" pretrained model mode
@@ -58,6 +59,7 @@ case "$pretrained_model_mode" in
         "$vocab" \
         "$best_model_metric" \
         "$alignments" \
+        "$seed" \
         "${extra_params[@]}"
         if [ "$pretrained_model_mode" == "None" ]; then
             cp "$vocab" "$model_dir"

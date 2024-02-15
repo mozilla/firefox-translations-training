@@ -33,5 +33,7 @@ modifiers:
 - Tags: 0.05
   augment: 1
 
-seed: 1111
+
+# random seed should be different for different teacher models
+seed: <seed>
 num_fields: 2

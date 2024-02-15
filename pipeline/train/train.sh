@@ -22,7 +22,9 @@ best_model_metric=$9
 # comma separated alignment paths that correspond to each training dataset (required for Tags modifier)
 # or None to train without alignments
 alignments=${10}
-extra_params=( "${@:11}" )
+# random seed, UINT
+seed=${11}
+extra_params=( "${@:12}" )
 
 COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
@@ -82,6 +84,8 @@ sed -i -e "s#<vocab>#${vocab}#g" "${new_config}"
 # Replace source and target languages. This can be useful for custom detokenizer parameter in Tags
 sed -i -e "s#<src>#${src}#g" "${new_config}"
 sed -i -e "s#<trg>#${trg}#g" "${new_config}"
+# Replace the random seed for teachers
+sed -i -e "s#<seed>#${seed}#g" "${new_config}"
 
 # if the training set is a tsv, validation set also has to be a tsv
 echo "### Converting validation sets to tsv"
@@ -118,6 +122,7 @@ opustrainer-train \
     --overwrite \
     --keep-best \
     --tsv \
+    --seed ${seed} \
     "${extra_params[@]}"
 
 cp "${model_dir}/model.npz.best-${best_model_metric}.npz" "${model_dir}/final.model.npz.best-${best_model_metric}.npz"

@@ -48,11 +48,11 @@ def src_is_different(src_l, trg_l, aug_src_l, aug_trg_l):
     return src_l != aug_src_l
 
 
-def all_equal(*items):
+def assert_all_equal(*items):
     assert len(set(items)) == 1
 
 
-def twice_longer(src, trg, aug_src, aug_trg):
+def assert_twice_longer(src, trg, aug_src, aug_trg):
     assert src * 2 == aug_src
     assert trg * 2 == aug_trg
 
@@ -146,12 +146,12 @@ def test_mono_source_import(language, importer, dataset, data_dir):
 @pytest.mark.parametrize(
     "params",
     [
-        ("sacrebleu_aug-upper_wmt19", is_upper_lines, all_equal, 1.0, 1.0),
-        ("sacrebleu_aug-title_wmt19", is_title_lines, all_equal, 1.0, 1.0),
+        ("sacrebleu_aug-upper_wmt19", is_upper_lines, assert_all_equal, 1.0, 1.0),
+        ("sacrebleu_aug-title_wmt19", is_title_lines, assert_all_equal, 1.0, 1.0),
         # there's a small chance for the string to stay the same
-        ("sacrebleu_aug-typos_wmt19", src_is_different, all_equal, 0.95, 1.0),
+        ("sacrebleu_aug-typos_wmt19", src_is_different, assert_all_equal, 0.95, 1.0),
         # noise modifier generates extra lines
-        ("sacrebleu_aug-noise_wmt19", lambda x: True, twice_longer, 0.0, 0.0),
+        ("sacrebleu_aug-noise_wmt19", lambda x: True, assert_twice_longer, 0.0, 0.0),
     ],
     ids=["upper", "title", "typos", "noise"],
 )
