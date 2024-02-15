@@ -15,16 +15,17 @@ Tests tracking parser and publication via CLI entrypoints
 """
 
 
-@pytest.fixture(autouse=True)
-def disable_wandb():
-    """Prevent publication on W&B"""
-    os.environ["WANDB_API_KEY"] = "fake"
-    os.environ["WANDB_MODE"] = "offline"
-
-
 @pytest.fixture(scope="function")
 def tmp_dir():
     return Path(DataDir("test_tracking").path)
+
+
+@pytest.fixture(autouse=True)
+def disable_wandb(tmp_dir):
+    """Prevent publication on W&B"""
+    os.environ["WANDB_API_KEY"] = "fake"
+    os.environ["WANDB_MODE"] = "offline"
+    os.environ["WANDB_DIR"] = str(tmp_dir / "wandb")
 
 
 @pytest.fixture
