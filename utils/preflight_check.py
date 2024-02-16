@@ -405,7 +405,7 @@ def main(
     )
     parser.add_argument(
         "--config",
-        default="configs/tc.prod.yml",
+        default="taskcluster/configs/config.prod.yml",
         type=str,
         help='The path to the training config. Defaults to "configs/tc.prod.yml"',
     )
@@ -433,20 +433,21 @@ def main(
     parameters = get_taskgraph_parameters()
     run_taskgraph(parsed_args.config, get_taskgraph_parameters())
 
-    if parsed_args.only == Choices.task_group:
+    choice = Choices[parsed_args.only] if parsed_args.only else None
+    if choice == Choices.task_group:
         pretty_print_task_graph()
-    elif parsed_args.only == Choices.artifacts:
+    elif choice == Choices.artifacts:
         pretty_print_artifacts_dir()
-    elif parsed_args.only == Choices.training_config:
+    elif choice == Choices.training_config:
         pretty_print_training_config(get_taskgraph_parameters())
-    elif parsed_args.only == Choices.graph:
+    elif choice == Choices.graph:
         serve_taskgraph_file(
             parsed_args.graph_url,
             parsed_args.open_graph,
             parsed_args.persist_graph,
             open_in_browser,
         )
-    elif parsed_args.only is None:
+    elif choice is None:
         pretty_print_task_graph()
         pretty_print_artifacts_dir()
         pretty_print_training_config(parameters)
