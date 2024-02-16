@@ -30,10 +30,12 @@ modifiers:
 # generates inline noise (emojis etc.) matching positions in source and target sentences using alignments
 # no spm_vocab argument -> alignments will be removed from Marian input
 # we don't use alignments for teacher training
+# Tags modifier has to be the last one to remove the alignments
 - Tags: 0.05
   augment: 1
 
 
 # random seed should be different for different teacher models
 seed: <seed>
-num_fields: 2
+# parallel sentences + token alignments
+num_fields: 3
