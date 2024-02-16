@@ -16,11 +16,20 @@ os.environ["SRC"] = SRC
 os.environ["TRG"] = TRG
 
 
+from pipeline.data import dataset_importer
 from pipeline.data.dataset_importer import run_import
 
-# the augmentation is probabilistic, here is a range for 0.1 probability
+# the augmentation is probabilistic, here is a range for 0.05 probability
 AUG_MAX_RATE = 0.35
 AUG_MIN_RATE = 0.01
+
+
+def add_fake_alignments(corpus):
+    return [f"{line}\t0-0 1-1 2-2" for line in corpus]
+
+
+# it's very slow to download and run BERT on 2000 lines
+dataset_importer.add_alignments = add_fake_alignments
 
 
 def read_lines(path):
@@ -48,13 +57,20 @@ def src_is_different(src_l, trg_l, aug_src_l, aug_trg_l):
     return src_l != aug_src_l
 
 
-def assert_all_equal(*items):
-    assert len(set(items)) == 1
+def src_and_trg_are_different(src_l, trg_l, aug_src_l, aug_trg_l):
+    return src_l != aug_src_l and trg_l != aug_trg_l
 
 
-def assert_twice_longer(src, trg, aug_src, aug_trg):
-    assert src * 2 == aug_src
-    assert trg * 2 == aug_trg
+def src_and_trg_equal_len(src_l, trg_l, aug_src_l, aug_trg_l):
+    return src_l == trg_l and aug_src_l == aug_trg_l
+
+
+def all_len_equal(*items):
+    return len(set(items)) == 1
+
+
+def twice_longer(src, trg, aug_src, aug_trg):
+    return src * 2 == aug_src and trg * 2 == aug_trg
 
 
 def get_aug_rate(src, trg, aug_src, aug_trg, check_func, check_len=None):
@@ -65,7 +81,7 @@ def get_aug_rate(src, trg, aug_src, aug_trg, check_func, check_len=None):
         read_lines(aug_trg),
     )
     if check_len:
-        check_len(len(src), len(trg), len(aug_src), len(aug_trg))
+        assert check_len(len(src), len(trg), len(aug_src), len(aug_trg))
 
     if len(src) != len(aug_src):
         rate = 0
@@ -146,14 +162,21 @@ def test_mono_source_import(language, importer, dataset, data_dir):
 @pytest.mark.parametrize(
     "params",
     [
-        ("sacrebleu_aug-upper_wmt19", is_upper_lines, assert_all_equal, 1.0, 1.0),
-        ("sacrebleu_aug-title_wmt19", is_title_lines, assert_all_equal, 1.0, 1.0),
+        ("sacrebleu_aug-upper_wmt19", is_upper_lines, all_len_equal, 1.0, 1.0),
+        ("sacrebleu_aug-title_wmt19", is_title_lines, all_len_equal, 1.0, 1.0),
         # there's a small chance for the string to stay the same
-        ("sacrebleu_aug-typos_wmt19", src_is_different, assert_all_equal, 0.95, 1.0),
+        ("sacrebleu_aug-typos_wmt19", src_is_different, all_len_equal, 0.95, 1.0),
         # noise modifier generates extra lines
-        ("sacrebleu_aug-noise_wmt19", lambda x: True, assert_twice_longer, 0.0, 0.0),
+        ("sacrebleu_aug-noise_wmt19", lambda x: True, twice_longer, 0.0, 0.0),
+        (
+            "sacrebleu_aug-inline-noise_wmt19",
+            src_and_trg_are_different,
+            src_and_trg_equal_len,
+            0.0,
+            0.0,
+        ),
     ],
-    ids=["upper", "title", "typos", "noise"],
+    ids=["upper", "title", "typos", "noise", "inline-noise"],
 )
 def test_specific_augmentation(params, data_dir):
     dataset, check_func, check_len, min_rate, max_rate = params

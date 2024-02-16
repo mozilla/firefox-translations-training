@@ -23,7 +23,9 @@ Supported augmentations:
 - **Upper case** - make some sentences from the dataset upper case
 - **Title case** - use title case for some sentences from the dataset
 - **Typos** - add random typos in some words
-- **Noise** - inserts lines with random unicode noise 
+- **Noise** - inserts lines with random unicode noise
+- **Inline noise** - inserts random unicode noise inside source and target sentences in the appropriate positions. 
+  It requires space tokenize alignments to work.
 - **Tags (inline noise)** - add emojis and other random Unicode symbols in the source and target sentences 
   (requires space tokenized alignments for the training corpus)
 
@@ -124,14 +126,19 @@ For example:
 
 `aug-noise` -  generates extra lines with noise (1 line of noise for each line of the dataset, so the dataset becomes twice longer)
 
-`aug-mix` - applies all the existing modifiers with 0.1 probability each
+`aug-inline-noise` -  inserts the same random noise in the appropriate positions of the source and target sentences based on dynamically generated alignments. 
+It uses unsupervised aligner [SimAlign](https://github.com/cisnlp/simalign) which is based on BERT and quite slow, 
+so it should only be used on small evaluation datasets.
+
+`aug-mix` - applies all the existing modifiers with 0.05 probability each
 
 ### Example training config
 ```yaml
+  # datasets for validation while training
   devtest:
     - flores_aug-mix_dev
     - sacrebleu_aug-mix_wmt19/dev
-  # datasets for evaluation
+  # datasets for the final evaluation
   test:
     - flores_devtest
     - flores_aug-mix_devtest
@@ -139,5 +146,6 @@ For example:
     - flores_aug-upper_devtest
     - flores_aug-typos_devtest
     - flores_aug-noise_devtest
+    - flores_aug-inline-noise_devtest
 ```
 
