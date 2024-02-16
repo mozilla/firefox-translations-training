@@ -5,6 +5,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Sequence
 
+from translations_parser.utils import extract_dataset_from_tag
+
 logging.basicConfig(
     level=logging.INFO,
     format="[%(levelname)s] %(message)s",
@@ -23,6 +25,7 @@ METRIC_LOG_RE = re.compile(
         ]
     )
 )
+TC_PREFIX_RE = re.compile(r"^\[task [0-9\-TZ:\.]+\]")
 
 
 @dataclass
@@ -57,7 +60,17 @@ class Metric:
     bleu_detok: float
 
     @classmethod
-    def from_file(cls, metrics_file: Path):
+    def from_file(
+        cls,
+        metrics_file: Path,
+        sep="_",
+        dataset: str | None = None,
+        augmentation: str | None = None,
+    ):
+        """
+        Instanciate a Metric from a `.metrics` file.
+        In case no dataset is set, detects it from the filename.
+        """
         logger.debug(f"Reading metrics file {metrics_file.name}")
         values = []
         try:
@@ -72,24 +85,28 @@ class Metric:
         except Exception as e:
             raise ValueError(f"Metrics file could not be parsed: {e}")
         bleu_detok, chrf = values
+        if dataset is None:
+            _, dataset, augmentation = extract_dataset_from_tag(metrics_file.stem, sep=sep)
         return cls(
-            dataset=metrics_file.stem,
-            augmentation=None,
+            dataset=dataset,
+            augmentation=augmentation,
             chrf=chrf,
             bleu_detok=bleu_detok,
         )
 
     @classmethod
-    def from_tc_context(cls, dataset: str, lines: Sequence[str]):
+    def from_tc_context(cls, dataset: str, lines: Sequence[str], augmentation: str | None = None):
         """
         Try reading a metric from Taskcluster logs, looking for two
         successive floats after a line maching METRIC_LOG_RE.
         """
         for index, line in enumerate(lines):
-            if not METRIC_LOG_RE.match(line):
+            # Remove eventual Taskcluster prefix
+            clean_line = TC_PREFIX_RE.sub("", line).strip()
+            if not METRIC_LOG_RE.match(clean_line):
                 continue
             try:
-                values = [float(val) for val in lines[index + 1 : index + 3]]
+                values = [float(TC_PREFIX_RE.sub("", val)) for val in lines[index + 1 : index + 3]]
             except ValueError:
                 continue
             if len(values) != 2:
@@ -97,7 +114,7 @@ class Metric:
             bleu_detok, chrf = values
             return cls(
                 dataset=dataset,
-                augmentation=None,
+                augmentation=augmentation,
                 chrf=chrf,
                 bleu_detok=bleu_detok,
             )
