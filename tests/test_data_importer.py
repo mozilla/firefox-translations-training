@@ -25,7 +25,7 @@ AUG_MIN_RATE = 0.01
 
 
 def add_fake_alignments(corpus):
-    return [f"{line}\t0-0 1-1 2-2" for line in corpus]
+    return [f"{line}\t0-0" for line in corpus]
 
 
 # it's very slow to download and run BERT on 2000 lines
@@ -53,16 +53,12 @@ def is_upper_lines(src_l, trg_l, aug_src_l, aug_trg_l):
     return is_upper_case(aug_src_l) and is_upper_case(aug_trg_l)
 
 
-def src_is_different(src_l, trg_l, aug_src_l, aug_trg_l):
-    return src_l != aug_src_l
+def only_src_is_different(src_l, trg_l, aug_src_l, aug_trg_l):
+    return src_l != aug_src_l and trg_l == aug_trg_l
 
 
 def src_and_trg_are_different(src_l, trg_l, aug_src_l, aug_trg_l):
     return src_l != aug_src_l and trg_l != aug_trg_l
-
-
-def src_and_trg_equal_len(src_l, trg_l, aug_src_l, aug_trg_l):
-    return src_l == trg_l and aug_src_l == aug_trg_l
 
 
 def all_len_equal(*items):
@@ -165,15 +161,15 @@ def test_mono_source_import(language, importer, dataset, data_dir):
         ("sacrebleu_aug-upper_wmt19", is_upper_lines, all_len_equal, 1.0, 1.0),
         ("sacrebleu_aug-title_wmt19", is_title_lines, all_len_equal, 1.0, 1.0),
         # there's a small chance for the string to stay the same
-        ("sacrebleu_aug-typos_wmt19", src_is_different, all_len_equal, 0.95, 1.0),
+        ("sacrebleu_aug-typos_wmt19", only_src_is_different, all_len_equal, 0.95, 1.0),
         # noise modifier generates extra lines
         ("sacrebleu_aug-noise_wmt19", lambda x: True, twice_longer, 0.0, 0.0),
         (
             "sacrebleu_aug-inline-noise_wmt19",
             src_and_trg_are_different,
-            src_and_trg_equal_len,
-            0.0,
-            0.0,
+            all_len_equal,
+            0.95,
+            1.0,
         ),
     ],
     ids=["upper", "title", "typos", "noise", "inline-noise"],
