@@ -33,7 +33,7 @@ mkdir -p "${dir}"
 
 echo "### Decompressing original corpus to get its length"
 ${COMPRESSION_CMD} -d "${original_prefix}.${SRC}.${ARTIFACT_EXT}"
-original_len=$(wc -l "${original_prefix}.${SRC}")
+original_len=$(wc -l <"${original_prefix}.${SRC}")
 
 echo "### Creating merged corpus"
   cat <(paste <(cat "${original_prefix}.${SRC}") <(${COMPRESSION_CMD} -dc "${original_prefix}.${TRG}.${ARTIFACT_EXT}")) \
@@ -54,7 +54,7 @@ echo "### Splitting the aligned corpus back"
 head -n ${original_len} "${dir}/corpus.aln" |
   ${COMPRESSION_CMD} >"${output_original_prefix}.aln.${ARTIFACT_EXT}"
 # take lines starting with N+1
-tail -n +$((${original_len}+1)) "${dir}/corpus.aln" |
+tail -n +$(($original_len+1)) "${dir}/corpus.aln" |
   ${COMPRESSION_CMD} >"${output_backtranslated_prefix}.aln.${ARTIFACT_EXT}"
 
 echo "### Deleting tmp dir"
