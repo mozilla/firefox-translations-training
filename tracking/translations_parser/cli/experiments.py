@@ -9,12 +9,8 @@ Example:
 import argparse
 import logging
 import os
-from collections import defaultdict
 from itertools import groupby
 from pathlib import Path
-
-import wandb
-import yaml
 
 from translations_parser.data import Metric
 from translations_parser.parser import TrainingParser
@@ -25,9 +21,6 @@ logging.basicConfig(
     format="[%(levelname)s] %(message)s",
 )
 logger = logging.getLogger(__name__)
-
-# Keywords to split eval filenames into model and dataset
-DATASET_KEYWORDS = ["flores", "mtdata", "sacrebleu"]
 
 
 def get_args() -> argparse.Namespace:
@@ -56,7 +49,7 @@ def parse_experiment(
     metrics = []
     if metrics_dir:
         for metrics_file in metrics_dir.glob("*.metrics"):
-            metrics.append(Metric.from_file(metrics_file=metrics_file))
+            metrics.append(Metric.from_file(metrics_file, dataset=metrics_file.stem))
 
     with logs_file.open("r") as f:
         lines = (line.strip() for line in f.readlines())
@@ -72,122 +65,6 @@ def parse_experiment(
         ],
     )
     parser.run()
-
-
-def publish_group_logs(
-    prefix: str,
-    project: str,
-    group: str,
-    existing_runs: list,
-) -> None:
-    """
-    Publish all files within `logs_dir` to W&B artifacts for a specific group.
-    A fake W&B run named `group_logs` is created to publish those artifacts among
-    with all evaluation files (quantized + experiments).
-    """
-    logs_dir = Path("/".join([*prefix[:-1], "logs", project, group]))
-    # Old experiments use `speed` directory for quantized metrics
-    quantized_metrics = sorted(
-        Path("/".join([*prefix, project, group, "evaluation", "speed"])).glob("*.metrics")
-    )
-    evaluation_metrics = sorted((logs_dir / "eval").glob("eval*.log"))
-    if quantized_metrics:
-        logger.info(f"Found {len(quantized_metrics)} quantized metrics")
-    else:
-        logger.warning(f"No quantized metric found for group {group}, skipping")
-    if evaluation_metrics:
-        logger.info(f"Found {len(evaluation_metrics)} evaluation metrics")
-    else:
-        logger.warning(f"No evaluation metrics not found for group {group}, skipping")
-
-    # Store metrics by run name
-    metrics = defaultdict(list)
-    # Add "quantized" metrics
-    for file in quantized_metrics:
-        metrics["quantized"].append(Metric.from_file(file))
-    # Add experiment (runs) metrics
-    for file in evaluation_metrics:
-        model_name = file.stem.lstrip("eval_")
-        dataset = ""
-        # File names usually have a structure like "eval_<model_name>_<dataset>.log
-        # model_name can be the name of a run, or the evaluation pre-trained model.
-        for keyword in DATASET_KEYWORDS:
-            if keyword in model_name:
-                index = model_name.index(keyword)
-                model_name, dataset = model_name[:index].strip("_"), model_name[index:]
-                break
-            else:
-                continue
-        if not dataset:
-            logger.warning(
-                f"No dataset could be extracted from file {file.name}. Please ensure DATASET_KEYWORDS is up to date."
-            )
-        with file.open("r") as f:
-            lines = f.readlines()
-        try:
-            metrics[model_name].append(Metric.from_tc_context(dataset, lines))
-        except ValueError as e:
-            logger.error(f"Could not parse metrics from {file.resolve()}: {e}")
-
-    # Publish missing runs (runs without training data)
-    missing_run_metrics = {
-        name: metrics for name, metrics in metrics.items() if name not in existing_runs
-    }
-    for model_name, model_metrics in missing_run_metrics.items():
-        logger.info(f"Creating missing run {model_name} with associated metrics")
-        publisher = WandB(project=project, name=model_name, group=group)
-        publisher.open(TrainingParser(logs_iter=iter([]), publishers=[]))
-        publisher.handle_metrics(model_metrics)
-        publisher.close()
-
-    # Publication of the `group_logs` fake run
-    config = {}
-    config_path = Path("/".join([*prefix[:-1], "experiments", project, group, "config.yml"]))
-    if not config_path.is_file():
-        logger.warning(f"No configuration file at {config_path}, skipping.")
-    else:
-        # Publish the YAML configuration as configuration on the group run
-        with config_path.open("r") as f:
-            data = f.read()
-        try:
-            config.update(yaml.safe_load(data))
-        except Exception as e:
-            logger.error(f"Config could not be read at {config_path}: {e}")
-
-    publisher = WandB(
-        project=project,
-        group=group,
-        name="group_logs",
-        notes=(
-            "Experiments summary for the group.\n"
-            "The configuration section contains `config.yaml` values, logs "
-            "are uploaded as artifacts and all metrics are reported in a table."
-        ),
-    )
-    publisher.wandb = wandb.init(
-        project=project,
-        group=group,
-        name="group_logs",
-        config=config,
-    )
-    if metrics:
-        # Publish all evaluation metrics to a table
-        table = wandb.Table(
-            columns=["Group", "Model", "Dataset", "BLEU", "chrF"],
-            data=[
-                [group, run_name, metric.dataset, metric.bleu_detok, metric.chrf]
-                for run_name, run_metrics in metrics.items()
-                for metric in run_metrics
-            ],
-        )
-        publisher.wandb.log({"metrics": table})
-    if logs_dir.is_dir():
-        # Publish logs directory content as artifacts
-        artifact = wandb.Artifact(name=group, type="logs")
-        artifact.add_dir(local_path=str(logs_dir.resolve()))
-        publisher.wandb.log_artifact(artifact)
-
-    publisher.wandb.finish()
 
 
 def main() -> None:
@@ -241,6 +118,6 @@ def main() -> None:
             logger.info(
                 f"Publishing '{last_project}/{last_group}' evaluation metrics and files (fake run 'group_logs')"
             )
-            publish_group_logs(prefix, last_project, last_group, existing_runs)
+            WandB.publish_group_logs(prefix, last_project, last_group, existing_runs=existing_runs)
             existing_runs = []
         last_index = (project, group)

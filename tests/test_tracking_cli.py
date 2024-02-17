@@ -149,15 +149,29 @@ def test_experiments(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
             log_calls.append(log)
     with (samples_dir / "experiments_wandb_calls.json").open("r") as f:
         assert log_calls == [call(**entry) for entry in json.load(f)]
-    # Custom calls for .metrics files publication
-    assert set([list(v.keys())[0] for c in metrics_calls for v in c.args]) == set(
+    # Custom calls for .metrics files publication (3 runs + 6 evaluation metrics)
+    assert sorted([list(v.keys())[0] for c in metrics_calls for v in c.args]) == sorted(
         [
-            "mtdata_Neulab-tedtalks_test-1-eng-nld",
             "flores_devtest",
-            "mtdata_Neulab-tedtalks_test-1-eng-nld",
             "flores_devtest",
-            "mtdata_Neulab-tedtalks_test-1-eng-nld",
             "flores_devtest",
+            "flores_devtest",
+            "flores_devtest",
+            "flores_devtest",
+            "flores_devtest",
+            "flores_devtest",
+            "flores_devtest",
+            # This call builds the table with all metrics on the group fake run
+            "metrics",
+            "mtdata_Neulab-tedtalks_test-1-eng-nld",
+            "mtdata_Neulab-tedtalks_test-1-eng-nld",
+            "mtdata_Neulab-tedtalks_test-1-eng-nld",
+            "mtdata_Neulab-tedtalks_test-1-eng-nld",
+            "mtdata_Neulab-tedtalks_test-1-eng-nld",
+            "mtdata_Neulab-tedtalks_test-1-eng-nld",
+            "mtdata_Neulab-tedtalks_test-1-eng-nld",
+            "mtdata_Neulab-tedtalks_test-1-eng-nld",
+            "mtdata_Neulab-tedtalks_test-1-eng-nld",
         ]
     )
 

@@ -15,13 +15,13 @@ Example publishing data to Weight & Biases:
 import argparse
 import logging
 import sys
-from collections.abc import Iterator, Sequence
-from datetime import datetime
+from collections.abc import Iterator
 from io import TextIOWrapper
 from pathlib import Path
 
 from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import CSVExport, Publisher, WandB
+from translations_parser.utils import taskcluster_log_filter
 
 logging.basicConfig(
     level=logging.INFO,
@@ -84,24 +84,6 @@ def get_args() -> argparse.Namespace:
         const=logging.DEBUG,
     )
     return parser.parse_args()
-
-
-def taskcluster_log_filter(headers: Sequence[Sequence[str]]) -> bool:
-    """
-    Check TC log contain a valid task header i.e. ('task', <timestamp>)
-    """
-    for values in headers:
-        if not values or len(values) != 2:
-            continue
-        base, timestamp = values
-        if base != "task":
-            continue
-        try:
-            datetime.fromisoformat(timestamp.rstrip("Z"))
-            return True
-        except ValueError:
-            continue
-    return False
 
 
 def main() -> None:
