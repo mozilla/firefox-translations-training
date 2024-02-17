@@ -121,7 +121,7 @@ def donwload_evals(group_id, output):
             name=artifact_name,
             queueService=queue,
         )
-        bleu, chrf, _, _ = content.tobytes().decode().split("\n")
+        bleu, chrf, _ = content.tobytes().decode().split("\n")
 
         match = eval_regex.match(task_obj_label)
         if not match:

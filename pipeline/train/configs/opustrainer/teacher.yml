@@ -31,7 +31,7 @@ modifiers:
 # no spm_vocab argument -> alignments will be removed from Marian input
 # we don't use alignments for teacher training
 # Tags modifier has to be the last one to remove the alignments
-- Tags: 0.05
+- Tags: 0.005
   augment: 1
 
 
