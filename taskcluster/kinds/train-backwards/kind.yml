@@ -52,7 +52,10 @@ tasks:
                 - dependencies
                 - attributes
                 - run.command
-        worker-type: b-largegpu-largedisk-standard
+        worker-type:
+            by-tasks-for:
+                github-pull-request: b-largegpu
+                default: b-largegpu-largedisk-standard
         worker:
             max-run-time: 2592000
             env:
