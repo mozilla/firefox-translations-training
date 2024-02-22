@@ -6,15 +6,24 @@ The parser supports reading logs from a Task Cluster environment, or a local dir
 
 It actually supports logs from **Marian 1.10**. Above versions (even minor) will raise a warning as not supported.
 
+## Install
+
+The parser can be built as a distinct package to make developments easier using pip.
+On a virtual environment, you can install the package in editable mode (i.e from the local folder):
+```sh
+$ pip install -e ./tracking
+```
+
 ## Behavior
 
 Logs are extracted from [Marian](https://marian-nmt.github.io/) training tasks, usually running in a Task Cluster environment.
 
-The parser has 2 entry points:
+The parser has 3 entry points:
 * Parsing logs from a file or process in real time
 * Reading a folder with multiple training data
+* Reading a Taskcluster group (and related experiments, mentioned as "traversal")
 
-Publication is handled via extensible `translations_parser.publishers`.
+Publication is handled via the extensible module `translations_parser.publishers`.
 It actually supports writting to local CSV files or puiblish metrics to [Weight & Biases](https://docs.wandb.ai/ref/python) (W&B).
 
 ### Reading a folder
@@ -50,37 +59,12 @@ The following rules are applied:
 * `.metrics` files in the `evaluation` are parsed (looking for one float value per line) and also published on the same run (e.g. `[metric] tc_Tatoeba-Challenge-v2021-08-07`).
 * Once all runs of a group have been published, a last group is pushed to W&B, named `group_logs`. That run contains no metrics but all experiment files published as artifacts.
 
-## Install
+### Publish from Taskcluster
 
-The parser can be built as a distinct package to make deployment and developments easier.
+The parser supports reading training tasks directly from the Taskcluster API (no authentication).
+The results are published the same way as for experiments folder.
 
-You can install the package using pip:
+You can parse a group (with other traversal tasks) by running:
 ```sh
-$ pip install -r requirements/common.txt
-$ pip install ./tracking
-```
-
-### Requirements
-
-The full list of dependencies (hash pinned) is specified in `requirements/comon.txt`.
-
-This file is generated using `pip-tools`, and must be updated once dependecies change:
-```sh
-pip-compile --generate-hashes --output-file=requirements/common.txt requirements/common.in
-```
-
-### Development
-
-On a virtual environment, you can install the package using pip:
-A developer may want to install the package in editable mode (i.e install from the local path directly):
-```sh
-$ pip install -r requirements/common.txt
-$ pip install -e ./tracking
-```
-
-Pre-commit rules are automatically run once pre-commits hooks have been installed:
-```sh
-$ pip install pre-commit
-$ pre-commit install
-$ pre-commit run -a # Run pre-commit once
+$ parse_tc_group <task_group_id>
 ```
