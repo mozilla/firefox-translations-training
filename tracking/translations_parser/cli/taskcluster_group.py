@@ -116,7 +116,7 @@ def get_metrics_from_task(task: dict) -> list[Metric]:
 
 
 def filter_task(task: dict) -> tuple[str, dict] | tuple[None, None]:
-    if task["status"]["state"] == "completed" and "vocab" not in task["task"]["tags"]["kind"]:    
+    if task["status"]["state"] == "completed" and "vocab" not in task["task"]["tags"]["kind"]:
         name = task["task"]["tags"]["kind"]
         prefix = name.split("-")[0]
         if prefix == "train":
@@ -131,11 +131,11 @@ def filter_task(task: dict) -> tuple[str, dict] | tuple[None, None]:
 
         task["name"] = name + suffix
         return prefix, task
-    
+
     return None, None
 
 
-def get_training_tasks(group_id: str, grouped_tasks: dict[str, list[dict]]) -> list[list[dict]]:
+def list_training_tasks(group_id: str, grouped_tasks: dict[str, list[dict]]) -> list[list[dict]]:
     training_tasks = sum(
         [tasks for key, tasks in grouped_tasks.items() if key in KIND_TAG_TARGET], start=[]
     )
@@ -148,7 +148,9 @@ def get_training_tasks(group_id: str, grouped_tasks: dict[str, list[dict]]) -> l
     return training_tasks
 
 
-def get_metrics_tasks(group_id: str, grouped_tasks: dict[str, list[dict]]) -> list[dict[str, dict]]:
+def list_metrics_tasks(
+    group_id: str, grouped_tasks: dict[str, list[dict]]
+) -> list[dict[str, dict]]:
     metrics_tasks = {task["status"]["taskId"]: task for task in grouped_tasks["evaluate"]}
 
     if not metrics_tasks:
@@ -203,10 +205,10 @@ def publish_task_group(group_id: str) -> None:
     group_name = f'{experiment["name"]}_{group_id}'
 
     grouped_tasks = list_completed_tasks(group_id)
-    metrics_tasks = get_metrics_tasks(group_id, grouped_tasks)
+    metrics_tasks = list_metrics_tasks(group_id, grouped_tasks)
 
     # Publish training tasks as runs
-    for training_task in get_training_tasks(group_id, grouped_tasks):
+    for training_task in list_training_tasks(group_id, grouped_tasks):
         # Associate metrics to each runs (evaluate tasks that depends on the training task)
         dependent_tasks = []
         for eval_id, eval_task in metrics_tasks.items():
@@ -232,7 +234,10 @@ def publish_task_group(group_id: str) -> None:
                 dependent_tasks.append(eval_id)
 
         metrics = sum(
-            [get_metrics_from_task(metrics_tasks.pop(dependent_task_id)) for dependent_task_id in dependent_tasks],
+            [
+                get_metrics_from_task(metrics_tasks.pop(dependent_task_id))
+                for dependent_task_id in dependent_tasks
+            ],
             start=[],
         )
 
@@ -276,15 +281,17 @@ def list_dependent_group_ids(task_id: str, known: set[str]):
     task = queue.task(task_id)
 
     # Browse task dependencies
-    for dependent_task_id in task['dependencies']:
+    for dependent_task_id in task["dependencies"]:
         dependent_status = queue.status(dependent_task_id)
 
         group_id = dependent_status["status"]["taskGroupId"]
         if group_id in known:
             continue
 
+        yield group_id
         known.add(group_id)
-        list_dependent_group_ids(dependent_task_id, known)
+
+        yield from list_dependent_group_ids(dependent_task_id, known)
 
 
 def main() -> None:
@@ -298,13 +305,20 @@ def main() -> None:
         logger.info(f"Retrieving related groups from {args.group_id} training tasks dependencies")
 
         completed_tasks = list_completed_tasks(args.group_id)
-        training_tasks = get_training_tasks(args.group_id, completed_tasks)
+        training_tasks = list_training_tasks(args.group_id, completed_tasks)
         for training_task in training_tasks:
-            list_dependent_group_ids(training_task["status"]["taskId"], groups_ids)
+            dependent_ids = list_dependent_group_ids(
+                training_task["status"]["taskId"], {*groups_ids}
+            )
+            groups_ids.update(dependent_ids)
 
-        logger.info(f"Found {len(groups_ids) - 1} additional groups to browse for WandB publication")
+        logger.info(
+            f"Found {len(groups_ids) - 1} additional groups to browse for WandB publication"
+        )
     else:
-        logger.info("--no-recursive-lookup option is set, only the provided group will be browsed for WandB publication")
+        logger.info(
+            "--no-recursive-lookup option is set, only the provided group will be browsed for WandB publication"
+        )
 
     for group_id in groups_ids:
         publish_task_group(group_id)
