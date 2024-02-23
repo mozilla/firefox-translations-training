@@ -291,6 +291,7 @@ def list_dependent_group_ids(task_id: str, known: set[str]):
         yield group_id
         known.add(group_id)
 
+        # Shared instance of `known` to propagate discovered groups in real time across all recursion branches
         yield from list_dependent_group_ids(dependent_task_id, known)
 
 
