@@ -122,7 +122,7 @@ because they are relatively clean, and the pipeline supports automatic downloadi
 
 ### Custom datasets
 
-It is also possible to use manually downloaded datasets with prefix `custom_<file_path>`.
+It is also possible to use manually downloaded datasets with prefix `url_<url>`.
 
 Find more details about the supported dataset importers [here](data.md).
 
