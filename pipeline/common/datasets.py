@@ -6,6 +6,43 @@ from random import Random
 from typing import Iterator, Optional
 
 
+class Dataset:
+    """
+    Convert a dataset key into a structured format.
+
+    e.g.
+
+    dataset.key               "opus_CCAligned/v1"
+    dataset.importer:         "opus"
+    dataset.name:             "CCAligned/v1"
+    dataset.file_safe_key():  "opus_CCAligned_v1"
+    dataset.file_safe_name(): "CCAligned_v1"
+    """
+
+    def __init__(self, dataset_key: str) -> None:
+        key_parts = dataset_key.split("_")
+
+        self.key = dataset_key
+        self.importer = key_parts[0]
+        self.name = "_".join(key_parts[1:])
+
+        if not self.importer:
+            raise Exception(f"Could not find the importer in the dataset key {dataset_key}")
+
+        if not self.name:
+            raise Exception(f"Could not find the name in the dataset key {dataset_key}")
+
+    def _escape(string: str) -> str:
+        # Keep in sync with dataset_helpers.py.
+        return string.replace("://", "_").replace("/", "_").replace(".", "_").replace(":", "_")
+
+    def file_safe_key(self) -> str:
+        return Dataset._escape(self.key)
+
+    def file_safe_name(self) -> str:
+        return Dataset._escape(self.name)
+
+
 def shuffle_with_max_lines(
     line_stream: Iterator[str],
     seed: str,
