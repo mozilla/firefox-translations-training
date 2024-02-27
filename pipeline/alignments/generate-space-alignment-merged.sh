@@ -35,19 +35,19 @@ echo "### Decompressing original corpus to get its length"
 ${COMPRESSION_CMD} -d "${original_prefix}.${SRC}.${ARTIFACT_EXT}"
 original_len=$(wc -l <"${original_prefix}.${SRC}")
 
-echo "### Creating merged corpus"
-  cat <(paste <(cat "${original_prefix}.${SRC}") <(${COMPRESSION_CMD} -dc "${original_prefix}.${TRG}.${ARTIFACT_EXT}")) \
-      <(paste <(${COMPRESSION_CMD} -dc "${backtranslated_prefix}.${SRC}.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${backtranslated_prefix}.${TRG}.${ARTIFACT_EXT}")) |
+echo "### Creating merged corpus from the original and back-translated ones"
+cat <(paste <(cat "${original_prefix}.${SRC}") <(${COMPRESSION_CMD} -dc "${original_prefix}.${TRG}.${ARTIFACT_EXT}")) \
+    <(paste <(${COMPRESSION_CMD} -dc "${backtranslated_prefix}.${SRC}.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${backtranslated_prefix}.${TRG}.${ARTIFACT_EXT}")) |
   sed 's/\t/ ||| /' >"${dir}/corpus"
 
 echo "### Training alignments"
-  # forward
-  "${BIN}/fast_align" -vod -i "${dir}/corpus" >"${dir}/align.s2t"
-  # reversed
-  "${BIN}/fast_align" -vodr -i "${dir}/corpus" >"${dir}/align.t2s"
+# forward
+"${BIN}/fast_align" -vod -i "${dir}/corpus" >"${dir}/align.s2t"
+# reversed
+"${BIN}/fast_align" -vodr -i "${dir}/corpus" >"${dir}/align.t2s"
 
 echo "### Symmetrizing alignments"
-  "${BIN}/atools" -i "${dir}/align.s2t" -j "${dir}/align.t2s" -c grow-diag-final-and >"${dir}/corpus.aln"
+"${BIN}/atools" -i "${dir}/align.s2t" -j "${dir}/align.t2s" -c grow-diag-final-and >"${dir}/corpus.aln"
 
 echo "### Splitting the aligned corpus back"
 # take first N lines
