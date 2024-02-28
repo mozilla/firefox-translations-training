@@ -77,7 +77,7 @@ tasks:
                     pip3 install -r $VCS_PATH/pipeline/train/requirements/train.txt &&
                     export PATH="$HOME/.local/bin:$PATH" &&
                     export MARIAN=$MOZ_FETCHES_DIR &&
-                    $VCS_PATH/taskcluster/scripts/pipeline/train-taskcluster.sh
+                    $VCS_PATH/taskcluster/scripts/pipeline/train-taskcluster2.sh
                     student
                     finetune
                     {src_locale}
