@@ -7,7 +7,7 @@ set -x
 set -euo pipefail
 
 echo "###### Generating alignments and shortlist"
-[[ -z "${MARIAN}" ]] && echo "BIN is empty"
+[[ -z "${MARIAN}" ]] && echo "MARIAN is empty"
 [[ -z "${BIN}" ]] && echo "BIN is empty"
 [[ -z "${SRC}" ]] && echo "SRC is empty"
 [[ -z "${TRG}" ]] && echo "TRG is empty"

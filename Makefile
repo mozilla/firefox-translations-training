@@ -51,10 +51,32 @@ fix-all:
 	make black-fix
 	make lint-fix
 
+# Download binaries from Taskcluster to run tests
+# See https://firefox-ci-tc.services.mozilla.com/tasks/index/translations.cache.level-1.toolchains.v3.fast-align/latest
+download-bin:
+	BIN=bin bash utils/download-bin.sh
+
 # Run unit tests
+# Some tests work only on Linux, use Docker if running locally on other OS
 run-tests:
 	poetry install --only tests --only utils --no-root
 	PYTHONPATH=$$(pwd) poetry run pytest tests -vv
+
+# Run unit tests locally under Docker
+run-tests-docker:
+  	# build docker images for apple silicon
+	if [ $$(uname -m) == 'arm64' ]; then \
+	  	export DOCKER_DEFAULT_PLATFORM=linux/amd64; \
+	fi
+
+	docker build \
+		--file taskcluster/docker/base/Dockerfile \
+		--tag ftt-base .
+	docker build \
+		--build-arg DOCKER_IMAGE_PARENT=ftt-base \
+		--file taskcluster/docker/test/Dockerfile \
+		--tag ftt-test .
+	docker run -it -v $$(pwd):/builds/worker/checkouts -w /builds/worker/checkouts  ftt-test make run-tests
 
 # Validates Taskcluster task graph locally
 validate-taskgraph:

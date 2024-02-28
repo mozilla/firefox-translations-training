@@ -67,7 +67,7 @@ tasks:
                     export PATH=$PATH:$MOZ_FETCHES_DIR &&
                     $VCS_PATH/pipeline/alignments/generate-space-alignment.sh
                     $MOZ_FETCHES_DIR/corpus
-                    /builds/worker/artifacts/corpus
+                    $TASK_WORKDIR/artifacts/corpus
 
 
         dependencies:
