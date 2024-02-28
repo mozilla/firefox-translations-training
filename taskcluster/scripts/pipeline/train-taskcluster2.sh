@@ -47,7 +47,7 @@ case "$pretrained_model_mode" in
         if [ "$pretrained_model_mode" == "init" ]; then
             extra_params+=("--pretrained-model" "$TASK_WORKDIR/artifacts/final.model.npz.best-$best_model_metric.npz" "--no-restore-corpus")
         fi
-        $VCS_ROOT/pipeline/train/train.sh \
+        $VCS_ROOT/pipeline/train/train2.sh \
         "$model_type" \
         "$training_type" \
         "$src" \
