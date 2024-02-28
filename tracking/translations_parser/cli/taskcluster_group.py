@@ -205,10 +205,15 @@ def publish_task_group(group_id: str) -> None:
     group_name = f'{experiment["name"]}_{group_id}'
 
     grouped_tasks = list_completed_tasks(group_id)
+    training_tasks = list_training_tasks(group_id, grouped_tasks)
     metrics_tasks = list_metrics_tasks(group_id, grouped_tasks)
 
+    if not training_tasks:
+        logger.warning(f"Skipping task group {group_id} as it is empty")
+        return
+
     # Publish training tasks as runs
-    for training_task in list_training_tasks(group_id, grouped_tasks):
+    for training_task in training_tasks:
         # Associate metrics to each runs (evaluate tasks that depends on the training task)
         dependent_tasks = []
         for eval_id, eval_task in metrics_tasks.items():
