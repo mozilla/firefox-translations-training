@@ -8,8 +8,22 @@
 # runtime, or adjust in kinds when changing worker types.
 
 from taskgraph.transforms.base import TransformSequence
+from taskgraph.util.schema import resolve_keyed_by
 
 transforms = TransformSequence()
+
+
+@transforms.add
+def evaluate_keyed_by(config, jobs):
+    for job in jobs:
+        resolve_keyed_by(
+            job,
+            "worker-type",
+            item_name=job["description"],
+            **{"tasks-for": config.params["tasks_for"]},
+        )
+
+        yield job
 
 
 @transforms.add

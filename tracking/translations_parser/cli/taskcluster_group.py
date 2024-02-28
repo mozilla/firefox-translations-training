@@ -20,6 +20,7 @@ from taskcluster.download import downloadArtifactToBuf, downloadArtifactToFile
 from translations_parser.data import Metric
 from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import WandB
+from translations_parser.utils import extract_dataset_from_tag
 
 logging.basicConfig(
     level=logging.INFO,
@@ -163,12 +164,28 @@ def main() -> None:
         # Associate metrics to each runs (evaluate tasks that depends on the training task)
         dependent_tasks = []
         for eval_id, eval_task in metrics_tasks.items():
-            if task["status"]["taskId"] in eval_task["task"]["dependencies"]:
+            label = eval_task["task"]["tags"].get("label", "")
+            try:
+                model_name, _, _ = extract_dataset_from_tag(label, sep="-")
+            except ValueError:
+                continue
+            if label and (re_match := MULTIPLE_TRAIN_SUFFIX.search(label)):
+                (suffix,) = re_match.groups()
+                model_name += suffix
+            # Evaluation tasks may be named finetuned instead of finetune
+            model_name = model_name.replace("finetuned", "finetune")
+
+            # Evaluation tasks must be a dependency of the run and match its name
+            if (
+                task["status"]["taskId"] in eval_task["task"]["dependencies"]
+                and model_name == task["name"]
+            ):
                 dependent_tasks.append(eval_id)
         metrics = sum(
             [get_metrics_from_task(metrics_tasks.pop(task_id)) for task_id in dependent_tasks],
             start=[],
         )
+
         run = task["name"]
         publish_task(
             project=project,
