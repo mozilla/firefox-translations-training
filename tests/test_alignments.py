@@ -6,6 +6,7 @@ from fixtures import DataDir, en_sample, ru_sample
 current_folder = os.path.dirname(os.path.abspath(__file__))
 fixtures_path = os.path.join(current_folder, "fixtures")
 root_path = os.path.abspath(os.path.join(current_folder, ".."))
+bin_dir = os.environ["BIN"] if os.getenv("BIN") else os.path.join(root_path, "bin")
 
 
 def verify_aln(data_dir, dataset, src_corpus, trg_corpus):
@@ -34,13 +35,12 @@ def verify_aln(data_dir, dataset, src_corpus, trg_corpus):
 
 
 def test_space_tokenized_aln():
-    bin_dir = os.getenv("BIN")
     data_dir = DataDir("test_alignments")
     data_dir.create_zst("corpus.en.zst", en_sample),
     data_dir.create_zst("corpus.ru.zst", ru_sample),
     env = {
         "TEST_ARTIFACTS": data_dir.path,
-        "BIN": bin_dir if bin_dir else os.path.join(root_path, "bin"),
+        "BIN": bin_dir,
         "COMPRESSION_CMD": "zstd",
         "ARTIFACT_EXT": "zst",
         "SRC": "en",
@@ -62,7 +62,7 @@ def test_space_tokenized_aln_merged():
     data_dir.create_zst("mono.ru.zst", mono_ru_sample),
     env = {
         "TEST_ARTIFACTS": data_dir.path,
-        "BIN": os.path.join(root_path, "bin"),
+        "BIN": bin_dir,
         "COMPRESSION_CMD": "zstd",
         "ARTIFACT_EXT": "zst",
         "SRC": "en",
