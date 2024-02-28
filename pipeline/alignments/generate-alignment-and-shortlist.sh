@@ -7,10 +7,10 @@ set -x
 set -euo pipefail
 
 echo "###### Generating alignments and shortlist"
-test -v MARIAN
-test -v BIN
-test -v SRC
-test -v TRG
+[[ -z "${MARIAN}" ]] && echo "BIN is empty"
+[[ -z "${BIN}" ]] && echo "BIN is empty"
+[[ -z "${SRC}" ]] && echo "SRC is empty"
+[[ -z "${TRG}" ]] && echo "TRG is empty"
 
 corpus_prefix=$1
 vocab_path=$2
@@ -82,13 +82,13 @@ else
     "${dir}/lex.t2s"
 fi
 
-test -s "${dir}/lex.s2t" && ${COMPRESSION_CMD} "${dir}/lex.s2t"
+if [ -f "${dir}/lex.s2t" ]; then
+  ${COMPRESSION_CMD} "${dir}/lex.s2t"
+fi
 
 echo "### Shortlist pruning"
-test -s "${dir}/vocab.txt" ||
-  "${MARIAN}/spm_export_vocab" --model="${vocab_path}" --output="${dir}/vocab.txt"
-test -s "${output_dir}/lex.s2t.pruned.${ARTIFACT_EXT}" ||
-  ${COMPRESSION_CMD} -dc "${dir}/lex.s2t.${ARTIFACT_EXT}" |
+"${MARIAN}/spm_export_vocab" --model="${vocab_path}" --output="${dir}/vocab.txt"
+${COMPRESSION_CMD} -dc "${dir}/lex.s2t.${ARTIFACT_EXT}" |
   grep -v NULL |
   python3 "prune_shortlist.py" 100 "${dir}/vocab.txt" |
   ${COMPRESSION_CMD} >"${output_dir}/lex.s2t.pruned.${ARTIFACT_EXT}"

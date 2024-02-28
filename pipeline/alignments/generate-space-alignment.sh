@@ -7,9 +7,9 @@ set -x
 set -euo pipefail
 
 echo "###### Generating alignments"
-test -v BIN
-test -v SRC
-test -v TRG
+[[ -z "${BIN}" ]] && echo "BIN is empty"
+[[ -z "${SRC}" ]] && echo "SRC is empty"
+[[ -z "${TRG}" ]] && echo "TRG is empty"
 
 corpus_prefix=$1
 output_prefix=$2
