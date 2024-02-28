@@ -14,7 +14,7 @@ src=$3
 trg=$4
 # comma separated prefixes to datasets for curriculum learning
 # for example path1/corpus,path2/mono
-train_set_prefixes=$5
+train_set_prefix=$5
 valid_set_prefix=$6
 model_dir=$7
 vocab=$8
