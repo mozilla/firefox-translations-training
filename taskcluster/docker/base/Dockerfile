@@ -31,6 +31,7 @@ RUN apt-get update -qq \
                           htop \
                           vim \
                           nano \
+                          ncurses-term \
                           zstd \
                           screen \
                           curl \
@@ -44,7 +45,8 @@ RUN pip install zstandard
 
 ENV SHELL=/bin/bash \
     HOME=/builds/worker \
-    PATH="/builds/worker/.local/bin:$PATH"
+    PATH="/builds/worker/.local/bin:$PATH" \
+    TERM=hterm-256color
 
 VOLUME /builds/worker/checkouts
 VOLUME /builds/worker/.cache
