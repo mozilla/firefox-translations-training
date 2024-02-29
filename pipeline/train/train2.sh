@@ -48,13 +48,13 @@ zstdmt --rm -d "${valid_set_prefix}.${trg}.${ARTIFACT_EXT}"
 "${MARIAN}/marian" \
   --model "${model_dir}/model.npz" \
   -c "configs/model/${model_type}.yml" "configs/training/${model_type}.${training_type}.yml" \
-  --train-sets "${train_set_prefix}".{"${src}","${trg}"}${ARTIFACT_EXT} \
+  --train-sets "${train_set_prefix}".{"${src}","${trg}"}.${ARTIFACT_EXT} \
   -T "${model_dir}/tmp" \
   --vocabs "${vocab}" "${vocab}" \
   -w "${WORKSPACE}" \
   --devices ${GPUS} \
   --valid-metrics "${best_model_metric}" ${all_model_metrics[@]/$best_model_metric} \
-  --valid-sets "${valid_set_prefix}".{"${src}","${trg}"}${ARTIFACT_EXT} \
+  --valid-sets "${valid_set_prefix}".{"${src}","${trg}"}.${ARTIFACT_EXT} \
   --valid-translation-output "${model_dir}/devset.out" \
   --valid-log "${model_dir}/valid.log" \
   --log "${model_dir}/train.log" \
