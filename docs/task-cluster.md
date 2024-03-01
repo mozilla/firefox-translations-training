@@ -124,7 +124,8 @@ To start an interactive task, follow these steps:
 
 5. Reduce the maxRunTime to a best guess at how long you'll need the task and worker running for. (We pay for every minute a worker runs - so they should not be kept running, eg: overnight.)
 
-6. Adjust the payload to simply run bash and sleep (instead of a full pipeline step). For docker-worker tasks use something like:
+6. Adjust the payload to run `sleep 7200` instead of running the bash script. It's based to keep all of the environment set up and run_task part of the command, abut then replace the actual script running to the sleep command.
+
 ```
      command:
     - bash
@@ -145,3 +146,12 @@ For generic-worker tasks (those needing a GPU), use:
 7. Click "Create Task"
 
 After a few minutes you should be able to get a shell (a link will show up in the tab when it's ready).
+
+8. Grab the fetches
+
+Assuming you kept the `run_task` in the command, then you can fetch the content.
+
+```sh
+chmod +x fetch-content
+./fetch-content task-artifacts
+```
