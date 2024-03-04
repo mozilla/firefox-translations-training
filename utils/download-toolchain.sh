@@ -2,6 +2,8 @@
 ##
 # Download latest versions of binaries from the Taskcluster toolchain
 #
+# See https://firefox-ci-tc.services.mozilla.com/tasks/index/translations.cache.level-1.toolchains.v3.fast-align/latest
+#
 
 set -x
 set -euo pipefail

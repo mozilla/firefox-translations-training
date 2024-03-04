@@ -52,9 +52,8 @@ fix-all:
 	make lint-fix
 
 # Download binaries from Taskcluster to run tests
-# See https://firefox-ci-tc.services.mozilla.com/tasks/index/translations.cache.level-1.toolchains.v3.fast-align/latest
-download-bin:
-	BIN=bin bash utils/download-bin.sh
+download-toolchain:
+	BIN=bin bash utils/download-toolchain.sh
 
 # Run unit tests
 # Some tests work only on Linux, use Docker if running locally on other OS
