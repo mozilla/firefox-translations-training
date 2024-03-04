@@ -2,6 +2,9 @@
 ##
 # Generates whitespace tokenized alignments jointly on original and backtranslated corpus to work with OpusTrainer Tags
 #
+# OpusTrainer does not support SentencePiece tokenized alignments as input.
+# It will remap the whitespace tokenized alignments to match SentencePiece tokenization before passing to Marian.
+#
 
 set -x
 set -euo pipefail
