@@ -1,6 +1,6 @@
 #!/bin/bash
 ##
-# Generates space tokenized alignments jointly on original and backtranslated corpus to work with OpusTrainer Tags
+# Generates whitespace tokenized alignments jointly on original and backtranslated corpus to work with OpusTrainer Tags
 #
 
 set -x

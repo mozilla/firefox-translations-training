@@ -681,7 +681,7 @@ rule alignments:
         extract_lex=ancient(rules.extract_lex.output)
     output: alignment=f'{align_dir}/corpus.aln.gz',shortlist=f'{align_dir}/lex.s2t.pruned.gz'
     params: input_prefix=f'{filtered}/corpus'
-    shell: '''bash pipeline/alignment/generate-alignment-and-shortlist.sh \
+    shell: '''bash pipeline/alignment/generate-shortlist.sh \
                 "{params.input_prefix}" "{input.vocab}" "{align_dir}" {threads} >> {log} 2>&1'''
 
 rule train_student:

@@ -1,6 +1,6 @@
 #!/bin/bash
 ##
-# Generates space tokenized alignments to work with OpusTrainer Tags
+# Generates whitespace tokenized alignments to work with OpusTrainer Tags
 #
 
 set -x

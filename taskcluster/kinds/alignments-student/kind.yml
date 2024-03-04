@@ -26,7 +26,7 @@ tasks:
             cache:
                 type: alignment
                 resources:
-                    - pipeline/alignments/generate-space-alignment.sh
+                    - pipeline/alignments/generate-alignment.sh
         task-context:
             from-parameters:
                 src_locale: training_config.experiment.src
@@ -65,7 +65,7 @@ tasks:
                 - >-
                     export BIN=$MOZ_FETCHES_DIR &&
                     export PATH=$PATH:$MOZ_FETCHES_DIR &&
-                    $VCS_PATH/pipeline/alignments/generate-space-alignment.sh
+                    $VCS_PATH/pipeline/alignments/generate-alignment.sh
                     $MOZ_FETCHES_DIR/corpus
                     $TASK_WORKDIR/artifacts/corpus
 

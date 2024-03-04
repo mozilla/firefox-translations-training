@@ -1,6 +1,6 @@
 #!/bin/bash
 ##
-# Generates alignment and lexical shortlist for a corpus.
+# Generates a lexical shortlist for a corpus.
 #
 
 set -x
