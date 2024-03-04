@@ -93,9 +93,3 @@ tasks:
             collect-mono-trg:
                 - artifact: mono.{src_locale}.zst
                   extract: false
-
-
-
-
-
-
