@@ -60,23 +60,25 @@ download-bin:
 # Some tests work only on Linux, use Docker if running locally on other OS
 run-tests:
 	poetry install --only tests --only utils --no-root
-	PYTHONPATH=$$(pwd) poetry run pytest tests -vv
+	PYTHONPATH=$$(pwd) poetry run pytest -vv
 
 # Run unit tests locally under Docker
+# !!! IMPORTANT !!! on Apple Silicon run without poetry shell for the first time
+# as it can change `uname -m` output to x86_64 if it runs under Rosetta
 run-tests-docker:
   	# build docker images for apple silicon
 	if [ $$(uname -m) == 'arm64' ]; then \
+		echo "setting arm64 platform"; \
 	  	export DOCKER_DEFAULT_PLATFORM=linux/amd64; \
-	fi
-
+	fi && \
 	docker build \
 		--file taskcluster/docker/base/Dockerfile \
-		--tag ftt-base .
+		--tag ftt-base . && \
 	docker build \
 		--build-arg DOCKER_IMAGE_PARENT=ftt-base \
 		--file taskcluster/docker/test/Dockerfile \
-		--tag ftt-test .
-	docker run -it -v $$(pwd):/builds/worker/checkouts -w /builds/worker/checkouts  ftt-test make run-tests
+		--tag ftt-test . && \
+	docker run -it --rm -v $$(pwd):/builds/worker/checkouts -w /builds/worker/checkouts ftt-test make run-tests
 
 # Validates Taskcluster task graph locally
 validate-taskgraph:
