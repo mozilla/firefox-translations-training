@@ -36,6 +36,8 @@ modifiers:
 - UpperCase: 0.1 # Apply randomly to 10% of sentences
 ```
 
+See [OpusTrainer Readme](https://github.com/hplt-project/OpusTrainer?tab=readme-ov-file#modifiers) for detailed documentation.
+
 ## Curriculum learning
 
 Ability to split training into multiple stages. Each stage is configurable to use a mix of different datasets.
