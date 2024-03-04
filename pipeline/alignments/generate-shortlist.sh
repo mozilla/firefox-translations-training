@@ -2,6 +2,9 @@
 ##
 # Generates a lexical shortlist for a corpus.
 #
+#
+# It also generate SentencePiece tokenized alignments that are required for extract_lex
+#
 
 set -x
 set -euo pipefail

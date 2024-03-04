@@ -19,7 +19,8 @@ valid_set_prefix=$6
 model_dir=$7
 vocab=$8
 best_model_metric=$9
-# comma separated alignment paths that correspond to each training dataset (required for Tags modifier)
+# comma separated alignment paths that correspond to each training dataset
+# (required for Tags modifier and guided alignments for student training)
 # or None to train without alignments
 alignments=${10}
 # random seed, UINT

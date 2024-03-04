@@ -2,6 +2,8 @@
 ##
 # Generates whitespace tokenized alignments to work with OpusTrainer Tags
 #
+# It is used in student training
+#
 # OpusTrainer does not support SentencePiece tokenized alignments as input.
 # It will remap the whitespace tokenized alignments to match SentencePiece tokenization before passing to Marian.
 #
