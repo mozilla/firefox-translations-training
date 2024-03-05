@@ -76,6 +76,13 @@ workers:
             implementation: docker-worker
             os: linux
             worker-type: 'b-linux-large-gcp-1tb'
+        # Use for tasks that don't require GPUs, but need immense amounts of disk space
+        # and higher reliability
+        b-cpu-xlargedisk-standard:
+            provisioner: '{trust-domain}-{level}'
+            implementation: docker-worker
+            os: linux
+            worker-type: 'b-linux-large-gcp-1tb-standard'
         # Use for quick tasks that need a GPU, eg: evaluate
         b-gpu:
             provisioner: '{trust-domain}-{level}'
