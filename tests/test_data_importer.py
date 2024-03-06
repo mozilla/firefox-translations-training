@@ -93,7 +93,7 @@ def data_dir():
         ("sacrebleu", "wmt19"),
         (
             "url",
-            "https_storage_googleapis_com_releng-translations-dev_data_en-ru_pytest-dataset_[LANG]_zst",
+            "https_storage_googleapis_com_releng-translations-dev_data_en-ru_pytest-dataset__LANG__zst",
         ),
     ],
 )

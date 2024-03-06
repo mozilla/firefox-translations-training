@@ -25,7 +25,7 @@ type=${dataset%%_*}
 
 # Choose either the .sh or .py script.
 if [[ -f "importers/corpus/${type}.py" ]]; then
-  script="python importers/corpus/${type}.py"
+  script="python3 importers/corpus/${type}.py"
 else
   script="bash importers/corpus/${type}.sh"
 fi
