@@ -34,7 +34,14 @@ class Dataset:
 
     def _escape(string: str) -> str:
         # Keep in sync with dataset_helpers.py.
-        return string.replace("://", "_").replace("/", "_").replace(".", "_").replace(":", "_")
+        return (
+            string.replace("://", "_")
+            .replace("/", "_")
+            .replace(".", "_")
+            .replace(":", "_")
+            .replace("[", "_")
+            .replace("]", "_")
+        )
 
     def file_safe_key(self) -> str:
         return Dataset._escape(self.key)
