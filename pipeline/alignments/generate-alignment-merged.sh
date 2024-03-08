@@ -41,16 +41,21 @@ ${COMPRESSION_CMD} -d "${original_prefix}.${SRC}.${ARTIFACT_EXT}"
 original_len=$(wc -l <"${original_prefix}.${SRC}")
 
 echo "### Creating merged corpus from the original and back-translated ones"
-cat <(paste <(cat "${original_prefix}.${SRC}") <(${COMPRESSION_CMD} -dc "${original_prefix}.${TRG}.${ARTIFACT_EXT}")) \
-    <(paste <(${COMPRESSION_CMD} -dc "${backtranslated_prefix}.${SRC}.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${backtranslated_prefix}.${TRG}.${ARTIFACT_EXT}")) |
-  sed 's/\t/ ||| /' >"${dir}/corpus"
+cat <(cat "${original_prefix}.${SRC}") <(${COMPRESSION_CMD} -dc "${backtranslated_prefix}.${SRC}.${ARTIFACT_EXT}")  \
+  > "${dir}/corpus.${SRC}"
+cat <(${COMPRESSION_CMD} -dc "${original_prefix}.${TRG}.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${backtranslated_prefix}.${TRG}.${ARTIFACT_EXT}") \
+  > "${dir}/corpus.${TRG}"
 
 echo "### Training alignments"
 # eflomal is supposed to use less memory than fast_align with competitive quality
-eflomal-align -i "${dir}/corpus" -f "${dir}/align.s2t" -r "${dir}/align.t2s"
+eflomal-align -s "${dir}/corpus.${SRC}" -t "${dir}/corpus.${TRG}" -f "${dir}/align.s2t" -r "${dir}/align.t2s"
+rm "${dir}/corpus.${SRC}"
+rm "${dir}/corpus.${TRG}"
 
 echo "### Symmetrizing alignments"
 "${BIN}/atools" -i "${dir}/align.s2t" -j "${dir}/align.t2s" -c grow-diag-final-and >"${dir}/corpus.aln"
+rm "${dir}/align.s2t"
+rm "${dir}/align.t2s"
 
 echo "### Splitting the aligned corpus back"
 # take first N lines

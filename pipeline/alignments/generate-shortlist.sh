@@ -39,53 +39,39 @@ corpus_trg="${corpus_prefix}.${TRG}.${ARTIFACT_EXT}"
 
 echo "### Subword segmentation with SentencePiece"
 ${COMPRESSION_CMD} -dc "${corpus_src}" |
-  parallel --no-notice --pipe -k -j "${threads}" --block 50M "${MARIAN}/spm_encode" --model "${vocab_path}" |
-  ${COMPRESSION_CMD} >"${dir}/corpus.spm.${SRC}.${ARTIFACT_EXT}"
+  parallel --no-notice --pipe -k -j "${threads}" --block 50M "${MARIAN}/spm_encode" --model "${vocab_path}" \
+   >"${dir}/corpus.spm.${SRC}"
 
 ${COMPRESSION_CMD} -dc "${corpus_trg}" |
-  parallel --no-notice --pipe -k -j "${threads}" --block 50M "${MARIAN}/spm_encode" --model "${vocab_path}" |
-  ${COMPRESSION_CMD} >"${dir}/corpus.spm.${TRG}.${ARTIFACT_EXT}"
-
-echo "### Creating merged corpus"
-paste <(${COMPRESSION_CMD} -dc "${dir}/corpus.spm.${SRC}.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${dir}/corpus.spm.${TRG}.${ARTIFACT_EXT}") |
-  sed 's/\t/ ||| /' >"${dir}/corpus"
+  parallel --no-notice --pipe -k -j "${threads}" --block 50M "${MARIAN}/spm_encode" --model "${vocab_path}" \
+   >"${dir}/corpus.spm.${TRG}"
 
 echo "### Training alignments"
 # eflomal is supposed to use less memory than fast_align with competitive quality
-eflomal-align -i "${dir}/corpus" -f "${dir}/align.s2t" -r "${dir}/align.t2s"
+eflomal-align -s "${dir}/corpus.spm.${SRC}" -t "${dir}/corpus.spm.${TRG}" -f "${dir}/align.s2t" -r "${dir}/align.t2s"
 
 echo "### Symmetrizing alignments"
-"${BIN}/atools" -i "${dir}/align.s2t" -j "${dir}/align.t2s" -c grow-diag-final-and |
-  ${COMPRESSION_CMD} >"${output_dir}/corpus.aln.${ARTIFACT_EXT}"
+"${BIN}/atools" -i "${dir}/align.s2t" -j "${dir}/align.t2s" -c grow-diag-final-and \
+  >"${output_dir}/corpus.aln"
+
+rm "${dir}/align.s2t"
+rm "${dir}/align.t2s"
 
 echo "### Creating shortlist"
-# extract_lex doesn't support zstd natively; we need to
-# decrypt first
-if [ "${ARTIFACT_EXT}" = "zst" ]; then
-  zstdmt -d "${dir}/corpus.spm.${TRG}.${ARTIFACT_EXT}"
-  zstdmt -d "${dir}/corpus.spm.${SRC}.${ARTIFACT_EXT}"
-  zstdmt -d "${output_dir}/corpus.aln.${ARTIFACT_EXT}"
-  "${BIN}/extract_lex" \
-    "${dir}/corpus.spm.${TRG}" \
-    "${dir}/corpus.spm.${SRC}" \
-    "${output_dir}/corpus.aln" \
-    "${dir}/lex.s2t" \
-    "${dir}/lex.t2s"
-  rm "${dir}/corpus.spm.${TRG}"
-  rm "${dir}/corpus.spm.${SRC}"
-  rm "${output_dir}/corpus.aln"
-else
-  "${BIN}/extract_lex" \
-    "${dir}/corpus.spm.${TRG}.${ARTIFACT_EXT}" \
-    "${dir}/corpus.spm.${SRC}.${ARTIFACT_EXT}" \
-    "${output_dir}/corpus.aln.${ARTIFACT_EXT}" \
-    "${dir}/lex.s2t" \
-    "${dir}/lex.t2s"
-fi
+"${BIN}/extract_lex" \
+  "${dir}/corpus.spm.${TRG}" \
+  "${dir}/corpus.spm.${SRC}" \
+  "${output_dir}/corpus.aln" \
+  "${dir}/lex.s2t" \
+  "${dir}/lex.t2s"
 
 if [ -f "${dir}/lex.s2t" ]; then
   ${COMPRESSION_CMD} "${dir}/lex.s2t"
 fi
+
+rm "${dir}/corpus.spm.${TRG}"
+rm "${dir}/corpus.spm.${SRC}"
+rm "${output_dir}/corpus.aln"
 
 echo "### Shortlist pruning"
 "${MARIAN}/spm_export_vocab" --model="${vocab_path}" --output="${dir}/vocab.txt"
