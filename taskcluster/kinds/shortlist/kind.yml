@@ -29,6 +29,7 @@ tasks:
                 resources:
                     - pipeline/alignments/generate-shortlist.sh
                     - pipeline/alignments/prune_shortlist.py
+                    - pipeline/alignments/requirements/alignments.txt
         task-context:
             from-parameters:
                 src_locale: training_config.experiment.src
@@ -65,6 +66,8 @@ tasks:
                 - bash
                 - -c
                 - >-
+                    pip3 install --upgrade pip setuptools &&
+                    pip3 install -r $VCS_PATH/pipeline/alignments/requirements/alignments.txt &&
                     export BIN=$MOZ_FETCHES_DIR &&
                     export MARIAN=$MOZ_FETCHES_DIR &&
                     export PATH=$PATH:$MOZ_FETCHES_DIR &&

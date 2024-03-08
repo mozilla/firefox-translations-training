@@ -59,7 +59,7 @@ download-toolchain:
 # Some tests work only on Linux, use Docker if running locally on other OS
 run-tests:
 	poetry install --only tests --only utils --no-root
-	PYTHONPATH=$$(pwd) poetry run pytest -vv
+	PYTHONPATH=$$(pwd) poetry run pytest tests -vv
 
 # Run unit tests locally under Docker
 # !!! IMPORTANT !!! on Apple Silicon run without poetry shell for the first time

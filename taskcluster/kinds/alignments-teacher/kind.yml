@@ -29,6 +29,7 @@ tasks:
                 type: alignment
                 resources:
                     - pipeline/alignments/generate-alignment-merged.sh
+                    - pipeline/alignments/requirements/alignments.txt
         task-context:
             from-parameters:
                 src_locale: training_config.experiment.src
@@ -66,6 +67,8 @@ tasks:
                 - bash
                 - -c
                 - >-
+                    pip3 install --upgrade pip setuptools &&
+                    pip3 install -r $VCS_PATH/pipeline/alignments/requirements/alignments.txt &&
                     export BIN=$MOZ_FETCHES_DIR &&
                     export PATH=$PATH:$MOZ_FETCHES_DIR &&
                     $VCS_PATH/pipeline/alignments/generate-alignment-merged.sh

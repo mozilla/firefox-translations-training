@@ -46,10 +46,8 @@ cat <(paste <(cat "${original_prefix}.${SRC}") <(${COMPRESSION_CMD} -dc "${origi
   sed 's/\t/ ||| /' >"${dir}/corpus"
 
 echo "### Training alignments"
-# forward
-"${BIN}/fast_align" -vod -i "${dir}/corpus" >"${dir}/align.s2t"
-# reversed
-"${BIN}/fast_align" -vodr -i "${dir}/corpus" >"${dir}/align.t2s"
+# eflomal is supposed to use less memory than fast_align with competitive quality
+eflomal-align -i "${dir}/corpus" -f "${dir}/align.s2t" -r "${dir}/align.t2s"
 
 echo "### Symmetrizing alignments"
 "${BIN}/atools" -i "${dir}/align.s2t" -j "${dir}/align.t2s" -c grow-diag-final-and >"${dir}/corpus.aln"
