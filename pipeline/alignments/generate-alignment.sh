@@ -35,7 +35,7 @@ ${COMPRESSION_CMD} -d --rm "${corpus_prefix}.${TRG}.${ARTIFACT_EXT}"
 
 echo "### Training alignments"
 # eflomal is supposed to use less memory than fast_align with competitive quality
-eflomal-align -s "${corpus_prefix}.${SRC}" -t "${corpus_prefix}.${TRG}" -f "${dir}/align.s2t" -r "${dir}/align.t2s"
+eflomal-align -v -s "${corpus_prefix}.${SRC}" -t "${corpus_prefix}.${TRG}" -f "${dir}/align.s2t" -r "${dir}/align.t2s"
 
 echo "### Symmetrizing alignments"
 "${BIN}/atools" -i "${dir}/align.s2t" -j "${dir}/align.t2s" -c grow-diag-final-and |

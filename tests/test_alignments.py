@@ -29,6 +29,7 @@ ru_sample = """Маленькая девочка, увидев, что поте�
 «Мне действительно очень жаль», — сказала Дороти, которая была по-настоящему напугана, увидев, что Ведьма тает, как коричневый сахар, у нее на глазах.
 """
 
+
 def verify_aln(data_dir, dataset, src_corpus, trg_corpus):
     aln_path = os.path.join(data_dir.path, "artifacts", f"{dataset}.aln.zst")
     assert os.path.exists(aln_path)
@@ -113,4 +114,3 @@ def test_space_tokenized_aln_merged():
 #     }
 #
 #     data_dir.run_task("shortlist-en-ru", env=env)
-

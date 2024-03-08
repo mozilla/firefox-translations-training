@@ -31,39 +31,36 @@ mkdir -p "${output_dir}"
 dir="${output_dir}/tmp"
 mkdir -p "${dir}"
 
-# train alignments on a merged corpus because fast_align is a statistical tool that benefits from a bigger corpus
-# and might not be accurate on a smaller one, for example when we have fewer back-translations
+echo "### Decompressing"
+${COMPRESSION_CMD} -d --rm "${original_prefix}.${SRC}.${ARTIFACT_EXT}"
+${COMPRESSION_CMD} -d --rm "${original_prefix}.${TRG}.${ARTIFACT_EXT}"
+${COMPRESSION_CMD} -d --rm "${backtranslated_prefix}.${SRC}.${ARTIFACT_EXT}"
+${COMPRESSION_CMD} -d --rm "${backtranslated_prefix}.${TRG}.${ARTIFACT_EXT}"
 
-# this is quite heavy on disk
-
-echo "### Decompressing original corpus to get its length"
-${COMPRESSION_CMD} -d "${original_prefix}.${SRC}.${ARTIFACT_EXT}"
-original_len=$(wc -l <"${original_prefix}.${SRC}")
-
-echo "### Creating merged corpus from the original and back-translated ones"
-cat <(cat "${original_prefix}.${SRC}") <(${COMPRESSION_CMD} -dc "${backtranslated_prefix}.${SRC}.${ARTIFACT_EXT}")  \
-  > "${dir}/corpus.${SRC}"
-cat <(${COMPRESSION_CMD} -dc "${original_prefix}.${TRG}.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${backtranslated_prefix}.${TRG}.${ARTIFACT_EXT}") \
-  > "${dir}/corpus.${TRG}"
-
-echo "### Training alignments"
+echo "### Training alignments for corpus"
 # eflomal is supposed to use less memory than fast_align with competitive quality
-eflomal-align -s "${dir}/corpus.${SRC}" -t "${dir}/corpus.${TRG}" -f "${dir}/align.s2t" -r "${dir}/align.t2s"
-rm "${dir}/corpus.${SRC}"
-rm "${dir}/corpus.${TRG}"
+eflomal-align -v \
+  -s "${original_prefix}.${SRC}" -t "${original_prefix}.${TRG}" \
+  -f "${dir}/corpus.s2t" -r "${dir}/corpus.t2s"
+
+echo "### Calculating priors (alignments model)"
+eflomal-makepriors -v \
+  -s "${original_prefix}.${SRC}" -t "${original_prefix}.${TRG}" \
+  -f "${dir}/corpus.s2t" -r "${dir}/corpus.t2s" \
+  -p "${output_original_prefix}.priors"
+
+echo "### Using the priors to align back-translations"
+eflomal-align -v \
+  -s "${backtranslated_prefix}.${SRC}" -t "${backtranslated_prefix}.${TRG}" \
+  -f "${dir}/mono.s2t" -r "${dir}/mono.t2s" \
+  -p "${output_original_prefix}.priors"
 
 echo "### Symmetrizing alignments"
-"${BIN}/atools" -i "${dir}/align.s2t" -j "${dir}/align.t2s" -c grow-diag-final-and >"${dir}/corpus.aln"
-rm "${dir}/align.s2t"
-rm "${dir}/align.t2s"
-
-echo "### Splitting the aligned corpus back"
-# take first N lines
-head -n ${original_len} "${dir}/corpus.aln" |
+"${BIN}/atools" -i "${dir}/corpus.s2t" -j "${dir}/corpus.t2s" -c grow-diag-final-and |
   ${COMPRESSION_CMD} >"${output_original_prefix}.aln.${ARTIFACT_EXT}"
-# take lines starting with N+1
-tail -n +$(($original_len+1)) "${dir}/corpus.aln" |
+"${BIN}/atools" -i "${dir}/mono.s2t" -j "${dir}/mono.t2s" -c grow-diag-final-and |
   ${COMPRESSION_CMD} >"${output_backtranslated_prefix}.aln.${ARTIFACT_EXT}"
+
 
 echo "### Deleting tmp dir"
 rm -rf "${dir}"
