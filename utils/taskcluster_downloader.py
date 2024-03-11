@@ -14,6 +14,8 @@ import taskcluster
 from taskcluster.download import downloadArtifactToBuf
 
 TC_MOZILLA = "https://firefox-ci-tc.services.mozilla.com"
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.abspath(os.path.join(CURRENT_DIR, "../data"))
 
 # to parse evaluation task tag
 # examples:
@@ -152,20 +154,36 @@ def donwload_evals(group_id, output):
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--output", metavar="OUTPUT", type=str, help="Output directory to save logs"
+        "--output",
+        metavar="OUTPUT",
+        type=str,
+        help="Output directory to save logs. Defaults to the data directory.",
     )
     parser.add_argument(
-        "--task-group-id", metavar="TASK_GROUP_ID", type=str, help="ID of a Taskcluster task group"
+        "--task-group-id",
+        metavar="TASK_GROUP_ID",
+        required=True,
+        type=str,
+        help="ID of a Taskcluster task group",
     )
-
     parser.add_argument(
-        "--mode", metavar="MODE", type=Mode, help="Downloading mode: logs or evals"
+        "--mode",
+        metavar="MODE",
+        type=Mode,
+        choices=Mode,
+        required=True,
+        help="What to download: " + ", ".join([m.name for m in Mode]),
     )
 
     args = parser.parse_args()
-    output = args.output
-    group_id = args.task_group_id
-    mode = args.mode
+    group_id: str = args.task_group_id
+    mode: Mode = args.mode
+
+    output: str
+    if args.output:
+        output = args.output
+    else:
+        output = os.path.join(DATA_DIR, f"taskcluster-{mode.value}")
 
     if mode == Mode.logs:
         donwload_logs(group_id, output)
