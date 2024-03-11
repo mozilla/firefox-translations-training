@@ -21,8 +21,8 @@ def stream_download_to_file(url: str, destination: str) -> None:
     if not response.ok:
         raise Exception(f"Unable to download file from {url}")
     with open(destination, "wb") as f:
-        logger.info("Streaming downloading: {url}")
-        logger.info("To: {destination}")
+        logger.info(f"Streaming downloading: {url}")
+        logger.info(f"To: {destination}")
         # Stream to disk in 1 megabyte chunks.
         for chunk in response.iter_content(chunk_size=1024 * 1024):
             f.write(chunk)

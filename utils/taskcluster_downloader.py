@@ -1,6 +1,15 @@
 """
-Downloads Marian training logs and evaluation results for a Taskcluster task group
+Downloads artifacts from a Taskcluster Task Group. This command supports the following modes:
+ - logs
+ - evals
+ - model
 """
+import os
+import sys
+
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+# Ensure the pipeline is available on the path.
+sys.path.append(os.path.join(CURRENT_DIR, ".."))
 
 import argparse
 import csv
@@ -11,9 +20,11 @@ import re
 import requests
 
 import taskcluster
+from pipeline.common.downloads import stream_download_to_file
 from taskcluster.download import downloadArtifactToBuf
 
 TC_MOZILLA = "https://firefox-ci-tc.services.mozilla.com"
+DATA_DIR = os.path.abspath(os.path.join(CURRENT_DIR, "../data"))
 
 # to parse evaluation task tag
 # examples:
@@ -42,6 +53,7 @@ eval_regex = re.compile(
 class Mode(enum.Enum):
     logs = "logs"
     evals = "evals"
+    model = "model"
 
 
 def donwload_logs(group_id, output):
@@ -149,28 +161,84 @@ def donwload_evals(group_id, output):
             csv_writer.writerow(res)
 
 
+def download_model(group_id: str, output: str):
+    options = {"rootUrl": ("%s" % TC_MOZILLA)}
+    queue = taskcluster.Queue(options=options)
+    group = queue.listTaskGroup(group_id)
+
+    for task in group["tasks"]:
+        if task["status"]["state"] != "completed":
+            continue
+
+        if task["task"]["tags"]["kind"] != "export":
+            continue
+
+        task_id = task["status"]["taskId"]
+        task_name = task["task"]["metadata"]["name"]
+        language_pair = task_name.replace("export-", "")
+
+        artifacts = queue.listLatestArtifacts(task_id)["artifacts"]
+        model_artifacts = [
+            artifact for artifact in artifacts if not artifact["name"].endswith(".log")
+        ]
+
+        model_path = os.path.join(output, language_pair)
+
+        os.makedirs(model_path, exist_ok=True)
+
+        print(
+            f'Downloading models from "{task_name}": '
+            f"https://firefox-ci-tc.services.mozilla.com/tasks/{task_id}"
+        )
+
+        for artifact in model_artifacts:
+            url = queue.buildUrl("getLatestArtifact", task_id, artifact["name"])
+            path = os.path.join(model_path, os.path.basename(artifact["name"]))
+            stream_download_to_file(url, path)
+
+        print(f"Model files are available at: {model_path}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--output", metavar="OUTPUT", type=str, help="Output directory to save logs"
+        "--output",
+        metavar="OUTPUT",
+        type=str,
+        help="Output directory to save logs. Defaults to the data directory.",
     )
     parser.add_argument(
-        "--task-group-id", metavar="TASK_GROUP_ID", type=str, help="ID of a Taskcluster task group"
+        "--task-group-id",
+        metavar="TASK_GROUP_ID",
+        required=True,
+        type=str,
+        help="ID of a Taskcluster task group",
     )
-
     parser.add_argument(
-        "--mode", metavar="MODE", type=Mode, help="Downloading mode: logs or evals"
+        "--mode",
+        metavar="MODE",
+        type=Mode,
+        choices=Mode,
+        required=True,
+        help="What to download: " + ", ".join([m.name for m in Mode]),
     )
 
     args = parser.parse_args()
-    output = args.output
-    group_id = args.task_group_id
-    mode = args.mode
+    group_id: str = args.task_group_id
+    mode: Mode = args.mode
+
+    output: str
+    if args.output:
+        output = args.output
+    else:
+        output = os.path.join(DATA_DIR, f"taskcluster-{mode.value}")
 
     if mode == Mode.logs:
         donwload_logs(group_id, output)
     elif mode == Mode.evals:
         donwload_evals(group_id, output)
+    elif mode == Mode.model:
+        download_model(group_id, output)
 
 
 if __name__ == "__main__":
