@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import sh
 from fixtures import DataDir
@@ -55,10 +56,10 @@ def verify_aln(data_dir, dataset, src_corpus, trg_corpus):
         )
 
 
-def test_space_tokenized_aln():
+def test_teacher_original_aln():
     data_dir = DataDir("test_alignments")
-    data_dir.create_zst("corpus.en.zst", en_sample),
-    data_dir.create_zst("corpus.ru.zst", ru_sample),
+    data_dir.create_zst("corpus.en.zst", en_sample)
+    data_dir.create_zst("corpus.ru.zst", ru_sample)
     env = {
         "TEST_ARTIFACTS": data_dir.path,
         "BIN": bin_dir,
@@ -68,19 +69,17 @@ def test_space_tokenized_aln():
         "TRG": "ru",
     }
 
-    data_dir.run_task("alignments-student-en-ru", env=env)
+    data_dir.run_task("alignments-original-en-ru", env=env)
 
     verify_aln(data_dir, "corpus", en_sample, ru_sample)
 
 
-def test_space_tokenized_aln_merged():
+def test_teacher_backtranslated_aln():
     data_dir = DataDir("test_alignments")
-    data_dir.create_zst("corpus.en.zst", en_sample),
-    data_dir.create_zst("corpus.ru.zst", ru_sample),
-    mono_en_sample = "\n".join(en_sample.split("\n")[1:-1])
-    mono_ru_sample = "\n".join(ru_sample.split("\n")[1:-1])
-    data_dir.create_zst("mono.en.zst", mono_en_sample),
-    data_dir.create_zst("mono.ru.zst", mono_ru_sample),
+    data_dir.create_zst("corpus.en.zst", en_sample)
+    data_dir.create_zst("mono.en.zst", en_sample)
+    data_dir.create_zst("corpus.ru.zst", ru_sample)
+    data_dir.create_zst("mono.ru.zst", ru_sample)
     env = {
         "TEST_ARTIFACTS": data_dir.path,
         "BIN": bin_dir,
@@ -89,14 +88,15 @@ def test_space_tokenized_aln_merged():
         "SRC": "en",
         "TRG": "ru",
     }
+    data_dir.run_task("alignments-original-en-ru", env=env)
+    shutil.copyfile(
+        os.path.join(data_dir.path, "artifacts", "corpus.priors"),
+        os.path.join(data_dir.path, "corpus.priors"),
+    )
 
-    data_dir.run_task("alignments-teacher-en-ru", env=env)
+    data_dir.run_task("alignments-backtranslated-en-ru", env=env)
 
-    for dataset, src_corpus, trg_corpus in (
-        ("corpus", en_sample, ru_sample),
-        ("mono", mono_en_sample, mono_ru_sample),
-    ):
-        verify_aln(data_dir, dataset, src_corpus, trg_corpus)
+    verify_aln(data_dir, "mono", en_sample, ru_sample)
 
 
 # TODO: need to pull marian and spm vocab

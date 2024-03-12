@@ -46,16 +46,8 @@ ${COMPRESSION_CMD} -dc "${corpus_trg}" |
   parallel --no-notice --pipe -k -j "${threads}" --block 50M "${MARIAN}/spm_encode" --model "${vocab_path}" \
    >"${dir}/corpus.spm.${TRG}"
 
-echo "### Training alignments"
-# eflomal is supposed to use less memory than fast_align with competitive quality
-eflomal-align -v -s "${dir}/corpus.spm.${SRC}" -t "${dir}/corpus.spm.${TRG}" -f "${dir}/align.s2t" -r "${dir}/align.t2s"
-
-echo "### Symmetrizing alignments"
-"${BIN}/atools" -i "${dir}/align.s2t" -j "${dir}/align.t2s" -c grow-diag-final-and \
-  >"${output_dir}/corpus.aln"
-
-rm "${dir}/align.s2t"
-rm "${dir}/align.t2s"
+python align.py --corpus_prefix="${dir}/corpus.spm" \
+                --output_path="${output_dir}/corpus.aln"
 
 echo "### Creating shortlist"
 "${BIN}/extract_lex" \

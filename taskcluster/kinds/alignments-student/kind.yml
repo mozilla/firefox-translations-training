@@ -14,6 +14,7 @@ transforms:
 kind-dependencies:
     - cefilter
     - toolchain
+    - alignments-original
 
 tasks:
     "{src_locale}-{trg_locale}":
@@ -26,7 +27,7 @@ tasks:
             cache:
                 type: alignment
                 resources:
-                    - pipeline/alignments/generate-alignment.sh
+                    - pipeline/alignments/align.py
                     - pipeline/alignments/requirements/alignments.txt
         task-context:
             from-parameters:
@@ -68,13 +69,14 @@ tasks:
                     pip3 install -r $VCS_PATH/pipeline/alignments/requirements/alignments.txt &&
                     export BIN=$MOZ_FETCHES_DIR &&
                     export PATH=$PATH:$MOZ_FETCHES_DIR &&
-                    $VCS_PATH/pipeline/alignments/generate-alignment.sh
-                    $MOZ_FETCHES_DIR/corpus
-                    $TASK_WORKDIR/artifacts/corpus
-
+                    python3 $VCS_PATH/pipeline/alignments/align.py
+                    --corpus_prefix=$MOZ_FETCHES_DIR/corpus
+                    --output_path=$TASK_WORKDIR/artifacts/corpus.aln.zst
+                    --priors_input_path=$MOZ_FETCHES_DIR/corpus.priors
 
         dependencies:
             cefilter: cefilter-{src_locale}-{trg_locale}
+            alignments-original: alignments-original-{src_locale}-{trg_locale}
 
         fetches:
             cefilter:
@@ -84,3 +86,5 @@ tasks:
                 - marian
                 - fast-align
                 - extract-lex
+            alignments-original:
+                - artifact: corpus.priors
