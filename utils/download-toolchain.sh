@@ -14,8 +14,10 @@ set -euo pipefail
 if [ ! -d "${BIN}" ]; then
   echo "Downloading to ${BIN}"
 
-  wget -P "${BIN}" https://firefox-ci-tc.services.mozilla.com/api/index/v1/task/translations.cache.level-1.toolchains.v3.extract-lex.latest/artifacts/public%2Fbuild%2Fextract_lex.tar.zst
-  wget -P "${BIN}" https://firefox-ci-tc.services.mozilla.com/api/index/v1/task/translations.cache.level-1.toolchains.v3.fast-align.latest/artifacts/public%2Fbuild%2Ffast-align.tar.zst
+  prefix="https://firefox-ci-tc.services.mozilla.com/api/index/v1/task/translations.cache.level-1.toolchains.v3"
+  wget -P "${BIN}" ${prefix}.extract-lex.latest/artifacts/public%2Fbuild%2Fextract_lex.tar.zst
+  wget -P "${BIN}" ${prefix}.fast-align.latest/artifacts/public%2Fbuild%2Ffast-align.tar.zst
+  wget -P "${BIN}" ${prefix}.marian.latest/artifacts/public%2Fbuild%2Fmarian.tar.zst
 
   zstd -d "${BIN}"/*.zst
 
