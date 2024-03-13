@@ -73,7 +73,11 @@ def run(
 
 
 def align(
-    corpus_src: str, corpus_trg: str, priors_input_path: str, stack: ExitStack, tmp_dir: str
+    corpus_src: str,
+    corpus_trg: str,
+    priors_input_path: Optional[str],
+    stack: ExitStack,
+    tmp_dir: str,
 ):
     if priors_input_path:
         logger.info(f"Using provided priors: {priors_input_path}")
