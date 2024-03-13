@@ -99,7 +99,7 @@ def align(
 def symmetrize(bin: str, fwd_path: str, rev_path: str, output_path: str, stack: ExitStack):
     logger.info("Symmetrizing alignments...")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    # Wrap the file with a compressor stream
+    # Wrap the file with a compressor stream if it needs to be compressed
     with zstandard.ZstdCompressor().stream_writer(
         stack.enter_context(open(output_path, "wb"))
     ) if output_path.endswith(".zst") else stack.enter_context(
@@ -115,7 +115,6 @@ def symmetrize(bin: str, fwd_path: str, rev_path: str, output_path: str, stack: 
                 "-c",
                 "grow-diag-final-and",
             ],
-            # stdout=output_f
             stdout=subprocess.PIPE,
             text=True,
             bufsize=1,
