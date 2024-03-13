@@ -102,7 +102,7 @@ def add_alignments(corpus):
     # This is slow without a GPU and is meant to operate only on small evaluation datasets
 
     # Use BERT with subwords and itermax as it has a higher recall and matches more words than other methods
-    # See more details in the paper: https://arxiv.org/pdf/2311.14838.pdf
+    # See more details in the paper: https://arxiv.org/pdf/2004.08728.pdf
     # and in the source code: https://github.com/cisnlp/simalign/blob/master/simalign/simalign.py
     # This will download a 700Mb BERT model from Hugging Face and cache it
     aligner = SentenceAligner(model="bert", token_type="bpe", matching_methods="i")
