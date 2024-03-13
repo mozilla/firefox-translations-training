@@ -64,8 +64,11 @@ run-tests:
 # Run unit tests locally under Docker
 # !!! IMPORTANT !!! on Apple Silicon run without poetry shell for the first time
 # as it can change `uname -m` output to x86_64 if it runs under Rosetta
-run-tests-docker:
-  	# build docker images for apple silicon
+build-docker:
+	if [ -n "$$VIRTUAL_ENV" ]; then \
+		echo "Error: Virtual environment detected. Exit the poetry shell."; \
+		exit 1; \
+	fi && \
 	if [ $$(uname -m) == 'arm64' ]; then \
 		echo "setting arm64 platform"; \
 	  	export DOCKER_DEFAULT_PLATFORM=linux/amd64; \
@@ -76,8 +79,45 @@ run-tests-docker:
 	docker build \
 		--build-arg DOCKER_IMAGE_PARENT=ftt-base \
 		--file taskcluster/docker/test/Dockerfile \
-		--tag ftt-test . && \
-	docker run -it --rm -v $$(pwd):/builds/worker/checkouts -w /builds/worker/checkouts ftt-test make run-tests
+		--tag ftt-test .
+
+# Run shell inside a container
+run-docker: build-docker
+run-docker:
+	if [ -n "$$VIRTUAL_ENV" ]; then \
+		echo "Error: Virtual environment detected. Exit the poetry shell."; \
+		exit 1; \
+	fi && \
+	if [ $$(uname -m) == 'arm64' ]; then \
+		echo "setting arm64 platform"; \
+	  	export DOCKER_DEFAULT_PLATFORM=linux/amd64; \
+	fi && \
+	docker run \
+		--interactive \
+		--tty \
+		--rm \
+		--volume $$(pwd):/builds/worker/checkouts \
+		--workdir /builds/worker/checkouts \
+		ftt-test bash
+
+# Run tests under Docker
+run-tests-docker: build-docker
+run-tests-docker:
+	if [ -n "$$VIRTUAL_ENV" ]; then \
+		echo "Error: Virtual environment detected. Exit the poetry shell."; \
+		exit 1; \
+	fi && \
+	if [ $$(uname -m) == 'arm64' ]; then \
+		echo "setting arm64 platform"; \
+	  	export DOCKER_DEFAULT_PLATFORM=linux/amd64; \
+	fi && \
+	docker run \
+		--interactive \
+		--tty \
+		--rm \
+		--volume $$(pwd):/builds/worker/checkouts \
+		--workdir /builds/worker/checkouts \
+		 ftt-test make run-tests
 
 # Validates Taskcluster task graph locally
 validate-taskgraph:
