@@ -46,7 +46,10 @@ ${COMPRESSION_CMD} -dc "${corpus_trg}" |
   parallel --no-notice --pipe -k -j "${threads}" --block 50M "${MARIAN}/spm_encode" --model "${vocab_path}" \
    >"${dir}/corpus.spm.${TRG}"
 
-python3 align.py --corpus_prefix="${dir}/corpus.spm" --output_path="${output_dir}/corpus.aln"
+python3 align.py \
+  --corpus_src="${dir}/corpus.spm.${SRC}" \
+  --corpus_trg="${dir}/corpus.spm.${TRG}" \
+  --output_path="${output_dir}/corpus.aln"
 
 echo "### Creating shortlist"
 "${BIN}/extract_lex" \

@@ -3,8 +3,9 @@
 Calculates alignments for a parallel corpus
 
 Example:
-    python pipeline/alignments/align.py \
-        --corpus_prefix=fetches/corpus
+    BIN=bin python pipeline/alignments/align.py \
+        --corpus_src=fetches/corpus.ru.zst
+        --corpus_trg=fetches/corpus.en.zst
         --output_path=artifacts/corpus.aln.zst
         --priors_input_path=fetches/corpus.priors
         --priors_output_path=artifacts/corpus.priors
@@ -26,25 +27,27 @@ logger = get_logger("alignments")
 
 
 def run(
-    corpus_prefix: str,
+    corpus_src: str,
+    corpus_trg: str,
     output_path: str,
     priors_input_path: Optional[str],
     priors_output_path: Optional[str],
 ):
-    src = os.environ["SRC"]
-    trg = os.environ["TRG"]
     bin = os.environ["BIN"]
     comp_cmd = os.getenv("COMPRESSION_CMD", "zstd")
 
     tmp_dir = os.path.join(os.path.dirname(output_path), "tmp")
     os.makedirs(tmp_dir, exist_ok=True)
 
-    logger.info("Decompressing corpus...")
-    subprocess.check_call(
-        [comp_cmd, "-d", "-f", "--rm", f"{corpus_prefix}.{src}.zst", f"{corpus_prefix}.{trg}.zst"]
-    )
-    corpus_src = f"{corpus_prefix}.{src}"
-    corpus_trg = f"{corpus_prefix}.{trg}"
+    if corpus_src.endswith(".zst"):
+        logger.info("Decompressing source corpus...")
+        subprocess.check_call([comp_cmd, "-d", "-f", "--rm", corpus_src])
+        corpus_src = corpus_src[:-4]
+
+    if corpus_trg.endswith(".zst"):
+        logger.info("Decompressing target corpus...")
+        subprocess.check_call([comp_cmd, "-d", "-f", "--rm", corpus_trg])
+        corpus_trg = corpus_trg[:-4]
 
     with ExitStack() as stack:
         fwd_path, rev_path = align(
@@ -159,17 +162,25 @@ def main() -> None:
 
     parser.add_argument("--type", metavar="TYPE", type=str, help="Dataset type: mono or corpus")
     parser.add_argument(
-        "--corpus_prefix",
-        metavar="CORPUS_PREFIX",
+        "--corpus_src",
+        metavar="CORPUS_SRC",
         type=str,
-        help="Full path to a parallel dataset without a language and file extension. "
-        "For example `fetches/corpus` for files `fetches/corpus.ru.zst` and `fetches/corpus.en.zst`",
+        help="Full path to the source sentences in a parallel dataset. Supports decompression using zstd. "
+        "For example `fetches/corpus.ru` or `fetches/corpus.ru.zst`",
+    )
+    parser.add_argument(
+        "--corpus_trg",
+        metavar="CORPUS_TRG",
+        type=str,
+        help="Full path to the target sentences in a parallel dataset. Supports decompression using zstd. "
+        "For example `fetches/corpus.en` or `fetches/corpus.en.zst`",
     )
     parser.add_argument(
         "--output_path",
-        metavar="OUTPUT_PREFIX",
+        metavar="OUTPUT_PATH",
         type=str,
-        help="A full path to the output alignments file",
+        help="A full path to the output alignments file. It will be compressed if the path ends with .zst. "
+        "For example artifacts/corpus.aln or artifacts/corpus.aln.zst",
     )
     parser.add_argument(
         "--priors_input_path",
@@ -188,7 +199,13 @@ def main() -> None:
     )
     args = parser.parse_args()
     logger.info("Starting generating alignments.")
-    run(args.corpus_prefix, args.output_path, args.priors_input_path, args.priors_output_path)
+    run(
+        args.corpus_src,
+        args.corpus_trg,
+        args.output_path,
+        args.priors_input_path,
+        args.priors_output_path,
+    )
     logger.info("Finished generating alignments.")
 
 
