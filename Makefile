@@ -81,7 +81,10 @@ build-docker:
 		--file taskcluster/docker/test/Dockerfile \
 		--tag ftt-test .
 
-# Run shell inside a container
+# Run a shell inside a container
+# Then you can run specific tests
+# poetry install
+# PYTHONPATH=$(pwd) poetry run pytest tests/test_alignments.py::test_shortlist -vv
 run-docker: build-docker
 run-docker:
 	if [ -n "$$VIRTUAL_ENV" ]; then \
