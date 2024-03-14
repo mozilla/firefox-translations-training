@@ -16,7 +16,7 @@ extra_args=( "${@:4}" )
 mkdir -p "${marian_dir}"
 cd "${marian_dir}"
 
-if [$use_gpu == 'true']; then
+if [ "${use_gpu}" == 'true']; then
   test -v CUDA_DIR
   cmake .. -DUSE_SENTENCEPIECE=on -DUSE_FBGEMM=on -DCOMPILE_CPU=on -DCMAKE_BUILD_TYPE=Release \
     -DCUDA_TOOLKIT_ROOT_DIR="${CUDA_DIR}" "${extra_args[@]}"
