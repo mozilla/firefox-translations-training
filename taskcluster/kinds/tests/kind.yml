@@ -101,6 +101,7 @@ tasks:
         - -c
         - >-
             export BIN=$MOZ_FETCHES_DIR &&
+            export MARIAN=$MOZ_FETCHES_DIR &&
             make run-tests
     run-on-tasks-for: ["github-push", "github-pull-request"]
     optimization:

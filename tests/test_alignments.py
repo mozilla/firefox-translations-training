@@ -8,6 +8,7 @@ current_folder = os.path.dirname(os.path.abspath(__file__))
 fixtures_path = os.path.join(current_folder, "fixtures")
 root_path = os.path.abspath(os.path.join(current_folder, ".."))
 bin_dir = os.environ["BIN"] if os.getenv("BIN") else os.path.join(root_path, "bin")
+marian_dir = os.environ["MARIAN"] if os.getenv("MARIAN") else os.path.join(root_path, "3rd_party", "marian-dev", "build")
 
 # "|||" in the text can cause issues if joint fast_align style input is used
 en_sample = """The little girl, seeing she had lost one of her pretty shoes, grew angry, and said to the Witch, “Give me back my shoe!” ||| one
@@ -106,7 +107,7 @@ def test_shortlist():
     env = {
         "TEST_ARTIFACTS": data_dir.path,
         "BIN": bin_dir,
-        "MARIAN": bin_dir,
+        "MARIAN": marian_dir,
         "COMPRESSION_CMD": "zstd",
         "ARTIFACT_EXT": "zst",
         "SRC": "en",

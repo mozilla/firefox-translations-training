@@ -51,10 +51,6 @@ fix-all:
 	make black-fix
 	make lint-fix
 
-# Download binaries from Taskcluster to run tests
-download-toolchain:
-	BIN=bin bash utils/download-toolchain.sh
-
 # Run unit tests
 # Some tests work only on Linux, use Docker if running locally on other OS
 run-tests:
@@ -79,7 +75,11 @@ build-docker:
 	docker build \
 		--build-arg DOCKER_IMAGE_PARENT=ftt-base \
 		--file taskcluster/docker/test/Dockerfile \
-		--tag ftt-test .
+		--tag ftt-test . && \
+	docker build \
+		--build-arg DOCKER_IMAGE_PARENT=ftt-test \
+		--file docker/Dockerfile \
+		--tag ftt-local .
 
 # Run a shell inside a container
 # Then you can run specific tests
@@ -101,7 +101,7 @@ run-docker:
 		--rm \
 		--volume $$(pwd):/builds/worker/checkouts \
 		--workdir /builds/worker/checkouts \
-		ftt-test bash
+		ftt-local bash
 
 # Run tests under Docker
 run-tests-docker: build-docker
@@ -120,7 +120,7 @@ run-tests-docker:
 		--rm \
 		--volume $$(pwd):/builds/worker/checkouts \
 		--workdir /builds/worker/checkouts \
-		 ftt-test make run-tests
+		 ftt-local make run-tests
 
 # Validates Taskcluster task graph locally
 validate-taskgraph:
