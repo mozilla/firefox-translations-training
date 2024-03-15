@@ -63,7 +63,8 @@ modifier_map = {
     "aug-title": lambda: TitleCaseModifier(PROB_1),
     "aug-upper": lambda: UpperCaseModifier(PROB_1),
     "aug-noise": lambda: NoiseModifier(PROB_1),
-    "aug-inline-noise": lambda: PlaceholderTagModifier(PROB_1, augment=1),
+    # prob 1 adds way too much inline noise
+    "aug-inline-noise": lambda: PlaceholderTagModifier(MIX_PROB, augment=1),
     "aug-mix": lambda: CompositeModifier(
         [
             TypoModifier(MIX_PROB, **get_typos_probs()),
@@ -95,7 +96,7 @@ def run_cmd(cmd: List[str]):
     print(result.stdout)
 
 
-def add_alignments(corpus):
+def add_alignments(corpus: List[str]) -> List[str]:
     from simalign import SentenceAligner
 
     # We use unsupervised aligner here because statistical tools like fast_align require a large corpus to train on

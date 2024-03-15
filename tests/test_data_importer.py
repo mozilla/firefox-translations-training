@@ -15,17 +15,20 @@ os.environ["COMPRESSION_CMD"] = COMPRESSION_CMD
 os.environ["SRC"] = SRC
 os.environ["TRG"] = TRG
 
-
 from pipeline.data import dataset_importer
 from pipeline.data.dataset_importer import run_import
 
-# the augmentation is probabilistic, here is a range for 0.05 probability
-AUG_MAX_RATE = 0.35
-AUG_MIN_RATE = 0.01
-
 
 def add_fake_alignments(corpus):
-    return [f"{line}\t0-0" for line in corpus]
+    corpus_and_aln = []
+    for line in corpus:
+        parts = line.split("\t")
+        src_sent, trg_sent = parts[0], parts[1]
+        min_len = min(len(src_sent.split()), len(trg_sent.split()))
+        aln = " ".join([f"{idx}-{idx}" for idx in range(min_len)])
+        corpus_and_aln.append(f"{line}\t{aln}")
+
+    return corpus_and_aln
 
 
 # it's very slow to download and run BERT on 2000 lines
@@ -61,34 +64,23 @@ def src_and_trg_are_different(src_l, trg_l, aug_src_l, aug_trg_l):
     return src_l != aug_src_l and trg_l != aug_trg_l
 
 
+def aug_lines_are_not_too_long(src_l, trg_l, aug_src_l, aug_trg_l):
+    return (
+        len(src_l) <= len(aug_src_l)
+        and len(trg_l) <= len(aug_trg_l)
+        # when Tags modifier is enabled with 1.0 probability it generates too many noise insertions in each sentence
+        # the length ratio can still be high for one word sentences
+        and len(aug_src_l) < len(src_l) * 4
+        and len(aug_trg_l) < len(trg_l) * 4
+    )
+
+
 def all_len_equal(*items):
     return len(set(items)) == 1
 
 
 def twice_longer(src, trg, aug_src, aug_trg):
     return src * 2 == aug_src and trg * 2 == aug_trg
-
-
-def get_aug_rate(src, trg, aug_src, aug_trg, check_func, check_len=None):
-    src, trg, aug_src, aug_trg = (
-        read_lines(src),
-        read_lines(trg),
-        read_lines(aug_src),
-        read_lines(aug_trg),
-    )
-    if check_len:
-        assert check_len(len(src), len(trg), len(aug_src), len(aug_trg))
-
-    if len(src) != len(aug_src):
-        rate = 0
-    else:
-        aug_num = 0
-        for lines in zip(src, trg, aug_src, aug_trg):
-            if check_func(*lines):
-                aug_num += 1
-        rate = aug_num / len(src)
-
-    return rate
 
 
 @pytest.fixture(scope="function")
@@ -158,24 +150,26 @@ def test_mono_source_import(language, importer, dataset, data_dir):
 @pytest.mark.parametrize(
     "params",
     [
-        ("sacrebleu_aug-upper_wmt19", is_upper_lines, all_len_equal, 1.0, 1.0),
-        ("sacrebleu_aug-title_wmt19", is_title_lines, all_len_equal, 1.0, 1.0),
+        ("sacrebleu_aug-upper_wmt19", is_upper_lines, all_len_equal, None, 1.0, 1.0),
+        ("sacrebleu_aug-title_wmt19", is_title_lines, all_len_equal, None, 1.0, 1.0),
         # there's a small chance for the string to stay the same
-        ("sacrebleu_aug-typos_wmt19", only_src_is_different, all_len_equal, 0.95, 1.0),
+        ("sacrebleu_aug-typos_wmt19", only_src_is_different, all_len_equal, None, 0.95, 1.0),
         # noise modifier generates extra lines
-        ("sacrebleu_aug-noise_wmt19", lambda x: True, twice_longer, 0.0, 0.0),
+        ("sacrebleu_aug-noise_wmt19", lambda x: True, twice_longer, None, 0.0, 0.0),
         (
             "sacrebleu_aug-inline-noise_wmt19",
             src_and_trg_are_different,
             all_len_equal,
-            0.95,
-            1.0,
+            aug_lines_are_not_too_long,
+            # we reduce probability otherwise it generates too much noise in each sentence
+            0.4,
+            0.7,
         ),
     ],
     ids=["upper", "title", "typos", "noise", "inline-noise"],
 )
 def test_specific_augmentation(params, data_dir):
-    dataset, check_func, check_len, min_rate, max_rate = params
+    dataset, check_is_aug, check_corpus_len, check_lines, min_rate, max_rate = params
     original_dataset = "sacrebleu_wmt19"
     prefix_aug = data_dir.join(dataset)
     prefix_original = data_dir.join(original_dataset)
@@ -190,9 +184,23 @@ def test_specific_augmentation(params, data_dir):
     data_dir.print_tree()
     assert os.path.exists(output_src)
     assert os.path.exists(output_trg)
-    rate = get_aug_rate(original_src, original_trg, output_src, output_trg, check_func, check_len)
-    assert rate >= min_rate
-    assert rate <= max_rate
+    src, trg, aug_src, aug_trg = (
+        read_lines(original_src),
+        read_lines(original_trg),
+        read_lines(output_src),
+        read_lines(output_trg),
+    )
+    assert check_corpus_len(len(src), len(trg), len(aug_src), len(aug_trg))
+    if len(src) == len(aug_src):
+        aug_num = 0
+        for lines in zip(src, trg, aug_src, aug_trg):
+            if check_lines:
+                assert check_lines(*lines)
+            if check_is_aug(*lines):
+                aug_num += 1
+        rate = aug_num / len(src)
+        assert rate >= min_rate
+        assert rate <= max_rate
 
 
 def test_augmentation_mix(data_dir):
@@ -208,6 +216,8 @@ def test_augmentation_mix(data_dir):
 
     run_import("corpus", dataset, prefix)
 
+    AUG_MAX_RATE = 0.6
+    AUG_MIN_RATE = 0.01
     data_dir.print_tree()
     assert os.path.exists(output_src)
     assert os.path.exists(output_trg)
