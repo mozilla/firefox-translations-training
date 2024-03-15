@@ -216,7 +216,7 @@ def test_augmentation_mix(data_dir):
 
     run_import("corpus", dataset, prefix)
 
-    AUG_MAX_RATE = 0.6
+    AUG_MAX_RATE = 0.35
     AUG_MIN_RATE = 0.01
     data_dir.print_tree()
     assert os.path.exists(output_src)

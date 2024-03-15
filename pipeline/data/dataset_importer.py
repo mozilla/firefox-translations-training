@@ -29,6 +29,8 @@ TRG = os.environ["TRG"]
 COMP_CMD = os.getenv("COMPRESSION_CMD", "pigz")
 COMP_EXT = os.getenv("ARTIFACT_EXT", "gz")
 
+random.seed(1111)
+
 
 class CompositeModifier:
     """
@@ -48,6 +50,9 @@ class CompositeModifier:
 MIX_PROB = 0.05  # 5% will be augmented in the mix
 PROB_1 = 1.0  # 100% chance
 PROB_0 = 0.0  # 0% chance
+# probability 1 adds way too much inline noise
+NOISE_PROB = 0.05
+NOISE_MIX_PROB = 0.01
 
 
 def get_typos_probs() -> Dict[str, float]:
@@ -63,15 +68,14 @@ modifier_map = {
     "aug-title": lambda: TitleCaseModifier(PROB_1),
     "aug-upper": lambda: UpperCaseModifier(PROB_1),
     "aug-noise": lambda: NoiseModifier(PROB_1),
-    # prob 1 adds way too much inline noise
-    "aug-inline-noise": lambda: PlaceholderTagModifier(MIX_PROB, augment=1),
+    "aug-inline-noise": lambda: PlaceholderTagModifier(NOISE_PROB, augment=1),
     "aug-mix": lambda: CompositeModifier(
         [
             TypoModifier(MIX_PROB, **get_typos_probs()),
             TitleCaseModifier(MIX_PROB),
             UpperCaseModifier(MIX_PROB),
             NoiseModifier(MIX_PROB),
-            PlaceholderTagModifier(MIX_PROB, augment=1),
+            PlaceholderTagModifier(NOISE_MIX_PROB, augment=1),
         ]
     ),
 }
