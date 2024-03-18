@@ -61,17 +61,25 @@ def get_logs(task: dict) -> list[str]:
     task_id = task["status"]["taskId"]
 
     logger.info(f"Downloading logs for task {task_id}")
-    log, _ = downloadArtifactToBuf(
-        taskId=task_id,
-        name="public/build/train.log",
-        queueService=queue,
-    )
+    try:
+        log, _ = downloadArtifactToBuf(
+            taskId=task_id,
+            name="public/build/train.log",
+            queueService=queue,
+        )
+    except Exception as e:
+        logger.error(f"Could not retrieve logs: {e}")
+        return []
     return log.tobytes().decode().split("\n")
 
 
 def publish_task(project: str, group: str, name: str, task: dict, metrics: list[Metric]) -> None:
+    logs = get_logs(task)
+    if not logs:
+        logger.warning(f"Skipping publication of training task {name}")
+        return
     parser = TrainingParser(
-        get_logs(task),
+        logs,
         publishers=[
             WandB(
                 project=project,
