@@ -6,11 +6,10 @@ stages:
   - pretrain
   - finetune
 
-# Back-translated corpus can vary a lot in size, so we can try using original one to count epochs
 pretrain:
   - original 0.6
   - backtranslated 0.4
-  - until original 2
+  - until backtranslated 2
 
 # Fine-tuning only on original clean corpus until the early stopping
 finetune:
@@ -23,10 +22,10 @@ modifiers:
 - TitleCase: 0.05
 - Typos: 0.05
 # inserts new noise sentences
-- Noise: 0.0005
-  min_word_length: 2 # Minimum word length for each word in the noisy sentence
-  max_word_length: 5 # Maximum word length for each word in the noisy sentence
-  max_words: 6 # Maximum number of words in each noisy sentence
+#- Noise: 0.0005
+#  min_word_length: 2 # Minimum word length for each word in the noisy sentence
+#  max_word_length: 5 # Maximum word length for each word in the noisy sentence
+#  max_words: 6 # Maximum number of words in each noisy sentence
 # generates inline noise (emojis etc.) matching positions in source and target sentences using alignments
 # no spm_vocab argument -> alignments will be removed from Marian input
 # we don't use alignments for teacher training
