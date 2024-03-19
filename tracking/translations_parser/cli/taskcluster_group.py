@@ -236,8 +236,10 @@ def publish_task_group(group_id: str) -> None:
                 (suffix,) = re_match.groups()
                 model_name += suffix
 
-            # Evaluation tasks may be named finetuned instead of finetune
+            # Training task may be named differently from the evaluation tasks, use training name by default
             model_name = model_name.replace("finetuned", "finetune")
+            if model_name == "backward":
+                model_name = "backwards"
 
             # Evaluation tasks must be a dependency of the run and match its name
             if (
@@ -270,7 +272,6 @@ def publish_task_group(group_id: str) -> None:
 
         for metrics_task in metrics_tasks.values():
             filename = metrics_task["task"]["tags"]["label"]
-            # evaluate-teacher-flores-flores_aug-typos_devtest-lt-en-1/2
             with (eval_folder / f"{filename}.log").open("wb") as log_file:
                 downloadArtifactToFile(
                     log_file,
