@@ -6,11 +6,11 @@ stages:
   - pretrain
   - finetune
 
-# Back-translated corpus can vary a lot in size, so we can try using original one to count epochs
+# Train until the model sees two epochs of back-translated corpus
 pretrain:
   - original 0.6
   - backtranslated 0.4
-  - until original 2
+  - until backtranslated 2
 
 # Fine-tuning only on original clean corpus until the early stopping
 finetune:
