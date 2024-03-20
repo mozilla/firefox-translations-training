@@ -70,7 +70,7 @@ tasks:
                     $VCS_PATH/pipeline/alignment/generate-alignment-and-shortlist.sh
                     $MOZ_FETCHES_DIR/corpus
                     $MOZ_FETCHES_DIR/vocab.spm
-                    /builds/worker/artifacts
+                    $TASK_WORKDIR/artifacts
                     auto
 
         dependencies:
