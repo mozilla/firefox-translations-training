@@ -50,3 +50,7 @@ RUN git clone https://github.com/marian-nmt/marian-dev.git marian-dev
 RUN ./compile-marian.sh marian-dev/build $(nproc) false
 
 ENV MARIAN=/builds/worker/tools/marian-dev/build
+
+# Work around poetry not finding `python`.
+# https://github.com/python-poetry/poetry/issues/6371
+RUN ln -s /bin/python3 /bin/python
