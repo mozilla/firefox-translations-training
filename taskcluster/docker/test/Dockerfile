@@ -19,6 +19,7 @@ RUN apt-get update -qq \
 
 
 RUN pip install poetry
+# we do not run poetry install here because the tracking package is installed from code
 
 VOLUME /builds/worker/checkouts
 VOLUME /builds/worker/.cache
