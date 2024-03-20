@@ -9,12 +9,12 @@
 # An "experiment" is an individual training run.
 experiment:
   # Provide an identifiable name for your experiment.
-  name: en_ca_baseline_jan2024
+  name: en_cs_2024
 
   # The source and target languages. This is the language tag part of the
   # BCP 47 locale identifier.
   src: en
-  trg: ca
+  trg: cs
 
   # The metric to use for computing the best model validation.
   #   cross-entropy, ce-mean-words, perplexity, valid-script, translation, bleu,
@@ -89,6 +89,8 @@ datasets:
 
   # Monolingual data sources for the source language.
   mono-src:
+    - news-crawl_news.2023
+    - news-crawl_news.2022
     - news-crawl_news.2021
     - news-crawl_news.2020
     - news-crawl_news.2019
@@ -106,8 +108,25 @@ datasets:
     - news-crawl_news.2007
 
   # Monolingual data sources for the target language.
+  # https://data.statmt.org/news-crawl/cs/
   mono-trg:
-    - bucket_releng-translations-dev/data/en-ca/catalan_textual_corpus
+    - news-crawl_news.2023
+    - news-crawl_news.2022
+    - news-crawl_news.2021
+    - news-crawl_news.2020
+    - news-crawl_news.2019
+    - news-crawl_news.2018
+    - news-crawl_news.2017
+    - news-crawl_news.2016
+    - news-crawl_news.2015
+    - news-crawl_news.2014
+    - news-crawl_news.2013
+    - news-crawl_news.2012
+    - news-crawl_news.2011
+    - news-crawl_news.2010
+    - news-crawl_news.2009
+    - news-crawl_news.2008
+    - news-crawl_news.2007
 
 # Arguments that are provided to Marian, the underlying machine learning system used
 # to train language.
