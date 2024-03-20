@@ -61,6 +61,7 @@ run-tests:
 # !!! IMPORTANT !!! on Apple Silicon run without poetry shell for the first time
 # as it can change `uname -m` output to x86_64 if it runs under Rosetta
 build-docker:
+	# this is a mitigation to guard against build failures with the new Apple ARM processors
 	if [ -n "$$VIRTUAL_ENV" ]; then \
 		echo "Error: Virtual environment detected. Exit the poetry shell."; \
 		exit 1; \
@@ -87,6 +88,7 @@ build-docker:
 # PYTHONPATH=$(pwd) poetry run pytest tests/test_alignments.py::test_shortlist -vv
 run-docker: build-docker
 run-docker:
+	# this is a mitigation to guard against build failures with the new Apple ARM processors
 	if [ -n "$$VIRTUAL_ENV" ]; then \
 		echo "Error: Virtual environment detected. Exit the poetry shell."; \
 		exit 1; \
@@ -106,6 +108,7 @@ run-docker:
 # Run tests under Docker
 run-tests-docker: build-docker
 run-tests-docker:
+	# this is a mitigation to guard against build failures with the new Apple ARM processors
 	if [ -n "$$VIRTUAL_ENV" ]; then \
 		echo "Error: Virtual environment detected. Exit the poetry shell."; \
 		exit 1; \
