@@ -10,6 +10,10 @@ from taskgraph.util.taskcluster import get_ancestors, get_artifact
 
 from translations_taskgraph.parameters import get_defaults
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 TRAIN_ON_PROJECTS = (
     "https://github.com/mozilla/firefox-translations-training",
     "https://github.com/mozilla-releng/staging-firefox-translations-training",
@@ -362,7 +366,9 @@ def train_action(parameters, graph_config, input, task_group_id, task_id):
         # as `existing_tasks`. These map task labels (eg: train-backwards-ru-en) to
         # task ids, and will be used instead of scheduling new tasks for any tasks with
         # an identical name.
+        logger.info("Fetching ancestors for tasks: " + " ".join(start_task_ids))
         parameters["existing_tasks"] = get_ancestors(start_task_ids)
+        logger.info("Finished fetching ancestors for tasks")
 
     parameters["target_tasks_method"] = "train-target-tasks"
     parameters["optimize_target_tasks"] = True
