@@ -16,7 +16,7 @@ if [ "$patch" != "none" ]; then
 fi
 
 # TODO: consider not calling out to this since it's such a simple script...
-bash $VCS_PATH/pipeline/setup/compile-marian.sh "${MARIAN_DIR}/build" "$(nproc)"
+bash $VCS_PATH/pipeline/setup/compile-marian.sh "${MARIAN_DIR}/build" "$(nproc)" true
 
 cd $MARIAN_DIR/build
 tar -cf $UPLOAD_DIR/marian.tar \

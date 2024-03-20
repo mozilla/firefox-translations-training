@@ -10,6 +10,9 @@ transforms:
     - taskgraph.transforms.run:transforms
     - taskgraph.transforms.task:transforms
 
+kind-dependencies:
+    - toolchain
+
 task-defaults:
   description: "Run tests"
   task-context:
@@ -97,7 +100,8 @@ tasks:
         - bash
         - -c
         - >-
-            pip install poetry &&
+            export BIN=$MOZ_FETCHES_DIR &&
+            export MARIAN=$MOZ_FETCHES_DIR &&
             make run-tests
     run-on-tasks-for: ["github-push", "github-pull-request"]
     optimization:
@@ -106,6 +110,11 @@ tasks:
         - tests/**
         - poetry.*
         - Makefile
+    fetches:
+        toolchain:
+            - fast-align
+            - extract-lex
+            - marian
 
   taskgraph-definition:
       worker-type: b-cpu
