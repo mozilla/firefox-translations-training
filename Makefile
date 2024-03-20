@@ -52,9 +52,78 @@ fix-all:
 	make lint-fix
 
 # Run unit tests
+# Some tests work only on Linux, use Docker if running locally on other OS
 run-tests:
 	poetry install --only tests --only utils --no-root
 	PYTHONPATH=$$(pwd) poetry run pytest tests -vv
+
+# Run unit tests locally under Docker
+# !!! IMPORTANT !!! on Apple Silicon run without poetry shell for the first time
+# as it can change `uname -m` output to x86_64 if it runs under Rosetta
+build-docker:
+	# this is a mitigation to guard against build failures with the new Apple ARM processors
+	if [ -n "$$VIRTUAL_ENV" ]; then \
+		echo "Error: Virtual environment detected. Exit the poetry shell."; \
+		exit 1; \
+	fi && \
+	if [ $$(uname -m) == 'arm64' ]; then \
+		echo "setting arm64 platform"; \
+	  	export DOCKER_DEFAULT_PLATFORM=linux/amd64; \
+	fi && \
+	docker build \
+		--file taskcluster/docker/base/Dockerfile \
+		--tag ftt-base . && \
+	docker build \
+		--build-arg DOCKER_IMAGE_PARENT=ftt-base \
+		--file taskcluster/docker/test/Dockerfile \
+		--tag ftt-test . && \
+	docker build \
+		--build-arg DOCKER_IMAGE_PARENT=ftt-test \
+		--file docker/Dockerfile \
+		--tag ftt-local .
+
+# Run a shell inside a container
+# Then you can run specific tests:
+# poetry install
+# PYTHONPATH=$(pwd) poetry run pytest tests/test_alignments.py::test_shortlist -vv
+run-docker: build-docker
+run-docker:
+	# this is a mitigation to guard against build failures with the new Apple ARM processors
+	if [ -n "$$VIRTUAL_ENV" ]; then \
+		echo "Error: Virtual environment detected. Exit the poetry shell."; \
+		exit 1; \
+	fi && \
+	if [ $$(uname -m) == 'arm64' ]; then \
+		echo "setting arm64 platform"; \
+	  	export DOCKER_DEFAULT_PLATFORM=linux/amd64; \
+	fi && \
+	docker run \
+		--interactive \
+		--tty \
+		--rm \
+		--volume $$(pwd):/builds/worker/checkouts \
+		--workdir /builds/worker/checkouts \
+		ftt-local bash
+
+# Run tests under Docker
+run-tests-docker: build-docker
+run-tests-docker:
+	# this is a mitigation to guard against build failures with the new Apple ARM processors
+	if [ -n "$$VIRTUAL_ENV" ]; then \
+		echo "Error: Virtual environment detected. Exit the poetry shell."; \
+		exit 1; \
+	fi && \
+	if [ $$(uname -m) == 'arm64' ]; then \
+		echo "setting arm64 platform"; \
+	  	export DOCKER_DEFAULT_PLATFORM=linux/amd64; \
+	fi && \
+	docker run \
+		--interactive \
+		--tty \
+		--rm \
+		--volume $$(pwd):/builds/worker/checkouts \
+		--workdir /builds/worker/checkouts \
+		 ftt-local make run-tests
 
 # Validates Taskcluster task graph locally
 validate-taskgraph:
