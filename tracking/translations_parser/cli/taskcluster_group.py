@@ -13,6 +13,7 @@ import tempfile
 from collections import defaultdict
 from pathlib import Path
 
+import wandb
 import yaml
 
 import taskcluster
@@ -61,17 +62,25 @@ def get_logs(task: dict) -> list[str]:
     task_id = task["status"]["taskId"]
 
     logger.info(f"Downloading logs for task {task_id}")
-    log, _ = downloadArtifactToBuf(
-        taskId=task_id,
-        name="public/build/train.log",
-        queueService=queue,
-    )
+    try:
+        log, _ = downloadArtifactToBuf(
+            taskId=task_id,
+            name="public/build/train.log",
+            queueService=queue,
+        )
+    except Exception as e:
+        logger.error(f"Could not retrieve logs: {e}")
+        return []
     return log.tobytes().decode().split("\n")
 
 
 def publish_task(project: str, group: str, name: str, task: dict, metrics: list[Metric]) -> None:
+    logs = get_logs(task)
+    if not logs:
+        logger.warning(f"Skipping publication of training task {name}")
+        return
     parser = TrainingParser(
-        get_logs(task),
+        logs,
         publishers=[
             WandB(
                 project=project,
@@ -228,8 +237,10 @@ def publish_task_group(group_id: str) -> None:
                 (suffix,) = re_match.groups()
                 model_name += suffix
 
-            # Evaluation tasks may be named finetuned instead of finetune
+            # Training task may be named differently from the evaluation tasks, use training name by default
             model_name = model_name.replace("finetuned", "finetune")
+            if model_name == "backward":
+                model_name = "backwards"
 
             # Evaluation tasks must be a dependency of the run and match its name
             if (
@@ -255,6 +266,16 @@ def publish_task_group(group_id: str) -> None:
         )
 
     # Group and publish remaining metrics tasks via the logs publication
+    if (
+        len(
+            wandb.Api().runs(
+                project_name, filters={"display_name": "group_logs", "group": group_name}
+            )
+        )
+        > 0
+    ):
+        logger.warning("Skipping group_logs fake run publication as it already exists")
+        return
     with tempfile.TemporaryDirectory() as temp_dir:
         logs_folder = Path(temp_dir) / "logs"
         eval_folder = logs_folder / project_name / group_name / "eval"
@@ -262,7 +283,6 @@ def publish_task_group(group_id: str) -> None:
 
         for metrics_task in metrics_tasks.values():
             filename = metrics_task["task"]["tags"]["label"]
-            # evaluate-teacher-flores-flores_aug-typos_devtest-lt-en-1/2
             with (eval_folder / f"{filename}.log").open("wb") as log_file:
                 downloadArtifactToFile(
                     log_file,
