@@ -96,7 +96,7 @@ def test_train_student_mocked(alignments, data_dir):
     assert os.path.isfile(
         os.path.join(data_dir.path, "artifacts", "model.npz.best-chrf.npz.decoder.yml")
     )
-    validate_alignments(data_dir.join("marian-input.txt"), data_dir.join("vocab.spm"))
+    validate_alignments(data_dir.join("marian.input.txt"), data_dir.join("vocab.spm"))
 
 
 def test_train_student(alignments, data_dir):

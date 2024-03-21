@@ -25,7 +25,7 @@ with open(os.path.join(artifacts_dir, "marian.args.txt"), "w") as file:
 
 # Output the input for N times and exit
 counter = 0
-with open(os.path.join(artifacts_dir, "marian-input.txt"), "w") as file:
+with open(os.path.join(artifacts_dir, "marian.input.txt"), "w") as file:
     for line in sys.stdin:
         file.write(line)
         counter += 1
