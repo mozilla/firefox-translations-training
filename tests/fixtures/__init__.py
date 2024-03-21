@@ -5,7 +5,7 @@ import shlex
 import shutil
 import subprocess
 from subprocess import CompletedProcess
-from typing import Optional, Union, List
+from typing import List, Optional, Union
 
 import zstandard as zstd
 
