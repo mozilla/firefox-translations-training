@@ -115,26 +115,16 @@ def test_train_student(alignments, data_dir):
         "USE_CPU": "true",
     }
     marian_args = [
-        "--disp-freq",
-        "1",
-        "--save-freq",
-        "2",
-        "--valid-freq",
-        "2",
-        "--after-batches",
-        "2",
-        "--dim-vocabs",
-        "1000",
-        "1000",
-        "--mini-batch",
-        "10",
-        "--maxi-batch",
-        "10",
-        "--mini-batch-fit",
-        "false",
-        "--log-level",
-        "trace",
-    ]
+        "--disp-freq", "1",
+        "--save-freq", "2",
+        "--valid-freq", "2",
+        "--after-batches", "2",
+        "--dim-vocabs", "1000", "1000",
+        "--mini-batch", "10",
+        "--maxi-batch", "10",
+        "--mini-batch-fit", "false",
+        "--log-level", "trace",
+    ]  # fmt:skip
 
     data_dir.run_task("train-student-en-ru", env=env, extra_args=marian_args)
 
