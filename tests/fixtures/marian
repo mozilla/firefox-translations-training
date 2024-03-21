@@ -2,8 +2,8 @@
 """
 marian test fixture
 
-Do not rely on marian in tests. This mocks marian by outputing the training corpus
- and saving the arguments to marian.args.txt.
+Marian can be mocked for tests when the actual binary doesn't need to be run.
+It outputs the training corpus to marian.input.txt and saves the arguments to marian.args.txt.
 """
 
 import json
