@@ -2,13 +2,64 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import copy
 from taskgraph.actions.registry import register_callback_action
 from taskgraph.decision import taskgraph_decision
 from taskgraph.parameters import Parameters
 from taskgraph.taskgraph import TaskGraph
-from taskgraph.util.taskcluster import get_ancestors, get_artifact
+from taskgraph.util.taskcluster import get_artifact, _do_request, get_task_url
+from taskgraph.util.memoize import memoize
 
 from translations_taskgraph.parameters import get_defaults
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+
+@memoize
+def get_task_definition(task_id, use_proxy=False):
+    response = _do_request(get_task_url(task_id, use_proxy))
+    return response.json()
+
+
+@memoize
+def _get_deps(task_ids, use_proxy):
+    upstream_tasks = {}
+    for task_id in task_ids:
+        logger.info(f"In _get_deps: fetching dependencies for {task_id}")
+        task_def = get_task_definition(task_id, use_proxy)
+        logger.info(f"In _get_deps: got dependencies for {task_id}: {task_def['dependencies']}")
+        upstream_tasks[task_def["metadata"]["name"]] = task_id
+
+        upstream_tasks.update(_get_deps(tuple(task_def["dependencies"]), use_proxy))
+
+    return upstream_tasks
+
+def get_ancestors( task_ids, use_proxy=False):
+    """Gets the ancestor tasks of the given task_ids as a dictionary of label -> taskid.
+
+    Args:
+        task_ids (str or [str]): A single task id or a list of task ids to find the ancestors of.
+        use_proxy (bool): See get_root_url.
+
+    Returns:
+        dict: A dict whose keys are task labels and values are task ids.
+    """
+    upstream_tasks = {}
+
+    if isinstance(task_ids, str):
+        task_ids = [task_ids]
+
+    for task_id in task_ids:
+        logger.info(f"In get_ancestors: fetching task definition for {task_id}")
+        task_def = get_task_definition(task_id, use_proxy)
+        logger.info(f"In get_ancestors: {task_id} dependencies are: {task_def['dependencies']}")
+
+        upstream_tasks.update(_get_deps(tuple(task_def["dependencies"]), use_proxy))
+
+    return copy.deepcopy(upstream_tasks)
 
 TRAIN_ON_PROJECTS = (
     "https://github.com/mozilla/firefox-translations-training",
@@ -362,7 +413,9 @@ def train_action(parameters, graph_config, input, task_group_id, task_id):
         # as `existing_tasks`. These map task labels (eg: train-backwards-ru-en) to
         # task ids, and will be used instead of scheduling new tasks for any tasks with
         # an identical name.
+        logger.info("Fetching ancestors for tasks: " + " ".join(start_task_ids))
         parameters["existing_tasks"] = get_ancestors(start_task_ids)
+        logger.info("Finished fetching ancestors for tasks")
 
     parameters["target_tasks_method"] = "train-target-tasks"
     parameters["optimize_target_tasks"] = True
