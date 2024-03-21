@@ -115,6 +115,7 @@ class DataDir:
         work_dir: Optional[str] = None,
         fetches_dir: Optional[str] = None,
         env: dict[str, str] = {},
+        extra_args: List[str] = None,
     ):
         """
         Runs a task from the taskgraph. See artifacts/full-task-graph.json after running a
@@ -159,6 +160,9 @@ class DataDir:
             .replace("$MOZ_FETCHES_DIR", fetches_dir)
             for part in command_parts
         ]
+
+        if extra_args:
+            command_parts.extend(extra_args)
 
         result = subprocess.run(
             command_parts,
