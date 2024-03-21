@@ -114,7 +114,7 @@ tasks:
         toolchain:
             - fast-align
             - extract-lex
-            - marian
+            - marian-cpu
 
   taskgraph-definition:
       worker-type: b-cpu

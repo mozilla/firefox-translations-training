@@ -93,6 +93,12 @@ paste <(${COMPRESSION_CMD} -dc "${valid_set_prefix}.${src}.${ARTIFACT_EXT}") \
       >"${valid_tsv_dataset}"
 
 
+# we run a CPU version of Marian in tests and it does not work with these arguments
+if [[ -z ${USE_CPU+x} ]]; then
+  extra_params+=('--sharding')
+  extra_params+=('local')
+fi
+
 echo "### Training ${model_dir}"
 # OpusTrainer reads the datasets, shuffles, augments them and feeds to stdin of Marian
 opustrainer-train \
@@ -114,7 +120,6 @@ opustrainer-train \
     --shuffle batches \
     --no-restore-corpus \
     --valid-reset-stalled \
-    --sharding local \
     --sync-sgd \
     --quiet-translation \
     --overwrite \

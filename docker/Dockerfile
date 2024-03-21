@@ -24,6 +24,7 @@ RUN apt-get update -qq \
                           libxml2 \
                           libhunspell-dev \
                           bc \
+                          libopenblas-dev \
     && apt-get clean
 
 RUN mkdir /builds/worker/tools && \
@@ -47,6 +48,8 @@ RUN git clone https://github.com/kpu/preprocess.git preprocess
 RUN ./compile-preprocess.sh preprocess/build $(nproc)
 
 RUN git clone https://github.com/marian-nmt/marian-dev.git marian-dev
+# Use the same revision as in taskcluster/kinds/fetch/toolchains.yml
+RUN cd marian-dev && git checkout e8a1a2530fb84cbff7383302ebca393e5875c441
 RUN ./compile-marian.sh marian-dev/build $(nproc) false
 
 ENV MARIAN=/builds/worker/tools/marian-dev/build

@@ -44,7 +44,7 @@ tasks:
             fetch:
                 - cuda-11
     marian:
-        description: Marian
+        description: Marian to run on a GPU machine
         worker-type: b-cpu
         run:
             script: build-marian.sh
@@ -57,6 +57,22 @@ tasks:
                 - marian
             toolchain:
                 - cuda-toolkit
+
+    marian-cpu:
+        description: Marian to run on a CPU machine
+        worker-type: b-cpu
+        run:
+            script: build-marian.sh
+            arguments:
+                - none
+                - "false"
+            resources:
+                - taskcluster/scripts/toolchain/build-marian.sh
+                - pipeline/setup/compile-marian.sh
+            toolchain-artifact: public/build/marian.tar.zst
+        fetches:
+            fetch:
+                - marian
 
     browsermt-marian:
         description: Browsermt Marian
