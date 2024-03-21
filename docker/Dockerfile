@@ -25,7 +25,9 @@ RUN apt-get update -qq \
                           libhunspell-dev \
                           bc \
                           libopenblas-dev \
-    && apt-get clean
+                          openssl \
+                          libssl-dev  \
+         && apt-get clean
 
 RUN mkdir /builds/worker/tools && \
     chown worker:worker /builds/worker/tools && \
