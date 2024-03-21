@@ -24,6 +24,7 @@ RUN apt-get update -qq \
                           libxml2 \
                           libhunspell-dev \
                           bc \
+                          libopenblas-dev \
     && apt-get clean
 
 RUN mkdir /builds/worker/tools && \
