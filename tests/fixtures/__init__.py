@@ -235,11 +235,6 @@ def get_full_taskgraph():
     return _full_taskgraph
 
 
-# Match a pipeline script like:
-# pipeline/data/dataset_importer.py
-SCRIPT_REGEX = re.compile(r"\/pipeline\/([\w\/-]+)\.(py|sh)")
-
-
 def find_pipeline_script(commands: Union[list[str], list[list[str]]]) -> str:
     """
     Extract the pipeline script and arguments from a command list.
@@ -268,9 +263,13 @@ def find_pipeline_script(commands: Union[list[str], list[list[str]]]) -> str:
         print(command)
         raise Exception("Unable to find a string in the nested command.")
 
+    # Match a pipeline script like:
+    # pipeline/data/dataset_importer.py
     # $VCS_PATH/taskcluster/scripts/pipeline/train-taskcluster.sh
     # $VCS_PATH/pipeline/alignment/generate-alignment-and-shortlist.sh
-    match = re.search(r"[\$\w\/]*\/pipeline\/[\w\/-]+\.(py|sh)", command)
+    match = re.search(
+        r"(?P<file_path>[\$\w\/]*\/pipeline\/[\w\/-]+)" r"\." r"(?P<extension>py|sh)", command
+    )
 
     if not match:
         raise Exception(f"Could not find a pipeline script in the command: {command}")
