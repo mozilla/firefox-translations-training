@@ -5,7 +5,7 @@ import shlex
 import shutil
 import subprocess
 from subprocess import CompletedProcess
-from typing import Optional, Union
+from typing import Optional, Union, List
 
 import zstandard as zstd
 
@@ -154,6 +154,7 @@ class DataDir:
         # through the subprocess.run
         command_parts = [
             part.replace("$TASK_WORKDIR/$VCS_PATH", root_path)
+            .replace("$VCS_PATH", root_path)
             .replace("$TASK_WORKDIR", work_dir)
             .replace("$MOZ_FETCHES_DIR", fetches_dir)
             for part in command_parts
@@ -263,15 +264,14 @@ def find_pipeline_script(commands: Union[list[str], list[list[str]]]) -> str:
         print(command)
         raise Exception("Unable to find a string in the nested command.")
 
-    match = re.search(r"\/pipeline\/([\w\/-]+)\.(py|sh)", command)
-    #                               ^^^^^^^^^^   ^^^^^
-    #                               |            |
-    #    Match the path to the script            Match the extension
+    # $VCS_PATH/taskcluster/scripts/pipeline/train-taskcluster.sh
+    # $VCS_PATH/pipeline/alignment/generate-alignment-and-shortlist.sh
+    match = re.search(r"[\$\w\/]*\/pipeline\/[\w\/-]+\.(py|sh)", command)
 
     if not match:
         raise Exception(f"Could not find a pipeline script in the command: {command}")
 
-    script = f"pipeline/{match.group(1)}.{match.group(2)}"
+    script = match[0]
 
     # Return the parts after the script name.
     parts = command.split(script)
