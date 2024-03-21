@@ -102,6 +102,7 @@ tasks:
         - >-
             export BIN=$MOZ_FETCHES_DIR &&
             export MARIAN=$MOZ_FETCHES_DIR &&
+            export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$MOZ_FETCHES_DIR/cuda-toolkit/lib64" &&
             make run-tests
     run-on-tasks-for: ["github-push", "github-pull-request"]
     optimization:
@@ -115,6 +116,7 @@ tasks:
             - fast-align
             - extract-lex
             - marian
+            - cuda-toolkit
 
   taskgraph-definition:
       worker-type: b-cpu
