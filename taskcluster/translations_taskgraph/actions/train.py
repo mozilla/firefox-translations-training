@@ -6,7 +6,8 @@ from taskgraph.actions.registry import register_callback_action
 from taskgraph.decision import taskgraph_decision
 from taskgraph.parameters import Parameters
 from taskgraph.taskgraph import TaskGraph
-from taskgraph.util.taskcluster import get_artifact, get_task_definition
+from taskgraph.util.taskcluster import get_artifact, _do_request, get_task_url
+from taskgraph.util.memoize import memoize
 
 from translations_taskgraph.parameters import get_defaults
 
@@ -15,6 +16,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+
+@memoize
+def get_task_definition(task_id, use_proxy=False):
+    response = _do_request(get_task_url(task_id, use_proxy))
+    return response.json()
+
+
+@memoize
 def _get_deps(task_ids, use_proxy):
     upstream_tasks = {}
     for task_id in task_ids:
@@ -23,7 +32,7 @@ def _get_deps(task_ids, use_proxy):
         logger.info(f"In _get_deps: got dependencies for {task_id}: {task_def['dependencies']}")
         upstream_tasks[task_def["metadata"]["name"]] = task_id
 
-        upstream_tasks.update(_get_deps(task_def["dependencies"], use_proxy))
+        upstream_tasks.update(_get_deps(tuple(task_def["dependencies"]), use_proxy))
 
     return upstream_tasks
 
@@ -47,7 +56,7 @@ def get_ancestors( task_ids, use_proxy=False):
         task_def = get_task_definition(task_id, use_proxy)
         logger.info(f"In get_ancestors: {task_id} dependencies are: {task_def['dependencies']}")
 
-        upstream_tasks.update(_get_deps(task_def["dependencies"], use_proxy))
+        upstream_tasks.update(_get_deps(tuple(task_def["dependencies"]), use_proxy))
 
     return upstream_tasks
 
