@@ -7,6 +7,7 @@ MY_DIR=$(pwd)
 popd &>/dev/null
 
 patch=${1:-none}
+use_gpu=${2:-true}
 
 export MARIAN_DIR=$MOZ_FETCHES_DIR/marian-source
 export CUDA_DIR=$MOZ_FETCHES_DIR/cuda-toolkit
@@ -16,7 +17,7 @@ if [ "$patch" != "none" ]; then
 fi
 
 # TODO: consider not calling out to this since it's such a simple script...
-bash $VCS_PATH/pipeline/setup/compile-marian.sh "${MARIAN_DIR}/build" "$(nproc)" true
+bash $VCS_PATH/pipeline/setup/compile-marian.sh "${MARIAN_DIR}/build" "$(nproc)" "${use_gpu}"
 
 cd $MARIAN_DIR/build
 tar -cf $UPLOAD_DIR/marian.tar \
