@@ -71,14 +71,14 @@ workers:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
-            worker-type: 'b-linux-large-gcp-300gb'
+            worker-type: 'b-linux-large-gcp-300gb-d2g'
         # Use for tasks that don't require GPUs, but need immense amounts of disk space
         # eg: alignments
         b-cpu-xlargedisk:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
-            worker-type: 'b-linux-large-gcp-1tb'
+            worker-type: 'b-linux-large-gcp-1tb-d2g'
         # Use for tasks that don't require GPUs, but need immense amounts of disk space
         # and higher reliability
         b-cpu-xlargedisk-standard:
