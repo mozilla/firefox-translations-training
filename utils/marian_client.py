@@ -6,13 +6,12 @@ Source: https://github.com/marian-nmt/marian-dev/blob/master/scripts/server/clie
 """
 
 
-from __future__ import print_function, unicode_literals, division
+from __future__ import division, print_function, unicode_literals
 
-import sys
 import argparse
+import sys
 
 from websocket import create_connection
-
 
 if __name__ == "__main__":
     # handle command-line options
@@ -22,13 +21,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # open connection
-    ws = create_connection("ws://localhost:8886/translate".format(args.port))
+    ws = create_connection("ws://localhost:8886/translate".format())
 
     count = 0
     batch = ""
     for line in sys.stdin:
         count += 1
-        batch += line.decode('utf-8') if sys.version_info < (3, 0) else line
+        batch += line.decode("utf-8") if sys.version_info < (3, 0) else line
         if count == args.batch_size:
             # translate the batch
             ws.send(batch)
