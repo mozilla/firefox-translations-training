@@ -14,11 +14,13 @@ Example publishing data to Weight & Biases:
 
 import argparse
 import logging
+import os
 import sys
 from collections.abc import Iterator
 from io import TextIOWrapper
 from pathlib import Path
 
+import taskcluster
 from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import CSVExport, Publisher, WandB
 from translations_parser.utils import taskcluster_log_filter
@@ -76,6 +78,12 @@ def get_args() -> argparse.Namespace:
         default=None,
     )
     parser.add_argument(
+        "--taskcluster-secret",
+        help="Taskcluster secret name used to store the Weight & Biases secret API Key.",
+        type=str,
+        default=os.environ.get("TASKCLUSTER_SECRET"),
+    )
+    parser.add_argument(
         "--verbose",
         "-v",
         help="Print debug messages.",
@@ -117,6 +125,14 @@ def main() -> None:
                 },
             )
         )
+
+    if args.taskcluster_secret:
+        assert os.environ.get(
+            "TASKCLUSTER_PROXY_URL"
+        ), "When using `--taskcluster-secret`, `TASKCLUSTER_PROXY_URL` environment variable must be set too."
+        secrets = taskcluster.Secrets({"rootUrl": os.environ["TASKCLUSTER_PROXY_URL"]})
+        wandb_secret = secrets.get(args.taskcluster_secret)
+        os.environ.setdefault("WANDB_API_KEY", wandb_secret["secret"])
 
     parser = TrainingParser(
         lines,
