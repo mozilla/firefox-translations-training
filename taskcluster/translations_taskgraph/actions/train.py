@@ -134,6 +134,9 @@ which allows for specifying task group ids to fetch existing tasks from.""",
                     },
                     "bicleaner": {
                         "properties": {
+                            "disable": {
+                                "type": "string",
+                            },
                             "default-threshold": {
                                 "type": "number",
                                 "description": "bicleaner threshold",

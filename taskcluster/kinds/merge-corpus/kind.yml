@@ -6,14 +6,12 @@
 loader: taskgraph.loader.transform:loader
 
 transforms:
-    - translations_taskgraph.transforms.find_upstreams:by_locales
     - taskgraph.transforms.task_context
     - taskgraph.transforms.run:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
-    - bicleaner
     - toolchain
 
 task-defaults:
@@ -32,14 +30,8 @@ task-defaults:
             - label
             - description
             - worker.env
-            - dependencies
-            - fetches
             - attributes
             - run.command
-    upstreams-config:
-        upstream-artifacts:
-            - "{dataset_sanitized}.{src_locale}.zst"
-            - "{dataset_sanitized}.{trg_locale}.zst"
     worker-type: b-cpu-largedisk
     worker:
         docker-image: {"in-tree": "train"}
@@ -83,12 +75,6 @@ tasks:
             stage: merge-corpus
             cache:
                 type: merge-corpus
-
-        upstreams-config:
-            upstream-task-attributes:
-                cleaning-type:
-                    by-cleaning-type:
-                        bicleaner-ai: bicleaner-ai
 
         task-context:
             from-object:
