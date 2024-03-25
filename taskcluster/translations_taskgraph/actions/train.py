@@ -23,6 +23,7 @@ def get_task_definition(task_id, use_proxy=False):
     return response.json()
 
 
+@memoize
 def _get_deps(task_ids, use_proxy):
     upstream_tasks = {}
     for task_id in task_ids:
