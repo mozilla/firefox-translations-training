@@ -107,7 +107,7 @@ tasks:
                               - $switch:
                                     'tasks_for == "github-push" || isPullRequest':
                                         name: "Decision Task (${tasks_for[7:]})" # strip out "github-" from tasks_for
-                                        description: 'The task that creates all of the other tasks in the task graph'
+                                        description: 'The task that creates all of the other tasks in the task graph '
                                     'tasks_for == "action"':
                                         name: "Action: ${action.title}"
                                         description: |
