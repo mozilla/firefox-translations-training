@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import copy
 from taskgraph.actions.registry import register_callback_action
 from taskgraph.decision import taskgraph_decision
 from taskgraph.parameters import Parameters
@@ -58,7 +59,7 @@ def get_ancestors( task_ids, use_proxy=False):
 
         upstream_tasks.update(_get_deps(tuple(task_def["dependencies"]), use_proxy))
 
-    return upstream_tasks
+    return copy.deepcopy(upstream_tasks)
 
 TRAIN_ON_PROJECTS = (
     "https://github.com/mozilla/firefox-translations-training",
