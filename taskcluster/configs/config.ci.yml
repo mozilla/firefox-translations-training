@@ -61,6 +61,7 @@ datasets:
   train:
     - opus_ada83/v1
     - opus_ELRC-3075-wikipedia_health/v1
+    - url_https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.[LANG].zst
   devtest:
     - flores_dev
     - sacrebleu_wmt19
@@ -69,10 +70,11 @@ datasets:
     - flores_devtest
   mono-src:
     - news-crawl_news.2008
+    - url_https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.en.zst
   mono-trg:
     - news-crawl_news.2007
+    - url_https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.ru.zst
 
 target-stage: all
 taskcluster:
   split-chunks: 2
-

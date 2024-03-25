@@ -83,7 +83,7 @@ build-docker:
 		--tag ftt-local .
 
 # Run a shell inside a container
-# Then you can run specific tests
+# Then you can run specific tests:
 # poetry install
 # PYTHONPATH=$(pwd) poetry run pytest tests/test_alignments.py::test_shortlist -vv
 run-docker: build-docker

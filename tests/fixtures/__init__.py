@@ -5,7 +5,7 @@ import shlex
 import shutil
 import subprocess
 from subprocess import CompletedProcess
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import zstandard as zstd
 
@@ -115,6 +115,7 @@ class DataDir:
         work_dir: Optional[str] = None,
         fetches_dir: Optional[str] = None,
         env: dict[str, str] = {},
+        extra_args: List[str] = None,
     ):
         """
         Runs a task from the taskgraph. See artifacts/full-task-graph.json after running a
@@ -154,10 +155,14 @@ class DataDir:
         # through the subprocess.run
         command_parts = [
             part.replace("$TASK_WORKDIR/$VCS_PATH", root_path)
+            .replace("$VCS_PATH", root_path)
             .replace("$TASK_WORKDIR", work_dir)
             .replace("$MOZ_FETCHES_DIR", fetches_dir)
             for part in command_parts
         ]
+
+        if extra_args:
+            command_parts.extend(extra_args)
 
         result = subprocess.run(
             command_parts,
@@ -230,11 +235,6 @@ def get_full_taskgraph():
     return _full_taskgraph
 
 
-# Match a pipeline script like:
-# pipeline/data/dataset_importer.py
-SCRIPT_REGEX = re.compile(r"\/pipeline\/([\w\/-]+)\.(py|sh)")
-
-
 def find_pipeline_script(commands: Union[list[str], list[list[str]]]) -> str:
     """
     Extract the pipeline script and arguments from a command list.
@@ -263,15 +263,18 @@ def find_pipeline_script(commands: Union[list[str], list[list[str]]]) -> str:
         print(command)
         raise Exception("Unable to find a string in the nested command.")
 
-    match = re.search(r"\/pipeline\/([\w\/-]+)\.(py|sh)", command)
-    #                               ^^^^^^^^^^   ^^^^^
-    #                               |            |
-    #    Match the path to the script            Match the extension
+    # Match a pipeline script like:
+    # pipeline/data/dataset_importer.py
+    # $VCS_PATH/taskcluster/scripts/pipeline/train-taskcluster.sh
+    # $VCS_PATH/pipeline/alignment/generate-alignment-and-shortlist.sh
+    match = re.search(
+        r"(?P<file_path>[\$\w\/]*\/pipeline\/[\w\/-]+)" r"\." r"(?P<extension>py|sh)", command
+    )
 
     if not match:
         raise Exception(f"Could not find a pipeline script in the command: {command}")
 
-    script = f"pipeline/{match.group(1)}.{match.group(2)}"
+    script = match[0]
 
     # Return the parts after the script name.
     parts = command.split(script)
@@ -341,5 +344,9 @@ def get_mocked_downloads() -> str:
                 get_path("pytest-dataset.en.gz"),
             "http://data.statmt.org/news-crawl/ru/news.2021.ru.shuffled.deduped.gz":
                 get_path("pytest-dataset.ru.gz"),
+            "https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.en.zst":
+                get_path("pytest-dataset.en.zst"),
+            "https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.ru.zst":
+                get_path("pytest-dataset.ru.zst"),
         }
     )  # fmt: skip

@@ -2,7 +2,7 @@ import os
 
 import pytest
 import zstandard as zstd
-from fixtures import DataDir, get_mocked_downloads
+from fixtures import DataDir, en_sample, get_mocked_downloads, ru_sample
 
 SRC = "ru"
 TRG = "en"
@@ -95,6 +95,10 @@ def data_dir():
         ("opus", "ELRC-3075-wikipedia_health_v1"),
         ("flores", "dev"),
         ("sacrebleu", "wmt19"),
+        (
+            "url",
+            "https_storage_googleapis_com_releng-translations-dev_data_en-ru_pytest-dataset__LANG__zst",
+        ),
     ],
 )
 def test_basic_corpus_import(importer, dataset, data_dir):
@@ -118,17 +122,24 @@ def test_basic_corpus_import(importer, dataset, data_dir):
     assert len(read_lines(output_trg)) > 0
 
 
-@pytest.mark.skip(
-    reason="This works locally, but fails in CI. It will soon be replaced with python. See #420"
-)
+def make_url_dataset(lang: str):
+    return f"https_storage_googleapis_com_releng-translations-dev_data_en-ru_pytest-dataset_{lang}_zst"
+
+
+mono_params = [
+    ("news-crawl", "en", "news_2021", [0, 1, 4, 6, 3, 7, 5, 2]),
+    ("news-crawl", "ru", "news_2021", [0, 1, 4, 6, 3, 7, 5, 2]),
+    ("url", "en", make_url_dataset("en"), [2, 1, 5, 4, 0, 7, 6, 3]),
+    ("url", "ru", make_url_dataset("ru"), [5, 4, 2, 0, 7, 1, 3, 6]),
+]
+
+
 @pytest.mark.parametrize(
-    "language,importer,dataset",
-    [
-        ("en", "news-crawl", "news_2021"),
-        ("ru", "news-crawl", "news_2021"),
-    ],
+    "importer,language,dataset,sort_order",
+    mono_params,
+    ids=[f"{d[0]}-{d[1]}" for d in mono_params],
 )
-def test_mono_source_import(language, importer, dataset, data_dir):
+def test_mono_source_import(importer, language, dataset, sort_order, data_dir):
     data_dir.run_task(
         f"dataset-{importer}-{dataset}-{language}",
         env={
@@ -143,8 +154,19 @@ def test_mono_source_import(language, importer, dataset, data_dir):
     mono_data = f"{prefix}.{language}.{ARTIFACT_EXT}"
 
     data_dir.print_tree()
+
+    sample = {
+        "en": en_sample,
+        "ru": ru_sample,
+    }
+
+    sample_lines = sample[language].splitlines(keepends=True)
+
     assert os.path.exists(mono_data)
-    assert len(read_lines(mono_data)) > 0
+    source_lines = list(read_lines(mono_data))
+    assert [
+        source_lines.index(line) for line in sample_lines
+    ] == sort_order, "The data is shuffled."
 
 
 @pytest.mark.parametrize(

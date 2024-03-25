@@ -43,8 +43,6 @@ case "$pretrained_model_mode" in
             vocab="$TASK_WORKDIR/artifacts/vocab.spm"
         fi
 
-        export MARIAN=$MOZ_FETCHES_DIR
-
         if [ "$pretrained_model_mode" == "init" ]; then
             extra_params+=("--pretrained-model" "$TASK_WORKDIR/artifacts/final.model.npz.best-$best_model_metric.npz" "--no-restore-corpus")
         fi

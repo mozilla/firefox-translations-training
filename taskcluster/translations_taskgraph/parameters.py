@@ -79,6 +79,7 @@ def get_defaults(_):
                 "train": [
                     "opus_ada83/v1",
                     "opus_ELRC-3075-wikipedia_health/v1",
+                    "url_https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.[LANG].zst",
                 ],
                 "devtest": [
                     "flores_dev",
