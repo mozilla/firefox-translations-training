@@ -17,6 +17,7 @@ from matplotlib import ticker
 # Ensure the pipeline is available on the path.
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../.."))
 
+from pipeline.common.datasets import Dataset
 from pipeline.common.downloads import (
     RemoteGzipLineStreamer,
     RemoteZstdLineStreamer,
@@ -67,6 +68,9 @@ def main() -> None:
     logger.info(f"dataset: {parsed_args.dataset}")
     logger.info(f"language: {parsed_args.language}")
 
+    dataset = Dataset(parsed_args.dataset)
+    graph_prefix = f"{dataset.file_safe_name()}.{parsed_args.language}"
+
     # Compute the distributions for both the codepoints, and word size.
     codepoints_distribution = Histogram()
     word_distribution = Histogram()
@@ -85,7 +89,7 @@ def main() -> None:
             ]
         ),
         x_axis_label="Words (log scale)",
-        filename=os.path.join(parsed_args.output_dir, "distribution-words.png"),
+        filename=os.path.join(parsed_args.output_dir, f"{graph_prefix}.distribution-words.png"),
     )
 
     plot_logarithmic_histogram(
@@ -98,7 +102,9 @@ def main() -> None:
             ]
         ),
         x_axis_label="Codepoints (log scale)",
-        filename=os.path.join(parsed_args.output_dir, "distribution-codepoints.png"),
+        filename=os.path.join(
+            parsed_args.output_dir, f"{graph_prefix}.distribution-codepoints.png"
+        ),
     )
 
 
