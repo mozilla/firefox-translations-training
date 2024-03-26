@@ -14,7 +14,7 @@ transforms:
 kind-dependencies:
     - finetune-student
     - train-vocab
-    - alignments
+    - shortlist
     - merge-devset
     - toolchain
 
@@ -84,7 +84,7 @@ tasks:
             merge-devset: merge-devset-{src_locale}-{trg_locale}
             finetune-student: finetune-student-{src_locale}-{trg_locale}
             train-vocab: train-vocab-{src_locale}-{trg_locale}
-            alignments: alignments-{src_locale}-{trg_locale}
+            shortlist: shortlist-{src_locale}-{trg_locale}
 
         fetches:
             toolchain:
@@ -99,5 +99,5 @@ tasks:
             train-vocab:
                 - artifact: vocab.spm
                   extract: false
-            alignments:
+            shortlist:
                 - artifact: lex.s2t.pruned.zst
