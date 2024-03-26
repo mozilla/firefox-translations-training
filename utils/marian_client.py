@@ -15,7 +15,10 @@ from websocket import create_connection
 
 if __name__ == "__main__":
     # handle command-line options
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawTextHelpFormatter,  # Preserves whitespace in the help text.
+    )
     parser.add_argument("-b", "--batch-size", type=int, default=1)
     parser.add_argument("-p", "--port", type=int, default=8080)
     args = parser.parse_args()
