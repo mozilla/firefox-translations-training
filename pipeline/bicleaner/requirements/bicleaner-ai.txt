@@ -10,7 +10,7 @@ absl-py==1.4.0
     #   tensorflow
 astunparse==1.6.3
     # via tensorflow
-bicleaner-ai==2.0
+bicleaner-ai==2.0.0
     # via -r bicleaner-ai.in
 bicleaner-ai-glove==0.2.1
     # via bicleaner-ai
@@ -200,7 +200,7 @@ tqdm==4.65.0
     #   huggingface-hub
     #   sacremoses
     #   transformers
-transformers==4.26
+transformers==4.26.0
     # via bicleaner-ai
 typing-extensions==4.5.0
     # via
@@ -210,7 +210,7 @@ urllib3==1.26.15
     # via
     #   fastspell
     #   requests
-werkzeug==2.2.3
+werkzeug==2.3.8
     # via tensorboard
 wheel==0.40.0
     # via
