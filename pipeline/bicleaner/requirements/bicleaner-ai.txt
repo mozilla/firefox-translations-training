@@ -10,7 +10,7 @@ absl-py==1.4.0
     #   tensorflow
 astunparse==1.6.3
     # via tensorflow
-bicleaner-ai==2.0
+bicleaner-ai==2.0.0
     # via -r bicleaner-ai.in
 bicleaner-ai-glove==0.2.1
     # via bicleaner-ai
@@ -50,7 +50,7 @@ google-auth-oauthlib==0.4.6
     # via tensorboard
 google-pasta==0.2.0
     # via tensorflow
-grpcio==1.54.0
+grpcio==1.54.3
     # via
     #   tensorboard
     #   tensorflow
@@ -200,7 +200,7 @@ tqdm==4.65.0
     #   huggingface-hub
     #   sacremoses
     #   transformers
-transformers==4.26
+transformers==4.26.0
     # via bicleaner-ai
 typing-extensions==4.5.0
     # via
