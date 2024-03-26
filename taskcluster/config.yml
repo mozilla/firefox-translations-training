@@ -64,7 +64,7 @@ workers:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
-            worker-type: 'b-linux-large-gcp-d2g'
+            worker-type: 'b-linux-large-gcp-300gb-d2g'
         # Use for tasks that don't require GPUs, but need lots of disk space
         # eg: dataset cleaning & merging
         b-cpu-largedisk:
