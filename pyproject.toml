@@ -32,6 +32,7 @@ requests="2.26.0"
 humanize = "^4.9.0"
 blessed = "^1.20.0"
 huggingface-hub = "^0.20.3"
+websocket_client ="*"
 
 [tool.poetry.group.tests.dependencies]
 sacrebleu="2.0.0"
