@@ -308,7 +308,9 @@ def publish_task_group(group_id: str, override: bool = False) -> None:
             yaml.dump(config, config_file)
 
         parents = str(logs_folder.resolve()).strip().split("/")
-        WandB.publish_group_logs(parents, project_name, group_name, existing_runs=[], tag_sep="-")
+        WandB.publish_group_logs(
+            parents, project_name, group_name, existing_runs=[], tag_sep="-", override=override
+        )
 
 
 def list_dependent_group_ids(task_id: str, known: set[str]):
