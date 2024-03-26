@@ -103,7 +103,8 @@ class WandB(Publisher):
         config.update(self.extra_kwargs.pop("config", {}))
 
         # Ensure no W&B run already exists
-        if name := self.extra_kwargs.get("name"):
+        project = next(filter(lambda p: p.name == self.project, wandb.Api().projects()), None)
+        if project and (name := self.extra_kwargs.get("name")):
             existing_runs = list(
                 wandb.Api().runs(
                     self.project,
