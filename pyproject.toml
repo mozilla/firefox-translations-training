@@ -45,6 +45,8 @@ sh = "^2.0.6"
 zstandard = "^0.22.0"
 translations_parser = {path="./tracking/", develop=true}
 taskcluster-taskgraph = "^7.0.3"
+matplotlib = "^3.8.3"
+numpy = "^1.26.4"
 
 [tool.black]
 extend-exclude= "/3rd_party"

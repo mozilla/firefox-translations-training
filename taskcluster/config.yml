@@ -52,6 +52,7 @@ valid-stages:
     - evaluate-quantized
     - export
     - evaluate-teacher-ensemble
+    - analyze-mono
     - all
 
 workers:
