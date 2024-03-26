@@ -39,7 +39,7 @@ mkdir -p "${model_dir}/tmp"
 
 # TODO: remove
 echo "Downloading new Marian"
-wget https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/SdxgzPu5SpqXIyQ48woqKA/runs/0/artifacts/public%2Fbuild%2Fmarian.tar.zst
+wget -nv https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/SdxgzPu5SpqXIyQ48woqKA/runs/0/artifacts/public%2Fbuild%2Fmarian.tar.zst
 zstd -d public%2Fbuild%2Fmarian.tar.zst
 tar -xvf public%2Fbuild%2Fmarian.tar
 export MARIAN=$(pwd)
