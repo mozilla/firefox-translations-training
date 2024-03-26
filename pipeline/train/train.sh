@@ -37,6 +37,13 @@ test -v WORKSPACE
 cd "$(dirname "${0}")"
 mkdir -p "${model_dir}/tmp"
 
+# TODO: remove
+echo "Downloading new Marian"
+wget https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/SdxgzPu5SpqXIyQ48woqKA/runs/0/artifacts/public%2Fbuild%2Fmarian.tar.zst
+zstd -d public%2Fbuild%2Fmarian.tar.zst
+tar -xvf public%2Fbuild%2Fmarian.tar
+export MARIAN=$(pwd)
+
 all_model_metrics=(chrf ce-mean-words bleu-detok)
 
 echo "### Preparing tsv datasets and config"
