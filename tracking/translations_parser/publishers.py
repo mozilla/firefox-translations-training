@@ -84,6 +84,7 @@ class WandB(Publisher):
         # Optional path to a directory containing training artifacts
         artifacts: Path | None = None,
         artifacts_name: str = "logs",
+        override: bool = False,
         **extra_kwargs,
     ):
         from translations_parser.parser import TrainingParser
@@ -94,6 +95,7 @@ class WandB(Publisher):
         self.extra_kwargs = extra_kwargs
         self.parser: TrainingParser | None = None
         self.wandb: wandb.sdk.wandb_run.Run | wandb.sdk.lib.disabled.RunDisabled | None = None
+        self.override = override
 
     def open(self, parser) -> None:
         if parser is None or self.parser is not None:
@@ -112,7 +114,11 @@ class WandB(Publisher):
                         filters={"display_name": name, "group": self.extra_kwargs.get("group")},
                     )
                 )
-                if len(existing_runs) > 0:
+                if self.override:
+                    for run in existing_runs:
+                        logger.warning(f"Deleting existing run with name {name}: {run}")
+                        run.delete()
+                elif len(existing_runs) > 0:
                     logger.warning(
                         f"This run already exists on W&B: {existing_runs}. No data will be published."
                     )
