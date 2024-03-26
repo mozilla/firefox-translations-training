@@ -15,5 +15,5 @@ def test_analyze_mono():
 
     data_dir.print_tree()
 
-    assert os.path.isfile(data_dir.join("artifacts/distribution-words.png"))
-    assert os.path.isfile(data_dir.join("artifacts/distribution-codepoints.png"))
+    assert os.path.isfile(data_dir.join("artifacts/news_2020.en.distribution-words.png"))
+    assert os.path.isfile(data_dir.join("artifacts/news_2020.en.distribution-codepoints.png"))
