@@ -42,6 +42,10 @@ from tracking.translations_parser.utils import parse_tag
             "train-backwards-en-ca",
             ("backwards", None, None, None),
         ),
+        (
+            "evaluate-teacher-flores-flores_dev-en-ca-1/2",
+            ("teacher", "flores", "dev", None),
+        ),
     ],
 )
 def test_parse_tag(example, parsed_values):

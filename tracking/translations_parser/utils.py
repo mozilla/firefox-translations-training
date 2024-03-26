@@ -27,7 +27,7 @@ TRAIN_LABEL_REGEX = re.compile(
     r"[_-]"
     r"(?P<lang>[a-z]{2}-[a-z]{2})"
     r"-?"
-    r"(?P<suffix>[\d_]+)?"
+    r"-?(?P<suffix>[\d_\/]+)?$"
     r"$"
 )
 EVAL_REGEX = re.compile(
@@ -45,7 +45,7 @@ EVAL_REGEX = re.compile(
     r"(?P<aug>aug-[^_]+)?"
     r"_?(?P<dataset>[-\w_]*?(-[a-z]{3}-[a-z]{3})?)?"
     r"-?(?P<lang>[a-z]{2}-[a-z]{2})?"
-    r"-?(?P<suffix>[\d_]+)?$"
+    r"-?(?P<suffix>[\d_\/]+)?$"
     r"$"
 )
 
