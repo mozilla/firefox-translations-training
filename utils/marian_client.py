@@ -20,11 +20,11 @@ if __name__ == "__main__":
         formatter_class=argparse.RawTextHelpFormatter,  # Preserves whitespace in the help text.
     )
     parser.add_argument("-b", "--batch-size", type=int, default=1)
-    parser.add_argument("-p", "--port", type=int, default=8080)
+    parser.add_argument("-p", "--port", type=int, default=8886)
     args = parser.parse_args()
 
     # open connection
-    ws = create_connection("ws://localhost:8886/translate".format())
+    ws = create_connection(f"ws://localhost:{args.port}/translate")
 
     count = 0
     batch = ""

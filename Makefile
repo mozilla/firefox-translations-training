@@ -9,6 +9,7 @@ LOGS_TASK_GROUP?=
 MODEL_TASK?=
 # A command to run with run-docker
 DOCKER_COMMAND=bash
+MARIAN_SERVER_PORT=8886
 
 # OpusCleaner is a data cleaner for training corpus
 # More details are in docs/cleaning.md
@@ -107,7 +108,7 @@ run-docker:
 		--rm \
 		--volume $$(pwd):/builds/worker/checkouts \
 		--workdir /builds/worker/checkouts \
-		-p 8886:8886 \
+		-p $(MARIAN_SERVER_PORT):$(MARIAN_SERVER_PORT) \
 		ftt-local $(DOCKER_COMMAND)
 
 # Run tests under Docker
@@ -124,7 +125,7 @@ run-server-docker: DOCKER_COMMAND=/builds/worker/tools/marian-dev/build/marian-s
   -c /builds/worker/checkouts/data/taskcluster-models/$(MODEL_TASK)/decoder.yml \
   -m /builds/worker/checkouts/data/taskcluster-models/$(MODEL_TASK)/model.npz \
   -v /builds/worker/checkouts/data/taskcluster-models/$(MODEL_TASK)/vocab.spm /builds/worker/checkouts/data/taskcluster-models/$(MODEL_TASK)/vocab.spm \
-  --port 8886
+  --port $(MARIAN_SERVER_PORT)
 run-server-docker: run-docker
 
 
