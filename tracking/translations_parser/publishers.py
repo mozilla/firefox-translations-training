@@ -102,23 +102,23 @@ class WandB(Publisher):
         config = parser.config
         config.update(self.extra_kwargs.pop("config", {}))
 
-        # Ensure no W&B run already exists
-        project = next(filter(lambda p: p.name == self.project, wandb.Api().projects()), None)
-        if project and (name := self.extra_kwargs.get("name")):
-            existing_runs = list(
-                wandb.Api().runs(
-                    self.project,
-                    filters={"display_name": name, "group": self.extra_kwargs.get("group")},
-                )
-            )
-            if len(existing_runs) > 0:
-                logger.warning(
-                    f"This run already exists on W&B: {existing_runs}. No data will be published."
-                )
-                return
-
-        # Start a W&B run
         try:
+            # Check if a W&B run already exists with this name
+            project = next(filter(lambda p: p.name == self.project, wandb.Api().projects()), None)
+            if project and (name := self.extra_kwargs.get("name")):
+                existing_runs = list(
+                    wandb.Api().runs(
+                        self.project,
+                        filters={"display_name": name, "group": self.extra_kwargs.get("group")},
+                    )
+                )
+                if len(existing_runs) > 0:
+                    logger.warning(
+                        f"This run already exists on W&B: {existing_runs}. No data will be published."
+                    )
+                    return
+
+            # Start a W&B run
             self.wandb = wandb.init(
                 project=self.project,
                 config=config,
