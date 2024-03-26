@@ -283,6 +283,10 @@ def publish_task_group(group_id: str) -> None:
 
         for metrics_task in metrics_tasks.values():
             filename = metrics_task["task"]["tags"]["label"]
+            if re_match := MULTIPLE_TRAIN_SUFFIX.search(filename):
+                (suffix,) = re_match.groups()
+                filename = MULTIPLE_TRAIN_SUFFIX.sub(suffix, filename)
+
             with (eval_folder / f"{filename}.log").open("wb") as log_file:
                 downloadArtifactToFile(
                     log_file,
