@@ -8,9 +8,20 @@
 # runtime, or adjust in kinds when changing worker types.
 
 from taskgraph.transforms.base import TransformSequence
-from taskgraph.util.schema import resolve_keyed_by
+from taskgraph.util.schema import Schema, resolve_keyed_by
+from voluptuous import Optional, ALLOW_EXTRA
+
+SCHEMA = Schema(
+    {
+        Optional("use-secret"): str,
+    },
+    extra=ALLOW_EXTRA,
+)
 
 transforms = TransformSequence()
+transforms.add_validate(SCHEMA)
+
+
 
 
 @transforms.add
@@ -53,24 +64,17 @@ def inject_worker_env(config, jobs):
 
         yield job
 
-
 @transforms.add
 def inject_secret(config, jobs):
 
-    secret_name = "project/translations/level-1/weights-and-biases"
-
     for job in jobs:
+        secret_name = job.pop("use-secret", None)
 
-        # TODO: only apply to training jobs
-
-        # Secret access & configuration
-        job["scopes"].append(f"secrets:get:{secret_name}")
-        job["worker"]["env"].update({
-            "TASKCLUSTER_SECRET": secret_name,
-        })
-
-        job["worker"]["features"].update({
-            "taskclusterProxy": True
-        })
+        # Secret access & configuration through proxy
+        if secret_name is not None:
+            job["worker"]["env"].update({
+                "TASKCLUSTER_SECRET": secret_name,
+            })
+            job["worker"]["taskcluster-proxy"] = True
 
         yield job

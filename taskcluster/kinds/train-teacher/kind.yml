@@ -85,6 +85,9 @@ tasks:
                   path: artifacts
                   type: directory
 
+        # Use a secret to publish logs on weights and biases
+        use-secret: project/translations/level-1/weights-and-biases
+
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
 
