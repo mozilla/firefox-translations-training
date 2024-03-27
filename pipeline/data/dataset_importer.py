@@ -18,6 +18,7 @@ import sys
 from typing import Dict, Iterable, List
 
 from opustrainer.modifiers.noise import NoiseModifier
+from opustrainer.modifiers.placeholders import PlaceholderTagModifier
 from opustrainer.modifiers.surface import TitleCaseModifier, UpperCaseModifier
 from opustrainer.modifiers.typos import TypoModifier
 from opustrainer.types import Modifier
@@ -27,6 +28,8 @@ SRC = os.environ["SRC"]
 TRG = os.environ["TRG"]
 COMP_CMD = os.getenv("COMPRESSION_CMD", "pigz")
 COMP_EXT = os.getenv("ARTIFACT_EXT", "gz")
+
+random.seed(1111)
 
 
 class CompositeModifier:
@@ -44,28 +47,35 @@ class CompositeModifier:
         return batch
 
 
-MIX_PROB = 0.1  # 10% will be augmented in the mix
+MIX_PROB = 0.05  # 5% will be augmented in the mix
+PROB_1 = 1.0  # 100% chance
+PROB_0 = 0.0  # 0% chance
+# probability 1 adds way too much inline noise
+NOISE_PROB = 0.05
+NOISE_MIX_PROB = 0.01
 
 
 def get_typos_probs() -> Dict[str, float]:
     # select 4 random types of typos
     typos = set(random.sample(list(TypoModifier.modifiers.keys()), k=4))
     # set probability 1 for selected typos and 0 for the rest
-    probs = {typo: 1.0 if typo in typos else 0.0 for typo in TypoModifier.modifiers.keys()}
+    probs = {typo: PROB_1 if typo in typos else PROB_0 for typo in TypoModifier.modifiers.keys()}
     return probs
 
 
 modifier_map = {
-    "aug-typos": lambda: TypoModifier(1.0, **get_typos_probs()),
-    "aug-title": lambda: TitleCaseModifier(1.0),
-    "aug-upper": lambda: UpperCaseModifier(1.0),
-    "aug-noise": lambda: NoiseModifier(1.0),
+    "aug-typos": lambda: TypoModifier(PROB_1, **get_typos_probs()),
+    "aug-title": lambda: TitleCaseModifier(PROB_1),
+    "aug-upper": lambda: UpperCaseModifier(PROB_1),
+    "aug-noise": lambda: NoiseModifier(PROB_1),
+    "aug-inline-noise": lambda: PlaceholderTagModifier(NOISE_PROB, augment=1),
     "aug-mix": lambda: CompositeModifier(
         [
             TypoModifier(MIX_PROB, **get_typos_probs()),
             TitleCaseModifier(MIX_PROB),
             UpperCaseModifier(MIX_PROB),
             NoiseModifier(MIX_PROB),
+            PlaceholderTagModifier(NOISE_MIX_PROB, augment=1),
         ]
     ),
 }
@@ -90,6 +100,29 @@ def run_cmd(cmd: List[str]):
     print(result.stdout)
 
 
+def add_alignments(corpus: List[str]) -> List[str]:
+    from simalign import SentenceAligner
+
+    # We use unsupervised aligner here because statistical tools like fast_align require a large corpus to train on
+    # This is slow without a GPU and is meant to operate only on small evaluation datasets
+
+    # Use BERT with subwords and itermax as it has a higher recall and matches more words than other methods
+    # See more details in the paper: https://arxiv.org/pdf/2004.08728.pdf
+    # and in the source code: https://github.com/cisnlp/simalign/blob/master/simalign/simalign.py
+    # This will download a 700Mb BERT model from Hugging Face and cache it
+    aligner = SentenceAligner(model="bert", token_type="bpe", matching_methods="i")
+
+    alignments = []
+    for line in corpus:
+        src_sent, trg_sent = line.split("\t")
+        sent_aln = aligner.get_word_aligns(src_sent, trg_sent)["itermax"]
+        aln_str = " ".join(f"{src_pos}-{trg_pos}" for src_pos, trg_pos in sent_aln)
+        alignments.append(aln_str)
+
+    corpus_tsv = [f"{sents}\t{aln}" for sents, aln in zip(corpus, alignments)]
+    return corpus_tsv
+
+
 # we plan to use it only for small evaluation datasets
 def augment(output_prefix: str, aug_modifer: str):
     """
@@ -105,6 +138,12 @@ def augment(output_prefix: str, aug_modifer: str):
     compressed_trg = f"{output_prefix}.{TRG}.{COMP_EXT}"
 
     corpus = read_corpus_tsv(compressed_src, compressed_trg, uncompressed_src, uncompressed_trg)
+
+    if aug_modifer in ("aug-mix", "aug-inline-noise"):
+        # add alignments for inline noise
+        # Tags modifier will remove them after processing
+        corpus = add_alignments(corpus)
+
     modified = []
     for line in corpus:
         # recreate modifier for each line to apply randomization (for typos)

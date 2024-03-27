@@ -21,7 +21,6 @@ kind-dependencies:
     - train-teacher
     - train-student
     - finetune-student
-    - alignments
     - toolchain
 
 task-defaults:

@@ -67,10 +67,13 @@ def alignments(data_dir, vocab, corpus):
         "SRC": "en",
         "TRG": "ru",
     }
-    data_dir.run_task("alignments-en-ru", env=env)
+    data_dir.run_task("alignments-original-en-ru", env=env)
     shutil.copyfile(
         os.path.join(data_dir.path, "artifacts", "corpus.aln.zst"), data_dir.join("corpus.aln.zst")
     )
+    # recreate corpus
+    data_dir.create_zst("corpus.en.zst", en_sample)
+    data_dir.create_zst("corpus.ru.zst", ru_sample)
 
 
 def test_train_student_mocked(alignments, data_dir):

@@ -17,7 +17,6 @@ transforms:
 kind-dependencies:
     - dataset
     - train-teacher
-    - alignments
     - toolchain
 
 tasks:
