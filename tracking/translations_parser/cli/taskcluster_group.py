@@ -21,7 +21,7 @@ from taskcluster.download import downloadArtifactToBuf, downloadArtifactToFile
 from translations_parser.data import Metric
 from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import WandB
-from translations_parser.utils import extract_dataset_from_tag
+from translations_parser.utils import parse_tag
 
 logging.basicConfig(
     level=logging.INFO,
@@ -119,7 +119,7 @@ def get_metrics_from_task(task: dict) -> list[Metric]:
             with file.open("wb") as log_file:
                 log_file.write(log.tobytes())
                 log_file.flush()
-                metrics.append(Metric.from_file(Path(log_file.name), sep="-"))
+                metrics.append(Metric.from_file(Path(log_file.name)))
 
     return metrics
 
@@ -229,7 +229,7 @@ def publish_task_group(group_id: str) -> None:
             eval_label = eval_task["task"]["tags"].get("label", "")
 
             try:
-                model_name, _, _ = extract_dataset_from_tag(eval_label, sep="-")
+                model_name, _, _, _ = parse_tag(eval_label)
             except ValueError:
                 continue
 
@@ -283,6 +283,10 @@ def publish_task_group(group_id: str) -> None:
 
         for metrics_task in metrics_tasks.values():
             filename = metrics_task["task"]["tags"]["label"]
+            if re_match := MULTIPLE_TRAIN_SUFFIX.search(filename):
+                (suffix,) = re_match.groups()
+                filename = MULTIPLE_TRAIN_SUFFIX.sub(suffix, filename)
+
             with (eval_folder / f"{filename}.log").open("wb") as log_file:
                 downloadArtifactToFile(
                     log_file,
@@ -299,7 +303,7 @@ def publish_task_group(group_id: str) -> None:
             yaml.dump(config, config_file)
 
         parents = str(logs_folder.resolve()).strip().split("/")
-        WandB.publish_group_logs(parents, project_name, group_name, existing_runs=[], tag_sep="-")
+        WandB.publish_group_logs(parents, project_name, group_name, existing_runs=[])
 
 
 def list_dependent_group_ids(task_id: str, known: set[str]):

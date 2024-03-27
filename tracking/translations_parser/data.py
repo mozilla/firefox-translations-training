@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Sequence
 
-from translations_parser.utils import extract_dataset_from_tag
+from translations_parser.utils import parse_tag
 
 logging.basicConfig(
     level=logging.INFO,
@@ -53,6 +53,7 @@ class Metric:
     """Data extracted from a `.metrics` file"""
 
     # Evaluation identifiers
+    importer: str
     dataset: str
     augmentation: str | None
     # Scores
@@ -63,7 +64,7 @@ class Metric:
     def from_file(
         cls,
         metrics_file: Path,
-        sep="_",
+        importer: str | None = None,
         dataset: str | None = None,
         augmentation: str | None = None,
     ):
@@ -85,9 +86,10 @@ class Metric:
         except Exception as e:
             raise ValueError(f"Metrics file could not be parsed: {e}")
         bleu_detok, chrf = values
-        if dataset is None:
-            _, dataset, augmentation = extract_dataset_from_tag(metrics_file.stem, sep=sep)
+        if importer is None:
+            _, importer, dataset, augmentation = parse_tag(metrics_file.stem)
         return cls(
+            importer=importer,
             dataset=dataset,
             augmentation=augmentation,
             chrf=chrf,
@@ -95,7 +97,9 @@ class Metric:
         )
 
     @classmethod
-    def from_tc_context(cls, dataset: str, lines: Sequence[str], augmentation: str | None = None):
+    def from_tc_context(
+        cls, importer: str, dataset: str, lines: Sequence[str], augmentation: str | None = None
+    ):
         """
         Try reading a metric from Taskcluster logs, looking for two
         successive floats after a line maching METRIC_LOG_RE.
@@ -113,6 +117,7 @@ class Metric:
                 continue
             bleu_detok, chrf = values
             return cls(
+                importer=importer,
                 dataset=dataset,
                 augmentation=augmentation,
                 chrf=chrf,

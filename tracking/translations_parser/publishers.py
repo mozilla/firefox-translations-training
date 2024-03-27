@@ -9,7 +9,7 @@ import wandb
 import yaml
 
 from translations_parser.data import Metric, TrainingEpoch, TrainingLog, ValidationEpoch
-from translations_parser.utils import extract_dataset_from_tag
+from translations_parser.utils import parse_tag
 
 logging.basicConfig(
     level=logging.INFO,
@@ -145,17 +145,22 @@ class WandB(Publisher):
         if self.wandb is None:
             return
         for metric in metrics:
+            title = metric.importer
+            if metric.augmentation:
+                title = f"{title}_{metric.augmentation}"
+            if metric.dataset:
+                title = f"{title}_{metric.dataset}"
             # Publish a bar chart (a table with values will also be available from W&B)
             self.wandb.log(
                 {
-                    metric.dataset: wandb.plot.bar(
+                    title: wandb.plot.bar(
                         wandb.Table(
                             columns=["Metric", "Value"],
                             data=[[key, getattr(metric, key)] for key in ("bleu_detok", "chrf")],
                         ),
                         "Metric",
                         "Value",
-                        title=metric.dataset.capitalize(),
+                        title=title,
                     )
                 }
             )
@@ -183,7 +188,6 @@ class WandB(Publisher):
         project: str,
         group: str,
         existing_runs: list[str] | None = None,
-        tag_sep: str = "_",
     ) -> None:
         """
         Publish files within `logs_dir` to W&B artifacts for a specific group.
@@ -215,14 +219,19 @@ class WandB(Publisher):
         metrics = defaultdict(list)
         # Add "quantized" metrics
         for file in quantized_metrics:
-            metrics["quantized"].append(Metric.from_file(file, dataset=file.stem))
+            importer, dataset = file.stem.split("_", 1)
+            metrics["quantized"].append(Metric.from_file(file, importer=importer, dataset=dataset))
         # Add experiment (runs) metrics
         for file in evaluation_metrics:
-            model_name, dataset, aug = extract_dataset_from_tag(file.stem, tag_sep)
+            model_name, importer, dataset, aug = parse_tag(file.stem)
             with file.open("r") as f:
                 lines = f.readlines()
             try:
-                metrics[model_name].append(Metric.from_tc_context(dataset, lines))
+                metrics[model_name].append(
+                    Metric.from_tc_context(
+                        importer=importer, dataset=dataset, lines=lines, augmentation=aug
+                    )
+                )
             except ValueError as e:
                 logger.error(f"Could not parse metrics from {file.resolve()}: {e}")
 
