@@ -52,3 +52,25 @@ def inject_worker_env(config, jobs):
         job["worker"]["env"].update(worker_env)
 
         yield job
+
+
+@transforms.add
+def inject_secret(config, jobs):
+
+    secret_name = "project/translations/level-1/weights-and-biases"
+
+    for job in jobs:
+
+        # TODO: only apply to training jobs
+
+        # Secret access & configuration
+        job["scopes"].append(f"secrets:get:{secret_name}")
+        job["worker"]["env"].update({
+            "TASKCLUSTER_SECRET": secret_name,
+        })
+
+        job["worker"]["features"].update({
+            "taskclusterProxy": True
+        })
+
+        yield job
