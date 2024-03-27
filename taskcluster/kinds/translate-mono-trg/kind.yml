@@ -51,7 +51,7 @@ task-defaults:
 
     worker-type: b-largegpu
     worker:
-        max-run-time: 2592000
+        max-run-time: 86400
         artifacts:
             - name: public/build
               path: artifacts

@@ -53,7 +53,7 @@ tasks:
                 - name: public/build
                   path: artifacts
                   type: directory
-            max-run-time: 2592000
+            max-run-time: 86400
             env:
                 # This is a separate environment variable so tests can override it.
                 MARIAN: $MOZ_FETCHES_DIR

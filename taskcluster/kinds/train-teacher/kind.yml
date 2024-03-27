@@ -78,7 +78,7 @@ tasks:
                 github-pull-request: b-largegpu
                 default: b-largegpu-xlargedisk-standard
         worker:
-            max-run-time: 2592000
+            max-run-time: 86400
             env:
                 ARTIFACT_EXT: zst
                 COMPRESSION_CMD: zstdmt

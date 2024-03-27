@@ -46,7 +46,7 @@ tasks:
 
         worker-type: b-largegpu
         worker:
-            max-run-time: 2592000
+            max-run-time: 86400
             env:
                 # TODO: what should we _actually_ use for the workspace value?
                 # and should we centralize this, since it seems to depend on available
