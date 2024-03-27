@@ -206,7 +206,6 @@ tasks:
                                         ${normProjectUpper}_HEAD_REF: '${head_ref}'
                                         ${normProjectUpper}_HEAD_REV: '${head_sha}'
                                         ${normProjectUpper}_REPOSITORY_TYPE: git
-                                        ${normProjectUpper}_PIP_REQUIREMENTS: taskcluster/requirements.txt
                                         REPOSITORIES:
                                             $json:
                                                 ${normProject}: ${normProject}
@@ -226,7 +225,7 @@ tasks:
                               features:
                                   taskclusterProxy: true
     
-                              image: mozillareleases/taskgraph:decision-5483484ad45a3d27a0f5bd05f1c87d90e08df67a3713605d812b851a8a5bd854@sha256:2dd667994aa13fccdcdcede85c570a5eb4a5247e42875a9e95a135ef774ee469
+                              image: mozillareleases/taskgraph:decision-v7.4.0@sha256:eb13ec9b67c93c8394856813bbe69bb876888a5015938d8d811ef3609c00fe21
                               maxRunTime: 1800
     
                               command:
@@ -242,11 +241,11 @@ tasks:
                                         then: >
                                             cd /builds/worker/checkouts/src &&
                                             ln -s /builds/worker/artifacts artifacts &&
-                                            ~/.local/bin/taskgraph action-callback
+                                            taskgraph action-callback
                                         else: >
                                             cd /builds/worker/checkouts/src &&
                                             ln -s /builds/worker/artifacts artifacts &&
-                                            ~/.local/bin/taskgraph decision
+                                            taskgraph decision
                                             --pushlog-id='0'
                                             --pushdate='0'
                                             --project='${project}'
