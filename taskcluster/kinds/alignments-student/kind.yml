@@ -36,6 +36,7 @@ tasks:
             substitution-fields:
                 - description
                 - name
+                - run.command
                 - fetches
                 - dependencies
                 - worker.env

@@ -93,6 +93,7 @@ def test_teacher_backtranslated_aln():
         "SRC": "en",
         "TRG": "ru",
     }
+    # get priors using the "original" task
     data_dir.run_task("alignments-original-en-ru", env=env)
     shutil.copyfile(
         os.path.join(data_dir.path, "artifacts", "corpus.priors"),
@@ -102,6 +103,33 @@ def test_teacher_backtranslated_aln():
     data_dir.run_task("alignments-backtranslated-en-ru", env=env)
 
     verify_aln(data_dir, "mono", en_sample, ru_sample)
+
+
+def test_student_aln():
+    data_dir = DataDir("test_alignments")
+    data_dir.create_zst("corpus.en.zst", en_sample)
+    data_dir.create_zst("corpus.ru.zst", ru_sample)
+    env = {
+        "TEST_ARTIFACTS": data_dir.path,
+        "BIN": bin_dir,
+        "COMPRESSION_CMD": "zstd",
+        "ARTIFACT_EXT": "zst",
+        "SRC": "en",
+        "TRG": "ru",
+    }
+    # get priors using the "original" task
+    data_dir.run_task("alignments-original-en-ru", env=env)
+    shutil.copyfile(
+        os.path.join(data_dir.path, "artifacts", "corpus.priors"),
+        os.path.join(data_dir.path, "corpus.priors"),
+    )
+    os.remove(os.path.join(data_dir.path, "artifacts", "corpus.aln.zst"))
+    data_dir.create_zst("corpus.en.zst", en_sample)
+    data_dir.create_zst("corpus.ru.zst", ru_sample)
+
+    data_dir.run_task("alignments-student-en-ru", env=env)
+
+    verify_aln(data_dir, "corpus", en_sample, ru_sample)
 
 
 def test_shortlist():
