@@ -47,6 +47,11 @@ def get_args() -> argparse.Namespace:
         action="store_true",
     )
     parser.add_argument(
+        "--override-runs",
+        help="Override runs on Weight & Biases.",
+        action="store_true",
+    )
+    parser.add_argument(
         "--verbose",
         "-v",
         help="Print debug messages.",
@@ -74,7 +79,9 @@ def get_logs(task: dict) -> list[str]:
     return log.tobytes().decode().split("\n")
 
 
-def publish_task(project: str, group: str, name: str, task: dict, metrics: list[Metric]) -> None:
+def publish_task(
+    project: str, group: str, name: str, task: dict, metrics: list[Metric], override: bool = False
+) -> None:
     logs = get_logs(task)
     if not logs:
         logger.warning(f"Skipping publication of training task {name}")
@@ -87,6 +94,7 @@ def publish_task(project: str, group: str, name: str, task: dict, metrics: list[
                 group=group,
                 name=name,
                 tags=["taskcluster"],
+                override=override,
             )
         ],
         metrics=metrics,
@@ -194,7 +202,7 @@ def list_completed_tasks(group_id: str) -> dict[str, list[dict]]:
     return grouped_tasks
 
 
-def publish_task_group(group_id: str) -> None:
+def publish_task_group(group_id: str, override: bool = False) -> None:
     logger.info(f"Retrieving task group {group_id}")
 
     # Ensure task group is readable
@@ -263,17 +271,18 @@ def publish_task_group(group_id: str) -> None:
             name=training_task["name"],
             task=training_task,
             metrics=metrics,
+            override=override,
         )
 
     # Group and publish remaining metrics tasks via the logs publication
-    if (
-        len(
-            wandb.Api().runs(
-                project_name, filters={"display_name": "group_logs", "group": group_name}
-            )
-        )
-        > 0
-    ):
+    runs = list(
+        wandb.Api().runs(project_name, filters={"display_name": "group_logs", "group": group_name})
+    )
+    if override:
+        for run in runs:
+            logger.warning(f"Deleting existing run with name group_logs: {run}")
+            run.delete()
+    elif runs:
         logger.warning("Skipping group_logs fake run publication as it already exists")
         return
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -299,7 +308,9 @@ def publish_task_group(group_id: str) -> None:
             yaml.dump(config, config_file)
 
         parents = str(logs_folder.resolve()).strip().split("/")
-        WandB.publish_group_logs(parents, project_name, group_name, existing_runs=[], tag_sep="-")
+        WandB.publish_group_logs(
+            parents, project_name, group_name, existing_runs=[], tag_sep="-", override=override
+        )
 
 
 def list_dependent_group_ids(task_id: str, known: set[str]):
@@ -347,4 +358,4 @@ def main() -> None:
         )
 
     for group_id in groups_ids:
-        publish_task_group(group_id)
+        publish_task_group(group_id, override=args.override_runs)

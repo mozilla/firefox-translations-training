@@ -84,6 +84,7 @@ class WandB(Publisher):
         # Optional path to a directory containing training artifacts
         artifacts: Path | None = None,
         artifacts_name: str = "logs",
+        override: bool = False,
         **extra_kwargs,
     ):
         from translations_parser.parser import TrainingParser
@@ -94,6 +95,7 @@ class WandB(Publisher):
         self.extra_kwargs = extra_kwargs
         self.parser: TrainingParser | None = None
         self.wandb: wandb.sdk.wandb_run.Run | wandb.sdk.lib.disabled.RunDisabled | None = None
+        self.override = override
 
     def open(self, parser) -> None:
         if parser is None or self.parser is not None:
@@ -112,7 +114,11 @@ class WandB(Publisher):
                         filters={"display_name": name, "group": self.extra_kwargs.get("group")},
                     )
                 )
-                if len(existing_runs) > 0:
+                if self.override:
+                    for run in existing_runs:
+                        logger.warning(f"Deleting existing run with name {name}: {run}")
+                        run.delete()
+                elif len(existing_runs) > 0:
                     logger.warning(
                         f"This run already exists on W&B: {existing_runs}. No data will be published."
                     )
@@ -184,6 +190,7 @@ class WandB(Publisher):
         group: str,
         existing_runs: list[str] | None = None,
         tag_sep: str = "_",
+        override: bool = False,
     ) -> None:
         """
         Publish files within `logs_dir` to W&B artifacts for a specific group.
@@ -234,6 +241,18 @@ class WandB(Publisher):
             }
 
         for model_name, model_metrics in missing_run_metrics.items():
+            existing_runs = list(
+                wandb.Api().runs(project, filters={"display_name": model_name, "group": group})
+            )
+            if override:
+                for run in existing_runs:
+                    logger.warning(f"Deleting existing run with name {model_name}: {run}")
+                    run.delete()
+            elif len(existing_runs) > 0:
+                logger.warning(
+                    f"This run already exists on W&B: {existing_runs}. No data will be published."
+                )
+                return
             logger.info(f"Creating missing run {model_name} with associated metrics")
             publisher = cls(project=project, name=model_name, group=group)
             publisher.open(TrainingParser(logs_iter=iter([]), publishers=[]))
