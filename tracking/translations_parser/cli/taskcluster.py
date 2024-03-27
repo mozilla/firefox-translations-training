@@ -96,7 +96,7 @@ def get_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main() -> None:
+def boot() -> None:
     args = get_args()
 
     if args.loglevel:
@@ -150,3 +150,19 @@ def main() -> None:
         log_filter=taskcluster_log_filter,
     )
     parser.run()
+
+
+def main() -> None:
+    """
+    Called from Python entrypoint
+    Catch every exception when running in Taskcluster to avoid crashing real training
+    """
+    try:
+        boot()
+    except Exception as e:
+        logger.error(f"Publication failed: {e}")
+        if os.environ.get("MOZ_AUTOMATION") is not None:
+            # Stop cleanly when in taskcluster
+            sys.exit(0)
+        else:
+            raise

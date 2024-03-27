@@ -87,6 +87,9 @@ tasks:
                   path: artifacts
                   type: directory
 
+        # Use a secret to publish logs on weights and biases
+        use-secret: project/translations/level-1/weights-and-biases
+
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
 
@@ -101,6 +104,7 @@ tasks:
                 - >-
                     pip3 install --upgrade pip setuptools &&
                     pip3 install -r $VCS_PATH/pipeline/train/requirements/train.txt &&
+                    pip3 install $VCS_PATH/tracking &&
                     export PATH="$HOME/.local/bin:$PATH" &&
                     export MARIAN=$MOZ_FETCHES_DIR &&
                     $VCS_PATH/taskcluster/scripts/pipeline/train-taskcluster.sh
