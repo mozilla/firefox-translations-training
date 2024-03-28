@@ -50,7 +50,8 @@ class CompositeModifier:
 MIX_PROB = 0.05  # 5% will be augmented in the mix
 PROB_1 = 1.0  # 100% chance
 PROB_0 = 0.0  # 0% chance
-# probability 1 adds way too much inline noise
+# use lower probabilities than 1 to add inline noise into the mix
+# probability 1 adds way too much noise to a corpus
 NOISE_PROB = 0.05
 NOISE_MIX_PROB = 0.01
 

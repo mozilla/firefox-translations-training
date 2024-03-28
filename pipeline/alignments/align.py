@@ -85,6 +85,9 @@ def align(
     else:
         priors_input = None
 
+    # We use eflomal aligner.
+    # It is less memory intensive than fast_align.
+    # fast_align failed with OOM in a large white-space tokenized corpus
     aligner = eflomal.Aligner()
     src_input = stack.enter_context(open(corpus_src, "r", encoding="utf-8"))
     trg_input = stack.enter_context(open(corpus_trg, "r", encoding="utf-8"))
@@ -104,6 +107,13 @@ def align(
 
 
 def symmetrize(bin: str, fwd_path: str, rev_path: str, output_path: str, stack: ExitStack):
+    """
+    Symmetrize the forward and reverse alignments of the corpus.
+
+    Alignments are generated in two directions, source to target, and target to source.
+    This function symmetrizes them so that both directions share the same alignment information.
+    It uses `atools` binary from `fast_align`
+    """
     logger.info("Symmetrizing alignments...")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     # Wrap the file with a compressor stream if it needs to be compressed
