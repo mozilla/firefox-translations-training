@@ -36,7 +36,7 @@ ru_sample = """Маленькая девочка, увидев, что поте�
 """
 
 
-def verify_aln(data_dir, dataset, src_corpus, trg_corpus):
+def verify_alignments(data_dir, dataset, src_corpus, trg_corpus):
     aln_path = os.path.join(data_dir.path, "artifacts", f"{dataset}.aln.zst")
     assert os.path.exists(aln_path)
 
@@ -61,7 +61,7 @@ def verify_aln(data_dir, dataset, src_corpus, trg_corpus):
         )
 
 
-def test_teacher_original_aln():
+def test_teacher_original_alignments():
     data_dir = DataDir("test_alignments")
     data_dir.create_zst("corpus.en.zst", en_sample)
     data_dir.create_zst("corpus.ru.zst", ru_sample)
@@ -76,10 +76,10 @@ def test_teacher_original_aln():
 
     data_dir.run_task("alignments-original-en-ru", env=env)
 
-    verify_aln(data_dir, "corpus", en_sample, ru_sample)
+    verify_alignments(data_dir, "corpus", en_sample, ru_sample)
 
 
-def test_teacher_backtranslated_aln():
+def test_teacher_backtranslated_alignments():
     data_dir = DataDir("test_alignments")
     data_dir.create_zst("corpus.en.zst", en_sample)
     data_dir.create_zst("mono.en.zst", en_sample)
@@ -102,10 +102,10 @@ def test_teacher_backtranslated_aln():
 
     data_dir.run_task("alignments-backtranslated-en-ru", env=env)
 
-    verify_aln(data_dir, "mono", en_sample, ru_sample)
+    verify_alignments(data_dir, "mono", en_sample, ru_sample)
 
 
-def test_student_aln():
+def test_student_alignments():
     data_dir = DataDir("test_alignments")
     data_dir.create_zst("corpus.en.zst", en_sample)
     data_dir.create_zst("corpus.ru.zst", ru_sample)
@@ -129,7 +129,7 @@ def test_student_aln():
 
     data_dir.run_task("alignments-student-en-ru", env=env)
 
-    verify_aln(data_dir, "corpus", en_sample, ru_sample)
+    verify_alignments(data_dir, "corpus", en_sample, ru_sample)
 
 
 def test_shortlist():
