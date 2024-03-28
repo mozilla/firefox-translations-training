@@ -21,7 +21,7 @@ from taskcluster.download import downloadArtifactToBuf, downloadArtifactToFile
 from translations_parser.data import Metric
 from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import WandB
-from translations_parser.utils import extract_dataset_from_tag
+from translations_parser.utils import parse_tag
 
 logging.basicConfig(
     level=logging.INFO,
@@ -44,6 +44,11 @@ def get_args() -> argparse.Namespace:
     parser.add_argument(
         "--no-recursive-lookup",
         help="Disable group traversal from provided group_id tasks dependencies.",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--override-runs",
+        help="Override runs on Weight & Biases.",
         action="store_true",
     )
     parser.add_argument(
@@ -119,7 +124,7 @@ def get_metrics_from_task(task: dict) -> list[Metric]:
             with file.open("wb") as log_file:
                 log_file.write(log.tobytes())
                 log_file.flush()
-                metrics.append(Metric.from_file(Path(log_file.name), sep="-"))
+                metrics.append(Metric.from_file(Path(log_file.name)))
 
     return metrics
 
@@ -194,7 +199,7 @@ def list_completed_tasks(group_id: str) -> dict[str, list[dict]]:
     return grouped_tasks
 
 
-def publish_task_group(group_id: str) -> None:
+def publish_task_group(group_id: str, override: bool = False) -> None:
     logger.info(f"Retrieving task group {group_id}")
 
     # Ensure task group is readable
@@ -206,7 +211,10 @@ def publish_task_group(group_id: str) -> None:
 
     # If the task group does not have a training configuration, we can skip its publication
     if config is None:
-        logger.warning(f"Task group {group_id} cannot be published to WandB")
+        logger.warning(
+            f"Task group {group_id} cannot be published to WandB: "
+            "configuration missing @ extra/action/context/input"
+        )
         return
 
     experiment = config["experiment"]
@@ -221,6 +229,14 @@ def publish_task_group(group_id: str) -> None:
         logger.warning(f"Skipping task group {group_id} as it is empty")
         return
 
+    logger.info(f"Processing group {group_name}")
+
+    if override:
+        existing_runs = list(wandb.Api().runs(project_name, filters={"group": group_name}))
+        for run in existing_runs:
+            logger.warning(f"Deleting existing run {run.display_name}.")
+            run.delete()
+
     # Publish training tasks as runs
     for training_task in training_tasks:
         # Associate metrics to each runs (evaluate tasks that depends on the training task)
@@ -229,7 +245,7 @@ def publish_task_group(group_id: str) -> None:
             eval_label = eval_task["task"]["tags"].get("label", "")
 
             try:
-                model_name, _, _ = extract_dataset_from_tag(eval_label, sep="-")
+                model_name, _, _, _ = parse_tag(eval_label)
             except ValueError:
                 continue
 
@@ -283,6 +299,10 @@ def publish_task_group(group_id: str) -> None:
 
         for metrics_task in metrics_tasks.values():
             filename = metrics_task["task"]["tags"]["label"]
+            if re_match := MULTIPLE_TRAIN_SUFFIX.search(filename):
+                (suffix,) = re_match.groups()
+                filename = MULTIPLE_TRAIN_SUFFIX.sub(suffix, filename)
+
             with (eval_folder / f"{filename}.log").open("wb") as log_file:
                 downloadArtifactToFile(
                     log_file,
@@ -299,7 +319,7 @@ def publish_task_group(group_id: str) -> None:
             yaml.dump(config, config_file)
 
         parents = str(logs_folder.resolve()).strip().split("/")
-        WandB.publish_group_logs(parents, project_name, group_name, existing_runs=[], tag_sep="-")
+        WandB.publish_group_logs(parents, project_name, group_name, existing_runs=[])
 
 
 def list_dependent_group_ids(task_id: str, known: set[str]):
@@ -347,4 +367,4 @@ def main() -> None:
         )
 
     for group_id in groups_ids:
-        publish_task_group(group_id)
+        publish_task_group(group_id, override=args.override_runs)

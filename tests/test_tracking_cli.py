@@ -44,6 +44,7 @@ def samples_dir():
         wandb_artifacts=None,
         wandb_group="group",
         wandb_run_name="run",
+        taskcluster_secret=None,
     ),
 )
 @patch("translations_parser.publishers.wandb")
@@ -187,6 +188,7 @@ def test_experiments(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
         wandb_artifacts=None,
         wandb_group="group",
         wandb_run_name="run",
+        taskcluster_secret=None,
     ),
 )
 @patch("translations_parser.publishers.wandb")
@@ -222,6 +224,7 @@ def test_taskcluster_wandb_initialization_failure(
         wandb_artifacts=None,
         wandb_group="group",
         wandb_run_name="run",
+        taskcluster_secret=None,
     ),
 )
 @patch("translations_parser.publishers.wandb")
