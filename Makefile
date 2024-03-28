@@ -5,6 +5,11 @@ SHELL=/bin/bash
 
 # task group id for downloading evals and logs
 LOGS_TASK_GROUP?=
+# An ID of a Taskcluster task with a Marian model in the artifacts
+MODEL_TASK?=
+# A command to run with run-docker
+DOCKER_COMMAND=bash
+MARIAN_SERVER_PORT=8886
 
 # OpusCleaner is a data cleaner for training corpus
 # More details are in docs/cleaning.md
@@ -103,27 +108,26 @@ run-docker:
 		--rm \
 		--volume $$(pwd):/builds/worker/checkouts \
 		--workdir /builds/worker/checkouts \
-		ftt-local bash
+		-p $(MARIAN_SERVER_PORT):$(MARIAN_SERVER_PORT) \
+		ftt-local $(DOCKER_COMMAND)
 
 # Run tests under Docker
-run-tests-docker: build-docker
-run-tests-docker:
-	# this is a mitigation to guard against build failures with the new Apple ARM processors
-	if [ -n "$$VIRTUAL_ENV" ]; then \
-		echo "Error: Virtual environment detected. Exit the poetry shell."; \
-		exit 1; \
-	fi && \
-	if [ $$(uname -m) == 'arm64' ]; then \
-		echo "setting arm64 platform"; \
-	  	export DOCKER_DEFAULT_PLATFORM=linux/amd64; \
-	fi && \
-	docker run \
-		--interactive \
-		--tty \
-		--rm \
-		--volume $$(pwd):/builds/worker/checkouts \
-		--workdir /builds/worker/checkouts \
-		 ftt-local make run-tests
+run-tests-docker: DOCKER_COMMAND="make run-tests"
+run-tests-docker: run-docker
+
+# Run Marian server that loads a model from data/models/$MODEL_TASK
+# For example:
+# MODEL_TASK=ZP5V73iKTM2HCFQsCU-JBQ make download-model
+# MODEL_TASK=ZP5V73iKTM2HCFQsCU-JBQ make run-server-docker
+# Then run `python utils/marian_client.py` to test the model
+# It will be slow on a CPU under Docker
+run-server-docker: DOCKER_COMMAND=/builds/worker/tools/marian-dev/build/marian-server \
+  -c /builds/worker/checkouts/data/taskcluster-models/$(MODEL_TASK)/decoder.yml \
+  -m /builds/worker/checkouts/data/taskcluster-models/$(MODEL_TASK)/model.npz \
+  -v /builds/worker/checkouts/data/taskcluster-models/$(MODEL_TASK)/vocab.spm /builds/worker/checkouts/data/taskcluster-models/$(MODEL_TASK)/vocab.spm \
+  --port $(MARIAN_SERVER_PORT)
+run-server-docker: run-docker
+
 
 # Validates Taskcluster task graph locally
 validate-taskgraph:
@@ -155,12 +159,20 @@ download-logs:
 # Downloads evaluation results from Taskcluster task group to a CSV file
 # This includes BLEU and chrF metrics for each dataset and trained model
 download-evals:
-	mkdir -p data/taskcluster-logs
+	mkdir -p data/taskcluster-evals
 	poetry install --only taskcluster --no-root
 	poetry run python utils/taskcluster_downloader.py \
 		--output=data/taskcluster-evals/$(LOGS_TASK_GROUP) \
 		--mode=evals \
 		--task-group-id=$(LOGS_TASK_GROUP)
+
+# Downloads a trained model from the Taskcluster task artifacts
+# For example: `MODEL_TASK=ZP5V73iKTM2HCFQsCU-JBQ make download-model`
+download-model:
+	mkdir -p data/taskcluster-models/$(MODEL_TASK)
+	wget -O data/taskcluster-models/$(MODEL_TASK)/decoder.yml https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/$(MODEL_TASK)/runs/0/artifacts/public%2Fbuild%2Fmodel.npz.best-chrf.npz.decoder.yml
+	wget -O data/taskcluster-models/$(MODEL_TASK)/model.npz https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/$(MODEL_TASK)/runs/0/artifacts/public%2Fbuild%2Fmodel.npz.best-chrf.npz
+	wget -O data/taskcluster-models/$(MODEL_TASK)/vocab.spm https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/$(MODEL_TASK)/runs/0/artifacts/public%2Fbuild%2Fvocab.spm
 
 
 # Runs Tensorboard for Marian training logs in ./logs directory
