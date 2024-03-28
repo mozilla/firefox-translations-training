@@ -51,7 +51,8 @@ RUN ./compile-preprocess.sh preprocess/build $(nproc)
 
 RUN git clone https://github.com/marian-nmt/marian-dev.git marian-dev
 # Use the same revision as in taskcluster/kinds/fetch/toolchains.yml
-RUN cd marian-dev && git checkout e8a1a2530fb84cbff7383302ebca393e5875c441
+# it corresponds to v1.12.14 2d067afb 2024-02-16 11:44:13 -0500
+RUN cd marian-dev && git checkout 2d067afb9ce5e3a0b6c32585706affc6e7295920
 RUN ./compile-marian.sh marian-dev/build $(nproc) false
 
 ENV MARIAN=/builds/worker/tools/marian-dev/build
