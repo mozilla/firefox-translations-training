@@ -24,6 +24,7 @@ import zstandard
 from pipeline.common.logging import get_logger
 
 logger = get_logger("alignments")
+COMPRESSION_CMD = "zstdmt"
 
 
 def run(
@@ -34,19 +35,18 @@ def run(
     priors_output_path: Optional[str],
 ):
     bin = os.environ["BIN"]
-    comp_cmd = os.getenv("COMPRESSION_CMD", "zstd")
 
     tmp_dir = os.path.join(os.path.dirname(output_path), "tmp")
     os.makedirs(tmp_dir, exist_ok=True)
 
     if corpus_src.endswith(".zst"):
         logger.info("Decompressing source corpus...")
-        subprocess.check_call([comp_cmd, "-d", "-f", "--rm", corpus_src])
+        subprocess.check_call([COMPRESSION_CMD, "-d", "-f", "--rm", corpus_src])
         corpus_src = corpus_src[:-4]
 
     if corpus_trg.endswith(".zst"):
         logger.info("Decompressing target corpus...")
-        subprocess.check_call([comp_cmd, "-d", "-f", "--rm", corpus_trg])
+        subprocess.check_call([COMPRESSION_CMD, "-d", "-f", "--rm", corpus_trg])
         corpus_trg = corpus_trg[:-4]
 
     with ExitStack() as stack:
