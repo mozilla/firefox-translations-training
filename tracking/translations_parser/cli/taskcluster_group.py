@@ -47,6 +47,11 @@ def get_args() -> argparse.Namespace:
         action="store_true",
     )
     parser.add_argument(
+        "--override-runs",
+        help="Override runs on Weight & Biases.",
+        action="store_true",
+    )
+    parser.add_argument(
         "--verbose",
         "-v",
         help="Print debug messages.",
@@ -194,7 +199,7 @@ def list_completed_tasks(group_id: str) -> dict[str, list[dict]]:
     return grouped_tasks
 
 
-def publish_task_group(group_id: str) -> None:
+def publish_task_group(group_id: str, override: bool = False) -> None:
     logger.info(f"Retrieving task group {group_id}")
 
     # Ensure task group is readable
@@ -206,7 +211,10 @@ def publish_task_group(group_id: str) -> None:
 
     # If the task group does not have a training configuration, we can skip its publication
     if config is None:
-        logger.warning(f"Task group {group_id} cannot be published to WandB")
+        logger.warning(
+            f"Task group {group_id} cannot be published to WandB: "
+            "configuration missing @ extra/action/context/input"
+        )
         return
 
     experiment = config["experiment"]
@@ -220,6 +228,14 @@ def publish_task_group(group_id: str) -> None:
     if not training_tasks:
         logger.warning(f"Skipping task group {group_id} as it is empty")
         return
+
+    logger.info(f"Processing group {group_name}")
+
+    if override:
+        existing_runs = list(wandb.Api().runs(project_name, filters={"group": group_name}))
+        for run in existing_runs:
+            logger.warning(f"Deleting existing run {run.display_name}.")
+            run.delete()
 
     # Publish training tasks as runs
     for training_task in training_tasks:
@@ -347,4 +363,4 @@ def main() -> None:
         )
 
     for group_id in groups_ids:
-        publish_task_group(group_id)
+        publish_task_group(group_id, override=args.override_runs)
