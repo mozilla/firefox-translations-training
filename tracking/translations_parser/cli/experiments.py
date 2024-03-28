@@ -49,7 +49,8 @@ def parse_experiment(
     metrics = []
     if metrics_dir:
         for metrics_file in metrics_dir.glob("*.metrics"):
-            metrics.append(Metric.from_file(metrics_file, dataset=metrics_file.stem))
+            importer, dataset = metrics_file.stem.split("_", 1)
+            metrics.append(Metric.from_file(metrics_file, importer=importer, dataset=dataset))
 
     with logs_file.open("r") as f:
         lines = (line.strip() for line in f.readlines())
