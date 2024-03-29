@@ -12,23 +12,25 @@ transforms:
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
-    - quantize
-    - shortlist
+    - cefilter
     - train-vocab
     - toolchain
 
 tasks:
     "{src_locale}-{trg_locale}":
-        description: export for {src_locale}-{trg_locale}
+        description: shortlist for {src_locale}-{trg_locale}
         attributes:
             dataset-category: train
-            stage: export
+            stage: shortlist
             src_locale: "{src_locale}"
             trg_locale: "{trg_locale}"
             cache:
-                type: export
+                type: shortlist
                 resources:
-                    - pipeline/quantize/export.sh
+                    - pipeline/alignments/generate-shortlist.sh
+                    - pipeline/alignments/align.py
+                    - pipeline/alignments/prune_shortlist.py
+                    - pipeline/alignments/requirements/alignments.txt
         task-context:
             from-parameters:
                 src_locale: training_config.experiment.src
@@ -40,15 +42,19 @@ tasks:
                 - dependencies
                 - worker.env
                 - attributes
-        worker-type: b-cpu
+        worker-type: b-cpu-xlargedisk
+        expires-after: "90 days"
         worker:
             docker-image: {"in-tree": "train"}
-            max-run-time: 86400
+            # 7 days
+            max-run-time: 604800
             artifacts:
                 - name: public/build
                   path: /builds/worker/artifacts
                   type: directory
             env:
+                COMPRESSION_CMD: zstdmt
+                ARTIFACT_EXT: zst
                 SRC: "{src_locale}"
                 TRG: "{trg_locale}"
 
@@ -61,28 +67,30 @@ tasks:
                 - bash
                 - -c
                 - >-
-                    export BMT_MARIAN=$MOZ_FETCHES_DIR &&
-                    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$MOZ_FETCHES_DIR/cuda-toolkit/lib64" &&
-                    zstd --rm -d $MOZ_FETCHES_DIR/*.zst &&
-                    $VCS_PATH/pipeline/quantize/export.sh
-                    $MOZ_FETCHES_DIR
-                    $MOZ_FETCHES_DIR/lex.s2t.pruned
+                    pip3 install --upgrade pip setuptools &&
+                    pip3 install -r $VCS_PATH/pipeline/alignments/requirements/alignments.txt &&
+                    export BIN=$MOZ_FETCHES_DIR &&
+                    export MARIAN=$MOZ_FETCHES_DIR &&
+                    export PATH=$PATH:$MOZ_FETCHES_DIR &&
+                    export PYTHONPATH=$PYTHONPATH:$VCS_PATH &&
+                    $VCS_PATH/pipeline/alignments/generate-shortlist.sh
+                    $MOZ_FETCHES_DIR/corpus
                     $MOZ_FETCHES_DIR/vocab.spm
-                    /builds/worker/artifacts
+                    $TASK_WORKDIR/artifacts
+                    auto
 
         dependencies:
             train-vocab: train-vocab-{src_locale}-{trg_locale}
-            quantize: quantize-{src_locale}-{trg_locale}
-            shortlist: shortlist-{src_locale}-{trg_locale}
+            cefilter: cefilter-{src_locale}-{trg_locale}
 
         fetches:
-            toolchain:
-                - browsermt-marian
-                - cuda-toolkit
-            quantize:
-                - artifact: model.intgemm.alphas.bin
             train-vocab:
                 - artifact: vocab.spm
                   extract: false
-            shortlist:
-                - artifact: lex.s2t.pruned.zst
+            cefilter:
+                - artifact: corpus.{src_locale}.zst
+                - artifact: corpus.{trg_locale}.zst
+            toolchain:
+                - marian
+                - fast-align
+                - extract-lex
