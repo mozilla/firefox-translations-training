@@ -23,9 +23,9 @@ Supported augmentations:
 - **Upper case** - make some sentences from the dataset upper case
 - **Title case** - use title case for some sentences from the dataset
 - **Typos** - add random typos in some words
-- **Noise** - inserts lines with random unicode noise 
-- **Tags (inline noise)** - add emojis and other random Unicode symbols in the source and target sentences 
-  (requires space tokenized alignments for the training corpus)
+- **Noise** - insert lines with random unicode noise
+- **Tags (inline noise)** - add emojis and other random Unicode symbols in the source and target sentences in the appropriate positions
+  (requires whitespace tokenized alignments for the training corpus)
 
 It is possible to specify the probability of augmentation 
 (which will roughly correspond to the percentage of augmented sentences):
@@ -33,6 +33,8 @@ It is possible to specify the probability of augmentation
 modifiers:
 - UpperCase: 0.1 # Apply randomly to 10% of sentences
 ```
+
+See [OpusTrainer Readme](https://github.com/hplt-project/OpusTrainer?tab=readme-ov-file#modifiers) for detailed documentation.
 
 ## Curriculum learning
 
@@ -47,7 +49,7 @@ back-translations and then continue training on the original parallel corpus onl
 OpusTrainer configuration files for the trained models are located in 
 the [/pipeline/train/configs/opustrainer/](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/opustrainer/) directory.
 
-`<dataset0>`, `<dataset1>` and `<vocab>` will be replaced by the training datasets passed in `pipeline/train/train.sh` script.
+`<dataset0>`, `<dataset1>` and `<vocab>` will be replaced by the training datasets and a path to Sentencepiece `vocab.spm` passed in `pipeline/train/train.sh` script.
 
 See more details on configuration in the OpusTrainer [readme](https://github.com/hplt-project/OpusTrainer).
 
@@ -80,11 +82,19 @@ modifiers:
   max_words: 6 # Maximum number of words in each noisy sentence
 - Tags: 0.05
   augment: 1
+  spm_vocab: <vocab>
 seed: 1111
 
 # parallel sentences + token alignments
 num_fields: 3
 ```
+
+#### Remapping alignments with Sentencepiece
+
+`Tags` modifiers requires whitespace tokenized alignments as input. 
+Marian requires Sentencepiece tokenized alignments. 
+To make them compatible `Tags` modifier can remap the alignments in the end using the passed Sentencepiece model `spm_vocab: vocab.spm` (student model use case). 
+If the `spm_vocab` argument is missing `Tags` modifier will remove alignments and output only the parallel sentences (teacher model use case). 
 
 ## Models
 
@@ -124,14 +134,19 @@ For example:
 
 `aug-noise` -  generates extra lines with noise (1 line of noise for each line of the dataset, so the dataset becomes twice longer)
 
-`aug-mix` - applies all the existing modifiers with 0.1 probability each
+`aug-inline-noise` -  inserts the same random noise in the appropriate positions of the source and target sentences based on dynamically generated alignments. 
+It uses unsupervised aligner [SimAlign](https://github.com/cisnlp/simalign) which is based on BERT and quite slow, 
+so it should only be used on small evaluation datasets.
+
+`aug-mix` - applies all the existing modifiers with 0.05 probability each
 
 ### Example training config
 ```yaml
+  # datasets for validation while training
   devtest:
     - flores_aug-mix_dev
     - sacrebleu_aug-mix_wmt19/dev
-  # datasets for evaluation
+  # datasets for the final evaluation
   test:
     - flores_devtest
     - flores_aug-mix_devtest
@@ -139,5 +154,6 @@ For example:
     - flores_aug-upper_devtest
     - flores_aug-typos_devtest
     - flores_aug-noise_devtest
+    - flores_aug-inline-noise_devtest
 ```
 
