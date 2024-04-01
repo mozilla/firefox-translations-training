@@ -30,7 +30,7 @@ experiment:
   bicleaner:
     default-threshold: 0.5
     dataset-thresholds:
-      opus_NLLB/v1: 0.0              # This should already be clean.
+      opus_NLLB/v1: 0.5              # Experiment to clean NLLB
       opus_OpenSubtitles/v2018: 0.8  # This is dirty per bicleaner.md
 
   # Limits the maximum sentences use in the monolingual data for both the source and target
@@ -48,7 +48,7 @@ experiment:
 
   # Determine how many teachers to train.
   # See: docs/teacher-ensemble.md
-  teacher-ensemble: 2
+  teacher-ensemble: 1
 
   # TODO(docs) - What is this?
   backward-model: NOT-YET-SUPPORTED
@@ -137,7 +137,7 @@ marian-args:
 # "merge-corpus". For more information see:
 #
 # https://mozilla.github.io/firefox-translations-training/task-cluster.html#running-up-to-a-specific-step
-target-stage: all
+target-stage: train-teacher
 
 taskcluster:
   # After the parallel corpora are merged and de-duplicated, the combined file is
