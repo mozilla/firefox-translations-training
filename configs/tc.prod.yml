@@ -78,14 +78,41 @@ datasets:
 
   # The parallel training data.
   train:
-    # I skimmed through a sampling of this data (Maybe a few thousand entries) and it
-    # seemed pretty high quality.
-    # There were 21,284,430 sentence pairs
+    - opus_Books/v1
+    - opus_CCAligned/v1
+    - opus_ELRC-2480-Estatuto_dos_Deputad/v1
+    - opus_ELRC-2481-Constituio_da_Repbli/v1
+    - opus_ELRC-2612-Artigos_visitportuga/v1
+    - opus_ELRC-2614-Localidades_2007/v1
+    - opus_ELRC-2616-Museus_2007/v1
+    - opus_ELRC-2638-monumentos_2007/v1
+    - opus_ELRC-3040-wikipedia_health/v1
+    - opus_ELRC-5129-GEnCaTA_a/v1
+    - opus_ELRC-5189-Catalan_WMT2013_Mach/v1
+    - opus_ELRC-5190-Cyber_MT_Test/v1
+    - opus_ELRC-Artigos_visitportuga/v1
+    - opus_ELRC-Localidades_2007/v1
+    - opus_ELRC-Museus_2007/v1
+    - opus_ELRC-wikipedia_health/v1
+    - opus_ELRC_2922/v1
+    - opus_EUbookshop/v2
+    - opus_GNOME/v1
+    - opus_GlobalVoices/v2018q4
+    - opus_HPLT/v1.1
+    - opus_KDE4/v2
+    - opus_MaCoCu/v2
+    - opus_MultiHPLT/v1.1
+    - opus_MultiMaCoCu/v2
     - opus_NLLB/v1
-
-    # This dataset has a lot of very short translations, which is probably good.
-    # There are 482,598 sentence pairs.
     - opus_OpenSubtitles/v2018
+    - opus_QED/v2.0a
+    - opus_TED2020/v1
+    - opus_Tatoeba/v2023-04-12
+    - opus_Ubuntu/v14.10
+    - opus_WikiMatrix/v1
+    - opus_XLEnt/v1.2
+    - opus_tldr-pages/v2023-08-29
+    - opus_wikimedia/v20230407
 
   # Monolingual data sources for the source language.
   mono-src:
