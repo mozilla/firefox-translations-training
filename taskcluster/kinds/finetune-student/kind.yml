@@ -56,7 +56,7 @@ tasks:
 
         worker-type: b-largegpu-xlargedisk
         worker:
-            max-run-time: 86400
+            max-run-time: 2592000
             env:
                 ARTIFACT_EXT: zst
                 COMPRESSION_CMD: zstdmt

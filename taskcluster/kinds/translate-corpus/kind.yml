@@ -91,7 +91,7 @@ tasks:
 
         worker-type: b-largegpu-xlargedisk
         worker:
-            max-run-time: 86400
+            max-run-time: 2592000
             artifacts:
                 - name: public/build
                   path: artifacts
