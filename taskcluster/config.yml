@@ -64,21 +64,21 @@ workers:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
-            worker-type: 'b-linux-large-gcp-300gb-d2g'
+            worker-type: 'b-linux-large-gcp-300gb-d2g-bh'
         # Use for tasks that don't require GPUs, but need lots of disk space
         # eg: dataset cleaning & merging
         b-cpu-largedisk:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
-            worker-type: 'b-linux-large-gcp-300gb-d2g'
+            worker-type: 'b-linux-large-gcp-300gb-d2g-bh'
         # Use for tasks that don't require GPUs, but need immense amounts of disk space
         # eg: alignments
         b-cpu-xlargedisk:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
-            worker-type: 'b-linux-large-gcp-1tb-d2g'
+            worker-type: 'b-linux-large-gcp-300gb-d2g-bh'
         # Use for tasks that don't require GPUs, but need immense amounts of disk space
         # and higher reliability
         b-cpu-xlargedisk-standard:
@@ -91,28 +91,28 @@ workers:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: 'b-linux-v100-gpu'
+            worker-type: 'b-linux-v100-gpu-bh'
         # Use for tasks that need lots of GPU power, but not lots of disk space
         # eg: translation & scoring
         b-largegpu:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: 'b-linux-v100-gpu-4'
+            worker-type: 'b-linux-v100-gpu-4-bh'
         # Use for tasks that needs lots of GPU power and increased disk space
         # eg: bicleaner
         b-largegpu-largedisk:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: 'b-linux-v100-gpu-4-300gb'
+            worker-type: 'b-linux-v100-gpu-4-300gb-bh'
         # Use for tasks that need lots of GPU power and immensive amounts of disk space
         # eg: training
         b-largegpu-xlargedisk:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: 'b-linux-v100-gpu-4-1tb'
+            worker-type: 'b-linux-v100-gpu-4-300gb-bh'
         # Use for tasks that needs lots of GPU power, increased disk space, and higher reliability
         b-largegpu-largedisk-standard:
             provisioner: '{trust-domain}-{level}'
@@ -134,6 +134,21 @@ workers:
 # Keys are worker type, and align with the `worker-type` entries in the
 # `worker.aliases` above.
 worker-configuration:
+    b-linux-v100-gpu-bh:
+        env:
+            GPUS: "0"
+            WORKSPACE: "12000"
+
+    b-linux-v100-gpu-4-bh:
+        env:
+            GPUS: "0 1 2 3"
+            WORKSPACE: "12000"
+
+    b-linux-v100-gpu-4-300gb-bh:
+        env:
+            GPUS: "0 1 2 3"
+            WORKSPACE: "12000"
+
     b-linux-v100-gpu:
         env:
             GPUS: "0"
