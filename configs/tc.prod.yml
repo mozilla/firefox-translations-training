@@ -80,19 +80,10 @@ datasets:
   train:
     - opus_Books/v1
     - opus_CCAligned/v1
-    - opus_ELRC-2480-Estatuto_dos_Deputad/v1
-    - opus_ELRC-2481-Constituio_da_Repbli/v1
-    - opus_ELRC-2612-Artigos_visitportuga/v1
-    - opus_ELRC-2614-Localidades_2007/v1
-    - opus_ELRC-2616-Museus_2007/v1
-    - opus_ELRC-2638-monumentos_2007/v1
     - opus_ELRC-3040-wikipedia_health/v1
     - opus_ELRC-5129-GEnCaTA_a/v1
     - opus_ELRC-5189-Catalan_WMT2013_Mach/v1
     - opus_ELRC-5190-Cyber_MT_Test/v1
-    - opus_ELRC-Artigos_visitportuga/v1
-    - opus_ELRC-Localidades_2007/v1
-    - opus_ELRC-Museus_2007/v1
     - opus_ELRC-wikipedia_health/v1
     - opus_ELRC_2922/v1
     - opus_EUbookshop/v2
