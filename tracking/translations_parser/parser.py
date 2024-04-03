@@ -30,8 +30,9 @@ TRAINING_RE = re.compile(
     r"(?P<rate>[\d\.]+) words\/s[ :]+"
     r"gNorm[ :]+(?P<gnorm>[\d\.]+)"
 )
+
 # Expected version of Marian for a clean parsing
-MARIAN_MAJOR, MARIAN_MINOR = 1, 10
+SUPPORTED_MARIAN_VERSIONS = [(1, 10), (1, 12)]
 
 
 class TrainingParser:
@@ -138,7 +139,10 @@ class TrainingParser:
         val = ValidationEpoch.__annotations__[key](val)
         entry = self._validation_entries[(epoch, up)]
         entry[key] = val
-        # Build a validation epochs from multiple lines
+        if self.version == "1.10":
+            # perplexity value is not defined in Marian 1.10
+            entry["perplexity"] = None
+        # Build a validation epoch from multiple lines
         expected_keys = set(ValidationEpoch.__annotations__.keys()) - {"epoch", "up"}
         if not (expected_keys - set(entry.keys())):
             validation_epoch = ValidationEpoch(epoch=epoch, up=up, **entry)
@@ -194,11 +198,14 @@ class TrainingParser:
 
         logger.debug("Reading Marian version.")
         _, version, self.version_hash, self.release_date, *_ = text.split()
-        self.version = version.rstrip(";")
+        version = version.rstrip(";")
         major, minor = map(int, version.lstrip("v").split(".")[:2])
-        if (major, minor) > (MARIAN_MAJOR, MARIAN_MINOR):
+        self.version = f"{major}.{minor}"
+        if (major, minor) not in SUPPORTED_MARIAN_VERSIONS:
+            versions = ", ".join(f"{major}.{minor}" for major, minor in SUPPORTED_MARIAN_VERSIONS)
             logger.warning(
-                f"Parsing logs from a newer version of Marian ({major}.{minor} > {MARIAN_MAJOR}.{MARIAN_MINOR})"
+                f"Parsing logs from a non supported Marian version {major}.{minor} "
+                f"(supported versions: {versions})."
             )
 
         logger.debug("Reading Marian run description.")
