@@ -60,3 +60,8 @@ ENV MARIAN=/builds/worker/tools/marian-dev/build
 # Work around poetry not finding `python`.
 # https://github.com/python-poetry/poetry/issues/6371
 RUN ln -s /bin/python3 /bin/python
+
+# In some operating systems, the .git configuration will complain if the users
+# do not match for the .git. Since this is a local environment, we don't worry about
+# permissions escalation exploits that may be an issue in a production docker container.
+RUN git config --global --add safe.directory /builds/worker/checkouts
