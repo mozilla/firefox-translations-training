@@ -22,15 +22,15 @@ in the `pipeline` directory.
 
 Set up a local [poetry](https://python-poetry.org/) environment.
 
-Make sure to run linter with `make fix-all`.
+Make sure to run linter with `task lint-fix`.
 
-For changes in the Taskcluster graph run `TASKCLUSTER_ROOT_URL="" make validate-taskgraph` to validate the graph locally.
+For changes in the Taskcluster graph run `task taskgraph-validate` to validate the graph locally.
 
 ## Tests
 
 To run unit tests locally:
 ```
-make run-tests
+task test
 ```
 
 ## CI

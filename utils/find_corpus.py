@@ -3,9 +3,8 @@
 Finds all opus datasets for a language pair and prints them to set config settings.
 
 Usage:
-    poetry install --only utils
-    poetry run ./utils/find_corpus.py "en" "ca"
-    poetry run ./utils/find_corpus.py "en" "fr" --importer opus
+    task find-corpus -- en ca
+    task find-corpus -- en fr --importer opus
 """
 
 import argparse
