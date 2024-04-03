@@ -133,6 +133,9 @@ class WandB(Publisher):
         epoch = vars(data)
         step = epoch.pop("up")
         for key, val in epoch.items():
+            if val is None:
+                # Do not publish null values (e.g. perplexity in Marian 1.10)
+                continue
             self.wandb.log(step=step, data={key: val})
 
     def handle_training(self, training: TrainingEpoch) -> None:
