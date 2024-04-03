@@ -20,6 +20,10 @@ RUN apt-get update -qq \
 RUN pip install poetry
 # we do not run poetry install here because the tracking package is installed from code
 
+# Install taskfile - https://taskfile.dev/
+# Keep the version in sync with docker/Dockerfile.
+RUN curl -sSLf "https://github.com/go-task/task/releases/download/v3.35.1/task_linux_amd64.tar.gz" \
+    | tar -xz -C /usr/local/bin
+
 VOLUME /builds/worker/checkouts
 VOLUME /builds/worker/.cache
-
