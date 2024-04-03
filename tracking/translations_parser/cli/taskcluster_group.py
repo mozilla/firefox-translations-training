@@ -282,16 +282,6 @@ def publish_task_group(group_id: str, override: bool = False) -> None:
         )
 
     # Group and publish remaining metrics tasks via the logs publication
-    if (
-        len(
-            wandb.Api().runs(
-                project_name, filters={"display_name": "group_logs", "group": group_name}
-            )
-        )
-        > 0
-    ):
-        logger.warning("Skipping group_logs fake run publication as it already exists")
-        return
     with tempfile.TemporaryDirectory() as temp_dir:
         logs_folder = Path(temp_dir) / "logs"
         eval_folder = logs_folder / project_name / group_name / "eval"

@@ -201,6 +201,13 @@ class WandB(Publisher):
         """
         from translations_parser.parser import TrainingParser
 
+        if (
+            len(wandb.Api().runs(project, filters={"display_name": "group_logs", "group": group}))
+            > 0
+        ):
+            logger.warning("Skipping group_logs fake run publication as it already exists")
+            return
+
         logs_dir = Path("/".join([*logs_parent_folder[:-1], "logs", project, group]))
         # Old experiments use `speed` directory for quantized metrics
         quantized_metrics = sorted(
