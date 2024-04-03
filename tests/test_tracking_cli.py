@@ -85,10 +85,10 @@ def test_taskcluster(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
 
 @patch(
     "translations_parser.cli.experiments.get_args",
-    return_value=argparse.Namespace(directory=Path(__file__).parent / "data" / "experiments"),
+    return_value=argparse.Namespace(directory=Path(__file__).parent / "data" / "experiments_1_10"),
 )
 @patch("translations_parser.publishers.wandb")
-def test_experiments(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
+def test_experiments_marian_1_10(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
     caplog.set_level(logging.INFO)
     wandb_dir = tmp_dir / "wandb"
     wandb_dir.mkdir(parents=True)
@@ -103,7 +103,7 @@ def test_experiments(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
             # student
             (
                 logging.INFO,
-                f"Parsing folder {samples_dir}/experiments/models/en-nl/prod/student",
+                f"Parsing folder {samples_dir}/experiments_1_10/models/en-nl/prod/student",
             ),
             (logging.INFO, "Reading logs stream."),
             (logging.INFO, "Successfully parsed 1002 lines"),
@@ -112,7 +112,7 @@ def test_experiments(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
             # teacher-finetuned0
             (
                 logging.INFO,
-                f"Parsing folder {samples_dir}/experiments/models/en-nl/prod/teacher-finetuned0",
+                f"Parsing folder {samples_dir}/experiments_1_10/models/en-nl/prod/teacher-finetuned0",
             ),
             (logging.INFO, "Reading logs stream."),
             (logging.INFO, "Successfully parsed 993 lines"),
@@ -121,7 +121,7 @@ def test_experiments(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
             # teacher-finetuned1
             (
                 logging.INFO,
-                f"Parsing folder {samples_dir}/experiments/models/en-nl/prod/teacher-finetuned1",
+                f"Parsing folder {samples_dir}/experiments_1_10/models/en-nl/prod/teacher-finetuned1",
             ),
             (logging.INFO, "Reading logs stream."),
             (logging.INFO, "Successfully parsed 1000 lines"),
