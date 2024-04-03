@@ -1,0 +1,197 @@
+version: '3'
+
+tasks:
+  poetry-install-*:
+    internal: true
+    desc: Install only the group need for the dependencies of a task.
+    vars:
+      GROUP: '{{index .MATCH 0}}'
+    cmds:
+      - poetry install --only {{.GROUP}} --no-root
+
+  download-logs:
+    desc: Download the logs for taskcluster. Requires --task-group-id
+    summary: |
+      The logs will be saved to: ./data/taskcluster-logs
+
+      Example:
+        task download-logs -- --task-group-id GU9ZyWFhRDe_nxlAHcen8g
+    deps: [poetry-install-utils]
+    cmds:
+      - >-
+          poetry run python -W ignore utils/taskcluster_downloader.py
+          --mode=logs {{.CLI_ARGS}}
+
+  download-evals:
+    desc: Downloads evaluation results from Taskcluster
+    summary: |
+      The evals will be saved to: ./data/taskcluster-evals
+      Example: `task download-evals -- --task-group-id GU9ZyWFhRDe_nxlAHcen8g`
+    deps: [poetry-install-utils]
+    cmds:
+      - >-
+          poetry run python -W ignore utils/taskcluster_downloader.py
+          --mode=evals {{.CLI_ARGS}}
+
+  download-models:
+    desc: Downloads models from Taskcluster
+    summary: |
+      The models will be saved to: ./data/taskcluster-model
+      Example: `task download-models -- --task-group-id GU9ZyWFhRDe_nxlAHcen8g`
+    deps: [poetry-install-utils]
+    cmds:
+      - >-
+          poetry run python -W ignore utils/taskcluster_downloader.py
+          --mode=model {{.CLI_ARGS}}
+
+  opuscleaner:
+    desc: Run the opuscleaner tool.
+    deps: [poetry-install-opuscleaner]
+    cmds:
+      - poetry run opuscleaner-server serve --host=0.0.0.0 --port=8000
+
+  lint-black:
+    desc: Checks the styling of the Python code with Black.
+    deps: [poetry-install-black]
+    cmds:
+      - ./utils/tasks/black-check.sh
+
+  lint-black-fix:
+    desc: Fixes the styling of the Python code with Black.
+    deps: [poetry-install-black]
+    cmds:
+      - poetry run black . {{.CLI_ARGS}}
+
+  lint-ruff:
+    desc: Lints the Python code with the ruff linter.
+    deps: [poetry-install-lint]
+    cmds:
+      - poetry run ruff --version
+      - poetry run ruff check . {{.CLI_ARGS}}
+
+  lint-ruff-fix:
+    desc: Fixes Python code lint errors with the ruff linter.
+    deps: [poetry-install-lint]
+    cmds:
+      - poetry run ruff --version
+      - poetry run ruff check . --fix {{.CLI_ARGS}}
+
+  lint-fix:
+    desc: Fix all automatically fixable errors. This is useful to run before pushing.
+    cmds:
+      - task: lint-black-fix
+      - task: lint-ruff-fix
+
+  lint:
+    desc: Run all available linting tools.
+    cmds:
+      - task: lint-black
+      - task: lint-ruff
+
+  test:
+    desc: Run python pytests in the current host.
+    summary: |
+      Some tests only pass in Docker. You can run this command outside of docker for
+      some of the tests, or after running `task docker` to run them in the docker image.
+      Without any arguments, it runs all of the tests searching the paths specifiied in
+      testpaths in pyproject.toml.
+
+      You can also specificy a specific test to run:
+
+        task test -- tests/test_alignments.py
+    deps: [poetry-install-tests]
+    cmds:
+      - PYTHONPATH=$(pwd) poetry run pytest -vv {{.CLI_ARGS}}
+
+  test-docker:
+    desc: Run the unit tests in the docker image. Some tests require the pre-built Linux executables.
+    cmds:
+      - task docker-run -- task test
+
+  docker:
+    desc: Interactively run the local docker test image.
+    deps: [docker-build]
+    summary: |
+      The local docker image includes the Linux x86 image, and pre-built binaries
+      that are used in training.
+    cmds:
+      - utils/tasks/docker-run.sh bash
+
+  docker-run:
+    desc: Run a command in the local docker instance. e.g. `docker-run -- echo "hello"`
+    deps: [docker-build]
+    summary: |
+      The local docker image includes the Linux x86 image, and pre-built binaries
+      that are used in training.
+    cmds:
+      - utils/tasks/docker-run.sh {{.CLI_ARGS}}
+
+  docker-build:
+    desc: Build the local docker image that includes the proper Linux binaries for training
+    cmds:
+      - ./utils/tasks/docker-build.sh
+
+  taskgraph-requirements:
+    desc: Installs the taskgraph requirements.
+    internal: true
+    cmds:
+      - poetry run --directory ./taskgraph -- pip3 install -r taskcluster/requirements.txt
+
+  taskgraph-validate:
+    desc: Validates Taskcluster task graph locally
+    deps: [taskgraph-requirements]
+    cmds:
+      - >-
+        TASKCLUSTER_ROOT_URL=""
+        poetry run --directory ./taskgraph --
+        taskgraph full
+
+  taskgraph-diff:
+    desc: Validates Taskcluster task graph locally
+    summary: |
+      Generates diffs of the full taskgraph against BASE_REV. Any parameters that were
+      different between the current code and BASE_REV will have their diffs logged
+      to OUTPUT_DIR.
+    deps: [taskgraph-requirements]
+    vars:
+      OUTPUT_FILE: ./data/taskgraph.diff
+      BASE_REV: main
+    cmds:
+      - >-
+        TASKCLUSTER_ROOT_URL=""
+        poetry run --directory ./taskgraph --
+        taskgraph full --json
+        --parameters "taskcluster/test/params"
+        --output-file "{{.OUTPUT_FILE}}"
+        --diff "{{.BASE_REV}}"
+
+  docs:
+    desc: Run the GitHub pages Jekyll theme locally.
+    cmds:
+      - ./utils/tasks/serve-docs.sh
+
+  preflight-check:
+    desc: Perform pre-flight checks for a training run.
+    deps: [poetry-install-utils]
+    cmds:
+      - poetry run python -W ignore utils/preflight_check.py {{.CLI_ARGS}}
+
+  tensorboard:
+    desc: Visualize training logs from task `download-logs` at http://localhost:6006
+    summary: |
+      Runs Tensorboard for Marian training logs in the ./data/taskcluster-logs directory.
+      The logs are converted to tensorboard in the ./data/tensorboard-logs directory.
+    deps: [poetry-install-tensorboard]
+    cmds:
+      - mkdir -p data/tensorboard-logs
+      - >-
+        poetry run marian-tensorboard
+        --offline
+        --log-file data/taskcluster-logs/**/*.log
+        --work-dir data/tensorboard-logs
+
+  find-corpus:
+    desc: Finds all datasets for a language pair
+    deps: [poetry-install-utils]
+    cmds:
+      - poetry run python -W ignore utils/find_corpus.py {{.CLI_ARGS}}
