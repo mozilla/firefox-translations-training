@@ -134,12 +134,12 @@ def test_experiments_marian_1_10(wandb_mock, getargs_mock, caplog, samples_dir, 
             ),
             (logging.INFO, "Found 2 quantized metrics"),
             (logging.INFO, "Found 16 evaluation metrics"),
-            (20, "Creating missing run backward with associated metrics"),
-            (20, "Creating missing run quantized with associated metrics"),
-            (20, "Creating missing run student-finetuned with associated metrics"),
-            (20, "Creating missing run teacher-base0 with associated metrics"),
-            (20, "Creating missing run teacher-base1 with associated metrics"),
-            (20, "Creating missing run teacher-ensemble with associated metrics"),
+            (logging.INFO, "Creating missing run backward with associated metrics"),
+            (logging.INFO, "Creating missing run quantized with associated metrics"),
+            (logging.INFO, "Creating missing run student-finetuned with associated metrics"),
+            (logging.INFO, "Creating missing run teacher-base0 with associated metrics"),
+            (logging.INFO, "Creating missing run teacher-base1 with associated metrics"),
+            (logging.INFO, "Creating missing run teacher-ensemble with associated metrics"),
         ]
     )
     log_calls, metrics_calls = [], []
@@ -148,7 +148,7 @@ def test_experiments_marian_1_10(wandb_mock, getargs_mock, caplog, samples_dir, 
             metrics_calls.append(log)
         elif log.kwargs:
             log_calls.append(log)
-    with (samples_dir / "experiments_wandb_calls.json").open("r") as f:
+    with (samples_dir / "experiments_wandb_calls_1_10.json").open("r") as f:
         assert log_calls == [call(**entry) for entry in json.load(f)]
     # Custom calls for .metrics files publication (3 runs + 6 evaluation metrics)
     assert sorted([list(v.keys())[0] for c in metrics_calls for v in c.args]) == sorted(
@@ -173,6 +173,77 @@ def test_experiments_marian_1_10(wandb_mock, getargs_mock, caplog, samples_dir, 
             "mtdata_Neulab-tedtalks_test-1-eng-nld",
             "mtdata_Neulab-tedtalks_test-1-eng-nld",
             "mtdata_Neulab-tedtalks_test-1-eng-nld",
+        ]
+    )
+
+
+@patch(
+    "translations_parser.cli.experiments.get_args",
+    return_value=argparse.Namespace(directory=Path(__file__).parent / "data" / "experiments_1_12"),
+)
+@patch("translations_parser.publishers.wandb")
+def test_experiments_marian_1_12(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
+    caplog.set_level(logging.INFO)
+    wandb_dir = tmp_dir / "wandb"
+    wandb_dir.mkdir(parents=True)
+    wandb_mock.init.return_value.dir = wandb_dir
+    wandb_mock.plot.bar = lambda *args, **kwargs: (args, kwargs)
+    wandb_mock.Table = lambda *args, **kwargs: (args, kwargs)
+    experiments_publish.main()
+    # Assert on a `set` since the logging order may vary between runs.
+    assert set([(level, message) for _module, level, message in caplog.record_tuples]) == set(
+        [
+            (logging.INFO, "Reading 2 train.log data"),
+            (
+                logging.INFO,
+                f"Parsing folder {samples_dir}/experiments_1_12/models/fi-en/opusprod/student",
+            ),
+            (logging.INFO, "Reading logs stream."),
+            (logging.INFO, "Successfully parsed 786 lines"),
+            (logging.INFO, "Found 405 training entries"),
+            (logging.INFO, "Found 79 validation entries"),
+            (
+                logging.INFO,
+                f"Parsing folder {samples_dir}/experiments_1_12/models/fi-en/opusprod/student-finetuned",
+            ),
+            (logging.INFO, "Reading logs stream."),
+            (logging.INFO, "Successfully parsed 660 lines"),
+            (logging.INFO, "Found 330 training entries"),
+            (logging.INFO, "Found 64 validation entries"),
+            (
+                logging.INFO,
+                "Publishing 'fi-en/opusprod' evaluation metrics and files (fake run 'group_logs')",
+            ),
+            (logging.INFO, "Found 4 quantized metrics"),
+            (logging.INFO, "Found 8 evaluation metrics"),
+            (logging.INFO, "Creating missing run quantized with associated metrics"),
+        ]
+    )
+    log_calls, metrics_calls = [], []
+    for log in wandb_mock.init.return_value.log.call_args_list:
+        if log.args:
+            metrics_calls.append(log)
+        elif log.kwargs:
+            log_calls.append(log)
+    with (samples_dir / "experiments_wandb_calls_1_12.json").open("r") as f:
+        assert log_calls == [call(**entry) for entry in json.load(f)]
+    # Custom calls for .metrics files publication (3 runs + 6 evaluation metrics)
+    assert sorted([list(v.keys())[0] for c in metrics_calls for v in c.args]) == sorted(
+        [
+            "flores_devtest",
+            "flores_devtest",
+            "flores_devtest",
+            # This call builds the table with all metrics on the group fake run
+            "metrics",
+            "sacrebleu_wmt15",
+            "sacrebleu_wmt15",
+            "sacrebleu_wmt15",
+            "sacrebleu_wmt17",
+            "sacrebleu_wmt17",
+            "sacrebleu_wmt17",
+            "sacrebleu_wmt19",
+            "sacrebleu_wmt19",
+            "sacrebleu_wmt19",
         ]
     )
 
