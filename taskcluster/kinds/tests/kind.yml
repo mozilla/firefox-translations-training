@@ -117,7 +117,7 @@ tasks:
   taskgraph-definition:
       worker-type: b-cpu
       worker:
-          docker-image: {in-tree: base}
+          docker-image: {in-tree: test}
           max-run-time: 3600
       description: "Test the full `translations_taskgraph` to validate the latest changes"
       run-on-tasks-for: ["github-push", "github-pull-request"]
@@ -132,7 +132,7 @@ tasks:
   taskgraph-diff:
       worker-type: b-cpu
       worker:
-          docker-image: {in-tree: base}
+          docker-image: {in-tree: test}
           max-run-time: 1200
       description: "Create diffs of taskgraphs vs. base revision."
       run-on-tasks-for: ["github-pull-request"]
