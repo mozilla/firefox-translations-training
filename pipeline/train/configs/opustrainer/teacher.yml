@@ -3,20 +3,27 @@ datasets:
   backtranslated: <dataset1> # Back-translated data
 
 stages:
-  - pretrain
-  - finetune
+  - synthetic_data
+  - stabilize
+  - original_corpus
 
-# Back-translated corpus can vary a lot in size, so we can try using original one to count epochs
-pretrain:
+# Mix the original and back translated corpus. Train until the model sees two epochs
+# of the back-translated corpus.
+synthetic_data:
   - original 0.6
   - backtranslated 0.4
+  - until backtranslated 2
+
+# Make sure we get through at least 2 epochs of the original data before relying on
+# early stopping.
+stabilize:
+  - original 1.0
   - until original 2
 
-# Fine-tuning only on original clean corpus until the early stopping
-finetune:
+# Fine-tune only on original clean corpus until the early stopping
+original_corpus:
   - original 1.0
   - until original inf
-
 
 modifiers:
 - UpperCase: 0.07 # Apply randomly to 7% of sentences

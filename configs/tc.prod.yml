@@ -9,7 +9,7 @@
 # An "experiment" is an individual training run.
 experiment:
   # Provide an identifiable name for your experiment.
-  name: en_ca_baseline_jan2024
+  name: en_ca_alldata_no_clean_nllb
 
   # The source and target languages. This is the language tag part of the
   # BCP 47 locale identifier.
@@ -30,13 +30,14 @@ experiment:
   bicleaner:
     default-threshold: 0.5
     dataset-thresholds:
-      opus_NLLB/v1: 0.5              # Experiment to clean NLLB
+      opus_NLLB/v1: 0.0              # Do not clean NLLB
       opus_OpenSubtitles/v2018: 0.8  # This is dirty per bicleaner.md
 
   # Limits the maximum sentences use in the monolingual data for both the source and target
   # languages.
   mono-max-sentences-src: 100_000_000
-  mono-max-sentences-trg: 20_000_000
+  # 73,031,398
+  mono-max-sentences-trg: 100_000_000
 
   # The number of sentences split out into separate files for the monolingual data.
   # Also see taskcluster.split-chunks below.
@@ -161,3 +162,12 @@ taskcluster:
   # After the parallel corpora are merged and de-duplicated, the combined file is
   # then split into an even number of chunks.
   split-chunks: 10
+
+# # Continue training see docs/using-pretrained-models.md
+# pretrained-models:
+#   # Re-use an existing backwards model from a Google Cloud Storage bucket.
+#   train-backwards:
+#     urls:
+#       - https://storage.googleapis.com/bucket-name/models/ru-en/backward
+#     mode: use
+#     type: default
