@@ -20,8 +20,6 @@ from collections.abc import Iterator
 from io import TextIOWrapper
 from pathlib import Path
 
-import yaml
-
 import taskcluster
 from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import CSVExport, Publisher, WandB
@@ -136,7 +134,7 @@ def boot() -> None:
 
         try:
             wandb_secret = secrets.get(args.taskcluster_secret)
-            wandb_token = yaml.safe_load(wandb_secret["secret"])["token"]
+            wandb_token = wandb_secret["secret"]["token"]
         except Exception as e:
             raise Exception(
                 f"Weight & Biases secret API Key retrieved from Taskcluster is malformed: {e}"
