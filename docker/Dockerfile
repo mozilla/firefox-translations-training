@@ -73,3 +73,6 @@ RUN curl -sSLf "https://github.com/go-task/task/releases/download/v3.35.1/task_l
 # do not match for the .git. Since this is a local environment, we don't worry about
 # permissions escalation exploits that may be an issue in a production docker container.
 RUN git config --global --add safe.directory /builds/worker/checkouts
+
+# Allow scripts to detect if they are running in docker
+ENV IS_DOCKER 1

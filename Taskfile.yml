@@ -195,3 +195,10 @@ tasks:
     deps: [poetry-install-utils]
     cmds:
       - poetry run python -W ignore utils/find_corpus.py {{.CLI_ARGS}}
+
+  run-model:
+    desc: Run a Marian server that loads a model from data/models/$MODEL_TASK
+    deps: [poetry-install-utils]
+    cmds:
+      - >-
+        PYTHONPATH=$(pwd) poetry run python -W ignore utils/run_model.py {{.CLI_ARGS}}
