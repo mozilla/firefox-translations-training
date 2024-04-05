@@ -11,26 +11,23 @@ Utilizing pretrained models can reduce training time and resource usage.
 
 ## Configuration Parameters
 
-To download and use models from previous training runs or external sources, use the `pretrained-models` configuration parameter. The keys in this parameter correspond to the training task `kinds` capable of using pretrained models.
+To download and use models from previous training runs or external sources, use the `pretrained-models` parameter in the training config. The keys in this parameter correspond to the training task `kinds` capable of using pretrained models. This is currently `train-teacher` and `train-backwards`. See [#515](https://github.com/mozilla/firefox-translations-training/issues/515) for `train-student` support.
 
 ```yaml
-"pretrained-models":
-  {
-    # Configuration for train-teacher kind
-    "train-teacher":
-      {
-        "urls": ["https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/task-id/artifacts/public/build"],
-        "mode": "continue",
-        "type": "default",
-      },
-    # Configuration for train-backwards kind
-    "train-backwards":
-      {
-        "urls": ["https://storage.googleapis.com/bucket-name/models/ru-en/backward"],
-        "mode": "use",
-        "type": "default",
-      },
-  }
+pretrained-models:
+  # Continue training a teacher model.
+  train-teacher:
+    urls:
+      - https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/task-id/artifacts/public/build
+    mode: continue
+    type: default
+
+  # Re-use an existing backwards model from a Google Cloud Storage bucket.
+  train-backwards:
+    urls:
+      - https://storage.googleapis.com/bucket-name/models/ru-en/backward
+    mode: use
+    type: default
 ```
 
 ### The URLs Key
