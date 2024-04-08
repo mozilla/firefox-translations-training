@@ -85,6 +85,6 @@ test -s "${output_prefix}.${TRG}.${ARTIFACT_EXT}" || exit 1
 
 echo "### Clean ${input_prefix} is written to  ${output_prefix}"
 
-rm "${input_prefix}.${SRC} "${input_prefix}.${TRG} "${output_prefix}.${SRC} "${output_prefix}.${TRG}
+rm "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" "${output_prefix}.${SRC}" "${output_prefix}.${TRG}"
 
 echo "###### Done: Cleaning corpus with OpusCleaner"
