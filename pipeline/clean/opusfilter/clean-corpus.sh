@@ -25,9 +25,10 @@ fi
 
 cd "$(dirname "${0}")"
 dir="$(dirname "${output_prefix}")"
-mkdir -p ${dir}/tmp
+temp=$(mktemp -d)
+mkdir -p ${dir}
 
-wget -O ${dir}/tmp/lid.176.ftz https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.ftz
+wget -O ${temp}/lid.176.ftz https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.ftz
 
 #pip install laserembeddings
 #python3 -m laserembeddings download-models
@@ -41,11 +42,11 @@ config_path=${dir}/generated-config.yml
 opusfilter-autogen \
   --files "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" \
   --langs en ru \
-  --inter-dir ${dir}/tmp \
+  --inter-dir ${temp} \
   --overwrite \
   --work-dir ${dir} \
   --output ${config_path} \
-  --add-filter LanguageIDFilter "{\"id_method\": \"fasttext\", \"fasttext_model_path\": \"${dir}/tmp/lid.176.ftz\"}" \
+  --add-filter LanguageIDFilter "{\"id_method\": \"fasttext\", \"fasttext_model_path\": \"${temp}/lid.176.ftz\"}" \
   --add-filter CharacterScoreFilter '{"scripts": ["Latin", "Cyrillic"]}'  \
   --add-filter LengthRatioFilter.word '{"unit": "word"}' \
 #  --add-filter LongWordFilter '{}' \
@@ -53,6 +54,7 @@ opusfilter-autogen \
 #  --add-filter LengthFilter '{}' \
 
 test -s "${config_path}" || exit 1
+cat "${config_path}"
 
 echo "### Cleaning ${input_prefix}"
 
@@ -65,7 +67,6 @@ pigz -d ${dir}/filtered.*
 
 mv ${dir}/filtered.${SRC} ${output_prefix}.${SRC}
 mv ${dir}/filtered.${TRG} ${output_prefix}.${TRG}
-
 
 echo "### Checking length of the files"
 new_len_src="$(cat "${output_prefix}.${SRC}" | wc -l)"
