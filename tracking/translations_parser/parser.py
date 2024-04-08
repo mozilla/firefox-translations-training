@@ -177,11 +177,18 @@ class TrainingParser:
                 self.run_date = self.get_timestamp(headers)
             text = line[position:]
 
+            def _join(iterable):
+                if not iterable:
+                    return "_"
+                if isinstance(iterable[0], str):
+                    return "_".join(iterable)
+                return _join([_join(item) for item in iterable])
+
             # Record logs depending on Marian headers
             if len(headers) >= 2:
                 # First is task timestamp, second is marian timestamp
                 _, _, *marian_tags = headers
-                tag = "_".join(*marian_tags) if marian_tags else "_"
+                tag = _join(marian_tags)
                 self.indexed_logs[tag].append(text)
 
             yield headers, text
@@ -229,6 +236,8 @@ class TrainingParser:
             self.config = yaml.safe_load(config_yaml)
         except Exception as e:
             raise Exception(f"Invalid config section: {e}")
+
+        logger.info(f"Detected marian version {self.version}")
 
     def parse_data(self, logs_iter: Iterator[tuple[list[tuple[str]], str]]) -> None:
         """
