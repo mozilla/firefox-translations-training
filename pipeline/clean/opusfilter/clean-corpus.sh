@@ -48,7 +48,7 @@ opusfilter-autogen \
   --add-filter LanguageIDFilter "{\"id_method\": \"fasttext\", \"fasttext_model_path\": \"${dir}/tmp/lid.176.ftz\"}" \
   --add-filter CharacterScoreFilter '{"scripts": ["Latin", "Cyrillic"]}'  \
   --add-filter LengthRatioFilter.word '{"unit": "word"}' \
-  --add-filter LongWordFilter '{}' \
+#  --add-filter LongWordFilter '{}' \
 #  --add-filter SentenceEmbeddingFilter '{"languages": ["en","ru"]}' \
 #  --add-filter LengthFilter '{}' \
 

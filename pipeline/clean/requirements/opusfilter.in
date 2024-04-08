@@ -1,3 +1,2 @@
 
-opusfilter
-
+git+https://github.com/Helsinki-NLP/OpusFilter.git@3345ddaa056a4aa6257f270c0e5d7673897489ca

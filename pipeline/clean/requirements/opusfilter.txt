@@ -28,6 +28,8 @@ kiwisolver==1.4.5
     # via matplotlib
 langid==1.1.6
     # via opusfilter
+lingua-language-detector==2.0.2
+    # via opusfilter
 matplotlib==3.8.4
     # via opusfilter
 mock==5.1.0
@@ -45,7 +47,7 @@ numpy==1.26.4
     #   scipy
 opus-fast-mosestokenizer==0.0.8.5
     # via opusfilter
-opusfilter==3.0.0
+opusfilter @ git+https://github.com/Helsinki-NLP/OpusFilter.git@3345ddaa056a4aa6257f270c0e5d7673897489ca
     # via -r pipeline/clean/requirements/opusfilter.in
 opustools==1.6.1
     # via opusfilter
