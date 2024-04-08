@@ -33,8 +33,8 @@ wget -O ${temp}/lid.176.ftz https://dl.fbaipublicfiles.com/fasttext/supervised-m
 #pip install laserembeddings
 #python3 -m laserembeddings download-models
 
-${COMPRESSION_CMD} -d "${input_prefix}.${SRC}.${ARTIFACT_EXT}"
-${COMPRESSION_CMD} -d "${input_prefix}.${TRG}.${ARTIFACT_EXT}"
+${COMPRESSION_CMD} -d --rm "${input_prefix}.${SRC}.${ARTIFACT_EXT}"
+${COMPRESSION_CMD} -d --rm "${input_prefix}.${TRG}.${ARTIFACT_EXT}"
 
 echo "### Generating cleaning config"
 config_path=${dir}/generated-config.yml
