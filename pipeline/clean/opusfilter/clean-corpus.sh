@@ -28,16 +28,31 @@ dir="$(dirname "${output_prefix}")"
 temp=$(mktemp -d)
 mkdir -p ${dir}
 
+echo "Downloading fast text model"
 wget -O ${temp}/lid.176.ftz https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.ftz
-
-#pip install laserembeddings
-#python3 -m laserembeddings download-models
+echo "Downloading and installing LASER models"
+# install here due to a conflict on pip-compile lock
+pip install laserembeddings
+python3 -m laserembeddings download-models
 
 ${COMPRESSION_CMD} -d --rm "${input_prefix}.${SRC}.${ARTIFACT_EXT}"
 ${COMPRESSION_CMD} -d --rm "${input_prefix}.${TRG}.${ARTIFACT_EXT}"
 
 echo "### Generating cleaning config"
 config_path=${dir}/generated-config.yml
+
+# TODO: there should be more robust logic here to determine script
+if [ "$SRC" == 'ru' ]; then
+  script1="Cyrillic"
+else
+  script1="Latin"
+fi
+
+if [ "$TRG" == 'ru' ]; then
+  script2="Cyrillic"
+else
+  script2="Latin"
+fi
 
 opusfilter-autogen \
   --files "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" \
@@ -47,11 +62,9 @@ opusfilter-autogen \
   --work-dir ${dir} \
   --output ${config_path} \
   --add-filter LanguageIDFilter "{\"id_method\": \"fasttext\", \"fasttext_model_path\": \"${temp}/lid.176.ftz\"}" \
-  --add-filter CharacterScoreFilter '{"scripts": ["Latin", "Cyrillic"]}'  \
+  --add-filter CharacterScoreFilter "{\"scripts\": [\"${script1}\", \"${script2}\"]}"  \
   --add-filter LengthRatioFilter.word '{"unit": "word"}' \
-#  --add-filter LongWordFilter '{}' \
-#  --add-filter SentenceEmbeddingFilter '{"languages": ["en","ru"]}' \
-#  --add-filter LengthFilter '{}' \
+  --add-filter SentenceEmbeddingFilter "{\"languages\": [\"${SRC}\",\"${TRG}\"]}"
 
 test -s "${config_path}" || exit 1
 cat "${config_path}"
