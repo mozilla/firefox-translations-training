@@ -38,6 +38,7 @@ tasks:
                     - pipeline/clean/opuscleaner/configs/default.filters.json
                     - pipeline/clean/opuscleaner/configs/ru-en/opus_ELRC-3075-wikipedia_health-v1.ru-en.filters.json
                     - pipeline/clean/requirements/clean.txt
+                    - pipeline/clean/opusfilter/clean-corpus.sh
                     - pipeline/clean/requirements/opusfilter.txt
         task-context:
             from-parameters:
