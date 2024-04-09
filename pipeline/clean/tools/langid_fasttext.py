@@ -16,7 +16,7 @@ import sys
 
 import fasttext
 
-BIN = "lid.176.bin"
+BIN = "lid.176.ftz"
 URL = "https://dl.fbaipublicfiles.com/fasttext/supervised-models/{}".format(BIN)
 
 

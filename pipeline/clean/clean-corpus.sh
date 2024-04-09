@@ -81,7 +81,7 @@ echo "### Language identification"
 test -s "${output_prefix}.${SRC}${TRG}.langid.${ARTIFACT_EXT}" ||
   # langid_fasttext.py will download this file if it is not already present. When it runs in
   # parallel, this will typically cause the file to be corrupt.
-  test -s tools/lid.176.bin || wget -O tools/lid.176.bin https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
+  test -s tools/lid.176.ftz || wget -O tools/lid.176.ftz https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.ftz
   ${COMPRESSION_CMD} -dc "${output_prefix}.${SRC}${TRG}.rule-based.${ARTIFACT_EXT}" |
   # memory intensive
   parallel --no-notice --pipe -k -j "$(echo "${threads}"/4 | bc)" --block 50M \
