@@ -7,14 +7,13 @@ config.
 
 Usage:
 
-    poetry install --only tools
-    poetry run utils/preflight_check.py
+    task preflight-check
 
     # Open the graph
-    poetry run utils/preflight_check.py --open_graph
+    task preflight-check -- --open_graph
 
     # Only show one section, like the task_group.
-    poetry run utils/preflight_check.py --only task_group
+    task preflight-check -- --only task_group
 """
 
 import argparse

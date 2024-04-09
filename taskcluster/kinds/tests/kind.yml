@@ -70,8 +70,7 @@ tasks:
         - bash
         - -c
         - >-
-            pip install poetry &&
-            make black
+            task lint-black
     run-on-tasks-for: ["github-push", "github-pull-request"]
 
   lint:
@@ -85,8 +84,7 @@ tasks:
         - bash
         - -c
         - >-
-            pip install poetry &&
-            make lint
+            task lint-ruff
     run-on-tasks-for: ["github-push", "github-pull-request"]
 
   test:
@@ -102,14 +100,14 @@ tasks:
         - >-
             export BIN=$MOZ_FETCHES_DIR &&
             export MARIAN=$MOZ_FETCHES_DIR &&
-            make run-tests
+            task test
     run-on-tasks-for: ["github-push", "github-pull-request"]
     optimization:
       skip-unless-changed:
         - pipeline/**
         - tests/**
         - poetry.*
-        - Makefile
+        - Taskfile.yml
     fetches:
         toolchain:
             - fast-align
@@ -119,7 +117,7 @@ tasks:
   taskgraph-definition:
       worker-type: b-cpu
       worker:
-          docker-image: {in-tree: base}
+          docker-image: {in-tree: test}
           max-run-time: 3600
       description: "Test the full `translations_taskgraph` to validate the latest changes"
       run-on-tasks-for: ["github-push", "github-pull-request"]
@@ -129,12 +127,12 @@ tasks:
             - taskcluster/**
       run:
           command: >-
-              make validate-taskgraph
+              task taskgraph-validate
 
   taskgraph-diff:
       worker-type: b-cpu
       worker:
-          docker-image: {in-tree: base}
+          docker-image: {in-tree: test}
           max-run-time: 1200
       description: "Create diffs of taskgraphs vs. base revision."
       run-on-tasks-for: ["github-pull-request"]
@@ -143,4 +141,5 @@ tasks:
             - taskcluster/**
       run:
           command: >-
-              make diff-taskgraph BASE_REV={base_rev} OUTPUT_DIR=/builds/worker/artifacts
+              task taskgraph-diff BASE_REV={base_rev}
+              OUTPUT_FILE=/builds/worker/artifacts/taskgraph.diff
