@@ -134,17 +134,17 @@ workers:
 # Keys are worker type, and align with the `worker-type` entries in the
 # `worker.aliases` above.
 worker-configuration:
-    b-linux-v100-gpu-bh:
+    b-linux-v100-gpu-relops896:
         env:
             GPUS: "0"
             WORKSPACE: "12000"
 
-    b-linux-v100-gpu-4-bh:
+    b-linux-v100-gpu-4-relops896:
         env:
             GPUS: "0 1 2 3"
             WORKSPACE: "12000"
 
-    b-linux-v100-gpu-4-300gb-bh:
+    b-linux-v100-gpu-4-300gb-relops896:
         env:
             GPUS: "0 1 2 3"
             WORKSPACE: "12000"
