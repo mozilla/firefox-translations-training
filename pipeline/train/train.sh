@@ -139,7 +139,7 @@ opustrainer-train \
     --keep-best \
     --tsv \
     --seed ${seed} \
-    "${extra_params[@]}" | $PARSER
+    "${extra_params[@]}" 2>&1 | $PARSER
 
 cp "${model_dir}/model.npz.best-${best_model_metric}.npz" "${model_dir}/final.model.npz.best-${best_model_metric}.npz"
 cp "${model_dir}/model.npz.best-${best_model_metric}.npz.decoder.yml" "${model_dir}/final.model.npz.best-${best_model_metric}.npz.decoder.yml"
