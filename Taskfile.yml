@@ -154,8 +154,8 @@ tasks:
       to OUTPUT_DIR.
     deps: [taskgraph-requirements]
     vars:
-      OUTPUT_FILE: ./data/taskgraph.diff
-      BASE_REV: main
+      OUTPUT_FILE: '{{.OUTPUT_FILE | default "./data/taskgraph.diff"}}'
+      BASE_REV: '{{.BASE_REV | default "main"}}'
     cmds:
       - >-
         TASKCLUSTER_ROOT_URL=""
