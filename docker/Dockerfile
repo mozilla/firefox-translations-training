@@ -61,6 +61,9 @@ ENV MARIAN=/builds/worker/tools/marian-dev/build
 # https://github.com/python-poetry/poetry/issues/6371
 RUN ln -s /bin/python3 /bin/python
 
+# Have poetry ignore any venvs in the workdir by using a system install.
+RUN poetry config virtualenvs.create false
+
 # Install taskfile - https://taskfile.dev/
 # Keep the version in sync with taskcluster/docker/test/Dockerfile.
 RUN curl -sSLf "https://github.com/go-task/task/releases/download/v3.35.1/task_linux_amd64.tar.gz" \
