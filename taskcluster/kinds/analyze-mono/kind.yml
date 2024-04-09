@@ -21,6 +21,7 @@ task-defaults:
             type: analyze-mono
             resources:
                 - pipeline/data/analyze.py
+                - pipeline/data/requirements/analyze.txt
 
     worker-type: b-cpu-largedisk
     dataset-config:
@@ -37,9 +38,7 @@ task-defaults:
             - name: public/build
               path: /builds/worker/artifacts
               type: directory
-        env:
-            COMPRESSION_CMD: zstdmt
-            ARTIFACT_EXT: zst
+        env: {}
 
     # Don't run unless explicitly scheduled
     run-on-tasks-for: []
