@@ -237,7 +237,7 @@ class TrainingParser:
         except Exception as e:
             raise Exception(f"Invalid config section: {e}")
 
-        logger.info(f"Detected marian version {self.version}")
+        logger.info(f"Detected Marian version {self.version}")
 
     def parse_data(self, logs_iter: Iterator[tuple[list[tuple[str]], str]]) -> None:
         """
