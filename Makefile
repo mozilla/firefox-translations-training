@@ -179,8 +179,8 @@ download-model:
 # then go to http://localhost:6006
 tensorboard:
 	mkdir -p data/tensorboard-logs
-	poetry install --only tensorboard --no-root
-	poetry run marian-tensorboard \
+
+	poetry run python utils/tb_log_parser.py \
 		--offline \
 		--log-file data/taskcluster-logs/**/*.log \
 		--work-dir data/tensorboard-logs
