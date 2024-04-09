@@ -202,8 +202,9 @@ class TrainingParser:
         # Consume first lines until we get the Marian header
         while ("marian",) not in headers:
             headers, text = next(logs_iter)
+            logger.debug(f"Marian header not found in: headers={headers} text={text.strip()}")
 
-        logger.debug("Reading Marian version.")
+        logger.debug(f"Reading Marian version from text={text.strip()}")
         _, version, self.version_hash, self.release_date, *_ = text.split()
         version = version.rstrip(";")
         major, minor = map(int, version.lstrip("v").split(".")[:2])
