@@ -161,24 +161,23 @@ class DataDir:
             for part in command_parts
         ]
 
-        for command_parts_split in split_on_ampersands_operator(command_parts):
-            if extra_args:
-                command_parts_split.extend(extra_args)
+        if extra_args:
+            command_parts.extend(extra_args)
 
-            result = subprocess.run(
-                command_parts_split,
-                env={
-                    **os.environ,
-                    **task_env,
-                    "TASK_WORKDIR": work_dir,
-                    "MOZ_FETCHES_DIR": fetches_dir,
-                    "VCS_PATH": root_path,
-                    **env,
-                },
-                cwd=root_path,
-                check=False,
-            )
-            fail_on_error(result)
+        result = subprocess.run(
+            command_parts,
+            env={
+                **os.environ,
+                **task_env,
+                "TASK_WORKDIR": work_dir,
+                "MOZ_FETCHES_DIR": fetches_dir,
+                "VCS_PATH": root_path,
+                **env,
+            },
+            cwd=root_path,
+            check=False,
+        )
+        fail_on_error(result)
 
     def print_tree(self):
         """
@@ -205,23 +204,6 @@ class DataDir:
                 print(f"{file_text.ljust(span_len - len(bytes))}{bytes} │")
 
         print(f"└{span}┘")
-
-
-def split_on_ampersands_operator(command_parts: list[str]) -> list[list[str]]:
-    """Splits a command with the bash && operator into multiple lists of commands."""
-    multiple_command_parts: list[list[str]] = []
-    sublist: list[str] = []
-    for part in command_parts:
-        if part.strip().startswith("&&"):
-            command_part = part.replace("&&", "").strip()
-            if len(command_part):
-                sublist.append(command_part)
-            multiple_command_parts.append(sublist)
-            sublist = []
-        else:
-            sublist.append(part)
-    multiple_command_parts.append(sublist)
-    return multiple_command_parts
 
 
 def fail_on_error(result: CompletedProcess[bytes]):

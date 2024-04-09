@@ -66,8 +66,7 @@ tasks:
                     --output $TASK_WORKDIR/artifacts
                     --dataset "{dataset}"
                     --language {src_locale}
-                    &&
-                    python3 $VCS_PATH/pipeline/data/analyze.py
+                    --
                     --file_location $MOZ_FETCHES_DIR/{dataset_sanitized}.{trg_locale}.zst
                     --output $TASK_WORKDIR/artifacts
                     --dataset "{dataset}"
