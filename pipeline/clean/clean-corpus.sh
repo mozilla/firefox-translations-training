@@ -108,6 +108,15 @@ ${COMPRESSION_CMD} >"${output_prefix}.${TRG}.${ARTIFACT_EXT}"
 test -s "${output_prefix}.${SRC}.${ARTIFACT_EXT}" || exit 1
 test -s "${output_prefix}.${TRG}.${ARTIFACT_EXT}" || exit 1
 
+echo "### Checking length of the files"
+new_len_src="$(${COMPRESSION_CMD} -dc "${output_prefix}.${SRC}.${ARTIFACT_EXT}" | wc -l)"
+new_len_trg="$(${COMPRESSION_CMD} -dc "${output_prefix}.${TRG}.${ARTIFACT_EXT}" | wc -l)"
+orig_len_src="$(${COMPRESSION_CMD} -dc "${output_prefix}.${SRC}.${ARTIFACT_EXT}" | wc -l)"
+[[ ${new_len_src} -ge 1 ]] || exit 1
+[[ ${new_len_trg} -ge 1 ]] || exit 1
+[[ "${new_len_src}" = "${new_len_trg}" ]] || exit 1
+echo "### Filtered length: ${new_len_src} / ${orig_len_src}"
+
 echo "### Remove input_prefix from intermediate steps"
 rm -rf "${output_prefix}".*.nrm.${ARTIFACT_EXT} "${output_prefix}".*.langid.${ARTIFACT_EXT} \
   "${output_prefix}".*.rule-based.${ARTIFACT_EXT} "${output_prefix}".*.*fix.${ARTIFACT_EXT}
