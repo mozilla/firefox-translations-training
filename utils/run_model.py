@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-Run m
+Run Marian models locally. When a --task_id is given, the model is downloaded to the ./data
+directory, and immediately run. This process loads the marian-server binary in the background,
+and communicates to it via a websocket.
 
 Usage:
 
