@@ -133,6 +133,9 @@ class WandB(Publisher):
         epoch = vars(data)
         step = epoch.pop("up")
         for key, val in epoch.items():
+            if val is None:
+                # Do not publish null values (e.g. perplexity in Marian 1.10)
+                continue
             self.wandb.log(step=step, data={key: val})
 
     def handle_training(self, training: TrainingEpoch) -> None:
@@ -197,6 +200,13 @@ class WandB(Publisher):
         be published to W&B.
         """
         from translations_parser.parser import TrainingParser
+
+        if (
+            len(wandb.Api().runs(project, filters={"display_name": "group_logs", "group": group}))
+            > 0
+        ):
+            logger.warning("Skipping group_logs fake run publication as it already exists")
+            return
 
         logs_dir = Path("/".join([*logs_parent_folder[:-1], "logs", project, group]))
         # Old experiments use `speed` directory for quantized metrics
