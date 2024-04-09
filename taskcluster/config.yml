@@ -91,28 +91,28 @@ workers:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: 'b-linux-v100-gpu-bh'
+            worker-type: 'b-linux-v100-gpu-relops896'
         # Use for tasks that need lots of GPU power, but not lots of disk space
         # eg: translation & scoring
         b-largegpu:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: 'b-linux-v100-gpu-4-bh'
+            worker-type: 'b-linux-v100-gpu-4-relops896'
         # Use for tasks that needs lots of GPU power and increased disk space
         # eg: bicleaner
         b-largegpu-largedisk:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: 'b-linux-v100-gpu-4-300gb-bh'
+            worker-type: 'b-linux-v100-gpu-4-300gb-relops896'
         # Use for tasks that need lots of GPU power and immensive amounts of disk space
         # eg: training
         b-largegpu-xlargedisk:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: 'b-linux-v100-gpu-4-300gb-bh'
+            worker-type: 'b-linux-v100-gpu-4-300gb-relops896'
         # Use for tasks that needs lots of GPU power, increased disk space, and higher reliability
         b-largegpu-largedisk-standard:
             provisioner: '{trust-domain}-{level}'
