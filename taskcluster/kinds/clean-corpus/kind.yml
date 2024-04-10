@@ -58,8 +58,8 @@ tasks:
                 - run.command
         worker:
             docker-image: {"in-tree": "train"}
-            # 12 hours (OpusCleaner can get stuck)
-            max-run-time: 43200
+            # 1 week to give laser time
+            max-run-time: 604800
             artifacts:
                 - name: public/build
                   path: /builds/worker/artifacts
