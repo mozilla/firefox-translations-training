@@ -22,7 +22,7 @@ project: firefox-translations-training
 pushdate: 0
 pushlog_id: '0'
 repository_type: git
-target_tasks_method: default
+target_tasks_method: train-target-tasks
 tasks_for: github-push
 training_config:
   datasets:
@@ -88,7 +88,7 @@ training_config:
       save-freq: '25'
       task: transformer-base
       valid-freq: '50'
-  target-stage: all
+  target-stage: clean-corpus
   taskcluster:
     split-chunks: 2
 version: null
