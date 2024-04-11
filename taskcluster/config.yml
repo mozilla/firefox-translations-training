@@ -124,7 +124,7 @@ workers:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: 'b-linux-v100-gpu-4-1tb-relops896'
+            worker-type: 'b-linux-v100-gpu-4-300gb-relops896'
         images:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
