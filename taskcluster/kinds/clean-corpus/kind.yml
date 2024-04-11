@@ -36,7 +36,15 @@ tasks:
                     - pipeline/clean/opuscleaner/clean-corpus.sh
                     - pipeline/clean/opuscleaner/configs/remove_frequent_patterns.txt
                     - pipeline/clean/opuscleaner/configs/default.filters.json
+A                    - pipeline/clean/opuscleaner/configs/preprocess.filters.json
                     - pipeline/clean/opuscleaner/configs/ru-en/opus_ELRC-3075-wikipedia_health-v1.ru-en.filters.json
+                    - pipeline/clean/opuscleaner/configs/en-ru/opus_CCAligned-v1.en-ru.filters.json
+                    - pipeline/clean/opuscleaner/configs/en-ru/opus_LinguaTools-WikiTitles-v2014.en-ru.filters.json
+                    - pipeline/clean/opuscleaner/configs/en-ru/opus_NLLB-v1.en-ru.filters.json
+                    - pipeline/clean/opuscleaner/configs/en-ru/opus_OpenSubtitles-v2018.en-ru.filters.json
+                    - pipeline/clean/opuscleaner/configs/en-ru/opus_ParaCrawl-v9.en-ru.filters.json
+                    - pipeline/clean/opuscleaner/configs/en-ru/opus_UNPC-v1.0.en-ru.filters.json
+                    - pipeline/clean/opuscleaner/configs/en-ru/opus_XLEnt-v1.2.en-ru.filters.json
                     - pipeline/clean/requirements/clean.txt
                     - pipeline/clean/opusfilter/clean-corpus.sh
                     - pipeline/clean/requirements/opusfilter.txt
@@ -88,9 +96,9 @@ tasks:
                 - >-
                     pip install -r $VCS_PATH/pipeline/clean/requirements/clean.txt &&
                     if [ ${USE_OPUSCLEANER} = "true" ]; then dir="clean/opuscleaner"; else dir="clean"; fi &&
-                    $VCS_PATH/pipeline/${dir}/clean-corpus.sh $MOZ_FETCHES_DIR/{dataset_sanitized} /builds/worker/artifacts/intermediate/{dataset_sanitized} auto {dataset} &&
-                    pip install -r $VCS_PATH/pipeline/clean/requirements/opusfilter.txt &&
-                    $VCS_PATH/pipeline/clean/opusfilter/clean-corpus.sh /builds/worker/artifacts/intermediate/{dataset_sanitized} /builds/worker/artifacts/{dataset_sanitized} auto {dataset} 2>&1
+                    $VCS_PATH/pipeline/${dir}/clean-corpus.sh $MOZ_FETCHES_DIR/{dataset_sanitized} /builds/worker/artifacts/{dataset_sanitized} auto {dataset} 2>&1
+#                    pip install -r $VCS_PATH/pipeline/clean/requirements/opusfilter.txt &&
+#                    $VCS_PATH/pipeline/clean/opusfilter/clean-corpus.sh /builds/worker/artifacts/intermediate/{dataset_sanitized} /builds/worker/artifacts/{dataset_sanitized} auto {dataset} 2>&1
         dependencies:
             "{provider}": dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
         fetches:

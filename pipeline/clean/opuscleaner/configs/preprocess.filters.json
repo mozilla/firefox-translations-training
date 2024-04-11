@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "files": [
+  ],
+  "filters": [
+    {
+      "filter": "deescape-special-chars",
+      "parameters": {
+        "LANG1": "other"
+      },
+      "language": "<src>"
+    },
+    {
+      "filter": "deescape-special-chars",
+      "parameters": {
+        "LANG1": "other"
+      },
+      "language": "<trg>"
+    },
+    {
+      "filter": "remove_empty_lines",
+      "parameters": {},
+      "language": null
+    },
+    {
+      "filter": "num_mismatch",
+      "parameters": {
+        "RATIO": 1,
+        "DEBUG": false
+      },
+      "language": null
+    },
+    {
+      "filter": "remove_frequent_patterns",
+      "parameters": {
+        "PATTERN_FILE": "configs/remove_frequent_patterns.txt"
+      },
+      "language": null
+    },
+    {
+      "filter": "max_word_length",
+      "parameters": {
+        "MAXWORDLENGTH": 150
+      },
+      "language": null
+    },
+    {
+      "filter": "max_length",
+      "parameters": {
+        "MAXLENGTH": 150,
+        "MINLENGTH": 1
+      },
+      "language": null
+    }
+  ]
+}
