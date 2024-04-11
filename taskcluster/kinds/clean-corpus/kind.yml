@@ -67,7 +67,9 @@ tasks:
         worker:
             docker-image: {"in-tree": "train"}
             # 1 week to give laser time
-            max-run-time: 604800
+#            max-run-time: 604800
+            # 12 hours to stop failed fast text
+            max-run-time: 43200
             artifacts:
                 - name: public/build
                   path: /builds/worker/artifacts

@@ -33,6 +33,10 @@ filter_path="${output_prefix}.${SRC}-${TRG}.filters.json"
 python3 generate_filters.py "${input_prefix}" "${SRC}" "${TRG}" "${dataset}" "${filter_path}"
 test -s "${filter_path}" || exit 1
 
+# pre download fast text model as it's causing constant issues
+filters_dir="/builds/worker/.local/lib/python3.10/site-packages/opuscleaner/filters"
+wget -O "${filters_dir}/large.bin" https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
+
 echo "### Cleaning ${input_prefix} with filter ${filter_path}"
 paste <(${COMPRESSION_CMD} -dc "${input_prefix}.${SRC}.${ARTIFACT_EXT}") \
       <(${COMPRESSION_CMD} -dc "${input_prefix}.${TRG}.${ARTIFACT_EXT}") |
