@@ -38,13 +38,13 @@ tasks:
                     - pipeline/clean/opuscleaner/configs/default.filters.json
                     - pipeline/clean/opuscleaner/configs/preprocess.filters.json
                     - pipeline/clean/opuscleaner/configs/ru-en/opus_ELRC-3075-wikipedia_health-v1.ru-en.filters.json
-                    - pipeline/clean/opuscleaner/configs/en-ru/opus_CCAligned-v1.en-ru.filters.json
-                    - pipeline/clean/opuscleaner/configs/en-ru/opus_LinguaTools-WikiTitles-v2014.en-ru.filters.json
-                    - pipeline/clean/opuscleaner/configs/en-ru/opus_NLLB-v1.en-ru.filters.json
-                    - pipeline/clean/opuscleaner/configs/en-ru/opus_OpenSubtitles-v2018.en-ru.filters.json
-                    - pipeline/clean/opuscleaner/configs/en-ru/opus_ParaCrawl-v9.en-ru.filters.json
-                    - pipeline/clean/opuscleaner/configs/en-ru/opus_UNPC-v1.0.en-ru.filters.json
-                    - pipeline/clean/opuscleaner/configs/en-ru/opus_XLEnt-v1.2.en-ru.filters.json
+#                    - pipeline/clean/opuscleaner/configs/en-ru/opus_CCAligned-v1.en-ru.filters.json
+#                    - pipeline/clean/opuscleaner/configs/en-ru/opus_LinguaTools-WikiTitles-v2014.en-ru.filters.json
+#                    - pipeline/clean/opuscleaner/configs/en-ru/opus_NLLB-v1.en-ru.filters.json
+#                    - pipeline/clean/opuscleaner/configs/en-ru/opus_OpenSubtitles-v2018.en-ru.filters.json
+#                    - pipeline/clean/opuscleaner/configs/en-ru/opus_ParaCrawl-v9.en-ru.filters.json
+#                    - pipeline/clean/opuscleaner/configs/en-ru/opus_UNPC-v1.0.en-ru.filters.json
+#                    - pipeline/clean/opuscleaner/configs/en-ru/opus_XLEnt-v1.2.en-ru.filters.json
                     - pipeline/clean/requirements/clean.txt
                     - pipeline/clean/opusfilter/clean-corpus.sh
                     - pipeline/clean/requirements/opusfilter.txt
