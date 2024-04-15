@@ -43,9 +43,9 @@ def get_defaults(_):
                     "dim-vocabs": "1000 1000",
                 },
                 "training-teacher": {
-                    "disp-freq": "3",
-                    "save-freq": "43",
-                    "valid-freq": "8",
+                    "disp-freq": "1",
+                    "save-freq": "25",
+                    "valid-freq": "49",
                     "after": "50u",
                     "dim-vocabs": "1000 1000",
                     "task": "transformer-base",
