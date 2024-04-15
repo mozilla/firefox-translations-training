@@ -191,6 +191,9 @@ class TrainingParser:
                 tag = _join(marian_tags)
                 self.indexed_logs[tag].append(text)
 
+            # Display parsed log text on stderr for easier debug
+            logger.debug(f"Marian log: {text.strip()}")
+
             yield headers, text
 
     def parse_marian_context(self, logs_iter: Iterator[tuple[list[tuple[str]], str]]) -> None:

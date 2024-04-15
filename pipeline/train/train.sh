@@ -109,7 +109,7 @@ then
   PARSER=tee
 else
   echo "### Weight & Biases publication is enabled."
-  PARSER="parse_tc_logs --from-stream --wandb-project=moz-translations -v"
+  PARSER="parse_tc_logs --from-stream -v"
 fi
 
 echo "### Training ${model_dir}"
