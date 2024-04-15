@@ -1,5 +1,6 @@
 import logging
 import re
+import sys
 from collections import defaultdict
 from collections.abc import Iterable, Iterator, Sequence
 from datetime import datetime
@@ -192,7 +193,7 @@ class TrainingParser:
                 self.indexed_logs[tag].append(text)
 
             # Display parsed log text on stderr for easier debug
-            logger.debug(f"Marian log: {text.strip()}")
+            print(f"Marian log: {text.strip()}", file=sys.stderr)
 
             yield headers, text
 
