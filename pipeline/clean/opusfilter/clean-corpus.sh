@@ -29,7 +29,7 @@ temp=$(mktemp -d)
 mkdir -p ${dir}
 
 echo "Downloading fast text model"
-wget -O ${temp}/lid.176.ftz https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.ftz
+wget -O ${temp}/lid.176.bin https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
 echo "Downloading and installing LASER models"
 # install here due to a conflict on pip-compile lock
 pip install laserembeddings
@@ -61,7 +61,7 @@ opusfilter-autogen \
   --overwrite \
   --work-dir ${dir} \
   --output ${config_path} \
-  --add-filter LanguageIDFilter "{\"id_method\": \"fasttext\", \"fasttext_model_path\": \"${temp}/lid.176.ftz\"}" \
+  --add-filter LanguageIDFilter "{\"id_method\": \"fasttext\", \"fasttext_model_path\": \"${temp}/lid.176.bin\"}" \
   --add-filter CharacterScoreFilter "{\"scripts\": [\"${script1}\", \"${script2}\"]}"  \
   --add-filter LengthRatioFilter.word '{"unit": "word"}' \
   --add-filter SentenceEmbeddingFilter "{\"languages\": [\"${SRC}\",\"${TRG}\"]}"
