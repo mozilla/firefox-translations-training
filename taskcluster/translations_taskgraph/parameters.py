@@ -25,7 +25,7 @@ def get_defaults(_):
                 "spm-sample-size": 10000,
                 "spm-vocab-size": 1000,
                 "best-model": "chrf",
-                "use-opuscleaner": "false",
+                "use-opuscleaner": "true",
                 "bicleaner": {
                     "default-threshold": 0.5,
                     "dataset-thresholds": {
