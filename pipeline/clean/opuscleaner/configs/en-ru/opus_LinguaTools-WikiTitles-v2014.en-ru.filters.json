@@ -101,11 +101,11 @@
       "language": null
     },
     {
-      "filter": "fasttext_filter",
+      "filter": "laser_similarity",
       "parameters": {
-        "FASTTEXT_MODEL_TYPE": "large",
-        "LANG1": "<src>",
-        "LANG2": "<trg>"
+        "THRESHOLD": "0.85",
+        "SRCLANG": "<src>",
+        "TGTLANG": "<trg>"
       },
       "language": null
     }

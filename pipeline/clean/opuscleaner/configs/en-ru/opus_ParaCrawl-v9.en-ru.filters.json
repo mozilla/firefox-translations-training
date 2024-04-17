@@ -99,6 +99,24 @@
         "DEBUG": false
       },
       "language": null
+    },
+    {
+      "filter": "fasttext_filter",
+      "parameters": {
+        "FASTTEXT_MODEL_TYPE": "large",
+        "LANG1": "<src>",
+        "LANG2": "<trg>"
+      },
+      "language": null
+    },
+    {
+      "filter": "laser_similarity",
+      "parameters": {
+        "THRESHOLD": "0.85",
+        "SRCLANG": "<src>",
+        "TGTLANG": "<trg>"
+      },
+      "language": null
     }
   ]
 }

@@ -27,15 +27,21 @@ cd "$(dirname "${0}")"
 dir="$(dirname "${output_prefix}")"
 mkdir -p "${dir}"
 
+echo "Downloading fastText model"
+# pre download fast text model as it's causing constant issues
+filters_dir="/builds/worker/.local/lib/python3.10/site-packages/opuscleaner/filters"
+wget -O "${filters_dir}/large.bin" https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
+
+echo "Downloading and installing LASER models"
+# install here due to a conflict on pip-compile lock
+pip install laserembeddings
+python3 -m laserembeddings download-models
+
 echo "### Generating cleaning config: ${dataset}.${SRC}-${TRG}.filters.json"
 # save new filter to dataset output dir
 filter_path="${output_prefix}.${SRC}-${TRG}.filters.json"
 python3 generate_filters.py "${input_prefix}" "${SRC}" "${TRG}" "${dataset}" "${filter_path}"
 test -s "${filter_path}" || exit 1
-
-# pre download fast text model as it's causing constant issues
-filters_dir="/builds/worker/.local/lib/python3.10/site-packages/opuscleaner/filters"
-wget -O "${filters_dir}/large.bin" https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
 
 echo "### Cleaning ${input_prefix} with filter ${filter_path}"
 paste <(${COMPRESSION_CMD} -dc "${input_prefix}.${SRC}.${ARTIFACT_EXT}") \

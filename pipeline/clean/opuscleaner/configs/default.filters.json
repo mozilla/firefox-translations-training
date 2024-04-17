@@ -108,6 +108,15 @@
         "LANG2": "<trg>"
       },
       "language": null
+    },
+    {
+      "filter": "laser_similarity",
+      "parameters": {
+        "THRESHOLD": "0.85",
+        "SRCLANG": "<src>",
+        "TGTLANG": "<trg>"
+      },
+      "language": null
     }
   ]
 }

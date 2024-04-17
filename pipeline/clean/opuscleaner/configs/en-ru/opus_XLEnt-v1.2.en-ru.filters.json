@@ -99,6 +99,15 @@
         "DEBUG": false
       },
       "language": null
+    },
+    {
+      "filter": "laser_similarity",
+      "parameters": {
+        "THRESHOLD": "0.75",
+        "SRCLANG": "<src>",
+        "TGTLANG": "<trg>"
+      },
+      "language": null
     }
   ]
 }
