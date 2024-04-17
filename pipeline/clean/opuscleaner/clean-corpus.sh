@@ -15,6 +15,7 @@ input_prefix=$1
 output_prefix=$2
 threads=$3
 dataset=$4
+preprocess=$5
 
 COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
@@ -40,7 +41,7 @@ python3 -m laserembeddings download-models
 echo "### Generating cleaning config: ${dataset}.${SRC}-${TRG}.filters.json"
 # save new filter to dataset output dir
 filter_path="${output_prefix}.${SRC}-${TRG}.filters.json"
-python3 generate_filters.py "${input_prefix}" "${SRC}" "${TRG}" "${dataset}" "${filter_path}"
+python3 generate_filters.py "${input_prefix}" "${SRC}" "${TRG}" "${dataset}" "${filter_path}" --preprocess ${preprocess}
 test -s "${filter_path}" || exit 1
 
 echo "### Cleaning ${input_prefix} with filter ${filter_path}"
