@@ -47,7 +47,7 @@ numpy==1.26.4
     #   scipy
 opus-fast-mosestokenizer==0.0.8.5
     # via opusfilter
-opusfilter @ git+https://github.com/Helsinki-NLP/OpusFilter.git@3345ddaa056a4aa6257f270c0e5d7673897489ca
+opusfilter @ git+https://github.com/Helsinki-NLP/OpusFilter.git@b69f72dd84029a9f815413a0fac0055a1cac76c4
     # via -r pipeline/clean/requirements/opusfilter.in
 opustools==1.6.1
     # via opusfilter

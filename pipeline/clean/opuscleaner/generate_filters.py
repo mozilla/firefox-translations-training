@@ -49,6 +49,8 @@ def main() -> None:
     parser.add_argument("trg", metavar="TRG", type=str, help="Target language code")
     parser.add_argument("dataset", metavar="DATASET", type=str, help="Dataset name")
     parser.add_argument("output", metavar="OUTPUT_PATH", type=str, help="Write filter config here")
+    parser.add_argument("--preprocess", metavar="PREPROCESS", type=bool, required=False,
+                        help="Use the default preprocessing filter for all datasets")
 
     args = parser.parse_args()
     src = args.src
@@ -56,9 +58,13 @@ def main() -> None:
     dataset = args.dataset
     output = args.output
 
-    # look whether there are custom filters produced by OpusCleaner UI first
-    # if a custom filter is not found, use defaults
-    filter_path = find_custom_filter(src, trg, dataset) or "configs/default.filters.json"
+    if args.preprocess:
+        # Use preprocessing filter only leaving customizable filters to OpusFilter
+        filter_path = "configs/preprocess.filters.json"
+    else:
+        # look whether there are custom filters produced by OpusCleaner UI first
+        # if a custom filter is not found, use defaults
+        filter_path = find_custom_filter(src, trg, dataset) or "configs/default.filters.json"
     print(f"Using filter {filter_path}")
     config = build_config(filter_path, src, trg)
 
