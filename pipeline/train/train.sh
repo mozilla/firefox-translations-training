@@ -106,10 +106,10 @@ fi
 if ! command -v parse_tc_logs &> /dev/null
 then
   echo "### Weight & Biases publication is disabled."
-  PARSER=tee
+  PARSER=cat
 else
   echo "### Weight & Biases publication is enabled."
-  PARSER="parse_tc_logs --from-stream -v"
+  PARSER="parse_tc_logs --from-stream -v --wandb-project=${src}-${trg}"
 fi
 
 echo "### Training ${model_dir}"
