@@ -109,7 +109,7 @@ then
   PARSER=cat
 else
   echo "### Weight & Biases publication is enabled."
-  PARSER="parse_tc_logs --from-stream -v --wandb-project=${src}-${trg}"
+  PARSER="parse_tc_logs --from-stream -v --wandb-project=${src}-${trg} --wandb-group ${model_type}.${training_type} --wandb-run-name $TASK_ID"
 fi
 
 echo "### Training ${model_dir}"
