@@ -218,3 +218,16 @@ taskcluster:
   # then split into an even number of chunks.
   # Adjust depending on the amount of data to translate
   split-chunks: 20
+  # Worker classes by `kind`, and a default for `kinds` not specified.
+  # Available options are in `taskcluster/translations_taskgraph/actions/train.py`.
+  # By default we like to use `gcp-spot`, which are the cheapest option. To use
+  # standard (non-spot) instances for all training tasks you would configure
+  # as follows:
+  # worker-classes:
+  #   finetune-student: gcp-spot
+  #   train-backwards: gcp-spot
+  #   train-teacher: gcp-spot
+  #   train-student: gcp-spot
+  #   default: gcp-spot
+  worker-classes:
+    default: gcp-spot

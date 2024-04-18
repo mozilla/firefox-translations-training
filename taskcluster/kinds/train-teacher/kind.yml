@@ -78,7 +78,7 @@ tasks:
         worker-type:
             by-tasks-for:
                 github-pull-request: b-largegpu
-                default: b-largegpu-xlargedisk-standard
+                default: b-largegpu-xlargedisk
         worker:
             max-run-time: 2592000
             env:
