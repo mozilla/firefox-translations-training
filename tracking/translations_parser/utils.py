@@ -3,10 +3,6 @@ import re
 from collections.abc import Sequence
 from datetime import datetime
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(levelname)s] %(message)s",
-)
 logger = logging.getLogger(__name__)
 
 # Keywords used to split eval filenames into model and dataset

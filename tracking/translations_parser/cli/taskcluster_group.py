@@ -23,11 +23,6 @@ from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import WandB
 from translations_parser.utils import parse_tag
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(levelname)s] %(message)s",
-)
-
 KIND_TAG_TARGET = ("train", "finetune")
 MULTIPLE_TRAIN_SUFFIX = re.compile(r"(-\d+)/\d+$")
 queue = taskcluster.Queue({"rootUrl": "https://firefox-ci-tc.services.mozilla.com"})

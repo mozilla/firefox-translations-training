@@ -25,11 +25,6 @@ from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import CSVExport, Publisher, WandB
 from translations_parser.utils import taskcluster_log_filter
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(levelname)s] %(message)s",
-)
-
 
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(

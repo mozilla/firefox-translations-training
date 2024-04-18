@@ -12,10 +12,6 @@ import yaml
 from translations_parser.data import Metric, TrainingEpoch, TrainingLog, ValidationEpoch
 from translations_parser.publishers import Publisher
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(levelname)s] %(message)s",
-)
 logger = logging.getLogger(__name__)
 
 HEADER_RE = re.compile(r"(?<=\[)(?P<value>.+?)\] ")
@@ -166,6 +162,10 @@ class TrainingParser:
         Automatically set Marian run date when found.
         """
         for line in self.logs_iter:
+            # When reading stdin stream, propagate raw lines to stdout
+            print(line, file=sys.stdout, end='')
+
+
             self._current_index += 1
             headers, position = self.get_headers(line)
             if self.log_filter and not self.log_filter(headers):
@@ -191,9 +191,6 @@ class TrainingParser:
                 _, _, *marian_tags = headers
                 tag = _join(marian_tags)
                 self.indexed_logs[tag].append(text)
-
-            # Display parsed log text on stderr for easier debug
-            print(f"Marian log: {text.strip()}", file=sys.stderr)
 
             yield headers, text
 
