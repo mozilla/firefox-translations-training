@@ -82,13 +82,20 @@ tasks:
             env:
                 ARTIFACT_EXT: zst
                 COMPRESSION_CMD: zstdmt
+
+                # Weight & Biases publication token is stored in that secret
+                TASKCLUSTER_SECRET: project/translations/level-1/weights-and-biases
             artifacts:
                 - name: public/build
                   path: artifacts
                   type: directory
 
-        # Use a secret to publish logs on weights and biases
-        use-secret: project/translations/level-1/weights-and-biases
+            # Taskcluster proxy is required to read secrets
+            taskcluster-proxy: true
+
+        # The task needs to be able to read that secret to publish on Weight & Biases
+        scopes:
+          - secrets:get:project/translations/level-1/weights-and-biases
 
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
