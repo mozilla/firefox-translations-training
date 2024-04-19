@@ -103,7 +103,8 @@ if [[ -z ${USE_CPU+x} ]]; then
 fi
 
 # Enable log & metrics publication only when the tracking script is available
-if ! command -v parse_tc_logs &> /dev/null
+# and we are not running unit tests
+if [[ ! $(command -v parse_tc_logs &> /dev/null) || ! -z "$TEST_ARTIFACTS" ]];
 then
   echo "### Weight & Biases publication is disabled."
   PARSER=cat
