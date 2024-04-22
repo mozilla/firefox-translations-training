@@ -95,6 +95,11 @@ def boot() -> None:
     if args.loglevel:
         logger.setLevel(args.loglevel)
 
+    # Prevent running when explicitly disabled by operator
+    if os.environ.get("WANDB_PUBLICATION", "true").lower() == "false":
+        logger.info("Skip publication as requested by operator through WANDB_PUBLICATION")
+        return
+
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
     lines: TextIOWrapper | Iterator[str]

@@ -103,14 +103,17 @@ if [[ -z ${USE_CPU+x} ]]; then
 fi
 
 # Enable log & metrics publication only when the tracking script is available
-# and we are not running unit tests
-# and it's not actively disabled through training configuration
-if [[ ! $(command -v parse_tc_logs &> /dev/null) || ! -z "$TEST_ARTIFACTS" || "${WANDB_PUBLICATION,,}" == "false" ]];
+# and not running in unit tests
+if ! command -v parse_tc_logs &> /dev/null
 then
-  echo "### Weight & Biases publication is disabled."
+  echo "### Weight & Biases publication script is not available."
+  PARSER=cat
+elif ! -z "$TEST_ARTIFACTS"
+then
+  echo "### Weight & Biases publication is disabled for unit tests."
   PARSER=cat
 else
-  echo "### Weight & Biases publication is enabled."
+  echo "### Weight & Biases publication is available."
   PARSER="parse_tc_logs --from-stream -v --wandb-project=${src}-${trg} --wandb-group ${model_type}.${training_type} --wandb-run-name $TASK_ID"
 fi
 
