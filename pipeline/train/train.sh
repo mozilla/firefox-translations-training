@@ -104,7 +104,8 @@ fi
 
 # Enable log & metrics publication only when the tracking script is available
 # and we are not running unit tests
-if [[ ! $(command -v parse_tc_logs &> /dev/null) || ! -z "$TEST_ARTIFACTS" ]];
+# and it's not actively disabled through training configuration
+if [[ ! $(command -v parse_tc_logs &> /dev/null) || ! -z "$TEST_ARTIFACTS" || "${WANDB_PUBLICATION,,}" == "false" ]];
 then
   echo "### Weight & Biases publication is disabled."
   PARSER=cat

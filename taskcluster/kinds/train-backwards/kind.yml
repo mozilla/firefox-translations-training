@@ -45,6 +45,7 @@ tasks:
                 trg_locale: training_config.experiment.trg
                 pretrained_backward_mode: training_config.experiment.pretrained-models.train-backwards.mode
                 pretrained_backward_type: training_config.experiment.pretrained-models.train-backwards.type
+                wandb_publication: training_config.wandb-publication
             substitution-fields:
                 - description
                 - name
@@ -52,6 +53,7 @@ tasks:
                 - dependencies
                 - attributes
                 - run.command
+                - worker.env
         worker-type:
             by-tasks-for:
                 github-pull-request: b-largegpu
@@ -61,6 +63,9 @@ tasks:
             env:
                 ARTIFACT_EXT: zst
                 COMPRESSION_CMD: zstdmt
+
+                # Weight & Biases trigger
+                WANDB_PUBLICATION: "{wandb_publication}"
 
                 # Weight & Biases publication token is stored in that secret
                 TASKCLUSTER_SECRET: project/translations/level-1/weights-and-biases
