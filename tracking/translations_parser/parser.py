@@ -136,11 +136,8 @@ class TrainingParser:
         val = ValidationEpoch.__annotations__[key](val)
         entry = self._validation_entries[(epoch, up)]
         entry[key] = val
-        if self.version == "1.10":
-            # perplexity value is not defined in Marian 1.10
-            entry["perplexity"] = None
         # Build a validation epoch from multiple lines
-        expected_keys = set(ValidationEpoch.__annotations__.keys()) - {"epoch", "up"}
+        expected_keys = set(ValidationEpoch.__annotations__.keys()) - {"epoch", "up", "perplexity"}
         if not (expected_keys - set(entry.keys())):
             validation_epoch = ValidationEpoch(epoch=epoch, up=up, **entry)
             self.validation.append(validation_epoch)

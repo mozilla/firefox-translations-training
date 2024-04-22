@@ -39,10 +39,10 @@ class TrainingEpoch:
 class ValidationEpoch:
     epoch: int
     up: int
-    perplexity: float
     chrf: float
     ce_mean_words: float
     bleu_detok: float
+    perplexity: float = None  # optional
 
 
 @dataclass
