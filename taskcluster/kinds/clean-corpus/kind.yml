@@ -88,8 +88,8 @@ tasks:
                     /builds/worker/artifacts/{dataset_sanitized}
                     auto 
                     {dataset} 
-                    {dataset_sanitized}.bicleaner.scores
-                    {dataset_sanitized}.laser.scores
+                    $MOZ_FETCHES_DIR/{dataset_sanitized}.laser.scores
+                    $MOZ_FETCHES_DIR/{dataset_sanitized}.bicleaner.scores
                     2>&1
         dependencies:
             preprocess: preprocess-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}

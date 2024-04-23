@@ -31,11 +31,8 @@ temp=$(mktemp -d)
 mkdir -p ${dir}
 
 echo "Downloading fast text model"
-wget --quiet -O lid.176.bin https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
-#echo "Downloading and installing LASER models"
-# install here due to a conflict on pip-compile lock
-#pip install laserembeddings
-#python3 -m laserembeddings download-models
+fasttext_path=${temp}/lid.176.bin
+wget --quiet -O ${fasttext_path} https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
 
 ${COMPRESSION_CMD} -d --rm "${input_prefix}.${SRC}.${ARTIFACT_EXT}"
 ${COMPRESSION_CMD} -d --rm "${input_prefix}.${TRG}.${ARTIFACT_EXT}"
@@ -57,10 +54,11 @@ else
 fi
 
 # to add customfilter module
-export PYTHONPATH=$PYTHONPATH:$(pwd)
+export PYTHONPATH=$(pwd)
 
-python3 cache.py "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" laser_scores.pickle --opus_scores "${laser_scores}"  --opus_filter_name SentenceEmbeddingFilter
-python3 cache.py "${input_prefix}.${TRG}" "${input_prefix}.${TRG}" bicleaner_scores.pickle --raw_scores "${bicleaner_scores}"
+python3 cache.py --opus_scores "${laser_scores}" --opus_filter_name SentenceEmbeddingFilter "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" laser_scores.pickle
+python3 cache.py --raw_scores "${bicleaner_scores}" "${input_prefix}.${TRG}" "${input_prefix}.${TRG}" bicleaner_scores.pickle
+python3 cache.py "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" laser_scores.pickle --opus_scores "${laser_scores}"  --opus_filter_name Laser3Filter
 
 orig_len_src="$(cat "${input_prefix}.${SRC}" | wc -l)"
 # todo: change to 100000
@@ -71,9 +69,9 @@ if [[ ${orig_len_src} -le 4000 ]]; then
   sed -i -e "s#<src_script>#${script1}#g" "${config_path}"
   sed -i -e "s#<trg_script>#${script2}#g" "${config_path}"
   sed -i -e "s#<src_input>#${input_prefix}.${SRC}#g" "${config_path}"
-  sed -i -e "s#<trg_script>#${input_prefix}.${TRG}#g" "${config_path}"
+  sed -i -e "s#<trg_input>#${input_prefix}.${TRG}#g" "${config_path}"
+  sed -i -e "s#<fasttext_path>#${fasttext_path}#g" "${config_path}"
 else
-  #python3 cache.py "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" laser_scores.pickle --opus_scores "${laser_scores}"  --opus_filter_name Laser3Filter
 
   opusfilter-autogen \
     --files "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" \
@@ -85,8 +83,8 @@ else
     --add-filter LanguageIDFilter "{\"id_method\": \"fasttext\", \"fasttext_model_path\": \"lid.176.bin\"}" \
     --add-filter CharacterScoreFilter "{\"scripts\": [\"${script1}\", \"${script2}\"]}"  \
     --add-filter LengthRatioFilter.word '{"unit": "word"}' \
-    --add-filter '{"module": "customfilter", "CachedLaserSimilarity": {"path": "laser_scores.pickle"}}' \
-    --add-filter '{"module": "customfilter", "CachedBicleanerAi": {"path": "bicleaner_scores.pickle"}}'
+    --add-filter CachedLaserSimilarity '{"module": "customfilter", "CachedLaserSimilarity": {"path": "laser_scores.pickle"}}' \
+    --add-filter CachedBicleanerAi '{"module": "customfilter", "CachedBicleanerAi": {"path": "bicleaner_scores.pickle"}}'
   #  --add-filter SentenceEmbeddingFilter "{\"languages\": [\"${SRC}\",\"${TRG}\"]}" \
 
 fi
@@ -97,10 +95,11 @@ cat "${config_path}"
 
 echo "### Saving scores"
 
-opusfilter-cmd score \
-  --inputs "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" \
-  --output "${output_prefix}.scores" \
-  ${config_path}
+# TODO: fails
+#opusfilter-cmd score \
+#  --inputs "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" \
+#  --output "${output_prefix}.scores" \
+#  ${config_path}
 
 echo "### Cleaning ${input_prefix}"
 

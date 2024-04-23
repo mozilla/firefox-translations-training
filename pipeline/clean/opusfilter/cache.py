@@ -1,5 +1,6 @@
 import argparse
 import hashlib
+import logging
 import os
 import pickle
 import json
@@ -21,7 +22,7 @@ class ScoreCache:
                     for src, trg, score in zip(src_f,
                                                trg_f,
                                                scores_f):
-                        self.cache[hash_sents(src.rstrip(), trg.rstrip())] = float(score.rstrip())
+                        self.cache[hash_sents(src.rstrip(), trg.rstrip())] = [float(score.rstrip())]
 
     def load_opusfilter_scores(self, src_path, trg_path, scores_path, filter):
         with open(src_path) as src_f:
@@ -30,8 +31,9 @@ class ScoreCache:
                     for src, trg, score_json in zip(src_f,
                                                     trg_f,
                                                     scores_f):
-                        score = json.loads(score_json)[filter]
-                        self.cache[hash_sents(src.rstrip(), trg.rstrip())] = float(score)
+                        # list
+                        scores = json.loads(score_json)[filter]
+                        self.cache[hash_sents(src.rstrip(), trg.rstrip())] = scores
 
     def save(self, output_path):
         with open(output_path, 'wb') as f:
@@ -40,7 +42,8 @@ class ScoreCache:
     def get(self, src, trg):
         hashed = hash_sents(src, trg)
         if hashed not in self.cache:
-            raise ValueError(f'Sentence pair is not found in cache: {src}, {trg}')
+            logging.warning(f'Sentence pair is not found in cache: {src}, {trg}')
+            return None
         return self.cache[hash_sents(src, trg)]
 
     def load(self, path):
@@ -51,9 +54,9 @@ class ScoreCache:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "src", metavar="SRC", type=str, help="Path to source lang corpus"
+        "src_path", metavar="SRC_PATH", type=str, help="Path to source lang corpus"
     )
-    parser.add_argument("trg", metavar="TRG", type=str, help="Path to target lang corpus")
+    parser.add_argument("trg_path", metavar="TRG_PATH", type=str, help="Path to target lang corpus")
     parser.add_argument("--opus_scores", metavar="OPUS_SCORES", type=str, help="Path to scores file")
     parser.add_argument("--opus_filter_name", metavar="FILTER_SCORES", type=str,
                         help="Name of the opus filter to read opus scores")
@@ -65,12 +68,12 @@ if __name__ == '__main__':
     cache = ScoreCache()
     if args.opus_scores is not None:
         if args.opus_filter_name is None:
-            raise argparse.ArgumentError("--opus_filter_name must be provided ")
+            raise ValueError("--opus_filter_name must be provided ")
         cache.load_opusfilter_scores(args.src_path, args.trg_path, args.opus_scores, args.opus_filter_name)
     elif args.raw_scores is not None:
         cache.load_raw_scores(args.src_path, args.trg_path, args.raw_scores)
     else:
-        raise argparse.ArgumentError("Either --opus_scores and --opus_filter_name or --raw_scores must be provided ")
+        raise ValueError("Either --opus_scores and --opus_filter_name or --raw_scores must be provided ")
     cache.save(args.output)
 
 
@@ -99,14 +102,14 @@ def test_cache_raw():
     cache.load_raw_scores('data/tests_data/test_cache/test.src', 'data/tests_data/test_cache/test.trg',
                           'data/tests_data/test_cache/test.scores')
     assert len(cache.cache) == 100
-    assert cache.get(src + '50', trg + '50') == 50.0
+    assert cache.get(src + '50', trg + '50') == [50.0]
 
     cache.save('data/tests_data/test_cache/cache.pickle')
     new_cache = ScoreCache()
     new_cache.load('data/tests_data/test_cache/cache.pickle')
 
     assert len(new_cache.cache) == 100
-    assert cache.get(src + '50', trg + '50') == 50.0
+    assert cache.get(src + '50', trg + '50') == [50.0]
 
 
 def test_cache_json():
@@ -127,18 +130,18 @@ def test_cache_json():
 
     with open('data/tests_data/test_cache/test.scores', 'w') as f_trg:
         for i in range(100):
-            f_trg.write('{"LengthRatioFilter": ' + str(float(i)) + '}')
+            f_trg.write('{"LengthRatioFilter": [' + str(float(i)) + ']}')
             f_trg.write('\n')
 
     cache = ScoreCache()
     cache.load_opusfilter_scores('data/tests_data/test_cache/test.src', 'data/tests_data/test_cache/test.trg',
                                  'data/tests_data/test_cache/test.scores', 'LengthRatioFilter')
     assert len(cache.cache) == 100
-    assert cache.get(src + '50', trg + '50') == 50.0
+    assert cache.get(src + '50', trg + '50') == [50.0]
 
     cache.save('data/tests_data/test_cache/cache.pickle')
     new_cache = ScoreCache()
     new_cache.load('data/tests_data/test_cache/cache.pickle')
 
     assert len(new_cache.cache) == 100
-    assert cache.get(src + '50', trg + '50') == 50.0
+    assert cache.get(src + '50', trg + '50') == [50.0]

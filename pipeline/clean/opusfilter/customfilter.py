@@ -14,7 +14,7 @@ class CachedScores(opusfilter.FilterABC):
 
     def score(self, pairs):
         for src, trg in pairs:
-            yield [self.cache.get(src, trg)]
+            yield self.cache.get(src, trg) or [0.0]
 
     def accept(self, scores):
         return all(score < self.threshold for score in scores)
