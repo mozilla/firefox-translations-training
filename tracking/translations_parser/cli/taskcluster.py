@@ -23,7 +23,7 @@ from pathlib import Path
 import taskcluster
 from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import CSVExport, Publisher, WandB
-from translations_parser.utils import taskcluster_log_filter
+from translations_parser.utils import build_task_name, taskcluster_log_filter
 
 
 def get_args() -> argparse.Namespace:
@@ -117,7 +117,7 @@ def get_wandb_names():
     # CI task groups do not expose any configuration, so we must use default values
     queue = taskcluster.Queue({"rootUrl": os.environ["TASKCLUSTER_PROXY_URL"]})
     task = queue.task(task_id)
-    task_name = task["metadata"]["name"]
+    _, task_name = build_task_name(task)
     group_id = task["taskGroupId"]
     task_group = queue.task(group_id)
     config = task_group.get("extra", {}).get("action", {}).get("context", {}).get("input")

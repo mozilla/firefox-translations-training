@@ -8,7 +8,6 @@ Example:
 
 import argparse
 import logging
-import re
 import tempfile
 from collections import defaultdict
 from pathlib import Path
@@ -21,10 +20,9 @@ from taskcluster.download import downloadArtifactToBuf, downloadArtifactToFile
 from translations_parser.data import Metric
 from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import WandB
-from translations_parser.utils import parse_tag
+from translations_parser.utils import MULTIPLE_TRAIN_SUFFIX, build_task_name, parse_tag
 
 KIND_TAG_TARGET = ("train", "finetune")
-MULTIPLE_TRAIN_SUFFIX = re.compile(r"(-\d+)/\d+$")
 queue = taskcluster.Queue({"rootUrl": "https://firefox-ci-tc.services.mozilla.com"})
 
 
@@ -126,19 +124,7 @@ def get_metrics_from_task(task: dict) -> list[Metric]:
 
 def filter_task(task: dict) -> tuple[str, dict] | tuple[None, None]:
     if task["status"]["state"] == "completed" and "vocab" not in task["task"]["tags"]["kind"]:
-        name = task["task"]["tags"]["kind"]
-        prefix = name.split("-")[0]
-        if prefix == "train":
-            # Remove "train-" prefix from training task only to avoid duplicates
-            name = name[6:]
-
-        # Teacher training may run multiple times (e.g. "-1/2" prefix)
-        suffix = ""
-        label = task["task"]["tags"].get("label")
-        if label and (re_match := MULTIPLE_TRAIN_SUFFIX.search(label)):
-            (suffix,) = re_match.groups()
-
-        task["name"] = name + suffix
+        prefix, task["name"] = build_task_name(task["task"])
         return prefix, task
 
     return None, None
