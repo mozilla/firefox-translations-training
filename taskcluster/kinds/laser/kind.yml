@@ -71,7 +71,7 @@ tasks:
             command:
                 - bash
                 - -c
-                 - >-
+                - >-
                     pip install -r $VCS_PATH/pipeline/clean/requirements/laser1.txt &&
                     export PATH=$PATH:~/.local/bin &&
                     $VCS_PATH/pipeline/clean/opusfilter/score.sh
