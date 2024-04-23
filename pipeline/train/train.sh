@@ -108,7 +108,7 @@ if ! command -v parse_tc_logs &> /dev/null
 then
   echo "### Weight & Biases publication script is not available."
   PARSER=cat
-elif ! -z "$TEST_ARTIFACTS"
+elif [ ! -z ${TEST_ARTIFACTS+x} ];
 then
   echo "### Weight & Biases publication is disabled for unit tests."
   PARSER=cat
