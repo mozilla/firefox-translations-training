@@ -13,7 +13,7 @@ transforms:
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
-    - clean-corpus
+    - preprocess
     - fetch
     - toolchain
     - bicleaner-model
@@ -104,8 +104,9 @@ tasks:
                     {bicleaner_threshold}
                     {bicleaner_threads}
                     $MOZ_FETCHES_DIR/bicleaner-ai-{src_locale}-{trg_locale}
+                    $MOZ_FETCHES_DIR/{dataset_sanitized}.bicleaner.scores
         dependencies:
-            "{provider}": clean-corpus-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
+            "{provider}": preprocess-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
             bicleaner-model: bicleaner-model-{src_locale}-{trg_locale}
         fetches:
             toolchain:

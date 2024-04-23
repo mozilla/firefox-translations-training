@@ -23,6 +23,7 @@ output_prefix=$2
 bicleaner_threshold=$3
 threads=$4
 pack_dir=$5
+output_scores=$6
 
 COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
@@ -104,7 +105,8 @@ else
   echo "### Writing output corpus"
   ${COMPRESSION_CMD} -dc "${output_prefix}.best.${ARTIFACT_EXT}" |
     tee >(cut -f1 | ${COMPRESSION_CMD} >"${output_prefix}.${SRC}.${ARTIFACT_EXT}") |
-    cut -f2 | ${COMPRESSION_CMD} >"${output_prefix}.${TRG}.${ARTIFACT_EXT}"
+    tee >(cut -f2 | ${COMPRESSION_CMD} >"${output_prefix}.${TRG}.${ARTIFACT_EXT}") |
+      cut -f3  >"${output_scores}"
 
   # do not delete intermediate files to inspect them and tune the threshold
 fi

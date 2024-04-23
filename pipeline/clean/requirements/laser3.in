@@ -1,0 +1,3 @@
+laser_encoders
+git+https://github.com/Helsinki-NLP/OpusFilter.git@b69f72dd84029a9f815413a0fac0055a1cac76c4
+pycountry

@@ -30,13 +30,13 @@ mkdir -p "${dir}"
 
 echo "Downloading FastText model"
 # pre download fast text model as it's causing constant issues
-filters_dir="/builds/worker/.local/lib/python3.10/site-packages/opuscleaner/filters"
-wget -O "${filters_dir}/large.bin" https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
+#filters_dir="/builds/worker/.local/lib/python3.10/site-packages/opuscleaner/filters"
+#wget -O "${filters_dir}/large.bin" https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
 
 echo "Downloading and installing LASER models"
 # install here due to a conflict on pip-compile lock
-pip install laserembeddings
-python3 -m laserembeddings download-models
+#pip install laserembeddings
+#python3 -m laserembeddings download-models
 
 echo "### Generating cleaning config: ${dataset}.${SRC}-${TRG}.filters.json"
 # save new filter to dataset output dir

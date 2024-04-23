@@ -13,30 +13,25 @@ transforms:
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
-    - preprocess
-    - bicleaner
-    - laser
+    - dataset
 
 tasks:
     "{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}":
-        description: Clean {provider} {dataset_sanitized} dataset {src_locale}-{trg_locale} use OpusCleaner {use_opuscleaner}
+        description: Preprocess {provider} {dataset_sanitized} dataset {src_locale}-{trg_locale}
         attributes:
-            cleaning-type: clean-corpus
+            cleaning-type: preprocess-corpus
             dataset-category: train
-            stage: clean-corpus
+            stage: preprocess-corpus
             cache:
-                type: clean-corpus
-                from-parameters:
-                    use_opuscleaner: training_config.experiment.use-opuscleaner
+                type: preprocess-corpus
                 resources:
+                    - pipeline/clean/opuscleaner/generate_filters.py
+                    - pipeline/clean/opuscleaner/clean-corpus.sh
+                    - pipeline/clean/opuscleaner/configs/remove_frequent_patterns.txt
+                    - pipeline/clean/opuscleaner/configs/preprocess.filters.json
+                    - pipeline/clean/requirements/clean.txt
                     - pipeline/clean/opusfilter/clean-corpus.sh
-                    - pipeline/clean/opusfilter/cache.py
-                    - pipeline/clean/opusfilter/customfilter.py
-                    - pipeline/clean/opusfilter/default.yml
-                    - pipeline/clean/requirements/opusfilter.txt
         task-context:
-            from-parameters:
-                use_opuscleaner: training_config.experiment.use-opuscleaner
             substitution-fields:
                 - description
                 - worker.env
@@ -63,7 +58,6 @@ tasks:
             env:
                 SRC: "{src_locale}"
                 TRG: "{trg_locale}"
-                USE_OPUSCLEANER: "{use_opuscleaner}"
                 COMPRESSION_CMD: zstdmt
                 ARTIFACT_EXT: zst
             # there might be intermittent issues with OpusCleaner, specifically FastText model downloading can fail
@@ -82,26 +76,13 @@ tasks:
                 - bash
                 - -c
                 - >-
-                    pip install -r $VCS_PATH/pipeline/clean/requirements/opusfilter.txt &&
-                    $VCS_PATH/pipeline/clean/opusfilter/clean-corpus.sh 
-                    $MOZ_FETCHES_DIR/{dataset_sanitized} 
-                    /builds/worker/artifacts/{dataset_sanitized}
-                    auto 
-                    {dataset} 
-                    {dataset_sanitized}.bicleaner.scores
-                    {dataset_sanitized}.laser.scores
-                    2>&1
+                    pip install -r $VCS_PATH/pipeline/clean/requirements/clean.txt &&
+                    $VCS_PATH/pipeline/clean/opuscleaner/clean-corpus.sh $MOZ_FETCHES_DIR/{dataset_sanitized} /builds/worker/artifacts/{dataset_sanitized} auto {dataset} true 2>&1
         dependencies:
-            preprocess: preprocess-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
-            bicleaner: bicleaner-ai-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
-            laser: laser-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
+            "{provider}": dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
         fetches:
-            preprocess:
+            "{provider}":
                 - artifact: "{dataset_sanitized}.{src_locale}.zst"
                   extract: false
                 - artifact: "{dataset_sanitized}.{trg_locale}.zst"
                   extract: false
-            bicleaner:
-                - artifact: "{dataset_sanitized}.bicleaner.scores"
-            laser:
-                - artifact: "{dataset_sanitized}.laser.scores"

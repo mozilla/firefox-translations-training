@@ -1,0 +1,96 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.from_datasets:per_dataset
+    - taskgraph.transforms.task_context
+    - taskgraph.transforms.run:transforms
+    - translations_taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - preprocess
+    - fetch
+    - toolchain
+
+tasks:
+    "{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}":
+        description: laser similarity for {provider} {dataset_sanitized} dataset {src_locale}-{trg_locale}
+        attributes:
+            dataset-category: train
+            stage: laser
+            cleaning-type: laser
+            cache:
+                type: laser
+                resources:
+                    - pipeline/clean/opusfilter/laser_similarity.py
+                    - pipeline/clean/opusfilter/score.sh
+                    - pipeline/clean/requirements/laser1.txt
+
+        dataset-config:
+            category: train
+            substitution-fields:
+                - description
+                - name
+                - dependencies
+                - fetches
+                - worker.env
+                - run.command
+
+
+        task-context:
+            substitution-fields:
+                - run.command
+        worker-type: b-largegpu-largedisk
+        worker:
+            artifacts:
+                - name: public/build
+                  path: artifacts
+                  type: directory
+            # 7 days. yes, it can take a while to clean a huge dataset
+            max-run-time: 604800
+            env:
+                SRC: "{src_locale}"
+                TRG: "{trg_locale}"
+                # It would be preferable to use $MOZ_FETCHES_DIR here, but these don't
+                # get interpreted.
+                CUDA_DIR: fetches/cuda-toolkit
+                CUDNN_DIR: fetches/cuda-toolkit
+                COMPRESSION_CMD: zstdmt
+                ARTIFACT_EXT: zst
+
+        # Don't run unless explicitly scheduled
+        run-on-tasks-for: []
+
+        run:
+            using: run-task
+            command:
+                - bash
+                - -c
+                 - >-
+                    pip install -r $VCS_PATH/pipeline/clean/requirements/laser1.txt &&
+                    export PATH=$PATH:~/.local/bin &&
+                    $VCS_PATH/pipeline/clean/opusfilter/score.sh
+                    $MOZ_FETCHES_DIR/{dataset_sanitized}
+                    artifacts/{dataset_sanitized}.laser.scores
+        dependencies:
+            "{provider}": preprocess-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
+        fetches:
+            toolchain:
+                - cuda-toolkit-11
+            "{provider}":
+                - artifact: "{dataset_sanitized}.{src_locale}.zst"
+                  extract: false
+                - artifact: "{dataset_sanitized}.{trg_locale}.zst"
+                  extract: false
+
+
+
+
+
+
+
