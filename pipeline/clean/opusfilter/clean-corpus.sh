@@ -95,6 +95,13 @@ fi
 test -s "${config_path}" || exit 1
 cat "${config_path}"
 
+echo "### Saving scores"
+
+opusfilter-cmd score \
+  --inputs "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" \
+  --output "${output_prefix}.scores" \
+  ${config_path}
+
 echo "### Cleaning ${input_prefix}"
 
 opusfilter \
