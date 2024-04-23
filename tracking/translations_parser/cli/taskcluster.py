@@ -89,6 +89,58 @@ def get_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def get_wandb_token(secret_name):
+    """
+    Retrieve the Weight & Biases token from Taskcluster secret
+    """
+    secrets = taskcluster.Secrets({"rootUrl": os.environ["TASKCLUSTER_PROXY_URL"]})
+
+    try:
+        wandb_secret = secrets.get(secret_name)
+        return wandb_secret["secret"]["token"]
+    except Exception as e:
+        raise Exception(
+            f"Weight & Biases secret API Key retrieved from Taskcluster is malformed: {e}"
+        )
+
+
+def get_wandb_names():
+    """
+    Find the various names needed to publish on Weight & Biases using
+    the taskcluster task & group payloads
+    """
+    task_id = os.environ.get("TASK_ID")
+    if not task_id:
+        raise Exception("Weight & Biases name detection can only run in taskcluster")
+
+    # Load task & group definition
+    # CI task groups do not expose any configuration, so we must use default values
+    queue = taskcluster.Queue({"rootUrl": os.environ["TASKCLUSTER_PROXY_URL"]})
+    task = queue.task(task_id)
+    task_name = task["metadata"]["name"]
+    group_id = task["taskGroupId"]
+    task_group = queue.task(group_id)
+    config = task_group.get("extra", {}).get("action", {}).get("context", {}).get("input")
+    if config is None:
+        logger.warn(
+            f"Experiment configuration missing on {group_id} @ extra/action/context/input, fallback to CI values"
+        )
+        experiment = {
+            "src": "ru",
+            "trg": "en",
+            "name": "ci",
+        }
+    else:
+        experiment = config["experiment"]
+
+    # Build project, group and run names
+    return (
+        f'{experiment["src"]}-{experiment["trg"]}',
+        f'{experiment["name"]}_{group_id}',
+        task_name,
+    )
+
+
 def boot() -> None:
     args = get_args()
 
@@ -111,36 +163,37 @@ def boot() -> None:
         with args.input_file.open("r") as f:
             lines = (line.strip() for line in f.readlines())
 
+    # Load secret from Taskcluster and auto-configure naming
+    if args.taskcluster_secret:
+        assert os.environ.get(
+            "TASKCLUSTER_PROXY_URL"
+        ), "When using `--taskcluster-secret`, `TASKCLUSTER_PROXY_URL` environment variable must be set too."
+
+        # Weight and Biases client use environment variable to read the token
+        os.environ.setdefault("WANDB_API_KEY", get_wandb_token(args.taskcluster_secret))
+
+        project_name, group_name, run_name = get_wandb_names()
+    else:
+        # Fallback to CLI args for names
+        project_name = args.wandb_project
+        group_name = args.wandb_group
+        run_name = args.wandb_run_name
+
+    # Enable publication on weight and biases when project is set
     publishers: list[Publisher] = [CSVExport(output_dir=args.output_dir)]
-    if args.wandb_project:
+    if project_name:
         publishers.append(
             WandB(
-                project=args.wandb_project,
+                project=project_name,
+                group=group_name,
+                name=run_name,
                 artifacts=args.wandb_artifacts,
-                group=args.wandb_group,
                 tags=["cli"],
-                name=args.wandb_run_name,
                 config={
                     "logs_file": args.input_file,
                 },
             )
         )
-
-    if args.taskcluster_secret:
-        assert os.environ.get(
-            "TASKCLUSTER_PROXY_URL"
-        ), "When using `--taskcluster-secret`, `TASKCLUSTER_PROXY_URL` environment variable must be set too."
-        secrets = taskcluster.Secrets({"rootUrl": os.environ["TASKCLUSTER_PROXY_URL"]})
-
-        try:
-            wandb_secret = secrets.get(args.taskcluster_secret)
-            wandb_token = wandb_secret["secret"]["token"]
-        except Exception as e:
-            raise Exception(
-                f"Weight & Biases secret API Key retrieved from Taskcluster is malformed: {e}"
-            )
-
-        os.environ.setdefault("WANDB_API_KEY", wandb_token)
 
     # Use log filtering when using non-stream (for uploading past experiments)
     log_filter = taskcluster_log_filter if not args.from_stream else None
