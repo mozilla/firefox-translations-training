@@ -18,6 +18,8 @@ COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
 
 # for laser 1
+# conflicts with opusfilter
+pip install laserembeddings
 python3 -m laserembeddings download-models
 
 ${COMPRESSION_CMD} -d --rm "${input_prefix}.${SRC}.${ARTIFACT_EXT}"
