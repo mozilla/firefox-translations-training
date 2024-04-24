@@ -29,6 +29,7 @@ tasks:
                 type: bicleaner-ai
                 resources:
                     - pipeline/bicleaner/bicleaner.sh
+                    - pipeline/bicleaner/save_scores.py
                     - pipeline/bicleaner/requirements/bicleaner-ai.txt
                 from-parameters:
                     bicleaner_threshold:

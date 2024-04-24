@@ -108,7 +108,7 @@ else
     cut -f2 | ${COMPRESSION_CMD} >"${output_prefix}.${TRG}.${ARTIFACT_EXT}"
 
   echo "### Writing scores"
-  ${COMPRESSION_CMD} -dc "${output_prefix}.scored.${ARTIFACT_EXT}" | cut -f3  >"${output_scores}"
+  python3 save_scores.py "${output_prefix}.scored.${ARTIFACT_EXT}" "${output_scores}"
 
   # do not delete intermediate files to inspect them and tune the threshold
 fi

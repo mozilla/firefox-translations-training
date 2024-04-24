@@ -15,15 +15,6 @@ class ScoreCache:
     def __init__(self):
         self.cache = {}
 
-    def load_raw_scores(self, src_path, trg_path, scores_path):
-        with open(src_path) as src_f:
-            with open(trg_path) as trg_f:
-                with open(scores_path) as scores_f:
-                    for src, trg, score in zip(src_f,
-                                               trg_f,
-                                               scores_f):
-                        self.cache[hash_sents(src.rstrip(), trg.rstrip())] = [float(score.rstrip())]
-
     def load_opusfilter_scores(self, src_path, trg_path, scores_path, filter):
         with open(src_path) as src_f:
             with open(trg_path) as trg_f:
@@ -75,41 +66,6 @@ if __name__ == '__main__':
     else:
         raise ValueError("Either --opus_scores and --opus_filter_name or --raw_scores must be provided ")
     cache.save(args.output)
-
-
-def test_cache_raw():
-    src = 'xxxxxxx'
-    trg = 'yyyyy'
-
-    os.makedirs('data/tests_data/test_cache', exist_ok=True)
-
-    with open('data/tests_data/test_cache/test.src', 'w') as f_src:
-        for i in range(100):
-            f_src.write(src + str(i))
-            f_src.write('\n')
-
-    with open('data/tests_data/test_cache/test.trg', 'w') as f_trg:
-        for i in range(100):
-            f_trg.write(trg + str(i))
-            f_trg.write('\n')
-
-    with open('data/tests_data/test_cache/test.scores', 'w') as f_trg:
-        for i in range(100):
-            f_trg.write(str(float(i)))
-            f_trg.write('\n')
-
-    cache = ScoreCache()
-    cache.load_raw_scores('data/tests_data/test_cache/test.src', 'data/tests_data/test_cache/test.trg',
-                          'data/tests_data/test_cache/test.scores')
-    assert len(cache.cache) == 100
-    assert cache.get(src + '50', trg + '50') == [50.0]
-
-    cache.save('data/tests_data/test_cache/cache.pickle')
-    new_cache = ScoreCache()
-    new_cache.load('data/tests_data/test_cache/cache.pickle')
-
-    assert len(new_cache.cache) == 100
-    assert cache.get(src + '50', trg + '50') == [50.0]
 
 
 def test_cache_json():
