@@ -46,7 +46,7 @@ tasks:
             substitution-fields:
                 - run.command
         # current implementation can't utilize multiple GPUs
-        worker-type: b-linux-v100-gpu
+        worker-type: b-gpu
         worker:
             artifacts:
                 - name: public/build
