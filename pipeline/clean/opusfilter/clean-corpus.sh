@@ -76,6 +76,7 @@ else
 python3 autogen.py \
     --files "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" \
     --langs en ru \
+    --sample-size 1000000 \
     --inter-dir ${temp} \
     --overwrite \
     --work-dir ${dir} \
