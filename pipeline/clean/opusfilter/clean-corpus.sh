@@ -96,6 +96,7 @@ else
   pigz -d ${temp}/scores.jsonl.gz
   python3 scores.py describe  ${temp}/scores.jsonl | tee "${output_prefix}.stats"
   python3 scores.py hist --save_path "${output_prefix}.hist.png" ${temp}/scores.jsonl
+  python3 scores.py hist --log --save_path "${output_prefix}.hist-log.png" ${temp}/scores.jsonl
   python3 scores.py corr --save_path "${output_prefix}.corr.png" ${temp}/scores.jsonl
   python3 scores.py scatter-matrix --save_path "${output_prefix}.scatter.png" ${temp}/scores.jsonl
 
