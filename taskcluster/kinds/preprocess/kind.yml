@@ -30,7 +30,6 @@ tasks:
                     - pipeline/clean/opuscleaner/configs/remove_frequent_patterns.txt
                     - pipeline/clean/opuscleaner/configs/preprocess.filters.json
                     - pipeline/clean/requirements/clean.txt
-                    - pipeline/clean/opusfilter/clean-corpus.sh
         task-context:
             substitution-fields:
                 - description
