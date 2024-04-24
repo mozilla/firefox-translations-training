@@ -30,6 +30,12 @@ from opusfilter.autogen import DefaultParameterFilters, PercentileFilters, Clust
 from opusfilter.util import yaml
 
 
+def add_module(filters):
+    for filter in filters:
+        name = list(filter.keys())[0]
+        if name.startswith('Custom'):
+            filter['module'] = 'customfilter'
+
 def get_score_file(input_files, filters, outputdir, sample_size, overwrite=False, max_length=150):
     """Calculate filter scores and return score file
 
@@ -45,10 +51,7 @@ def get_score_file(input_files, filters, outputdir, sample_size, overwrite=False
     pre_config = config_gen.get_config()
     for step in pre_config['steps']:
         if step['type'] == 'filter' or step['type'] == 'score':
-            for filter in step['parameters']['filters']:
-                name = list(filter.keys())[0]
-                if name.startswith('Custom'):
-                    filter['module'] = 'customfilter'
+            add_module(step['parameters']['filters'])
 
     yaml.dump(pre_config, pathlib.Path(os.path.join(outputdir, 'config.yaml')))
     opusf = OpusFilter(pre_config)
@@ -253,5 +256,8 @@ if __name__ == '__main__':
 
     generator = ConfigurationGenerator(
         files=[os.path.abspath(f) for f in args.files], langs=args.langs, workdir=args.work_dir)
+
+
+    add_module(filtergen.filters)
     generator.add_filter(filtergen.filters)
     yaml.dump(generator.get_config(), args.output)
