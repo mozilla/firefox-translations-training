@@ -34,4 +34,4 @@ opusfilter-cmd score \
 
   #--filters "[{\"Laser3Filter\": {\"languages\": [\"${SRC}\", \"${TRG}\"]}, \"module\": \"laser_similarity\"}]"
 
-echo "###### Done
+echo "###### Done"
