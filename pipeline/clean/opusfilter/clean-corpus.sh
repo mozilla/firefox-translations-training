@@ -73,7 +73,7 @@ if [[ ${orig_len_src} -le 4000 ]]; then
   sed -i -e "s#<fasttext_path>#${fasttext_path}#g" "${config_path}"
 else
 
-  opusfilter-autogen \
+python3 autogen.py \
     --files "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" \
     --langs en ru \
     --inter-dir ${temp} \

@@ -33,7 +33,7 @@ class ScoreCache:
                                                     scores_f):
                         # list
                         scores = json.loads(score_json)[filter]
-                        self.cache[hash_sents(src.rstrip(), trg.rstrip())] = scores
+                        self.cache[hash_sents(src[:-1], trg[:-1])] = scores
 
     def save(self, output_path):
         with open(output_path, 'wb') as f:
