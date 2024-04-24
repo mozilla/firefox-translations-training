@@ -51,20 +51,11 @@ if __name__ == '__main__':
     parser.add_argument("--opus_scores", metavar="OPUS_SCORES", type=str, help="Path to scores file")
     parser.add_argument("--opus_filter_name", metavar="FILTER_SCORES", type=str,
                         help="Name of the opus filter to read opus scores")
-    parser.add_argument("--raw_scores", metavar="RAW_SCORES", type=str, help="Path to scores file")
     parser.add_argument("output", metavar="OUTPUT", type=str, help="Write cache file here")
-
     args = parser.parse_args()
 
     cache = ScoreCache()
-    if args.opus_scores is not None:
-        if args.opus_filter_name is None:
-            raise ValueError("--opus_filter_name must be provided ")
-        cache.load_opusfilter_scores(args.src_path, args.trg_path, args.opus_scores, args.opus_filter_name)
-    elif args.raw_scores is not None:
-        cache.load_raw_scores(args.src_path, args.trg_path, args.raw_scores)
-    else:
-        raise ValueError("Either --opus_scores and --opus_filter_name or --raw_scores must be provided ")
+    cache.load_opusfilter_scores(args.src_path, args.trg_path, args.opus_scores, args.opus_filter_name)
     cache.save(args.output)
 
 
