@@ -75,7 +75,7 @@ if [[ ${orig_len_src} -le 4000 ]]; then
 else
   python3 autogen.py \
       --files "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" \
-      --langs en ru \
+      --langs ${SRC} ${TRG} \
       --sample-size 1000000 \
       --inter-dir ${temp} \
       --overwrite \
