@@ -20,13 +20,26 @@ steps:
         thresholds:
         - 0.5
         - 0.5
-    - CharacterScoreFilter:
-        scripts:
-        - <src_script>
-        - <trg_script>
+    - CustomAlphaRatioFilter:
+        unit: word
+        name: word
+        languages:
+        - <src>
+        - <trg>
         thresholds:
         - 0.5
         - 0.5
+      module: customfilter
+    - CustomAlphaRatioFilter:
+        unit: char
+        name: char
+        languages:
+        - <src>
+        - <trg>
+        thresholds:
+        - 0.4
+        - 0.4
+      module: customfilter
     - LengthRatioFilter:
         unit: word
         name: word

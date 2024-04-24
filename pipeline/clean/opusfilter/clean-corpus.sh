@@ -82,7 +82,8 @@ else
       --work-dir ${dir} \
       --output ${config_path} \
       --add-filter LanguageIDFilter "{\"id_method\": \"fasttext\", \"fasttext_model_path\": \"lid.176.bin\"}" \
-      --add-filter CharacterScoreFilter "{\"scripts\": [\"${script1}\", \"${script2}\"]}"  \
+      --add-filter CustomAlphaRatioFilter.word "{\"languages\": [\"${SRC}\", \"${TRG}\"], \"unit\": \"word\"}"  \
+      --add-filter CustomAlphaRatioFilter.char "{\"languages\": [\"${SRC}\", \"${TRG}\"], \"unit\": \"char\"}"  \
       --add-filter LengthRatioFilter.word '{"unit": "word"}' \
       --add-filter CustomCachedLaserSimilarity '{"path": "laser_scores.pickle"}' \
       --add-filter CustomCachedBicleanerAi '{"path": "bicleaner_scores.pickle"}'
