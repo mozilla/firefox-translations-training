@@ -62,8 +62,8 @@ python3 cache.py --opus_scores "${bicleaner_scores}" --opus_filter_name Bicleane
 #python3 cache.py "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" laser_scores.pickle --opus_scores "${laser_scores}"  --opus_filter_name Laser3Filter
 
 orig_len_src="$(cat "${input_prefix}.${SRC}" | wc -l)"
-# todo: change to 100000
-if [[ ${orig_len_src} -le 4000 ]]; then
+# todo: change to 100000?
+if [[ ${orig_len_src} -le 100 ]]; then
   config_path="default.yml"
   sed -i -e "s#<src>#${SRC}#g" "${config_path}"
   sed -i -e "s#<trg>#${TRG}#g" "${config_path}"
@@ -81,7 +81,7 @@ else
       --overwrite \
       --work-dir ${dir} \
       --output ${config_path} \
-      --add-filter LanguageIDFilter "{\"id_method\": \"fasttext\", \"fasttext_model_path\": \"lid.176.bin\"}" \
+      --add-filter LanguageIDFilter "{\"id_method\": \"fasttext\", \"fasttext_model_path\": \"${fasttext_path}\"}" \
       --add-filter CustomAlphaRatioFilter.word "{\"languages\": [\"${SRC}\", \"${TRG}\"], \"unit\": \"word\"}"  \
       --add-filter CustomAlphaRatioFilter.char "{\"languages\": [\"${SRC}\", \"${TRG}\"], \"unit\": \"char\"}"  \
       --add-filter LengthRatioFilter.word '{"unit": "word"}' \
