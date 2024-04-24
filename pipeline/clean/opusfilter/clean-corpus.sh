@@ -93,14 +93,15 @@ fi
 test -s "${config_path}" || exit 1
 cat "${config_path}"
 
-echo "### Saving scores"
+echo "### Analyzing"
+cp ${temp}/scores.jsonl.gz "${output_prefix}.scores.jsonl.gz"
+pigz -d ${temp}/scores.jsonl.gz
+python3 scores.py list  ${temp}/scores.jsonl
+python3 scores.py describe  ${temp}/scores.jsonl > "${output_prefix}.stats"
+python3 scores.py hist --save_path "${output_prefix}.hist.png" ${temp}/scores.jsonl
+python3 scores.py corr --save_path "${output_prefix}.corr.png" ${temp}/scores.jsonl
+python3 scores.py scatter-matrix --save_path "${output_prefix}.scatter.png" ${temp}/scores.jsonl
 
-# TODO: fails
-#opusfilter-cmd score \
-#  --inputs "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" \
-#  --output "${output_prefix}.scores" \
-#  ${config_path}
-#python3 scores.py hist --save_path "${output_prefix}.laser.hist.png "${laser_scores}"
 
 echo "### Cleaning ${input_prefix}"
 
