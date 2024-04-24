@@ -79,6 +79,7 @@ else
       --langs ${SRC} ${TRG} \
       --sample-size 100000 \
       --inter-dir ${temp} \
+      --plot "${dir}" \
       --overwrite \
       --work-dir ${dir} \
       --output ${config_path} \
