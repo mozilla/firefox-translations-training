@@ -25,12 +25,12 @@ steps:
         - <src_script>
         - <trg_script>
         thresholds:
-        - 1.0
-        - 1.0
+        - 0.5
+        - 0.5
     - LengthRatioFilter:
         unit: word
         name: word
-        threshold: 3
+        threshold: 2
     - CustomCachedLaserSimilarity:
         path: laser_scores.pickle
         threshold: 0.5
