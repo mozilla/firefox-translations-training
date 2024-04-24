@@ -25,9 +25,13 @@ python3 -m laserembeddings download-models
 ${COMPRESSION_CMD} -d --rm "${input_prefix}.${SRC}.${ARTIFACT_EXT}"
 ${COMPRESSION_CMD} -d --rm "${input_prefix}.${TRG}.${ARTIFACT_EXT}"
 
+echo "###### Scoring"
+
 opusfilter-cmd score \
   --inputs "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" \
   --output "${output_path}" \
   --filters "[{\"SentenceEmbeddingFilter\": {\"languages\": [\"${SRC}\", \"${TRG}\"]}}]"
 
   #--filters "[{\"Laser3Filter\": {\"languages\": [\"${SRC}\", \"${TRG}\"]}, \"module\": \"laser_similarity\"}]"
+
+echo "###### Done
