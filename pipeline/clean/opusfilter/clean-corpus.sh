@@ -73,37 +73,34 @@ if [[ ${orig_len_src} -le 4000 ]]; then
   sed -i -e "s#<trg_input>#${input_prefix}.${TRG}#g" "${config_path}"
   sed -i -e "s#<fasttext_path>#${fasttext_path}#g" "${config_path}"
 else
+  python3 autogen.py \
+      --files "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" \
+      --langs en ru \
+      --sample-size 1000000 \
+      --inter-dir ${temp} \
+      --overwrite \
+      --work-dir ${dir} \
+      --output ${config_path} \
+      --add-filter LanguageIDFilter "{\"id_method\": \"fasttext\", \"fasttext_model_path\": \"lid.176.bin\"}" \
+      --add-filter CharacterScoreFilter "{\"scripts\": [\"${script1}\", \"${script2}\"]}"  \
+      --add-filter LengthRatioFilter.word '{"unit": "word"}' \
+      --add-filter CustomCachedLaserSimilarity '{"path": "laser_scores.pickle"}' \
+      --add-filter CustomCachedBicleanerAi '{"path": "bicleaner_scores.pickle"}'
+    #  --add-filter SentenceEmbeddingFilter "{\"languages\": [\"${SRC}\",\"${TRG}\"]}" \
 
-python3 autogen.py \
-    --files "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" \
-    --langs en ru \
-    --sample-size 1000000 \
-    --inter-dir ${temp} \
-    --overwrite \
-    --work-dir ${dir} \
-    --output ${config_path} \
-    --add-filter LanguageIDFilter "{\"id_method\": \"fasttext\", \"fasttext_model_path\": \"lid.176.bin\"}" \
-    --add-filter CharacterScoreFilter "{\"scripts\": [\"${script1}\", \"${script2}\"]}"  \
-    --add-filter LengthRatioFilter.word '{"unit": "word"}' \
-    --add-filter CustomCachedLaserSimilarity '{"path": "laser_scores.pickle"}' \
-    --add-filter CustomCachedBicleanerAi '{"path": "bicleaner_scores.pickle"}'
-  #  --add-filter SentenceEmbeddingFilter "{\"languages\": [\"${SRC}\",\"${TRG}\"]}" \
+  echo "### Analyzing"
+  cp ${temp}/scores.jsonl.gz "${output_prefix}.scores.jsonl.gz"
+  pigz -d ${temp}/scores.jsonl.gz
+  python3 scores.py list  ${temp}/scores.jsonl
+  python3 scores.py describe  ${temp}/scores.jsonl > "${output_prefix}.stats"
+  python3 scores.py hist --save_path "${output_prefix}.hist.png" ${temp}/scores.jsonl
+  python3 scores.py corr --save_path "${output_prefix}.corr.png" ${temp}/scores.jsonl
+  python3 scores.py scatter-matrix --save_path "${output_prefix}.scatter.png" ${temp}/scores.jsonl
 
 fi
 
-
 test -s "${config_path}" || exit 1
 cat "${config_path}"
-
-echo "### Analyzing"
-cp ${temp}/scores.jsonl.gz "${output_prefix}.scores.jsonl.gz"
-pigz -d ${temp}/scores.jsonl.gz
-python3 scores.py list  ${temp}/scores.jsonl
-python3 scores.py describe  ${temp}/scores.jsonl > "${output_prefix}.stats"
-python3 scores.py hist --save_path "${output_prefix}.hist.png" ${temp}/scores.jsonl
-python3 scores.py corr --save_path "${output_prefix}.corr.png" ${temp}/scores.jsonl
-python3 scores.py scatter-matrix --save_path "${output_prefix}.scatter.png" ${temp}/scores.jsonl
-
 
 echo "### Cleaning ${input_prefix}"
 
