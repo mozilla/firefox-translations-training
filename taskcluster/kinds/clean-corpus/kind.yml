@@ -32,6 +32,7 @@ tasks:
                     - pipeline/clean/opusfilter/clean-corpus.sh
                     - pipeline/clean/opusfilter/cache.py
                     - pipeline/clean/opusfilter/customfilter.py
+                    - pipeline/clean/opusfilter/autogen.py
                     - pipeline/clean/opusfilter/default.yml
                     - pipeline/clean/requirements/opusfilter.txt
         task-context:

@@ -6,7 +6,7 @@ from cache import ScoreCache
 
 class CachedScores(opusfilter.FilterABC):
 
-    def __init__(self, path, threshold, **kwargs):
+    def __init__(self, path, threshold=0.5, **kwargs):
         self.threshold = threshold
         super().__init__(**kwargs)
         self.cache = ScoreCache()
@@ -20,14 +20,14 @@ class CachedScores(opusfilter.FilterABC):
         return all(score < self.threshold for score in scores)
 
 
-class CachedLaserSimilarity(CachedScores):
+class CustomCachedLaserSimilarity(CachedScores):
     # todo: double check this
     score_direction = opusfilter.CLEAN_HIGH
     accept_threshold = 0
     reject_threshold = 1 + 10**-6
 
 
-class CachedBicleanerAi(CachedScores):
+class CustomCachedBicleanerAi(CachedScores):
     score_direction = opusfilter.CLEAN_HIGH
     accept_threshold = 0
     reject_threshold = 1 + 10**-6

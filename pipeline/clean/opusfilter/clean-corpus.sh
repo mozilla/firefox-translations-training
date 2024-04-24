@@ -58,7 +58,7 @@ export PYTHONPATH=$(pwd)
 
 python3 cache.py --opus_scores "${laser_scores}" --opus_filter_name SentenceEmbeddingFilter "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" laser_scores.pickle
 python3 cache.py --raw_scores "${bicleaner_scores}" "${input_prefix}.${TRG}" "${input_prefix}.${TRG}" bicleaner_scores.pickle
-python3 cache.py "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" laser_scores.pickle --opus_scores "${laser_scores}"  --opus_filter_name Laser3Filter
+#python3 cache.py "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" laser_scores.pickle --opus_scores "${laser_scores}"  --opus_filter_name Laser3Filter
 
 orig_len_src="$(cat "${input_prefix}.${SRC}" | wc -l)"
 # todo: change to 100000
@@ -83,8 +83,8 @@ else
     --add-filter LanguageIDFilter "{\"id_method\": \"fasttext\", \"fasttext_model_path\": \"lid.176.bin\"}" \
     --add-filter CharacterScoreFilter "{\"scripts\": [\"${script1}\", \"${script2}\"]}"  \
     --add-filter LengthRatioFilter.word '{"unit": "word"}' \
-    --add-filter CachedLaserSimilarity '{"module": "customfilter", "CachedLaserSimilarity": {"path": "laser_scores.pickle"}}' \
-    --add-filter CachedBicleanerAi '{"module": "customfilter", "CachedBicleanerAi": {"path": "bicleaner_scores.pickle"}}'
+    --add-filter CustomCachedLaserSimilarity '{"path": "laser_scores.pickle"}' \
+    --add-filter CustomCachedBicleanerAi '{"path": "bicleaner_scores.pickle"}'
   #  --add-filter SentenceEmbeddingFilter "{\"languages\": [\"${SRC}\",\"${TRG}\"]}" \
 
 fi
@@ -100,6 +100,7 @@ echo "### Saving scores"
 #  --inputs "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" \
 #  --output "${output_prefix}.scores" \
 #  ${config_path}
+#python3 scores.py hist --save_path "${output_prefix}.laser.hist.png "${laser_scores}"
 
 echo "### Cleaning ${input_prefix}"
 
