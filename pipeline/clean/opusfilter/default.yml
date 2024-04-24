@@ -31,11 +31,11 @@ steps:
         unit: word
         name: word
         threshold: 3
-    - CachedLaserSimilarity:
+    - CustomCachedLaserSimilarity:
         path: laser_scores.pickle
         threshold: 0.5
       module: customfilter
-    - CachedBicleanerAi:
+    - CustomCachedBicleanerAi:
         path: bicleaner_scores.pickle
         threshold: 0.5
       module: customfilter

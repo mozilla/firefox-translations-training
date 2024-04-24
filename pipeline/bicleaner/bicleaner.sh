@@ -105,8 +105,10 @@ else
   echo "### Writing output corpus"
   ${COMPRESSION_CMD} -dc "${output_prefix}.best.${ARTIFACT_EXT}" |
     tee >(cut -f1 | ${COMPRESSION_CMD} >"${output_prefix}.${SRC}.${ARTIFACT_EXT}") |
-    tee >(cut -f2 | ${COMPRESSION_CMD} >"${output_prefix}.${TRG}.${ARTIFACT_EXT}") |
-      cut -f3  >"${output_scores}"
+    cut -f2 | ${COMPRESSION_CMD} >"${output_prefix}.${TRG}.${ARTIFACT_EXT}"
+
+  echo "### Writing scores"
+  ${COMPRESSION_CMD} -dc "${output_prefix}.scored.${ARTIFACT_EXT}" | cut -f3  >"${output_scores}"
 
   # do not delete intermediate files to inspect them and tune the threshold
 fi
