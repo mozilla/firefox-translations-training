@@ -45,7 +45,8 @@ tasks:
         task-context:
             substitution-fields:
                 - run.command
-        worker-type: b-largegpu-largedisk
+        # current implementation can't utilize multiple GPUs
+        worker-type: b-linux-v100-gpu
         worker:
             artifacts:
                 - name: public/build
