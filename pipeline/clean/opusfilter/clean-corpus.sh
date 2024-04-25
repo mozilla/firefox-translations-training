@@ -53,7 +53,7 @@ else
   script2="Latin"
 fi
 
-# to add customfilter module
+# to add customfilter module.
 export PYTHONPATH=$(pwd)
 export TQDM_DISABLE=1
 
