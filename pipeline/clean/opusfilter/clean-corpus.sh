@@ -93,6 +93,8 @@ else
 
   echo "### Analyzing"
   cp ${temp}/scores.jsonl.gz "${output_prefix}.scores.jsonl.gz"
+  cp ${temp}/sample.1.gz "${output_prefix}.sample.1.gz"
+  cp ${temp}/sample.2.gz "${output_prefix}.sample.2.gz"
   pigz -d ${temp}/scores.jsonl.gz
   python3 scores.py describe  ${temp}/scores.jsonl | tee "${output_prefix}.stats"
   python3 scores.py hist --save_path "${output_prefix}.hist.png" ${temp}/scores.jsonl
