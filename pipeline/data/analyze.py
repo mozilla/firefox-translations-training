@@ -2,12 +2,23 @@
 
 """
 Get the statistical distribution of a dataset.
+
+Usage:
+
+    python3 pipeline/data/analyze.py \
+        --file_location data.en.zst
+        --output ./artifacts
+        --dataset "opus_NLLB/v1"
+        --language en
+
+For parallel corpora, add the arguments twice, separated by a `--`.
 """
 
 import argparse
 import gzip
 import os
 import sys
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,6 +28,7 @@ from matplotlib import ticker
 # Ensure the pipeline is available on the path.
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../.."))
 
+from pipeline.common.datasets import Dataset
 from pipeline.common.downloads import (
     RemoteGzipLineStreamer,
     RemoteZstdLineStreamer,
@@ -41,7 +53,7 @@ def get_line_streamer(file_location: str):
     return open(file_location, "rt")
 
 
-def main() -> None:
+def main(args: Optional[list[str]] = None) -> None:
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.RawTextHelpFormatter,  # Preserves whitespace in the help text.
@@ -59,13 +71,26 @@ def main() -> None:
         required=True,
         help="The dataset language, as a BCP-47 language tag",
     )
+    # All the use of "--" to add more arguments.
+    parser.add_argument("next_dataset_args", nargs=argparse.REMAINDER)
 
-    parsed_args = parser.parse_args()
+    parsed_args = parser.parse_args(args)
+
+    # Defer parsing any options after "--", and recurse below if there are some.
+    next_dataset_args: Optional[list[str]] = None
+    if len(parsed_args.next_dataset_args):
+        if parsed_args.next_dataset_args[0] != "--":
+            print(next_dataset_args)
+            raise Exception("Unexpected arguments. Use -- to pass in multiple datasets.")
+        next_dataset_args = parsed_args.next_dataset_args[1:]
 
     logger.info(f"file_location: {parsed_args.file_location}")
     logger.info(f"output_dir: {parsed_args.output_dir}")
     logger.info(f"dataset: {parsed_args.dataset}")
     logger.info(f"language: {parsed_args.language}")
+
+    dataset = Dataset(parsed_args.dataset)
+    graph_prefix = f"{dataset.file_safe_name()}.{parsed_args.language}"
 
     # Compute the distributions for both the codepoints, and word size.
     codepoints_distribution = Histogram()
@@ -85,7 +110,7 @@ def main() -> None:
             ]
         ),
         x_axis_label="Words (log scale)",
-        filename=os.path.join(parsed_args.output_dir, "distribution-words.png"),
+        filename=os.path.join(parsed_args.output_dir, f"{graph_prefix}.distribution-words.png"),
     )
 
     plot_logarithmic_histogram(
@@ -98,8 +123,14 @@ def main() -> None:
             ]
         ),
         x_axis_label="Codepoints (log scale)",
-        filename=os.path.join(parsed_args.output_dir, "distribution-codepoints.png"),
+        filename=os.path.join(
+            parsed_args.output_dir, f"{graph_prefix}.distribution-codepoints.png"
+        ),
     )
+
+    if next_dataset_args:
+        # Apply the arguments again after "--".
+        main(next_dataset_args)
 
 
 class Histogram:

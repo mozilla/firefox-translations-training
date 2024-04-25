@@ -44,12 +44,11 @@ experiment:
 3. Use [find-corpus](https://github.com/mozilla/firefox-translations-training/tree/main/utils/find-corpus.py) tool to get OPUS datasets.
 Install [poetry](https://python-poetry.org/) first, then run:
 ```
-make install-utils
-python utils/find-corpus.py en ru opus
+task find-corpus -- en ru --importer opus
 ```
 5. In the same way search for mtdata datasets
 ```
-python utils/find-corpus.py en ru mtdata
+task find-corpus.py -- en ru --importer mtdata
 ```
 6. Look what's there and remove old versions of datasets
    (for example there should be only mtdata paracrawl v9 left like `mtdata_ParaCrawl-paracrawl-9-eng-swe`)
@@ -277,7 +276,7 @@ It is possible to look at the training graphs in Tensorboard.
 When the training run is completed, provide a Task group id and download the training logs to a directory. 
 For example for [this task group](https://firefox-ci-tc.services.mozilla.com/tasks/groups/DClbX0cjSCeQuoE1fW-Ehw):
 ```
-LOGS_TASK_GROUP=DClbX0cjSCeQuoE1fW-Ehw make download-logs
+task download-logs -- --task-group-id DClbX0cjSCeQuoE1fW-Ehw
 ```
 #### Snakemake
 Adjust the path to match the model directories in makefile `tensorboard`  command and remove `--offline` to automtically update while training.
@@ -285,7 +284,7 @@ Adjust the path to match the model directories in makefile `tensorboard`  comman
 #### Run server
 
 ```
-make tensorboard
+task tensorboard
 ```
 
 Then go to `http://localhost:6006` in the browser

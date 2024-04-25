@@ -264,25 +264,41 @@ def find_pipeline_script(commands: Union[list[str], list[list[str]]]) -> str:
         raise Exception("Unable to find a string in the nested command.")
 
     # Match a pipeline script like:
-    # pipeline/data/dataset_importer.py
-    # $VCS_PATH/taskcluster/scripts/pipeline/train-taskcluster.sh
-    # $VCS_PATH/pipeline/alignment/generate-alignment-and-shortlist.sh
+    #   pipeline/data/dataset_importer.py
+    #   $VCS_PATH/taskcluster/scripts/pipeline/train-taskcluster.sh
+    #   $VCS_PATH/pipeline/alignment/generate-alignment-and-shortlist.sh
     match = re.search(
-        r"(?P<file_path>[\$\w\/]*\/pipeline\/[\w\/-]+)" r"\." r"(?P<extension>py|sh)", command
+        r"""
+        # Script group:
+        (?P<script>
+            (?:python3?[ ])?   # Allow the script to be preceded by "python3 " or "python ".
+            \$VCS_PATH         # "$VCS_PATH"
+            [\w\/-]*           # Match any directories before "/pipeline/"
+            \/pipeline\/       # "/pipeline/"
+            [\w\/-]+           # Match any directories after "/pipeline/"
+            \.(?:py|sh)        # Match the .sh, or .py extension
+        )
+        """,
+        command,
+        re.X,
     )
 
     if not match:
         raise Exception(f"Could not find a pipeline script in the command: {command}")
 
-    script = match[0]
+    script = match.group("script")
 
-    # Return the parts after the script name.
-    parts = command.split(script)
-    if len(parts) != 2:
+    # Split the parts of the command.
+    command_parts = command.split(script)
+
+    if len(command_parts) < 2:
         raise Exception(f"Could not find {script} in: {command}")
-    args = parts[1].strip()
 
-    return f"{script} {args}"
+    # Remove the preamble to the script, which is should be the pip install.
+    command_parts[0] = ""
+
+    # Join the command parts back together to reassemble the command.
+    return script.join(command_parts).strip()
 
 
 def get_task_command_and_env(task_name: str, script=None) -> tuple[str, dict[str, str]]:

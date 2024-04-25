@@ -57,7 +57,7 @@ Filtering rules can be tuned in an interactive UI.
 Install the OpusCleaner UI on a server. 
 See the installation instructions in the [OpusCleaner readme](https://github.com/hplt-project/OpusCleaner).
 
-For local usage: run from a poetry shell `make opuscleaner-ui`.
+For local usage: run from a poetry shell `task opuscleaner`.
 Then go to `http://0.0.0.0:8000`.
 
 ### Making filters

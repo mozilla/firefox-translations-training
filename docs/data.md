@@ -31,8 +31,7 @@ You can also use [find-corpus](https://github.com/mozilla/firefox-translations-t
 
 Set up a local [poetry](https://python-poetry.org/) environment.
 ```
-make install-utils
-poetry run python utils/find_corpus.py en ru
+task find-corpus -- en ru
 ```
 Make sure to check licenses of the datasets before using them.
 

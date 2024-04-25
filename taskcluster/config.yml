@@ -56,6 +56,7 @@ valid-stages:
     - evaluate-quantized
     - export
     - evaluate-teacher-ensemble
+    - analyze-corpus
     - analyze-mono
     - all
 
@@ -66,28 +67,28 @@ workers:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
-            worker-type: 'b-linux-large-gcp'
+            worker-type: 'b-linux-large-gcp-d2g'
         # Use for tasks that don't require GPUs, but need lots of disk space
         # eg: dataset cleaning & merging
         b-cpu-largedisk:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
-            worker-type: 'b-linux-large-gcp-300gb'
+            worker-type: 'b-linux-large-gcp-d2g-300gb'
         # Use for tasks that don't require GPUs, but need immense amounts of disk space
         # eg: alignments
         b-cpu-xlargedisk:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
-            worker-type: 'b-linux-large-gcp-1tb'
+            worker-type: 'b-linux-large-gcp-d2g-1tb'
         # Use for tasks that don't require GPUs, but need immense amounts of disk space
         # and higher reliability
         b-cpu-xlargedisk-standard:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
-            worker-type: 'b-linux-large-gcp-1tb-standard'
+            worker-type: 'b-linux-large-gcp-d2g-1tb-standard'
         # Use for quick tasks that need a GPU, eg: evaluate
         b-gpu:
             provisioner: '{trust-domain}-{level}'
