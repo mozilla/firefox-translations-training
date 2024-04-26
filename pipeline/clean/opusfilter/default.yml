@@ -18,8 +18,8 @@ steps:
         - <src>
         - <trg>
         thresholds:
-        - 0.5
-        - 0.5
+        - 0.7
+        - 0.7
     - CustomAlphaRatioFilter:
         unit: word
         name: word
@@ -44,11 +44,11 @@ steps:
         unit: word
         name: word
         threshold: 2
-    - CustomCachedLaserSimilarity:
-        path: laser_scores.pickle
-        threshold: 0.5
-      module: customfilter
-    - CustomCachedBicleanerAi:
-        path: bicleaner_scores.pickle
-        threshold: 0.5
+#    - CustomCachedLaserSimilarity:
+#        path: laser_scores.pickle
+#        threshold: 0.5
+#      module: customfilter
+#    - CustomCachedBicleanerAi:
+#        path: bicleaner_scores.pickle
+#        threshold: 0.5
       module: customfilter
