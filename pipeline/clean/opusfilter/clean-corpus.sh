@@ -57,8 +57,8 @@ fi
 export PYTHONPATH=$(pwd)
 export TQDM_DISABLE=1
 
-#python3 cache.py --opus_scores "${laser_scores}" --opus_filter_name SentenceEmbeddingFilter "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" laser_scores.pickle
-#python3 cache.py --opus_scores "${bicleaner_scores}" --opus_filter_name BicleanerAI "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" bicleaner_scores.pickle
+python3 cache.py --opus_scores "${laser_scores}" --opus_filter_name SentenceEmbeddingFilter "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" laser_scores.pickle
+python3 cache.py --opus_scores "${bicleaner_scores}" --opus_filter_name BicleanerAI "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" bicleaner_scores.pickle
 #python3 cache.py "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" laser_scores.pickle --opus_scores "${laser_scores}"  --opus_filter_name Laser3Filter
 
 orig_len_src="$(cat "${input_prefix}.${SRC}" | wc -l)"
@@ -86,10 +86,9 @@ else
       --add-filter LanguageIDFilter "{\"id_method\": \"fasttext\", \"fasttext_model_path\": \"${fasttext_path}\"}" \
       --add-filter CustomAlphaRatioFilter.word "{\"languages\": [\"${SRC}\", \"${TRG}\"], \"unit\": \"word\"}"  \
       --add-filter CustomAlphaRatioFilter.char "{\"languages\": [\"${SRC}\", \"${TRG}\"], \"unit\": \"char\"}"  \
-      --add-filter LengthRatioFilter.word '{"unit": "word"}'
-#      --add-filter CustomCachedLaserSimilarity '{"path": "laser_scores.pickle"}' \
-#      --add-filter CustomCachedBicleanerAi '{"path": "bicleaner_scores.pickle"}'
-    #  --add-filter SentenceEmbeddingFilter "{\"languages\": [\"${SRC}\",\"${TRG}\"]}" \
+      --add-filter LengthRatioFilter.word '{"unit": "word"}' \
+      --add-filter CustomCachedLaserSimilarity '{"path": "laser_scores.pickle"}' \
+      --add-filter CustomCachedBicleanerAi '{"path": "bicleaner_scores.pickle"}'
 
   echo "### Analyzing"
   cp ${temp}/scores.jsonl.gz "${output_prefix}.scores.jsonl.gz"

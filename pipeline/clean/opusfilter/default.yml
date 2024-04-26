@@ -44,11 +44,11 @@ steps:
         unit: word
         name: word
         threshold: 2
-#    - CustomCachedLaserSimilarity:
-#        path: laser_scores.pickle
-#        threshold: 0.5
-#      module: customfilter
-#    - CustomCachedBicleanerAi:
-#        path: bicleaner_scores.pickle
-#        threshold: 0.5
-#      module: customfilter
+    - CustomCachedLaserSimilarity:
+        path: laser_scores.pickle
+        threshold: 0.7
+      module: customfilter
+    - CustomCachedBicleanerAi:
+        path: bicleaner_scores.pickle
+        threshold: 0.7
+      module: customfilter
