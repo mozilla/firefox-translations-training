@@ -57,8 +57,8 @@ fi
 export PYTHONPATH=$(pwd)
 export TQDM_DISABLE=1
 
-python3 cache.py --opus_scores "${laser_scores}" --opus_filter_name SentenceEmbeddingFilter "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" laser_scores.pickle
-python3 cache.py --opus_scores "${bicleaner_scores}" --opus_filter_name BicleanerAI "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" bicleaner_scores.pickle
+#python3 cache.py --opus_scores "${laser_scores}" --opus_filter_name SentenceEmbeddingFilter "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" laser_scores.pickle
+#python3 cache.py --opus_scores "${bicleaner_scores}" --opus_filter_name BicleanerAI "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" bicleaner_scores.pickle
 #python3 cache.py "${input_prefix}.${SRC}" "${input_prefix}.${TRG}" laser_scores.pickle --opus_scores "${laser_scores}"  --opus_filter_name Laser3Filter
 
 orig_len_src="$(cat "${input_prefix}.${SRC}" | wc -l)"
