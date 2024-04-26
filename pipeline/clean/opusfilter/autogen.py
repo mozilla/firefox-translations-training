@@ -9,6 +9,18 @@ import shutil
 import sys
 import copy
 import inspect
+from collections import Counter
+import itertools
+import logging
+import os
+
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.cluster import KMeans
+from sklearn import decomposition, preprocessing, random_projection
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.inspection import permutation_importance
+from sklearn.utils.validation import check_is_fitted
+import numpy as np
 
 import ruamel.yaml
 from opusfilter import filters as filtermodule
@@ -20,7 +32,7 @@ from sklearn import preprocessing
 from sklearn.cluster import KMeans
 
 logger = logging.getLogger(__name__)
-logger.setLevel('WARNING')
+logger.setLevel('INFO')
 yaml = ruamel.yaml.YAML()
 
 import matplotlib.pyplot as plt
@@ -92,6 +104,34 @@ class CustomScoreClusters(ScoreClusters):
         self._noisy_label = self._get_noisy_label()
         self.rejects = None
         self.thresholds = None
+
+    def get_rejects(self):
+        """Train random forest classifier to find important features
+
+        Returns a list of booleans (True = reject).
+
+        """
+
+        logger.info('Skipping feature selection')
+        return [False for _ in enumerate(self.df.columns)]
+
+        logger.info('Training random forest')
+        clf = RandomForestClassifier(random_state=1)
+        clf.fit(self.standard_data, self.labels)
+        logger.info('Finding important features')
+        feature_importances = permutation_importance(clf, self.standard_data, self.labels)
+        importance_mean_mean = np.mean(feature_importances.importances_mean)
+        rej_coef = 0.1
+        logger.info('* mean importance: %s', round(importance_mean_mean, 3))
+        logger.info('* rejection coefficient: %s', rej_coef)
+        logger.info('* decisions:')
+        rejects = []
+        for i, col in enumerate(self.df.columns):
+            importance = feature_importances['importances_mean'][i]
+            reject = importance < importance_mean_mean * rej_coef
+            logger.info('  %s\t%s\t%s', col.ljust(25), round(importance, 3), 'reject' if reject else 'keep')
+            rejects.append(reject)
+        return rejects
 
 
 def get_default_parameters(filter_name):

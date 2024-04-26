@@ -64,7 +64,7 @@ python3 cache.py --opus_scores "${bicleaner_scores}" --opus_filter_name Bicleane
 orig_len_src="$(cat "${input_prefix}.${SRC}" | wc -l)"
 # todo: change to 100000 ?
 # disable default config
-if [[ ${orig_len_src} -le 10000000000 ]]; then
+if [[ ${orig_len_src} -le 1 ]]; then
   config_path="default.yml"
   sed -i -e "s#<src>#${SRC}#g" "${config_path}"
   sed -i -e "s#<trg>#${TRG}#g" "${config_path}"
