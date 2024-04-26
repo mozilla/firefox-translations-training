@@ -85,10 +85,14 @@ def test_cache_json():
                                  'data/tests_data/test_cache/test.scores', 'LengthRatioFilter')
     assert len(cache.cache) == 100
     assert cache.get(src + '50', trg + '50') == [50.0]
+    assert cache.get(src + '0', trg + '0') == [0.0]
+    assert cache.get(src + '99', trg + '99') == [99.0]
 
     cache.save('data/tests_data/test_cache/cache.pickle')
     new_cache = ScoreCache()
     new_cache.load('data/tests_data/test_cache/cache.pickle')
 
     assert len(new_cache.cache) == 100
-    assert cache.get(src + '50', trg + '50') == [50.0]
+    assert new_cache.get(src + '50', trg + '50') == [50.0]
+    assert new_cache.get(src + '0', trg + '0') == [0.0]
+    assert new_cache.get(src + '99', trg + '99') == [99.0]

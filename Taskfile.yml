@@ -15,12 +15,12 @@ tasks:
       The logs will be saved to: ./data/taskcluster-logs
 
       Example:
-        task download-logs -- --task-group-id GU9ZyWFhRDe_nxlAHcen8g
+        task download-logs -- GU9ZyWFhRDe_nxlAHcen8g
     deps: [poetry-install-utils]
     cmds:
       - >-
           poetry run python -W ignore utils/taskcluster_downloader.py
-          --mode=logs {{.CLI_ARGS}}
+          --mode=logs --task-group-id {{.CLI_ARGS}} --output=data/taskcluster-logs/{{.CLI_ARGS}}
 
   download-evals:
     desc: Downloads evaluation results from Taskcluster
@@ -181,11 +181,11 @@ tasks:
     summary: |
       Runs Tensorboard for Marian training logs in the ./data/taskcluster-logs directory.
       The logs are converted to tensorboard in the ./data/tensorboard-logs directory.
-    deps: [poetry-install-tensorboard]
+#    deps: [poetry-install-tensorboard]
     cmds:
       - mkdir -p data/tensorboard-logs
       - >-
-        poetry run marian-tensorboard
+        poetry run python utils/tb_log_parser.py
         --offline
         --log-file data/taskcluster-logs/**/*.log
         --work-dir data/tensorboard-logs

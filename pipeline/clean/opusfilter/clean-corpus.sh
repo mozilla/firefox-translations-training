@@ -86,9 +86,9 @@ else
       --add-filter LanguageIDFilter "{\"id_method\": \"fasttext\", \"fasttext_model_path\": \"${fasttext_path}\"}" \
       --add-filter CustomAlphaRatioFilter.word "{\"languages\": [\"${SRC}\", \"${TRG}\"], \"unit\": \"word\"}"  \
       --add-filter CustomAlphaRatioFilter.char "{\"languages\": [\"${SRC}\", \"${TRG}\"], \"unit\": \"char\"}"  \
-      --add-filter LengthRatioFilter.word '{"unit": "word"}' \
-      --add-filter CustomCachedLaserSimilarity '{"path": "laser_scores.pickle"}' \
-      --add-filter CustomCachedBicleanerAi '{"path": "bicleaner_scores.pickle"}'
+      --add-filter LengthRatioFilter.word '{"unit": "word"}'
+#      --add-filter CustomCachedLaserSimilarity '{"path": "laser_scores.pickle"}' \
+#      --add-filter CustomCachedBicleanerAi '{"path": "bicleaner_scores.pickle"}'
     #  --add-filter SentenceEmbeddingFilter "{\"languages\": [\"${SRC}\",\"${TRG}\"]}" \
 
   echo "### Analyzing"
