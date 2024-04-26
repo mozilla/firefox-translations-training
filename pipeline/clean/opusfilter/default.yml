@@ -51,4 +51,4 @@ steps:
 #    - CustomCachedBicleanerAi:
 #        path: bicleaner_scores.pickle
 #        threshold: 0.5
-      module: customfilter
+#      module: customfilter
