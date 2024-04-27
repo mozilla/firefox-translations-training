@@ -147,11 +147,6 @@ def boot() -> None:
     if args.loglevel:
         logger.setLevel(args.loglevel)
 
-    # Prevent running when explicitly disabled by operator
-    if os.environ.get("WANDB_PUBLICATION", "true").lower() == "false":
-        logger.info("Skip publication as requested by operator through WANDB_PUBLICATION")
-        return
-
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
     lines: TextIOWrapper | Iterator[str]
@@ -180,8 +175,13 @@ def boot() -> None:
         run_name = args.wandb_run_name
 
     # Enable publication on weight and biases when project is set
+    # But prevent running when explicitly disabled by operator
     publishers: list[Publisher] = [CSVExport(output_dir=args.output_dir)]
-    if project_name:
+    if os.environ.get("WANDB_PUBLICATION", "true").lower() == "false":
+        logger.info(
+            "Skip weight & biases publication as requested by operator through WANDB_PUBLICATION"
+        )
+    elif project_name:
         publishers.append(
             WandB(
                 project=project_name,
