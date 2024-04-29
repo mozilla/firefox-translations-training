@@ -102,10 +102,7 @@ def get_taskgraph_parameters() -> Parameters:
 _last_config_path = None
 
 
-def run_taskgraph(cfg_path: str, parameters: Parameters) -> None:
-    # The callback can be a few standard things like "cancel" and "rerun". Custom actions
-    # can be created in taskcluster/translations_taskgraph/actions/ such as the train action.
-    callback = "train"
+def get_training_config(cfg_path: str):
     cfg_path = os.path.realpath(cfg_path)
     global _last_config_path  # noqa: PLW0602
     if _last_config_path:
@@ -116,7 +113,18 @@ def run_taskgraph(cfg_path: str, parameters: Parameters) -> None:
         # Don't regenerate the taskgraph for tests, as this can be slow. It's likely that
         # tests will exercise this codepath.
         return
-    input = load_yml(cfg_path)
+    return load_yml(cfg_path)
+
+
+def run_taskgraph(cfg_path: str, parameters: Parameters) -> None:
+    # The callback can be a few standard things like "cancel" and "rerun". Custom actions
+    # can be created in taskcluster/translations_taskgraph/actions/ such as the train action.
+    callback = "train"
+
+    input = get_training_config(cfg_path)
+    if not input:
+        # This is probably a test run.
+        return
 
     # This command outputs the stdout. Ignore it here.
     stdout = sys.stdout
@@ -137,7 +145,7 @@ def run_taskgraph(cfg_path: str, parameters: Parameters) -> None:
     sys.stdout = stdout
 
 
-def pretty_print_training_config(parameters: Parameters) -> None:
+def pretty_print_training_config(cfg_path: str) -> None:
     text = dedent(
         f"""
         {term.yellow_underline("Training config (JSON)")}
@@ -147,7 +155,8 @@ def pretty_print_training_config(parameters: Parameters) -> None:
         """
     )
     print(text)
-    print(term.gray(json.dumps(parameters["training_config"], indent=2)))
+    training_config = get_training_config(cfg_path)
+    print(term.gray(json.dumps(training_config, indent=2)))
 
 
 def pretty_print_artifacts_dir() -> None:
@@ -406,7 +415,7 @@ def main(
         "--config",
         default="taskcluster/configs/config.prod.yml",
         type=str,
-        help='The path to the training config. Defaults to "configs/tc.prod.yml"',
+        help='The path to the training config. Defaults to "taskcluster/configs/config.prod.yml"',
     )
     parser.add_argument(
         "--only",
@@ -429,7 +438,6 @@ def main(
     parsed_args = parser.parse_args(args)
 
     # Build the artifacts folder.
-    parameters = get_taskgraph_parameters()
     run_taskgraph(parsed_args.config, get_taskgraph_parameters())
 
     choice = Choices[parsed_args.only] if parsed_args.only else None
@@ -438,7 +446,7 @@ def main(
     elif choice == Choices.artifacts:
         pretty_print_artifacts_dir()
     elif choice == Choices.training_config:
-        pretty_print_training_config(get_taskgraph_parameters())
+        pretty_print_training_config(parsed_args.config)
     elif choice == Choices.graph:
         serve_taskgraph_file(
             parsed_args.graph_url,
@@ -449,7 +457,7 @@ def main(
     elif choice is None:
         pretty_print_task_graph()
         pretty_print_artifacts_dir()
-        pretty_print_training_config(parameters)
+        pretty_print_training_config(parsed_args.config)
         serve_taskgraph_file(
             parsed_args.graph_url,
             parsed_args.open_graph,
