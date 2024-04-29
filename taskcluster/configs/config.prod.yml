@@ -33,32 +33,34 @@ experiment:
     dataset-thresholds:
       opus_CCAligned/v1: 0.7
       opus_LinguaTools-WikiTitles/v2014: 0.7
-      opus_OpenSubtitles/v2018: 0.8           # Example of a higher filtering level.
-      opus_ParaCrawl/v9: 0.0                  # Example of cleaning being disabled.
+      opus_OpenSubtitles/v2018: 0.8           # Example of a higher filtering level (for noisier datasets).
+      opus_ParaCrawl/v9: 0.7
       opus_WikiMatrix/v1: 0.7
       opus_bible-uedin/v1: 0.7
+#      opus_ParaCrawl/v9: 0.0                 # Example of disabled filtering (if the corpus is already filtered)
 
-  # Limits the maximum sentences use in the monolingual data for both the source and target
-  # languages.
-  mono-max-sentences-src: 100_000_000
-  mono-max-sentences-trg: 20_000_000
+  # Limits the maximum sentences use in the monolingual data for both the source and target languages.
+  mono-max-sentences-src: 500_000_000          # Use all available data for distillation
+  mono-max-sentences-trg: 200_000_000          # Limit the number of back-translations
 
   # How many bytes of the corpus are sampled to be used in SentencePiece
   # tokenization training.
   spm-sample-size: 10_000_000
+  # The size of the vocabulary
+  spm-vocab-size: 32000
 
   # Determine how many teachers to train.
   # See: docs/teacher-ensemble.md
   teacher-ensemble: 2
 
-  # Path to a pretrained backward model (optional).
-  backward-model: NOT-YET-SUPPORTED
-
-  # Path to a pretrained vocabulary (optional).
-  vocab: NOT-YET-SUPPORTED
-
-  # Continue training see docs/using-pretrained-models.md
-  pretrained-models: {}
+  # Training continuation options, see docs/using-pretrained-models.md
+  pretrained-models:
+     # Use a student model from an older run as a backward model
+     train-backwards:
+      urls:
+        - "https://storage.googleapis.com/releng-translations-dev/models/ru-en/better-teacher/student"
+      mode: use
+      type: default
 
 # The lists of datasets. Each dataset is defined by a corpus key. This key is formed
 # by "{IMPORTER}_{DATASET}". These datasets and their corpus key can be found through
@@ -71,30 +73,78 @@ datasets:
   # The datasets used for validation while training. These should not be the same
   # ones used in test or train. This is what is used to determine when to stop training.
   devtest:
-    - flores_dev
-    - sacrebleu_wmt08
-    - mtdata_Neulab-tedtalks_dev-1-eng-hun
+    # Use augmented datasets with the mix of augmentations for validation
+    - flores_aug-mix_dev
+    - sacrebleu_aug-mix_wmt19
+    - sacrebleu_aug-mix_wmt17
+    - sacrebleu_aug-mix_wmt15
+    - sacrebleu_aug-mix_wmt14
 
   # The datasets used for the final evaluation to determine the quality of the trained
   # model.
   test:
     - flores_devtest
-    - sacrebleu_wmt09
-    - mtdata_Neulab-tedtalks_test-1-eng-hun
+    - sacrebleu_wmt20
+    - sacrebleu_wmt20
+    - sacrebleu_wmt18
+    - sacrebleu_wmt16
+    - sacrebleu_wmt13
+    # Add augmented datasets to check performance for the specific cases
+    - flores_aug-mix_devtest
+    - flores_aug-title_devtest
+    - flores_aug-upper_devtest
+    - flores_aug-typos_devtest
+    - flores_aug-noise_devtest
+    - flores_aug-inline-noise_devtest
 
   # The parallel training data.
   train:
     - opus_Books/v1
     - opus_CCAligned/v1
-    - opus_CCMatrix/v1
-    - opus_DGT/v2019
-    - opus_ECB/v1
-    - opus_ECDC/v2016-03-16
-    - opus_ELITR-ECA/v1
-    - opus_ELRC-2019-EUIPO_2017/v1
-    - opus_ELRC-2715-EMEA/v1
+    - opus_ELRC-3075-wikipedia_health/v1
+    - opus_ELRC-3855-SWPS_University_Soci/v1
+    - opus_ELRC-5067-SciPar/v1
+    - opus_ELRC-5183-SciPar_Ukraine/v1
+    - opus_ELRC-wikipedia_health/v1
+    - opus_ELRC_2922/v1
+    - opus_EUbookshop/v2
+    - opus_GNOME/v1
+    - opus_GlobalVoices/v2018q4
+    - opus_KDE4/v2
+    - opus_LinguaTools-WikiTitles/v2014
+    - opus_NeuLab-TedTalks/v1
+    - opus_News-Commentary/v16
+    - opus_OpenSubtitles/v2018
+    - opus_PHP/v1
+    - opus_ParaCrawl/v9
+    - opus_QED/v2.0a
+    - opus_TED2013/v1.1
+    - opus_TED2020/v1
+    - opus_Tanzil/v1
+    - opus_Tatoeba/v2023-04-12
+    - opus_TildeMODEL/v2018
+    - opus_UNPC/v1.0
+    - opus_Ubuntu/v14.10
+    - opus_WikiMatrix/v1
+    # direction issue on OPUS: https://github.com/Helsinki-NLP/OPUS/issues/12
+    # - opus_WikiTitles/v3
+    - opus_Wikipedia/v1.0
+    - opus_XLEnt/v1.2
+    - opus_ada83/v1
+    - opus_bible-uedin/v1
+    - opus_infopankki/v1
+    - opus_tico-19/v2020-10-28
+    - opus_tldr-pages/v2023-08-29
+    - opus_wikimedia/v20230407
+    - mtdata_Statmt-commoncrawl_wmt13-1-rus-eng
+    - mtdata_Statmt-news_commentary_wmt18-13-rus-eng
+    - mtdata_Tilde-airbaltic-1-eng-rus
+    - mtdata_Tilde-czechtourism-1-eng-rus
+    - mtdata_Tilde-worldbank-1-eng-rus
+    - mtdata_UN-un_dev-1-eng-rus
+    - mtdata_UN-un_test-1-eng-rus
 
-  # Monolingual data sources for the source language.
+  # Monolingual data sources for the source language (to be translated by the teacher model).
   mono-src:
     - news-crawl_news.2021
     - news-crawl_news.2020
@@ -112,7 +162,8 @@ datasets:
     - news-crawl_news.2008
     - news-crawl_news.2007
 
-  # Monolingual data sources for the target language.
+  # Monolingual data sources for the target language
+  # (to be translated by the backward model to augment teacher corpus with back-translations)
   mono-trg:
     - news-crawl_news.2021
     - news-crawl_news.2020
@@ -148,7 +199,9 @@ marian-args:
   training-backward:
     early-stopping: '5'
   training-teacher:
-    early-stopping: '30'
+    # Set to 30 or 40 if the model stops training too early.
+    # This would likely indicate issues with the training corpus.
+    early-stopping: '20'
   training-student:
     early-stopping: '20'
   training-student-finetuned:
@@ -163,4 +216,5 @@ target-stage: all
 taskcluster:
   # After the parallel corpora are merged and de-duplicated, the combined file is
   # then split into an even number of chunks.
-  split-chunks: 10
+  # Adjust depending on the amount of data to translate
+  split-chunks: 20
