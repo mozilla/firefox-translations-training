@@ -79,6 +79,13 @@ def get_args() -> argparse.Namespace:
         default=os.environ.get("TASKCLUSTER_SECRET"),
     )
     parser.add_argument(
+        "--tags",
+        help="List of tags to use on Weight & Biases publication",
+        type=str,
+        default=["taskcluster"],
+        nargs="+",
+    )
+    parser.add_argument(
         "--verbose",
         "-v",
         help="Print debug messages.",
@@ -188,7 +195,7 @@ def boot() -> None:
                 group=group_name,
                 name=run_name,
                 artifacts=args.wandb_artifacts,
-                tags=["cli"],
+                tags=args.tags,
                 config={
                     "logs_file": args.input_file,
                 },

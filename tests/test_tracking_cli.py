@@ -44,6 +44,9 @@ def samples_dir():
         wandb_artifacts=None,
         wandb_group="group",
         wandb_run_name="run",
+        tags=[
+            "unittest",
+        ],
         taskcluster_secret=None,
     ),
 )
@@ -245,6 +248,9 @@ def test_experiments_marian_1_12(wandb_mock, getargs_mock, caplog, samples_dir, 
         wandb_artifacts=None,
         wandb_group="group",
         wandb_run_name="run",
+        tags=[
+            "unittest",
+        ],
         taskcluster_secret=None,
     ),
 )
@@ -282,6 +288,9 @@ def test_taskcluster_wandb_initialization_failure(
         wandb_artifacts=None,
         wandb_group="group",
         wandb_run_name="run",
+        tags=[
+            "unittest",
+        ],
         taskcluster_secret=None,
     ),
 )

@@ -84,7 +84,7 @@ def publish_task(project: str, group: str, name: str, task: dict, metrics: list[
                 project=project,
                 group=group,
                 name=name,
-                tags=["taskcluster"],
+                tags=["taskcluster-offline"],
             )
         ],
         metrics=metrics,
