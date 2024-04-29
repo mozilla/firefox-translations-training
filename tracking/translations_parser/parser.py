@@ -1,5 +1,6 @@
 import logging
 import re
+import sys
 from collections import defaultdict
 from collections.abc import Iterable, Iterator, Sequence
 from datetime import datetime
@@ -11,10 +12,6 @@ import yaml
 from translations_parser.data import Metric, TrainingEpoch, TrainingLog, ValidationEpoch
 from translations_parser.publishers import Publisher
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(levelname)s] %(message)s",
-)
 logger = logging.getLogger(__name__)
 
 HEADER_RE = re.compile(r"(?<=\[)(?P<value>.+?)\] ")
@@ -139,11 +136,8 @@ class TrainingParser:
         val = ValidationEpoch.__annotations__[key](val)
         entry = self._validation_entries[(epoch, up)]
         entry[key] = val
-        if self.version == "1.10":
-            # perplexity value is not defined in Marian 1.10
-            entry["perplexity"] = None
         # Build a validation epoch from multiple lines
-        expected_keys = set(ValidationEpoch.__annotations__.keys()) - {"epoch", "up"}
+        expected_keys = set(ValidationEpoch.__annotations__.keys()) - {"epoch", "up", "perplexity"}
         if not (expected_keys - set(entry.keys())):
             validation_epoch = ValidationEpoch(epoch=epoch, up=up, **entry)
             self.validation.append(validation_epoch)
@@ -165,6 +159,9 @@ class TrainingParser:
         Automatically set Marian run date when found.
         """
         for line in self.logs_iter:
+            # When reading stdin stream, propagate raw lines to stdout
+            print(line, file=sys.stdout, end="")
+
             self._current_index += 1
             headers, position = self.get_headers(line)
             if self.log_filter and not self.log_filter(headers):
@@ -177,11 +174,18 @@ class TrainingParser:
                 self.run_date = self.get_timestamp(headers)
             text = line[position:]
 
+            def _join(iterable):
+                if not iterable:
+                    return "_"
+                if isinstance(iterable[0], str):
+                    return "_".join(iterable)
+                return _join([_join(item) for item in iterable])
+
             # Record logs depending on Marian headers
             if len(headers) >= 2:
                 # First is task timestamp, second is marian timestamp
                 _, _, *marian_tags = headers
-                tag = "_".join(*marian_tags) if marian_tags else "_"
+                tag = _join(marian_tags)
                 self.indexed_logs[tag].append(text)
 
             yield headers, text
@@ -195,8 +199,9 @@ class TrainingParser:
         # Consume first lines until we get the Marian header
         while ("marian",) not in headers:
             headers, text = next(logs_iter)
+            logger.debug(f"Marian header not found in: headers={headers} text={text.strip()}")
 
-        logger.debug("Reading Marian version.")
+        logger.debug(f"Reading Marian version from text={text.strip()}")
         _, version, self.version_hash, self.release_date, *_ = text.split()
         version = version.rstrip(";")
         major, minor = map(int, version.lstrip("v").split(".")[:2])
@@ -229,6 +234,8 @@ class TrainingParser:
             self.config = yaml.safe_load(config_yaml)
         except Exception as e:
             raise Exception(f"Invalid config section: {e}")
+
+        logger.info(f"Detected Marian version {self.version}")
 
     def parse_data(self, logs_iter: Iterator[tuple[list[tuple[str]], str]]) -> None:
         """

@@ -44,35 +44,22 @@ def samples_dir():
         wandb_artifacts=None,
         wandb_group="group",
         wandb_run_name="run",
+        tags=[
+            "unittest",
+        ],
         taskcluster_secret=None,
     ),
 )
 @patch("translations_parser.publishers.wandb")
 def test_taskcluster(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
-    caplog.set_level(logging.DEBUG)
+    caplog.set_level(logging.INFO)
     wandb_dir = tmp_dir / "wandb"
     wandb_dir.mkdir(parents=True)
     wandb_mock.init.return_value.dir = wandb_dir
     tc_publish.main()
     assert [(level, message) for _module, level, message in caplog.record_tuples] == [
-        (logging.INFO, "Reading logs stream.")
-    ] + [
-        (
-            logging.DEBUG,
-            f"Skipping line {i} : Headers does not match the filter",
-        )
-        for i in [*range(1, 128), 154, 558, 561, 1056, 1059, 1061, 1064, 1066]
-    ] + [
-        (logging.DEBUG, "Reading Marian version."),
-        (logging.DEBUG, "Reading Marian run description."),
-        (logging.DEBUG, "Reading Marian configuration."),
-    ] + [
-        (
-            logging.DEBUG,
-            f"Skipping line {i} : Headers does not match the filter",
-        )
-        for i in range(1664, 1691)
-    ] + [
+        (logging.INFO, "Reading logs stream."),
+        (logging.INFO, "Detected Marian version 1.10"),
         (logging.INFO, "Successfully parsed 588 lines"),
         (logging.INFO, "Found 102 training entries"),
         (logging.INFO, "Found 34 validation entries"),
@@ -106,6 +93,7 @@ def test_experiments_marian_1_10(wandb_mock, getargs_mock, caplog, samples_dir, 
                 f"Parsing folder {samples_dir}/experiments_1_10/models/en-nl/prod/student",
             ),
             (logging.INFO, "Reading logs stream."),
+            (logging.INFO, "Detected Marian version 1.10"),
             (logging.INFO, "Successfully parsed 1002 lines"),
             (logging.INFO, "Found 550 training entries"),
             (logging.INFO, "Found 108 validation entries"),
@@ -217,6 +205,7 @@ def test_experiments_marian_1_12(wandb_mock, getargs_mock, caplog, samples_dir, 
             (logging.INFO, "Found 4 quantized metrics"),
             (logging.INFO, "Found 8 evaluation metrics"),
             (logging.INFO, "Creating missing run quantized with associated metrics"),
+            (logging.INFO, "Detected Marian version 1.12"),
         ]
     )
     log_calls, metrics_calls = [], []
@@ -259,6 +248,9 @@ def test_experiments_marian_1_12(wandb_mock, getargs_mock, caplog, samples_dir, 
         wandb_artifacts=None,
         wandb_group="group",
         wandb_run_name="run",
+        tags=[
+            "unittest",
+        ],
         taskcluster_secret=None,
     ),
 )
@@ -274,6 +266,7 @@ def test_taskcluster_wandb_initialization_failure(
     tc_publish.main()
     assert [(level, message) for _module, level, message in caplog.record_tuples] == [
         (logging.INFO, "Reading logs stream."),
+        (logging.INFO, "Detected Marian version 1.10"),
         (
             logging.ERROR,
             "WandB client could not be initialized: Invalid credentials. No data will be published.",
@@ -295,6 +288,9 @@ def test_taskcluster_wandb_initialization_failure(
         wandb_artifacts=None,
         wandb_group="group",
         wandb_run_name="run",
+        tags=[
+            "unittest",
+        ],
         taskcluster_secret=None,
     ),
 )
@@ -311,6 +307,7 @@ def test_taskcluster_wandb_log_failures(wandb_mock, getargs_mock, caplog, sample
     tc_publish.main()
     assert [(level, message) for _module, level, message in caplog.record_tuples] == [
         (logging.INFO, "Reading logs stream."),
+        (logging.INFO, "Detected Marian version 1.10"),
     ] + [
         (logging.ERROR, "Error publishing training epoch using WandB: Unexpected failure"),
         (logging.ERROR, "Error publishing training epoch using WandB: Unexpected failure"),

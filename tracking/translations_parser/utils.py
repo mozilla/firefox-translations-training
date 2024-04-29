@@ -3,10 +3,6 @@ import re
 from collections.abc import Sequence
 from datetime import datetime
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(levelname)s] %(message)s",
-)
 logger = logging.getLogger(__name__)
 
 # Keywords used to split eval filenames into model and dataset
@@ -48,6 +44,7 @@ EVAL_REGEX = re.compile(
     r"-?(?P<suffix>[\d_\/]+)?$"
     r"$"
 )
+MULTIPLE_TRAIN_SUFFIX = re.compile(r"(-\d+)/\d+$")
 
 
 def parse_tag(tag, sep="_"):
@@ -79,3 +76,23 @@ def taskcluster_log_filter(headers: Sequence[Sequence[str]]) -> bool:
         except ValueError:
             continue
     return False
+
+
+def build_task_name(task: dict):
+    """
+    Build a simpler task name using a Taskcluster task payload (without status)
+    """
+    name = task["tags"]["kind"]
+    prefix = name.split("-")[0]
+    if prefix == "train":
+        # Remove "train-" prefix from training task only to avoid duplicates
+        name = name[6:]
+
+    # Teacher training may run multiple times (e.g. "-1/2" prefix)
+    suffix = ""
+    label = task["tags"].get("label")
+    if label and (re_match := MULTIPLE_TRAIN_SUFFIX.search(label)):
+        (suffix,) = re_match.groups()
+
+    # Final name uses the cleaned suffix
+    return prefix, name + suffix
