@@ -102,6 +102,21 @@ if [[ -z ${USE_CPU+x} ]]; then
   extra_params+=('local')
 fi
 
+# Enable log & metrics publication only when the tracking script is available
+# and not running in unit tests
+if ! command -v parse_tc_logs &> /dev/null
+then
+  echo "### Weight & Biases publication script is not available."
+  PARSER=cat
+elif [ ! -z ${TEST_ARTIFACTS+x} ];
+then
+  echo "### Weight & Biases publication is disabled for unit tests."
+  PARSER=cat
+else
+  echo "### Weight & Biases publication is available."
+  PARSER="parse_tc_logs --from-stream -v"
+fi
+
 echo "### Training ${model_dir}"
 # OpusTrainer reads the datasets, shuffles, augments them and feeds to stdin of Marian
 opustrainer-train \
@@ -129,7 +144,7 @@ opustrainer-train \
     --keep-best \
     --tsv \
     --seed ${seed} \
-    "${extra_params[@]}"
+    "${extra_params[@]}" 2>&1 | $PARSER
 
 cp "${model_dir}/model.npz.best-${best_model_metric}.npz" "${model_dir}/final.model.npz.best-${best_model_metric}.npz"
 cp "${model_dir}/model.npz.best-${best_model_metric}.npz.decoder.yml" "${model_dir}/final.model.npz.best-${best_model_metric}.npz.decoder.yml"
