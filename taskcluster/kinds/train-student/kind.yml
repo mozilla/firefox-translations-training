@@ -29,6 +29,7 @@ tasks:
                 best_model: training_config.experiment.best-model
                 src_locale: training_config.experiment.src
                 trg_locale: training_config.experiment.trg
+                wandb_publication: training_config.wandb-publication
             substitution-fields:
                 - description
                 - name
@@ -36,6 +37,7 @@ tasks:
                 - dependencies
                 - run.command
                 - attributes
+                - worker.env
         attributes:
             stage: train-student
             src_locale: "{src_locale}"
@@ -58,10 +60,23 @@ tasks:
             env:
                 ARTIFACT_EXT: zst
                 COMPRESSION_CMD: zstdmt
+
+                # Weight & Biases trigger
+                WANDB_PUBLICATION: "{wandb_publication}"
+
+                # Weight & Biases publication token is stored in that secret
+                TASKCLUSTER_SECRET: project/translations/level-1/weights-and-biases
             artifacts:
                 - name: public/build
                   path: artifacts
                   type: directory
+
+            # Taskcluster proxy is required to read secrets
+            taskcluster-proxy: true
+
+        # The task needs to be able to read that secret to publish on Weight & Biases
+        scopes:
+          - secrets:get:project/translations/level-1/weights-and-biases
 
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
@@ -76,6 +91,7 @@ tasks:
                 - >-
                     pip3 install --upgrade pip setuptools &&
                     pip3 install -r $VCS_PATH/pipeline/train/requirements/train.txt &&
+                    pip3 install $VCS_PATH/tracking &&
                     export PATH="$HOME/.local/bin:$PATH" &&
                     export MARIAN=$MOZ_FETCHES_DIR &&
                     $VCS_PATH/taskcluster/scripts/pipeline/train-taskcluster.sh

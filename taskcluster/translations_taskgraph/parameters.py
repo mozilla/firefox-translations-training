@@ -99,6 +99,8 @@ def get_defaults(_):
             "taskcluster": {
                 "split-chunks": 2,
             },
+            # Disable Weight & Biases publication on CI
+            "wandb-publication": False,
         },
     }
 
@@ -151,6 +153,7 @@ extend_parameters_schema(
             Optional("taskcluster"): {
                 Optional("split-chunks"): int,
             },
+            Optional("wandb-publication"): bool,
         },
     },
     defaults_fn=get_defaults,

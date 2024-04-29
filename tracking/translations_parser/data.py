@@ -7,10 +7,6 @@ from typing import List, Sequence
 
 from translations_parser.utils import parse_tag
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(levelname)s] %(message)s",
-)
 logger = logging.getLogger(__name__)
 
 METRIC_LOG_RE = re.compile(
@@ -43,10 +39,10 @@ class TrainingEpoch:
 class ValidationEpoch:
     epoch: int
     up: int
-    perplexity: float
     chrf: float
     ce_mean_words: float
     bleu_detok: float
+    perplexity: float = None  # optional
 
 
 @dataclass
