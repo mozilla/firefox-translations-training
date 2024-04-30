@@ -398,7 +398,7 @@ class ServeArtifactFile(http.server.BaseHTTPRequestHandler):
         except Exception as exception:
             print("Failed to serve the file", exception)
             pass
-        global waiting_for_request  # noqa: PLW0603
+        global waiting_for_request
         waiting_for_request = False
 
 

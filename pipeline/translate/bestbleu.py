@@ -16,12 +16,12 @@ def main():
     if args.metric == "bleu":
         score_function = compute_bleu
     elif args.metric == "sacrebleu":
-        global sacrebleu  # noqa: PLW0603
+        global sacrebleu
         import sacrebleu
 
         score_function = compute_sacrebleu
     elif args.metric == "chrf":
-        global sacrebleu  # noqa: PLW0603
+        global sacrebleu  
         import sacrebleu
 
         score_function = compute_chrf
