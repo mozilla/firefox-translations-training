@@ -28,6 +28,7 @@ from enum import Enum
 from textwrap import dedent
 from typing import Callable, Optional, Union
 
+import requests
 import taskgraph.actions
 import taskgraph.parameters
 from blessed import Terminal
@@ -304,10 +305,18 @@ def pretty_print_cmd(command: Optional[Union[list[str], list[list[str]]]]):
     print(f"    {term.gray(command_text)}")
 
 
-def pretty_print_task_graph() -> None:
-    with open(os.path.join(artifacts_folder, "full-task-graph.json"), "rb") as file:
-        taskGraph = json.load(file)
+task_graph = None
 
+
+def load_taskgraph() -> dict[str, dict[any]]:
+    global task_graph
+    if not task_graph:
+        with open(os.path.join(artifacts_folder, "full-task-graph.json"), "rb") as file:
+            task_graph = json.load(file)
+    return task_graph
+
+
+def pretty_print_task_graph() -> None:
     text = dedent(
         f"""
         {term.yellow_underline("Task Commands")}
@@ -317,7 +326,7 @@ def pretty_print_task_graph() -> None:
     )
     print(text)
 
-    for key, value in taskGraph.items():
+    for key, value in load_taskgraph().items():
         print(f"{term.cyan_bold_underline(key)}")
         print(f"  {term.white_bold(value['task']['metadata']['description'])}")
         pretty_print_cmd(value["task"]["payload"].get("command"))
@@ -400,8 +409,75 @@ Choices = Enum(
         "artifacts",
         "training_config",
         "graph",
+        "url_mounts",
     ],
 )
+
+
+def is_url_ok(url) -> bool:
+    try:
+        response = requests.head(url)
+        return response.ok
+    except Exception:
+        return False
+
+
+def check_url_mounts():
+    text = dedent(
+        f"""
+        {term.yellow_underline("URL Mounts")}
+
+        Check that mounted URLs, such as pretrained models are valid.
+        """
+    )
+    print(text)
+
+    has_bad_url = False
+    has_mounts = False
+    for task_name, task in load_taskgraph().items():
+        mounts = task.get("task", {}).get("payload", {}).get("mounts", [])
+
+        # Only keep mounts that are external URLs.
+        mounts = [
+            mount
+            for mount in mounts
+            if (
+                # This could be a cache mount.
+                "content" in mount
+                # This is an internal URL.
+                and not mount["content"]["url"].startswith(
+                    "https://firefox-ci-tc.services.mozilla.com"
+                )
+            )
+        ]
+
+        if len(mounts) == 0:
+            continue
+
+        has_mounts = True
+        print(term.cyan_bold_underline(f'Mounts for "{task_name}"'))
+
+        for mount in mounts:
+            if "content" not in mount:
+                continue
+
+            url: str = mount["content"]["url"]
+
+            if url.startswith("https://firefox-ci-tc.services.mozilla.com"):
+                # This is an internal URL.
+                continue
+
+            if is_url_ok(url):
+                print(term.green("✓"), term.gray(url))
+            else:
+                print(term.red(f"❌ {url}"))
+                has_bad_url = True
+
+    if not has_mounts:
+        print(term.gray("No mounts presents"))
+
+    if has_bad_url:
+        sys.exit(1)
 
 
 def main(
@@ -454,6 +530,8 @@ def main(
             parsed_args.persist_graph,
             open_in_browser,
         )
+    elif choice == Choices.url_mounts:
+        check_url_mounts()
     elif choice is None:
         pretty_print_task_graph()
         pretty_print_artifacts_dir()
@@ -464,6 +542,7 @@ def main(
             parsed_args.persist_graph,
             open_in_browser,
         )
+        check_url_mounts()
 
 
 if __name__ == "__main__":
