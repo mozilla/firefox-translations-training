@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Literal
+from typing import Literal, Optional
 from taskgraph.transforms.base import TransformSequence
 from urllib.parse import urljoin
 import os
@@ -57,6 +57,7 @@ class PretrainedModel:
     urls: list[str]
     mode: ModelMode
     type: Literal["npz"]  # In the future "opusmt" may be supported.
+    overrides: Optional[list[dict[str, str]]]
 
     def get_artifact_names(self) -> list[str]:
         artifacts = {
@@ -85,15 +86,23 @@ def get_artifact_mounts(pretrained_model: PretrainedModel, directory: str):
             "Multiple URLs are currently not supported for pretrained models. See Issue #542"
         )
 
-    url = pretrained_model.urls[0]
+    base_url = pretrained_model.urls[0]
+    # Ensure the url ends with a "/"
+    base_url = f"{base_url}/" if not base_url.endswith("/") else base_url
+
+    overrides = {}
+    if pretrained_model.overrides and len(pretrained_model.overrides) == 1:
+        overrides = pretrained_model.overrides[0]
+
     artifact_mounts = []
 
     for artifact_name in pretrained_model.get_artifact_names():
-        # Ensure the url ends with a "/"
-        normalized_url = f"{url}/" if not url.endswith("/") else url
+        override = overrides.get(artifact_name, None)
+        url = override if override else urljoin(base_url, artifact_name)
+
         artifact_mounts.append(
             {
-                "content": {"url": urljoin(normalized_url, artifact_name)},
+                "content": {"url": url},
                 "file": os.path.join(directory, artifact_name),
             }
         )
