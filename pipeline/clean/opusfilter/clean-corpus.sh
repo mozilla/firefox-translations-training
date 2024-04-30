@@ -81,14 +81,14 @@ else
       --inter-dir ${temp} \
       --plot "${dir}" \
       --overwrite \
-      --work-dir ${dir} \
+      --work-dir ${temp} \
       --output ${config_path} \
       --add-filter LanguageIDFilter "{\"id_method\": \"fasttext\", \"fasttext_model_path\": \"${fasttext_path}\"}" \
       --add-filter CustomAlphaRatioFilter.word "{\"languages\": [\"${SRC}\", \"${TRG}\"], \"unit\": \"word\"}"  \
       --add-filter CustomAlphaRatioFilter.char "{\"languages\": [\"${SRC}\", \"${TRG}\"], \"unit\": \"char\"}"  \
-      --add-filter LengthRatioFilter.word '{"unit": "word"}' \
-      --add-filter CustomCachedLaserSimilarity '{"path": "laser_scores.pickle"}' \
-      --add-filter CustomCachedBicleanerAi '{"path": "bicleaner_scores.pickle"}'
+      --add-filter LengthRatioFilter.word '{"unit": "word"}'
+#      --add-filter CustomCachedLaserSimilarity '{"path": "laser_scores.pickle"}' \
+#      --add-filter CustomCachedBicleanerAi '{"path": "bicleaner_scores.pickle"}'
 
   echo "### Analyzing"
   cp ${temp}/scores.jsonl.gz "${output_prefix}.scores.jsonl.gz"
@@ -113,10 +113,10 @@ opusfilter \
   --n-jobs ${threads} \
   ${config_path}
 
-pigz -d ${dir}/filtered.*
+pigz -d ${temp}/filtered.*
 
-mv ${dir}/filtered.${SRC} ${output_prefix}.${SRC}
-mv ${dir}/filtered.${TRG} ${output_prefix}.${TRG}
+mv ${temp}/filtered.${SRC} ${output_prefix}.${SRC}
+mv ${temp}/filtered.${TRG} ${output_prefix}.${TRG}
 
 echo "### Checking length of the files"
 new_len_src="$(cat "${output_prefix}.${SRC}" | wc -l)"
