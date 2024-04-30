@@ -21,7 +21,7 @@ def main():
 
         score_function = compute_sacrebleu
     elif args.metric == "chrf":
-        global sacrebleu  
+        global sacrebleu
         import sacrebleu
 
         score_function = compute_chrf
