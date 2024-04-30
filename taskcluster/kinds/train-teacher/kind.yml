@@ -29,8 +29,8 @@ kind-dependencies:
 tasks:
     # double curly braces are used for the chunk substitutions because
     # this must first be formatted by task-context to get src and trg locale
-    "{src_locale}-{trg_locale}-{{this_chunk}}/{{total_chunks}}":
-        description: train teacher for {src_locale}-{trg_locale} {{this_chunk}}/{{total_chunks}}
+    "{src_locale}-{trg_locale}-{{this_chunk}}":
+        description: train teacher for {src_locale}-{trg_locale} {{this_chunk}}
         chunk:
             total-chunks: "{teacher_ensemble}"
             substitution-fields:
@@ -73,7 +73,6 @@ tasks:
                     - taskcluster/scripts/pipeline/train-taskcluster.sh
                 from-parameters:
                     marian_args: training_config.marian-args.training-teacher
-                    teacher-ensemble: training_config.experiment.teacher-ensemble
                     pretrained_teacher: training_config.experiment.pretrained-models.train-teacher
         worker-type:
             by-tasks-for:
