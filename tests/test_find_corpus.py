@@ -84,9 +84,9 @@ def test_opus(mock_opus_data, capsys):
         └──────────────────────────────┘
 
         Dataset   Code              Sentences Size     URL
-        ───────── ───────────────── ───────── ──────── ─────────────────────────────────────
-        CCAligned opus_CCAligned/v1 5802549   535.4 MB https://opus.nlpl.eu/CCAligned-v1.php
-        Books     opus_Books/v1     4605      335.9 kB https://opus.nlpl.eu/Books-v1.php
+        ───────── ───────────────── ───────── ──────── ─────────────────────────────────────────────────
+        CCAligned opus_CCAligned/v1 5802549   535.4 MB https://opus.nlpl.eu/CCAligned/ca&en/v1/CCAligned
+        Books     opus_Books/v1     4605      335.9 kB https://opus.nlpl.eu/Books/ca&en/v1/Books
 
         YAML:
             - opus_Books/v1
