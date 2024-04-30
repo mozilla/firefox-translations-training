@@ -18,9 +18,17 @@ def find_custom_filter(src: str, trg: str, dataset: str) -> Optional[str]:
 
     # note: do not call the folder with default filters "filters" because it's a magic word for opuscleaner-clean
     # and it starts processing such folder
+
+    # First look in the langauge specific directory, then in the common directory
+    # as language specific dataset configs should override the generic ones.
+    # The cleaning rules are symmetrical, so we can use one language specific config for both directions
     paths = [
-        f"configs/{src}-{trg}/{dataset}.{src}-{trg}.filters.json",
-        f"configs/{src}-{trg}/{dataset_opus}.{src}-{trg}.filters.json",
+        f"configs/{src}-{trg}/{dataset}.filters.json",
+        f"configs/{src}-{trg}/{dataset_opus}.filters.json",
+        f"configs/{trg}-{src}/{dataset}.filters.json",
+        f"configs/{trg}-{src}/{dataset_opus}.filters.json",
+        f"configs/{dataset}.filters.json",
+        f"configs/{dataset_opus}.filters.json",
     ]
 
     for path in paths:
