@@ -231,7 +231,7 @@ marian-args:
   training-teacher:
     # Set to 30 or 40 if the model stops training too early.
     # This would likely indicate issues with the training corpus.
-    early-stopping: '20'
+    early-stopping: '40'
   training-student:
     early-stopping: '20'
   training-student-finetuned:
