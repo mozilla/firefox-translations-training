@@ -12,7 +12,7 @@ dataset=$3
 
 COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
-WGET="${WGET:-wget}" # This can be overridden by tests.
+WGET="${WGET:-wget}" # This can be overridden by tests .
 
 echo "###### Downloading WMT newscrawl monolingual data"
 

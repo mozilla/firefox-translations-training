@@ -31,7 +31,7 @@ test -s "${original_prefix}.${ARTIFACT_EXT}" ||
   bash "importers/mono/${type}.sh" "${lang}" "${original_prefix}" "${name}"
 
 echo "### Sampling dataset"
-# temporary disable pipefail because perl operation causes SIGPIPE (141)
+# temporary disable pipefail because perl  operation causes SIGPIPE (141)
 set +o pipefail
 ${COMPRESSION_CMD} -dc "${original_prefix}.${ARTIFACT_EXT}" |
 shuf -n "$(bc -l <<<"scale=0; (${max_sent}+${max_sent}*${coef}) / 1")" |
