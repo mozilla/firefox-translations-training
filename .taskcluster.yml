@@ -225,7 +225,7 @@ tasks:
                               features:
                                   taskclusterProxy: true
     
-                              image: mozbhearsum/bhearsum-run-task:latest
+                              image: mozbhearsum/bhearsum-run-task:latest2
                               maxRunTime: 1800
     
                               command:
