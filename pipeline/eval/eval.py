@@ -51,6 +51,14 @@ from typing import Optional
 from sacrebleu.metrics.bleu import BLEU, BLEUScore
 from sacrebleu.metrics.chrf import CHRF, CHRFScore
 
+try:
+    from translations_parser.wandb import add_wandb_arguments, get_wandb_publisher
+
+    WANDB_AVAILABLE = True
+except ImportError as e:
+    print(f"Failed to import tracking module: {e}")
+    WANDB_AVAILABLE = False
+
 
 def run_bash_oneliner(command: str):
     """
@@ -132,6 +140,11 @@ def main(args_list: Optional[list[str]] = None) -> None:
     parser.add_argument(
         "--model_variant", type=str, help="The model variant to use, (gpu, cpu, quantized)"
     )
+
+    # Add Weight & Biases CLI args when module is loaded
+    if WANDB_AVAILABLE:
+        add_wandb_arguments(parser)
+
     args = parser.parse_args(args_list)
 
     src = args.src
@@ -285,6 +298,17 @@ def main(args_list: Optional[list[str]] = None) -> None:
     print(f'Writing the metrics in the older "text" format: {metrics_file}')
     with open(metrics_file, "w") as file:
         file.write(f"{bleu_details['score']}\n{chrf_details['score']}\n")
+
+    if WANDB_AVAILABLE:
+        wandb = get_wandb_publisher(  # noqa
+            project_name=args.wandb_project,
+            group_name=args.wandb_group,
+            run_name=args.wandb_run_name,
+            taskcluster_secret=args.taskcluster_secret,
+            artifacts=args.wandb_artifacts,
+            publication=args.wandb_publication,
+        )
+        # TODO: publish scores
 
 
 if __name__ == "__main__":
