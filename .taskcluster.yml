@@ -229,7 +229,7 @@ tasks:
                               maxRunTime: 1800
     
                               command:
-                                  - run-task
+                                  - /usr/local/bin/run-task
                                   - '--${normProject}-checkout=/builds/worker/checkouts/src'
                                   - '--'
                                   - bash
