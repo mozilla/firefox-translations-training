@@ -298,7 +298,7 @@ tasks:
                 - -c
                 - >-
                     $VCS_PATH/pipeline/data/download-mono.sh
-                                        {dataset}
-                                        {trg_locale}
-                                        {max_sentences}
-                                        $TASK_WORKDIR/artifacts/{dataset_sanitized}.{trg_locale}.zst
+                    {dataset}
+                    {trg_locale}
+                    {max_sentences}
+                    $TASK_WORKDIR/artifacts/{dataset_sanitized}.{trg_locale}.zst
