@@ -225,7 +225,7 @@ tasks:
                               features:
                                   taskclusterProxy: true
     
-                              image: mozillareleases/taskgraph:decision-v7.4.0@sha256:eb13ec9b67c93c8394856813bbe69bb876888a5015938d8d811ef3609c00fe21
+                              image: mozbhearsum/bhearsum-run-task:latest
                               maxRunTime: 1800
     
                               command:
