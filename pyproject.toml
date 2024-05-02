@@ -86,3 +86,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+  # Run tests outside of docker:
+  #   task test -- -m "not docker_amd64
+  "docker_amd64: These tests require the local docker image."
+]
