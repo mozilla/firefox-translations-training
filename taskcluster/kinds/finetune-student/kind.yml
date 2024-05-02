@@ -38,6 +38,7 @@ tasks:
                 - fetches.train-student
                 - run.command
                 - attributes
+                - worker.env
         attributes:
             stage: finetune-student
             src_locale: "{src_locale}"
