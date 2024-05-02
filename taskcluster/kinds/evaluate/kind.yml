@@ -41,11 +41,13 @@ task-defaults:
     task-context:
         substitution-fields:
             - run.command
+            - worker.env
         from-parameters:
             best_model: training_config.experiment.best-model
             src_locale: training_config.experiment.src
             trg_locale: training_config.experiment.trg
             split_chunks: training_config.experiment.teacher-ensemble
+            wandb_publication: training_config.wandb-publication
     worker-type: b-gpu
     worker:
         artifacts:
@@ -56,6 +58,19 @@ task-defaults:
         env:
             # This is a separate environment variable so tests can override it.
             MARIAN: $MOZ_FETCHES_DIR
+
+            # Weight & Biases trigger
+            WANDB_PUBLICATION: "{wandb_publication}"
+
+            # Weight & Biases publication token is stored in that secret
+            TASKCLUSTER_SECRET: project/translations/level-1/weights-and-biases
+
+        # Taskcluster proxy is required to read secrets
+        taskcluster-proxy: true
+
+    # The task needs to be able to read that secret to publish on Weight & Biases
+    scopes:
+      - secrets:get:project/translations/level-1/weights-and-biases
 
     # Don't run unless explicitly scheduled
     run-on-tasks-for: []
@@ -73,6 +88,7 @@ task-defaults:
             - -c
             - >-
                 pip install -r $VCS_PATH/pipeline/eval/requirements/eval.txt &&
+                pip install $VCS_PATH/tracking &&
                 export PATH=$PATH:~/.local/bin &&
                 sed -i -e "s,- .*fetches,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
                 sed -i -e "s,- .*artifacts,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
