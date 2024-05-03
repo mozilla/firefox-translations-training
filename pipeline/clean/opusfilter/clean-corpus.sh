@@ -89,7 +89,7 @@ opusfilter \
   --n-jobs ${threads} \
   ${config_path2}
 
-new_len_src1="$(pigz -d "${temp2}/filtered.${SRC}.gz" | wc -l)"
+new_len_src1="$(pigz -dc "${temp2}/filtered.${SRC}.gz" | wc -l)"
 orig_len_src="$(cat "${input_prefix}.${SRC}" | wc -l)"
 
 echo "### Filtered length after stage 1: ${new_len_src1} / ${orig_len_src}"
