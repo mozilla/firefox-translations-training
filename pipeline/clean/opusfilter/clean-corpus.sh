@@ -89,7 +89,12 @@ opusfilter \
   --n-jobs ${threads} \
   ${config_path2}
 
+new_len_src1="$(pigz -d "${temp2}/filtered.${SRC}.gz" | wc -l)"
 orig_len_src="$(cat "${input_prefix}.${SRC}" | wc -l)"
+
+echo "### Filtered length after stage 1: ${new_len_src1} / ${orig_len_src}"
+
+
 # todo: change to 100000 ?
 # disable default config
 if [[ ${orig_len_src} -le 1 ]]; then
