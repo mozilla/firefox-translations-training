@@ -112,8 +112,8 @@ class CustomScoreClusters(ScoreClusters):
 
         """
 
-        logger.info('Skipping feature selection')
-        return [False for _ in enumerate(self.df.columns)]
+        # logger.info('Skipping feature selection')
+        # return [False for _ in enumerate(self.df.columns)]
 
         logger.info('Training random forest')
         clf = RandomForestClassifier(random_state=1)
