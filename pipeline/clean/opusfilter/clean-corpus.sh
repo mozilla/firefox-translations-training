@@ -142,9 +142,11 @@ echo "### Filtering stage 2"
 
 echo "### Cleaning ${input_prefix}"
 
+# Use only one process, otherwise the machine goes OOM as it loads all the scores into memory
+# It just reads the scores form a dictionary so we don't need to parallelize it
 opusfilter \
   --overwrite \
-  --n-jobs ${threads} \
+  --n-jobs 1 \
   ${config_path}
 
 pigz -d ${temp}/filtered.*
