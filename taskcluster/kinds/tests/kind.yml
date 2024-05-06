@@ -106,6 +106,7 @@ tasks:
       skip-unless-changed:
         - pipeline/**
         - tests/**
+        - tracking/**
         - poetry.*
         - Taskfile.yml
     fetches:
