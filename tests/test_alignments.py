@@ -1,8 +1,11 @@
 import os
 import shutil
 
+import pytest
 import sh
 from fixtures import DataDir
+
+pytestmark = [pytest.mark.docker_amd64]
 
 current_folder = os.path.dirname(os.path.abspath(__file__))
 fixtures_path = os.path.join(current_folder, "fixtures")
