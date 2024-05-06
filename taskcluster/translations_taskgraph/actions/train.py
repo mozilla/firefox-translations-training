@@ -326,7 +326,7 @@ to be translated by the backward model to augment teacher corpus with back-trans
                         "additionalProperties": {
                             "type": "string",
                             # TODO: add snakepit type(s) when they are brought online
-                            "enum": ["gcp-standard", "gcp-spot"],
+                            "enum": ["gcp-standard", "gcp-spot", "snakepit-2080ti", "snakepit-quadro6k", "snakepit-titanxp"],
                         },
                     },
                 },
