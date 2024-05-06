@@ -9,6 +9,11 @@ tasks:
     cmds:
       - poetry install --only {{.GROUP}} --no-root
 
+  clean-venvs:
+    desc: Remove the virtual envs created by the test runner.
+    cmds:
+      - rm -rf data/task-venvs/*
+
   download-logs:
     desc: Download the logs for taskcluster. Requires --task-group-id
     summary: |
