@@ -49,6 +49,7 @@ def samples_dir():
             "unittest",
         ],
         taskcluster_secret=None,
+        wandb_publication=True,
     ),
 )
 @patch("translations_parser.publishers.wandb")
@@ -121,8 +122,8 @@ def test_experiments_marian_1_10(wandb_mock, getargs_mock, caplog, samples_dir, 
                 logging.INFO,
                 "Publishing 'en-nl/prod' evaluation metrics and files (fake run 'group_logs')",
             ),
-            (logging.INFO, "Found 2 quantized metrics"),
-            (logging.INFO, "Found 16 evaluation metrics"),
+            (logging.INFO, "Found 2 quantized metrics from speed folder"),
+            (logging.INFO, "Found 16 metrics from task logs"),
             (logging.INFO, "Creating missing run backward with associated metrics"),
             (logging.INFO, "Creating missing run quantized with associated metrics"),
             (logging.INFO, "Creating missing run student-finetuned with associated metrics"),
@@ -203,8 +204,8 @@ def test_experiments_marian_1_12(wandb_mock, getargs_mock, caplog, samples_dir, 
                 logging.INFO,
                 "Publishing 'fi-en/opusprod' evaluation metrics and files (fake run 'group_logs')",
             ),
-            (logging.INFO, "Found 4 quantized metrics"),
-            (logging.INFO, "Found 8 evaluation metrics"),
+            (logging.INFO, "Found 4 quantized metrics from speed folder"),
+            (logging.INFO, "Found 8 metrics from task logs"),
             (logging.INFO, "Creating missing run quantized with associated metrics"),
             (logging.INFO, "Detected Marian version 1.12"),
         ]
@@ -254,6 +255,7 @@ def test_experiments_marian_1_12(wandb_mock, getargs_mock, caplog, samples_dir, 
             "unittest",
         ],
         taskcluster_secret=None,
+        wandb_publication=True,
     ),
 )
 @patch("translations_parser.publishers.wandb")
@@ -295,6 +297,7 @@ def test_taskcluster_wandb_initialization_failure(
             "unittest",
         ],
         taskcluster_secret=None,
+        wandb_publication=True,
     ),
 )
 @patch("translations_parser.publishers.wandb")
