@@ -48,6 +48,7 @@ def samples_dir():
             "unittest",
         ],
         taskcluster_secret=None,
+        wandb_publication=True,
     ),
 )
 @patch("translations_parser.publishers.wandb")
@@ -252,6 +253,7 @@ def test_experiments_marian_1_12(wandb_mock, getargs_mock, caplog, samples_dir, 
             "unittest",
         ],
         taskcluster_secret=None,
+        wandb_publication=True,
     ),
 )
 @patch("translations_parser.publishers.wandb")
@@ -292,6 +294,7 @@ def test_taskcluster_wandb_initialization_failure(
             "unittest",
         ],
         taskcluster_secret=None,
+        wandb_publication=True,
     ),
 )
 @patch("translations_parser.publishers.wandb")
