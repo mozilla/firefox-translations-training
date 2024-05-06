@@ -43,6 +43,7 @@ def samples_dir():
         wandb_project="test",
         wandb_artifacts=None,
         wandb_group="group",
+        wandb_publication=True,
         wandb_run_name="run",
         tags=[
             "unittest",
@@ -247,6 +248,7 @@ def test_experiments_marian_1_12(wandb_mock, getargs_mock, caplog, samples_dir, 
         wandb_project="test",
         wandb_artifacts=None,
         wandb_group="group",
+        wandb_publication=True,
         wandb_run_name="run",
         tags=[
             "unittest",
@@ -287,6 +289,7 @@ def test_taskcluster_wandb_initialization_failure(
         wandb_project="test",
         wandb_artifacts=None,
         wandb_group="group",
+        wandb_publication=True,
         wandb_run_name="run",
         tags=[
             "unittest",
@@ -314,6 +317,44 @@ def test_taskcluster_wandb_log_failures(wandb_mock, getargs_mock, caplog, sample
         (logging.ERROR, "Error publishing training epoch using WandB: Unexpected failure"),
         (logging.ERROR, "Error publishing validation epoch using WandB: Unexpected failure"),
     ] * 34 + [
+        (logging.INFO, "Successfully parsed 588 lines"),
+        (logging.INFO, "Found 102 training entries"),
+        (logging.INFO, "Found 34 validation entries"),
+    ]
+
+
+@patch(
+    "translations_parser.cli.taskcluster.get_args",
+    return_value=argparse.Namespace(
+        input_file=Path(__file__).parent / "data" / "taskcluster.log",
+        loglevel=logging.DEBUG,
+        output_dir=Path(DataDir("test_tracking").path),
+        from_stream=False,
+        wandb_project=None,
+        wandb_artifacts=None,
+        wandb_group=None,
+        wandb_publication=False,
+        wandb_run_name="run",
+        tags=[
+            "unittest",
+        ],
+        taskcluster_secret=None,
+    ),
+)
+@patch("translations_parser.publishers.wandb")
+def test_taskcluster_wandb_disabled(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
+    """
+    Ensures tracking continues without Weight & Biases publication
+    """
+    caplog.set_level(logging.INFO)
+    tc_publish.main()
+    assert [(level, message) for _module, level, message in caplog.record_tuples] == [
+        (
+            logging.INFO,
+            "Skip weight & biases publication as requested by operator through WANDB_PUBLICATION",
+        ),
+        (logging.INFO, "Reading logs stream."),
+        (logging.INFO, "Detected Marian version 1.10"),
         (logging.INFO, "Successfully parsed 588 lines"),
         (logging.INFO, "Found 102 training entries"),
         (logging.INFO, "Found 34 validation entries"),

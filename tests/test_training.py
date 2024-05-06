@@ -5,6 +5,8 @@ import pytest
 import sentencepiece as spm
 from fixtures import DataDir, en_sample, ru_sample
 
+pytestmark = [pytest.mark.docker_amd64]
+
 current_folder = os.path.dirname(os.path.abspath(__file__))
 fixtures_path = os.path.join(current_folder, "fixtures")
 root_path = os.path.abspath(os.path.join(current_folder, ".."))
