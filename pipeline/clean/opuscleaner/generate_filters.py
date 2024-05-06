@@ -53,9 +53,10 @@ def build_config(config_path: str, src: str, trg: str) -> str:
 def generate(dataset: str, output: str, src: str, trg: str) -> None:
     # look whether there are custom filters produced by OpusCleaner UI first
     # if a custom filter is not found, use defaults
-    filter_path = (
-        find_custom_filter(src, trg, dataset) or f"{CURRENT_FOLDER}/configs/default.filters.json"
-    )
+    # filter_path = (
+    #     find_custom_filter(src, trg, dataset) or f"{CURRENT_FOLDER}/configs/default.filters.json"
+    # )
+    filter_path = f"{CURRENT_FOLDER}/configs/default.filters.json"
     print(f"Using filter {filter_path}")
     config = build_config(filter_path, src, trg)
     with open(output, "w") as f:
