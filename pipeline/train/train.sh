@@ -58,7 +58,7 @@ for index in "${!datasets[@]}"; do
 
     if [ "${alignments}" != "None" ] ; then
       train_aln="${alns[index]}"
-      empty_aln_num=$(${COMPRESSION_CMD} -dc train_aln | grep -Fxc "")
+      empty_aln_num=$(${COMPRESSION_CMD} -dc ${train_aln} | grep -Fxc "")
       echo "### Number of empty alignments for ${train_aln}: ${empty_aln_num}"
 
       echo "### Generating tsv dataset with alignments ${alignments}"
