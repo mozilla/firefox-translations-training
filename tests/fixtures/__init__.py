@@ -351,9 +351,7 @@ def find_requirements(commands: Commands) -> Optional[str]:
     return None
 
 
-def get_task_command_and_env(
-    task_name: str
-) -> tuple[str, Optional[str], dict[str, str]]:
+def get_task_command_and_env(task_name: str) -> tuple[str, Optional[str], dict[str, str]]:
     """
     Extracts a task's command from the full taskgraph. This allows for testing
     the full taskcluster pipeline and the scripts that it generates.
@@ -441,23 +439,18 @@ def get_python_bin_dir(requirements: Optional[str]) -> Optional[str]:
         ]
     )
 
-    dockerfile = os.environ.get("DOCKERFILE")
-    if not dockerfile:
-        dockerfile = "native"
-
     # Create a hash based on files and contents that would invalidate the python library.
     md5 = hashlib.md5()
     hash_file(md5, requirements)
-    hash_file(md5, os.path.join(ROOT_PATH, "docker/local-test.Dockerfile"))
-    if dockerfile == "local-train":
-        hash_file(md5, os.path.join(ROOT_PATH, "docker/local-train.Dockerfile"))
     md5.update(system_details.encode("utf-8"))
+    if os.environ.get("IS_DOCKER"):
+        hash_file(md5, os.path.join(ROOT_PATH, "docker/Dockerfile"))
     hash = md5.hexdigest()
 
     requirements_stem = Path(requirements).stem
-
+    environment = "docker" if os.environ.get("IS_DOCKER") else "native"
     venv_dir = os.path.abspath(
-        os.path.join(DATA_PATH, "task-venvs", f"{dockerfile}-{requirements_stem}-{hash}")
+        os.path.join(DATA_PATH, "task-venvs", f"{environment}-{requirements_stem}-{hash}")
     )
     python_bin_dir = os.path.join(venv_dir, "bin")
     python_bin = os.path.join(python_bin_dir, "python")

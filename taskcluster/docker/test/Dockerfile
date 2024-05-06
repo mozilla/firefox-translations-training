@@ -14,6 +14,7 @@ RUN apt-get update -qq \
       libboost-program-options1.74.0 \
       libboost-filesystem1.74.0 \
       libboost-iostreams1.74.0 \
+      python3.10-venv \
     && apt-get clean
 
 
