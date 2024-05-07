@@ -98,6 +98,8 @@ tasks:
                     pip3 install $VCS_PATH/tracking &&
                     export PATH="$HOME/.local/bin:$PATH" &&
                     export MARIAN=$MOZ_FETCHES_DIR &&
+                    export LD_LIBRARY_PATH="$MOZ_FETCHES_DIR/cuda-toolkit/targets/x86_64-linux/lib" &&
+                    find "$MOZ_FETCHES_DIR" &&
                     $VCS_PATH/taskcluster/scripts/pipeline/train-taskcluster.sh
                     backward
                     train
@@ -121,6 +123,7 @@ tasks:
         fetches:
             toolchain:
                 - marian
+                - cuda-toolkit
             merge-corpus:
                 - artifact: corpus.{src_locale}.zst
                   extract: false
