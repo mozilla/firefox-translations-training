@@ -112,6 +112,12 @@ def get_wandb_publisher(
     logs_file=None,
     publication=False,
 ):
+    if not publication:
+        logger.info(
+            "Skip weight & biases publication as requested by operator through WANDB_PUBLICATION"
+        )
+        return
+
     # Load secret from Taskcluster and auto-configure naming
     if taskcluster_secret:
         assert os.environ.get(
@@ -125,11 +131,6 @@ def get_wandb_publisher(
 
     # Enable publication on weight and biases when project is set
     # But prevent running when explicitly disabled by operator
-    if not publication:
-        logger.info(
-            "Skip weight & biases publication as requested by operator through WANDB_PUBLICATION"
-        )
-        return
     if not project_name:
         logger.info("Skip weight & biases publication as project name is not set")
         return
