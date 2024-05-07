@@ -58,8 +58,6 @@ for index in "${!datasets[@]}"; do
 
     if [ "${alignments}" != "None" ] ; then
       train_aln="${alns[index]}"
-      empty_aln_num=$(${COMPRESSION_CMD} -dc ${train_aln} | grep -Fxc "")
-      echo "### Number of empty alignments for ${train_aln}: ${empty_aln_num}"
 
       echo "### Generating tsv dataset with alignments ${alignments}"
       paste <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${src}.${ARTIFACT_EXT}") \
@@ -67,6 +65,8 @@ for index in "${!datasets[@]}"; do
             <(${COMPRESSION_CMD} -dc "${train_aln}") \
             >"${tsv_dataset}"
       rm "${train_aln}"
+      empty_aln_num=$(cut -f3 "${tsv_dataset}" | grep -Fxc "")
+      echo "### Number of empty alignments for ${train_aln}: ${empty_aln_num}"
     else
       echo "### Generating tsv dataset"
       # OpusTrainer supports only tsv and gzip
