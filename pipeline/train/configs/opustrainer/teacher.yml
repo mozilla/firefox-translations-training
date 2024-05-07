@@ -10,7 +10,7 @@ stages:
 # Train on a mix until early stopping
 # (useful for clean back-translated data produced by a strong model)
 pretrain:
-  - original 0.6
+  - original 0.7
   - backtranslated 0.3
   - until original inf
 
