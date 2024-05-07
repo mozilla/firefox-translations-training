@@ -58,7 +58,7 @@ def inject_worker_env(config, jobs):
         if "GPUS" not in worker_env or "WORKSPACE" not in worker_env:
             # GPU tasks will not function correctly without these set; make this an error
             # before they even run.
-            if "gpu" in worker_type:
+            if "gpu" in worker_type or "snakepit" in worker_type:
                 raise Exception(
                     "GPUS and/or WORKSPACE values missing from worker env, this is probably misconfiguration."
                 )
