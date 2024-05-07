@@ -119,6 +119,7 @@ else
       --overwrite \
       --work-dir ${temp} \
       --output ${config_path} \
+      --clusters 3 \
       --add-filter CustomCachedLaserSimilarity '{"path": "laser_scores.pickle"}' \
       --add-filter CustomCachedBicleanerAi '{"path": "bicleaner_scores.pickle"}'
 
