@@ -65,7 +65,8 @@ for index in "${!datasets[@]}"; do
             <(${COMPRESSION_CMD} -dc "${train_aln}") \
             >"${tsv_dataset}"
       rm "${train_aln}"
-      empty_aln_num=$(cut -f3 "${tsv_dataset}" | grep -Fxc "")
+      # grep returns exit code 1 if there are no matches
+      empty_aln_num=$(cut -f3 "${tsv_dataset}" | grep -Fxc "") || true
       echo "### Number of empty alignments for ${train_aln}: ${empty_aln_num}"
     else
       echo "### Generating tsv dataset"
