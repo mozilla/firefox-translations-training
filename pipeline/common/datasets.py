@@ -90,7 +90,12 @@ def shuffle_with_max_lines(
         if len(lines) == max_lines:
             break
 
-    random.shuffle(lines)
+    # random.shuffle requires random access via indexing
+    # deque supports fast adding/removing from its ends with O(1)
+    # but indexing is O(N) which is too slow for shuffling large arrays
+    lines_list = list(lines)
+    random.shuffle(lines_list)
+    lines = deque(lines_list)
 
     # Consume the rest of the line stream, but sample based on the probability that adding
     # something to the collection will be representative.
@@ -111,9 +116,10 @@ def shuffle_with_max_lines(
 
     # Do a final shuffle to ensure that the newly sampled lines are shuffled with the original
     # set of shuffled lines.
-    random.shuffle(lines)
+    lines_list = list(lines)
+    random.shuffle(lines_list)
 
-    return lines
+    return lines_list
 
 
 def shuffle_in_temp_files(
