@@ -70,6 +70,7 @@ tasks:
                     - pipeline/train/configs/opustrainer/teacher.yml
                     - pipeline/train/configs/training/teacher.train.yml
                     - pipeline/train/train.sh
+                    - taskcluster/scripts/pipeline/train_taskcluster.py
                     - taskcluster/scripts/pipeline/train-taskcluster.sh
                 from-parameters:
                     marian_args: training_config.marian-args.training-teacher
@@ -119,7 +120,7 @@ tasks:
                     pip3 install $VCS_PATH/tracking &&
                     export PATH="$HOME/.local/bin:$PATH" &&
                     export MARIAN=$MOZ_FETCHES_DIR &&
-                    $VCS_PATH/taskcluster/scripts/pipeline/train-taskcluster.sh
+                    $VCS_PATH/taskcluster/scripts/pipeline/train_taskcluster.py
                     teacher
                     train
                     {src_locale}
