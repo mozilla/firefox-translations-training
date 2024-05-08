@@ -265,20 +265,31 @@ def publish_task_group(group_id: str, override: bool = False) -> None:
     # Group and publish remaining metrics tasks via the logs publication
     with tempfile.TemporaryDirectory() as temp_dir:
         logs_folder = Path(temp_dir) / "logs"
-        eval_folder = logs_folder / project_name / group_name / "eval"
-        eval_folder.mkdir(parents=True, exist_ok=True)
+        metrics_folder = logs_folder / project_name / group_name / "metrics"
+        metrics_folder.mkdir(parents=True, exist_ok=True)
 
-        for metrics_task in metrics_tasks.values():
+        for metric_task_id, metrics_task in metrics_tasks.items():
             filename = metrics_task["task"]["tags"]["label"]
             if re_match := MULTIPLE_TRAIN_SUFFIX.search(filename):
                 (suffix,) = re_match.groups()
                 filename = MULTIPLE_TRAIN_SUFFIX.sub(suffix, filename)
 
-            with (eval_folder / f"{filename}.log").open("wb") as log_file:
+            metric_artifact = next(
+                (
+                    artifact["name"]
+                    for artifact in queue.listLatestArtifacts(metric_task_id)["artifacts"]
+                    if artifact["name"].endswith(".metrics")
+                ),
+                None,
+            )
+            if metric_artifact is None:
+                logger.error(f"No .metric artifact found for task {metric_task_id}, skipping.")
+                continue
+            with (metrics_folder / f"{filename}.metrics").open("wb") as log_file:
                 downloadArtifactToFile(
                     log_file,
                     taskId=metrics_task["status"]["taskId"],
-                    name="public/logs/live.log",
+                    name=metric_artifact,
                     queueService=queue,
                 )
 

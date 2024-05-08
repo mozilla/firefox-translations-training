@@ -211,24 +211,23 @@ class WandB(Publisher):
                 "*.metrics"
             )
         )
-        evaluation_metrics = sorted((logs_dir / "eval").glob("eval*.log"))
+        logs_metrics = sorted((logs_dir / "eval").glob("eval*.log"))
+        direct_metrics = sorted((logs_dir / "metrics").glob("*.metrics"))
         if quantized_metrics:
-            logger.info(f"Found {len(quantized_metrics)} quantized metrics")
-        else:
-            logger.warning(f"No quantized metric found for group {group}, skipping")
-        if evaluation_metrics:
-            logger.info(f"Found {len(evaluation_metrics)} evaluation metrics")
-        else:
-            logger.warning(f"No evaluation metrics not found for group {group}, skipping")
+            logger.info(f"Found {len(quantized_metrics)} quantized metrics from speed folder")
+        if logs_metrics:
+            logger.info(f"Found {len(logs_metrics)} metrics from task logs")
+        if direct_metrics:
+            logger.info(f"Found {len(logs_metrics)} metrics from .metrics artifacts")
 
         # Store metrics by run name
         metrics = defaultdict(list)
-        # Add "quantized" metrics
+        # Add metrics from the speed folder
         for file in quantized_metrics:
             importer, dataset = file.stem.split("_", 1)
             metrics["quantized"].append(Metric.from_file(file, importer=importer, dataset=dataset))
-        # Add experiment (runs) metrics
-        for file in evaluation_metrics:
+        # Add metrics from tasks logs
+        for file in logs_metrics:
             model_name, importer, dataset, aug = parse_tag(file.stem)
             with file.open("r") as f:
                 lines = f.readlines()
@@ -237,6 +236,15 @@ class WandB(Publisher):
                     Metric.from_tc_context(
                         importer=importer, dataset=dataset, lines=lines, augmentation=aug
                     )
+                )
+            except ValueError as e:
+                logger.error(f"Could not parse metrics from {file.resolve()}: {e}")
+        # Add metrics from .metrics files
+        for file in direct_metrics:
+            model_name, importer, dataset, aug = parse_tag(file.stem)
+            try:
+                metrics[model_name].append(
+                    Metric.from_file(file, importer=importer, dataset=dataset, augmentation=aug)
                 )
             except ValueError as e:
                 logger.error(f"Could not parse metrics from {file.resolve()}: {e}")
