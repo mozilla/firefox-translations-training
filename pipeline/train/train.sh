@@ -58,12 +58,16 @@ for index in "${!datasets[@]}"; do
 
     if [ "${alignments}" != "None" ] ; then
       train_aln="${alns[index]}"
+
       echo "### Generating tsv dataset with alignments ${alignments}"
       paste <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${src}.${ARTIFACT_EXT}") \
             <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${trg}.${ARTIFACT_EXT}") \
             <(${COMPRESSION_CMD} -dc "${train_aln}") \
             >"${tsv_dataset}"
       rm "${train_aln}"
+      # grep returns exit code 1 if there are no matches
+      empty_aln_num=$(cut -f3 "${tsv_dataset}" | grep -Fxc "") || true
+      echo "### Number of empty alignments for ${train_aln}: ${empty_aln_num}"
     else
       echo "### Generating tsv dataset"
       # OpusTrainer supports only tsv and gzip
@@ -122,7 +126,7 @@ echo "### Training ${model_dir}"
 opustrainer-train \
   --config "${new_config}" \
   --log-file "${model_dir}/opustrainer.log" \
-  --log-level INFO \
+  --log-level ERROR \
   "${MARIAN}/marian" \
     --model "${model_dir}/model.npz" \
     -c "configs/model/${model_type}.yml" "configs/training/${model_type}.${training_type}.yml" \

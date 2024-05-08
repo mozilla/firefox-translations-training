@@ -31,6 +31,7 @@ tasks:
                 type: train-backwards
                 resources:
                     - pipeline/train/train.sh
+                    - taskcluster/scripts/pipeline/train_taskcluster.py
                     - taskcluster/scripts/pipeline/train-taskcluster.sh
                     - pipeline/train/configs/model/backward.yml
                     - pipeline/train/configs/opustrainer/backward.yml
@@ -98,7 +99,7 @@ tasks:
                     pip3 install $VCS_PATH/tracking &&
                     export PATH="$HOME/.local/bin:$PATH" &&
                     export MARIAN=$MOZ_FETCHES_DIR &&
-                    $VCS_PATH/taskcluster/scripts/pipeline/train-taskcluster.sh
+                    $VCS_PATH/taskcluster/scripts/pipeline/train_taskcluster.py
                     backward
                     train
                     {trg_locale}

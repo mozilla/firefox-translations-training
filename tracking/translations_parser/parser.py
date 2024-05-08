@@ -160,7 +160,9 @@ class TrainingParser:
         """
         for line in self.logs_iter:
             # When reading stdin stream, propagate raw lines to stdout
-            print(line, file=sys.stdout, end="")
+            # and force flush on stdout to make sure every line gets displayed
+            sys.stdout.buffer.write(line.encode("utf-8"))
+            sys.stdout.buffer.flush()
 
             self._current_index += 1
             headers, position = self.get_headers(line)

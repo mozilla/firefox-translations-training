@@ -101,7 +101,7 @@ tasks:
         task test -- tests/test_alignments.py
     deps: [poetry-install-tests]
     cmds:
-      - PYTHONPATH=$(pwd) poetry run pytest -vv {{.CLI_ARGS}}
+      - PYTHONPATH="$(pwd):$(pwd)/taskcluster/scripts/pipeline" poetry run pytest -vv {{.CLI_ARGS}}
 
   test-docker:
     desc: Run the unit tests in the docker image. Some tests require the pre-built Linux executables.
