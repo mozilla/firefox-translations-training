@@ -7,7 +7,7 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.from_datasets:per_dataset
-    - translations_taskgraph.transforms.worker_env
+    - translations_taskgraph.transforms.worker_selection
     - taskgraph.transforms.task_context
     - translations_taskgraph.transforms.cast_to
     - taskgraph.transforms.chunking

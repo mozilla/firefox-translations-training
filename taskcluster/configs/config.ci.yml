@@ -78,3 +78,5 @@ datasets:
 target-stage: all
 taskcluster:
   split-chunks: 2
+  worker-classes:
+    default: gcp-spot

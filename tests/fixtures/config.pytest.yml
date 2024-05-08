@@ -57,3 +57,5 @@ marian-args:
 target-stage: all
 taskcluster:
   split-chunks: 10
+  worker-classes:
+    default: gcp-spot

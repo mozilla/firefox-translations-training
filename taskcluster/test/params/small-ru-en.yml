@@ -91,4 +91,10 @@ training_config:
   target-stage: clean-corpus
   taskcluster:
     split-chunks: 2
+    worker-classes:
+      finetune-student: gcp-standard
+      train-backwards: gcp-standard
+      train-student: gcp-standard
+      train-teacher: gcp-standard
+      default: gcp-spot
 version: null

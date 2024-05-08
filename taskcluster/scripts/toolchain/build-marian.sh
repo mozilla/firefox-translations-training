@@ -16,8 +16,9 @@ if [ "$patch" != "none" ]; then
   patch -d ${MARIAN_DIR} -p1 < ${MY_DIR}/${patch}
 fi
 
+export LDFLAGS="-static"
 # TODO: consider not calling out to this since it's such a simple script...
-bash $VCS_PATH/pipeline/setup/compile-marian.sh "${MARIAN_DIR}/build" "$(nproc)" "${use_gpu}"
+bash $VCS_PATH/pipeline/setup/compile-marian.sh "${MARIAN_DIR}/build" "$(nproc)" "${use_gpu}" "-DUSE_STATIC_LIBS=on"
 
 cd $MARIAN_DIR/build
 tar -cf $UPLOAD_DIR/marian.tar \
