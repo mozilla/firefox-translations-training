@@ -127,10 +127,10 @@ def make_url_dataset(lang: str):
 
 
 mono_params = [
-    ("news-crawl", "en", "news_2021", [0, 1, 4, 6, 3, 7, 5, 2]),
-    ("news-crawl", "ru", "news_2021", [0, 1, 4, 6, 3, 7, 5, 2]),
-    ("url", "en", make_url_dataset("en"), [2, 1, 5, 4, 0, 7, 6, 3]),
-    ("url", "ru", make_url_dataset("ru"), [5, 4, 2, 0, 7, 1, 3, 6]),
+    ("news-crawl", "en", "news_2021", [2, 5, 3, 7, 0, 6, 4, 1]),
+    ("news-crawl", "ru", "news_2021", [2, 5, 3, 7, 0, 6, 4, 1]),
+    ("url", "en", make_url_dataset("en"), [3, 4, 5, 0, 1, 6, 2, 7]),
+    ("url", "ru", make_url_dataset("ru"), [5, 6, 2, 4, 7, 1, 3, 0]),
 ]
 
 
