@@ -3,7 +3,7 @@ import tempfile
 from collections import deque
 from io import TextIOWrapper
 from random import Random
-from typing import Iterator, Optional
+from typing import Iterable, Iterator, Optional
 
 
 class Dataset:
@@ -56,7 +56,7 @@ def shuffle_with_max_lines(
     max_lines: int,
     max_words_in_sentence,
     total_byte_size: int,
-) -> Iterator[str]:
+) -> Iterable[str]:
     """
     Shuffle a line stream, but only retain up to a maximum number of lines in memory.
     Note that the final ordering is determined by the seed and the contents of the file. So
@@ -94,15 +94,17 @@ def shuffle_with_max_lines(
     # deque supports fast adding/removing from its ends with O(1)
     # but indexing is O(N) which is too slow for shuffling large arrays
     lines_list = list(lines)
+    lines = None
     random.shuffle(lines_list)
-    lines = deque(lines_list)
 
     # Consume the rest of the line stream, but sample based on the probability that adding
     # something to the collection will be representative.
-
     i = 0
     for line in line_stream:
         i = i + 1
+        if lines is None:
+            lines = deque(lines_list)
+            lines_list = None
         # Continuously adjust this estimation in case the first sampled data is not representative.
         total_bytes = total_bytes + len(line.encode("utf-8"))
         average_bytes_per_line = total_bytes / (max_lines + i)
@@ -114,10 +116,12 @@ def shuffle_with_max_lines(
             lines.popleft()
             lines.append(line)
 
-    # Do a final shuffle to ensure that the newly sampled lines are shuffled with the original
-    # set of shuffled lines.
-    lines_list = list(lines)
-    random.shuffle(lines_list)
+    if i != 0:
+        # Do a final shuffle to ensure that the newly sampled lines are shuffled with the original
+        # set of shuffled lines.
+        lines_list = list(lines)
+        del lines
+        random.shuffle(lines_list)
 
     return lines_list
 
