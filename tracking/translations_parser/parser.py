@@ -227,7 +227,7 @@ class TrainingParser:
         logger.debug("Reading Marian configuration.")
         config_yaml = ""
         while ("config",) in headers:
-            # Marian incorrectly logs some messages with [config] prefix
+            # Marian incorrectly logs some messages with [config] prefix.
             if "Model is being created" in text or "Loaded model has been created":
                 headers, text = next(logs_iter)
                 break
