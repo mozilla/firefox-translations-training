@@ -51,6 +51,10 @@ from typing import Optional
 from sacrebleu.metrics.bleu import BLEU, BLEUScore
 from sacrebleu.metrics.chrf import CHRF, CHRFScore
 
+from pipeline.common.logging import get_logger
+
+logger = get_logger("eval")
+
 
 def run_bash_oneliner(command: str):
     """
@@ -64,9 +68,9 @@ def run_bash_oneliner(command: str):
     ]
     command = " \\\n".join(lines)
 
-    print("-----------------Running bash in one line--------------")
-    print(indent(command_dedented, "  "))
-    print("-------------------------------------------------------")
+    logger.info("-----------------Running bash in one line--------------")
+    logger.info(indent(command_dedented, "  "))
+    logger.info("-------------------------------------------------------")
     return subprocess.check_call(command, shell=True)
 
 
@@ -175,23 +179,23 @@ def main(args_list: Optional[list[str]] = None) -> None:
         # The final "false" argument tells Marian not to verify the correctness of the shortlist.
         marian_extra_args = marian_extra_args + ["--shortlist", args.shortlist, "false"]
 
-    print("The eval script is configured with the following:")
-    print(" >          artifacts_dir:", artifacts_dir)
-    print(" > source_file_compressed:", source_file_compressed)
-    print(" >            source_file:", source_file)
-    print(" >            target_file:", target_file)
-    print(" >        target_ref_file:", target_ref_file)
-    print(" >         marian_decoder:", marian_decoder)
-    print(" >        marian_log_file:", marian_log_file)
-    print(" >          language_pair:", language_pair)
-    print(" >           metrics_file:", metrics_file)
-    print(" >           metrics_json:", metrics_json)
-    print(" >      marian_extra_args:", marian_extra_args)
+    logger.info("The eval script is configured with the following:")
+    logger.info(f" >          artifacts_dir: {artifacts_dir}")
+    logger.info(f" > source_file_compressed: {source_file_compressed}")
+    logger.info(f" >            source_file: {source_file}")
+    logger.info(f" >            target_file: {target_file}")
+    logger.info(f" >        target_ref_file: {target_ref_file}")
+    logger.info(f" >         marian_decoder: {marian_decoder}")
+    logger.info(f" >        marian_log_file: {marian_log_file}")
+    logger.info(f" >          language_pair: {language_pair}")
+    logger.info(f" >           metrics_file: {metrics_file}")
+    logger.info(f" >           metrics_json: {metrics_json}")
+    logger.info(f" >      marian_extra_args: {marian_extra_args}")
 
-    print("Ensure that the artifacts directory exists.")
+    logger.info("Ensure that the artifacts directory exists.")
     os.makedirs(artifacts_dir, exist_ok=True)
 
-    print("Save the original target sentences to the artifacts")
+    logger.info("Save the original target sentences to the artifacts")
 
     run_bash_oneliner(
         f"""
@@ -229,13 +233,13 @@ def main(args_list: Optional[list[str]] = None) -> None:
     compute_bleu = BLEU(trg_lang=trg)
     compute_chrf = CHRF()
 
-    print("Computing the BLEU score.")
+    logger.info("Computing the BLEU score.")
     bleu_score: BLEUScore = compute_bleu.corpus_score(target_lines, [target_ref_lines])
     bleu_details = json.loads(
         bleu_score.format(signature=compute_bleu.get_signature().format(), is_json=True)
     )
 
-    print("Computing the chrF score.")
+    logger.info("Computing the chrF score.")
     chrf_score: CHRFScore = compute_chrf.corpus_score(target_lines, [target_ref_lines])
     chrf_details = json.loads(
         chrf_score.format(signature=compute_chrf.get_signature().format(), is_json=True)
@@ -278,11 +282,11 @@ def main(args_list: Optional[list[str]] = None) -> None:
         },
     }
 
-    print(f"Writing {metrics_json}")
+    logger.info(f"Writing {metrics_json}")
     with open(metrics_json, "w") as file:
         file.write(json.dumps(data, indent=2))
 
-    print(f'Writing the metrics in the older "text" format: {metrics_file}')
+    logger.info(f'Writing the metrics in the older "text" format: {metrics_file}')
     with open(metrics_file, "w") as file:
         file.write(f"{bleu_details['score']}\n{chrf_details['score']}\n")
 

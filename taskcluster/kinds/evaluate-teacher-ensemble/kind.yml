@@ -74,6 +74,7 @@ tasks:
                 - -c
                 - >-
                     pip install -r $VCS_PATH/pipeline/eval/requirements/eval.txt &&
+                    export PYTHONPATH=$PYTHONPATH:$VCS_PATH &&
                     export PATH=$PATH:~/.local/bin &&
                     sed -i -e "s,- .*fetches,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
                     sed -i -e "s,- .*artifacts,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
