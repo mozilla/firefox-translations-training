@@ -15,6 +15,13 @@ TRAIN_ON_PROJECTS = (
     "https://github.com/mozilla-releng/staging-firefox-translations-training",
 )
 
+WORKER_CLASSES = (
+    # Regular, on-demand GCP instances
+    "gcp-standard",
+    # Spot instances in GCP
+    "gcp-spot",
+)
+
 
 def can_train(parameters):
     return parameters["head_repository"] in TRAIN_ON_PROJECTS or (
@@ -312,6 +319,15 @@ to be translated by the backward model to augment teacher corpus with back-trans
                     "split-chunks": {
                         "type": "number",
                         "description": "The number of chunks (parallel jobs) to use in `split` steps",
+                    },
+                    "worker-classes": {
+                        "type": "object",
+                        "description": "The class of workers to use for this training, by kind",
+                        "additionalProperties": {
+                            "type": "string",
+                            # TODO: add snakepit type(s) when they are brought online
+                            "enum": ["gcp-standard", "gcp-spot"],
+                        },
                     },
                 },
             },

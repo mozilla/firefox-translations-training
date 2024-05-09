@@ -7,7 +7,7 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.marian_args:transforms
-    - translations_taskgraph.transforms.worker_env
+    - translations_taskgraph.transforms.worker_selection
     - taskgraph.transforms.task_context
     - taskgraph.transforms.run:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
@@ -56,7 +56,7 @@ tasks:
         worker-type:
             by-tasks-for:
                 github-pull-request: b-largegpu-largedisk
-                default: b-largegpu-xlargedisk-standard
+                default: b-largegpu-xlargedisk
         worker:
             max-run-time: 2592000
             env:
