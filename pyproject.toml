@@ -71,6 +71,7 @@ ignore = [
   "E741",      # ambiguous-variable-name
   "PLR09",     # too-many-return-statements, too-many-branches, too-many-arguments, too-many-statements
   "PLR2004",   # magic-value-comparison
+  "PLW0603",   # global-statement
 
   # These are handled by black.
   "E1", "E4", "E5", "W2", "W5"
@@ -85,3 +86,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+  # Run tests outside of docker:
+  #   task test -- -m "not docker_amd64
+  "docker_amd64: These tests require the local docker image."
+]

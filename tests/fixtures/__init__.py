@@ -221,7 +221,7 @@ def get_full_taskgraph():
     Generates the full taskgraph and stores it for re-use. It uses the config.pytest.yml
     in this directory.
     """
-    global _full_taskgraph  # noqa: PLW0603
+    global _full_taskgraph
     if _full_taskgraph:
         return _full_taskgraph
     current_folder = os.path.dirname(os.path.abspath(__file__))

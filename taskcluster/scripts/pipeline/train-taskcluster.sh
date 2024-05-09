@@ -38,9 +38,13 @@ case "$pretrained_model_mode" in
         ;;
     "continue"|"init"|"None")
         if [ "$pretrained_model_mode" == "None" ]; then
-            vocab="$MOZ_FETCHES_DIR/vocab.spm"
-        else
-            vocab="$TASK_WORKDIR/artifacts/vocab.spm"
+            # In any non-pretrained mode this file is pulled from an upstream
+            # task. We copy it over to the artifacts directory earlier to
+            # ensure that it is published even if the task is interrupted
+            # (eg: by a spot termination in GCP). This makes resuming training
+            # easier.
+            mkdir -p "$TASK_WORKDIR/artifacts"
+            cp "$MOZ_FETCHES_DIR/vocab.spm" "$TASK_WORKDIR/artifacts/vocab.spm"
         fi
 
         if [ "$pretrained_model_mode" == "init" ]; then
@@ -54,13 +58,10 @@ case "$pretrained_model_mode" in
         "$train_set_prefix" \
         "$valid_set_prefix" \
         "$model_dir" \
-        "$vocab" \
+        "$TASK_WORKDIR/artifacts/vocab.spm" \
         "$best_model_metric" \
         "$alignments" \
         "$seed" \
         "${extra_params[@]}"
-        if [ "$pretrained_model_mode" == "None" ]; then
-            cp "$vocab" "$model_dir"
-        fi
         ;;
 esac

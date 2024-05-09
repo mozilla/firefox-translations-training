@@ -46,7 +46,7 @@ class OpusDataset(NamedTuple):
         return f"opus_{self.corpus}/{self.version}"
 
     def website_url(self) -> str:
-        return f"https://opus.nlpl.eu/{self.corpus}-{self.version}.php"
+        return f"https://opus.nlpl.eu/{self.corpus}/{self.source}&{self.target}/{self.version}/{self.corpus}"
 
     def humanize_size(self) -> str:
         return humanize.naturalsize(self.size * 1024)
@@ -87,6 +87,7 @@ def get_opus(source: str, target: str, download_url: bool):
                     dataset.url if download_url else dataset.website_url(),
                 ]
                 for dataset in datasets_typed
+                if dataset.alignment_pairs
             ],
         ]
     )
