@@ -6,6 +6,7 @@ import re
 import shlex
 import shutil
 import subprocess
+import time
 from pathlib import Path
 from subprocess import CompletedProcess
 from typing import List, Optional, Union
@@ -155,6 +156,15 @@ class DataDir:
         if not fetches_dir:
             fetches_dir = self.path
 
+        final_env = {
+            **os.environ,
+            **task_env,
+            "TASK_WORKDIR": work_dir,
+            "MOZ_FETCHES_DIR": fetches_dir,
+            "VCS_PATH": root_path,
+            **env,
+        }
+
         # Manually apply the environment variables, as they don't get added to the args
         # through the subprocess.run
         command_parts = [
@@ -182,14 +192,7 @@ class DataDir:
 
         result = subprocess.run(
             command_parts,
-            env={
-                **os.environ,
-                **task_env,
-                "TASK_WORKDIR": work_dir,
-                "MOZ_FETCHES_DIR": fetches_dir,
-                "VCS_PATH": root_path,
-                **env,
-            },
+            env=final_env,
             cwd=root_path,
             check=False,
         )
@@ -240,15 +243,26 @@ def get_full_taskgraph():
     global _full_taskgraph
     if _full_taskgraph:
         return _full_taskgraph
-    print("Generating the full taskgraph, this can take a second.")
-    current_folder = os.path.dirname(os.path.abspath(__file__))
-    config = os.path.join(current_folder, "config.pytest.yml")
-    task_graph_json = os.path.join(current_folder, "../../artifacts/full-task-graph.json")
 
-    run_taskgraph(config, get_taskgraph_parameters())
+    start = time.time()
+
+    current_folder = os.path.dirname(os.path.abspath(__file__))
+    task_graph_json = os.path.join(current_folder, "../../artifacts/full-task-graph.json")
+    config = os.path.join(current_folder, "config.pytest.yml")
+
+    if os.environ.get("SKIP_TASKGRAPH"):
+        print("Using existing taskgraph generation.")
+    else:
+        print(
+            "Generating the full taskgraph, this can take a second. Set SKIP_TASKGRAPH=1 to skip this step."
+        )
+        run_taskgraph(config, get_taskgraph_parameters())
 
     with open(task_graph_json, "rb") as file:
         _full_taskgraph = json.load(file)
+
+    elapsed_sec = time.time() - start
+    print(f"Taskgraph generated in {elapsed_sec:.2f} seconds.")
     return _full_taskgraph
 
 
