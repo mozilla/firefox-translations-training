@@ -24,7 +24,7 @@ def get_base_marian_args(data_dir: DataDir, model_name: str):
         "--quiet-translation",
         "--log", data_dir.join("artifacts/wmt09.log"),
         '--workspace', '12000',
-        '--devices', '4',
+        '--devices', '0',
     ]  # fmt: skip
 
 
@@ -41,23 +41,29 @@ def get_quantized_marian_args(data_dir: DataDir, model_name: str):
     ]  # fmt: skip
 
 
+comet_forwards = 0.3268
+comet_backwards = 0.4306
+
 test_data = [
     # task_name                                                   model_type   model_name
-    ("evaluate-backward-sacrebleu-wmt09-en-ru",                   "base",      "final.model.npz.best-chrf.npz"),
-    ("evaluate-finetuned-student-sacrebleu-wmt09-en-ru",          "base",      "final.model.npz.best-chrf.npz"),
-    ("evaluate-student-sacrebleu-wmt09-en-ru",                    "base",      "final.model.npz.best-chrf.npz"),
-    ("evaluate-teacher-ensemble-sacrebleu-sacrebleu_wmt09-en-ru", "base",      "model*/*.npz"),
-    ("evaluate-quantized-sacrebleu-wmt09-en-ru",                  "quantized", "model.intgemm.alphas.bin")
+    ("evaluate-backward-sacrebleu-wmt09-en-ru",                   "base",      "final.model.npz.best-chrf.npz", comet_backwards),
+    ("evaluate-finetuned-student-sacrebleu-wmt09-en-ru",          "base",      "final.model.npz.best-chrf.npz", comet_forwards),
+    ("evaluate-student-sacrebleu-wmt09-en-ru",                    "base",      "final.model.npz.best-chrf.npz", comet_forwards),
+    ("evaluate-teacher-ensemble-sacrebleu-sacrebleu_wmt09-en-ru", "base",      "model*/*.npz",                  comet_forwards),
+    ("evaluate-quantized-sacrebleu-wmt09-en-ru",                  "quantized", "model.intgemm.alphas.bin",      comet_forwards)
 ]  # fmt:skip
 
 
 @pytest.mark.parametrize("params", test_data, ids=[d[0] for d in test_data])
 def test_evaluate(params) -> None:
-    (task_name, model_type, model_name) = params
+    (task_name, model_type, model_name, comet) = params
 
     data_dir = DataDir("test_eval")
     data_dir.create_zst("wmt09.en.zst", en_sample)
     data_dir.create_zst("wmt09.ru.zst", ru_sample)
+
+    model_path = os.path.join(root_path, "data/models")
+    os.makedirs(model_path, exist_ok=True)
 
     bleu = 0.4
     chrf = 0.64
@@ -71,7 +77,8 @@ def test_evaluate(params) -> None:
             "MARIAN": fixtures_path,
             # This is included via the poetry install
             "COMPRESSION_CMD": "zstd",
-            "GPUS": "4",
+            "COMET_MODEL_DIR": model_path,
+            "GPUS": "0",
         }
     elif model_type == "quantized":
         expected_marian_args = get_quantized_marian_args(data_dir, model_name)
@@ -82,6 +89,8 @@ def test_evaluate(params) -> None:
             "BMT_MARIAN": fixtures_path,
             # This is included via the poetry install
             "COMPRESSION_CMD": "zstd",
+            "COMET_MODEL_DIR": model_path,
+            "GPUS": "0",
         }
 
     # Run the evaluation.
@@ -103,7 +112,7 @@ def test_evaluate(params) -> None:
         assert data_dir.load("artifacts/wmt09.ru") == ru_fake_translated
 
     # Test that text metrics get properly generated.
-    assert f"{bleu}\n{chrf}\n" in data_dir.load("artifacts/wmt09.metrics")
+    assert f"{bleu}\n{chrf}\n{comet}\n" in data_dir.load("artifacts/wmt09.metrics")
 
     # Test that the JSON metrics get properly generated.
     metrics_json = json.loads(data_dir.load("artifacts/wmt09.metrics.json"))
@@ -115,6 +124,10 @@ def test_evaluate(params) -> None:
     assert metrics_json["chrf"]["details"]["name"] == "chrF2"
     assert metrics_json["chrf"]["details"]["score"] == chrf
     assert metrics_json["chrf"]["score"] == chrf
+
+    assert metrics_json["comet"]["details"]["model"] == "Unbabel/wmt22-comet-da"
+    assert metrics_json["comet"]["details"]["score"] == comet
+    assert metrics_json["comet"]["score"] == comet
 
     # Test that marian is given the proper arguments.
     marian_decoder_args = json.loads(data_dir.load("marian-decoder.args.txt"))
