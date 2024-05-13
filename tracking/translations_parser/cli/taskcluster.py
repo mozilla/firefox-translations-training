@@ -75,8 +75,8 @@ def get_args() -> argparse.Namespace:
     parser.add_argument(
         "--wandb-publication",
         action="store_true",
-        help="Trigger publication on Weight & Biases. Disabled by default. Can be set though env variable WANDB_PUBLICATION=true|false",
-        default=os.environ.get("WANDB_PUBLICATION", "false").lower() == "true",
+        help="Trigger publication on Weight & Biases. Disabled by default. Can be set though env variable WANDB_PUBLICATION=True|False",
+        default=os.environ.get("WANDB_PUBLICATION", "False").lower() == "True",
     )
     parser.add_argument(
         "--taskcluster-secret",

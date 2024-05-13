@@ -213,8 +213,8 @@ marian-args:
 # https://mozilla.github.io/firefox-translations-training/task-cluster.html#running-up-to-a-specific-step
 target-stage: all
 
-# Enable publication to Weights and Biases (must be a string)
-wandb-publication: "true"
+# Enable publication to Weights and Biases
+wandb-publication: true
 
 taskcluster:
   # After the parallel corpora are merged and de-duplicated, the combined file is
