@@ -105,6 +105,7 @@ task-defaults:
                 --workspace         "$WORKSPACE"
                 --gpus              "$GPUS"
                 --model_variant     gpu
+                --dataset           {dataset}
 
 tasks:
     backward-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}:
