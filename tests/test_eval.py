@@ -15,6 +15,9 @@ current_folder = os.path.dirname(os.path.abspath(__file__))
 fixtures_path = os.path.join(current_folder, "fixtures")
 root_path = os.path.abspath(os.path.join(current_folder, ".."))
 
+# The evaluation in COMET is quite slow on CPUs.
+pytestmark = [pytest.mark.slow]
+
 
 def get_base_marian_args(data_dir: DataDir, model_name: str):
     return [
