@@ -247,7 +247,7 @@
 [2022-06-24 07:31:51] [config] word-penalty: 0
 [2022-06-24 07:31:51] [config] word-scores: false
 [2022-06-24 07:31:51] [config] workspace: 8000
-[2022-06-24 07:31:51] [config] Model is being created with Marian v1.10.25; e8a1a253 2021-12-07 17:47:33 +0000
+[2022-06-24 07:31:51] [config] Loaded model has been created with Marian v1.12.14 2d067af 2024-02-16 11:44:13 -0500
 [2022-06-24 07:31:51] Using synchronous SGD
 [2022-06-24 07:31:51] [comm] Compiled without MPI support. Running as a single process on mlc4
 [2022-06-24 07:31:51] Synced seed 1656048711
