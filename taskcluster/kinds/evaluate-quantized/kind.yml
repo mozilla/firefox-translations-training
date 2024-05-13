@@ -101,6 +101,7 @@ tasks:
                     --marian_config     "$TASK_WORKDIR/$VCS_PATH/pipeline/quantize/decoder.yml"
                     --marian            "$BMT_MARIAN"
                     --model_variant     quantized
+                    --dataset          {dataset}
 
         dependencies:
             dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
