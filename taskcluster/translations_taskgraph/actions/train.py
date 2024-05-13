@@ -95,6 +95,11 @@ which allows for specifying task group ids to fetch existing tasks from.""",
                 "default": defaults["target-stage"],
                 "enum": graph_config["valid-stages"],
             },
+            "wandb-publication": {
+                "type": "bool",
+                "description": """Enable publication to Weights and Biases""",
+                "default": True
+            },
             "experiment": {
                 "type": "object",
                 "default": defaults["experiment"],
