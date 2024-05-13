@@ -98,7 +98,7 @@ which allows for specifying task group ids to fetch existing tasks from.""",
             "wandb-publication": {
                 "type": "bool",
                 "description": """Enable publication to Weights and Biases""",
-                "default": True
+                "default": True,
             },
             "experiment": {
                 "type": "object",
