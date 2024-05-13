@@ -1,6 +1,6 @@
 import pytest
 
-from tracking.translations_parser.utils import parse_tag
+from tracking.translations_parser.utils import build_task_name, parse_tag
 
 
 @pytest.mark.parametrize(
@@ -50,3 +50,29 @@ from tracking.translations_parser.utils import parse_tag
 )
 def test_parse_tag(example, parsed_values):
     assert parse_tag(example) == parsed_values
+
+
+@pytest.mark.parametrize(
+    "task_tags, values",
+    [
+        (
+            {
+                "os": "linux",
+                "kind": "train-student",
+                "label": "train-student-lt-en",
+            },
+            ("train", "student-1"),
+        ),
+        (
+            {
+                "os": "linux",
+                "kind": "evaluate",
+                "label": "evaluate-teacher-sacrebleu-sacrebleu_aug-upper_wmt19-lt-en-2/2",
+            },
+            ("evaluate", "teacher-2"),
+        ),
+    ],
+)
+def test_build_task_name(task_tags, values):
+    task = {"tags": task_tags}
+    assert build_task_name(task) == values
