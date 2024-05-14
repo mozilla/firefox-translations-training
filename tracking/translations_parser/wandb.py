@@ -89,7 +89,7 @@ def get_wandb_names():
         experiment = {
             "src": "ru",
             "trg": "en",
-            "name": "ci",
+            "name": "ci-evals-pr519",
         }
     else:
         experiment = config["experiment"]
