@@ -233,4 +233,4 @@ tasks:
           pip install pip-tools
         fi
       # Finally generate the hashes.
-      - pip-compile --generate-hashes {{.CLI_ARGS}}
+      - pip-compile --generate-hashes {{.CLI_ARGS}} --allow-unsafe
