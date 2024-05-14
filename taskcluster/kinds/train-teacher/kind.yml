@@ -46,6 +46,7 @@ tasks:
                 trg_locale: training_config.experiment.trg
                 best_model: training_config.experiment.best-model
                 teacher_ensemble: training_config.experiment.teacher-ensemble
+                teacher_mode: training_config.experiment.teacher-mode
                 pretrained_teacher_mode: training_config.experiment.pretrained-models.train-teacher.mode
                 pretrained_teacher_type: training_config.experiment.pretrained-models.train-teacher.type
                 wandb_publication: training_config.wandb-publication
@@ -67,7 +68,8 @@ tasks:
                 type: train-teacher
                 resources:
                     - pipeline/train/configs/model/teacher.yml
-                    - pipeline/train/configs/opustrainer/teacher.yml
+                    - pipeline/train/configs/opustrainer/teacher.one-stage.yml
+                    - pipeline/train/configs/opustrainer/teacher.two-stage.yml
                     - pipeline/train/configs/training/teacher.train.yml
                     - pipeline/train/train.sh
                     - taskcluster/scripts/pipeline/train_taskcluster.py
@@ -75,6 +77,7 @@ tasks:
                 from-parameters:
                     marian_args: training_config.marian-args.training-teacher
                     teacher-ensemble: training_config.experiment.teacher-ensemble
+                    teacher_mode: training_config.experiment.teacher-mode
                     pretrained_teacher: training_config.experiment.pretrained-models.train-teacher
         worker-type:
             by-tasks-for:
@@ -131,6 +134,7 @@ tasks:
                     {best_model}
                     $MOZ_FETCHES_DIR/corpus.aln.zst,$MOZ_FETCHES_DIR/mono.aln.zst
                     {{this_chunk}}
+                    {teacher_mode}
                     {pretrained_teacher_mode}
                     {pretrained_teacher_type}
                     {marian_args}

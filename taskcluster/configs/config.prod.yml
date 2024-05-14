@@ -52,6 +52,9 @@ experiment:
   # Determine how many teachers to train.
   # See: docs/teacher-ensemble.md
   teacher-ensemble: 2
+  # Switch to "one-stage" training if back-translations are produced by a high quality model or
+  # the model stops too early on the fine-tuning stage
+  teacher-mode: "two-stage"
 
   # Training continuation options, see docs/using-pretrained-models.md
   pretrained-models:

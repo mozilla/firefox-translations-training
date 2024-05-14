@@ -120,6 +120,12 @@ which allows for specifying task group ids to fetch existing tasks from.""",
                         "type": "number",
                         "description": "Number of teachers to train",
                     },
+                    "teacher-mode": {
+                        "type": "str",
+                        "description": "Teacher training mode",
+                        "enum": ["one-stage", "two-stage"],
+                        "default": "two-stage",
+                    },
                     "mono-max-sentences-src": {
                         "type": "number",
                         "description": "limits per downloaded src dataset",
