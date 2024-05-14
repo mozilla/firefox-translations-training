@@ -46,6 +46,10 @@ from tracking.translations_parser.utils import build_task_name, parse_tag
             "evaluate-teacher-flores-flores_dev-en-ca-1/2",
             ("teacher-1", "flores", "dev", None),
         ),
+        (
+            "train-teacher-ensemble",
+            ("teacher-ensemble-1", None, None, None),
+        ),
     ],
 )
 def test_parse_tag(example, parsed_values):

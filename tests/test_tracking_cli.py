@@ -205,7 +205,7 @@ def test_experiments_marian_1_12(wandb_mock, getargs_mock, caplog, samples_dir, 
             ),
             (logging.INFO, "Found 4 quantized metrics from speed folder"),
             (logging.INFO, "Found 8 metrics from task logs"),
-            (logging.INFO, "Creating missing run quantized with associated metrics"),
+            (logging.INFO, "Creating missing run quantized-1 with associated metrics"),
             (logging.INFO, "Detected Marian version 1.12"),
         ]
     )
