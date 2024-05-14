@@ -131,6 +131,13 @@ which allows for specifying task group ids to fetch existing tasks from.""",
                     "use-opuscleaner": {
                         "type": "string",
                         "description": "use OpusCleaner to clean corpus",
+                        "enum": ["true", "false"],
+                    },
+                    "opuscleaner-mode": {
+                        "type": "string",
+                        "description": "indicates whether to use dataset specific configs",
+                        "enum": ["custom", "defaults"],
+                        "default": "defaults",
                     },
                     "bicleaner": {
                         "properties": {

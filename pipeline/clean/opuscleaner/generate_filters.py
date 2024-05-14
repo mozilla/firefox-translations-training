@@ -5,9 +5,15 @@ Generates filter config for a dataset based on defaults to use in OpusCleaner
 import argparse
 import json
 import os
+from enum import Enum
 from typing import Optional
 
 CURRENT_FOLDER = os.path.dirname(os.path.abspath(__file__))
+
+
+class Mode(Enum):
+    custom = "custom"
+    defaults = "defaults"
 
 
 def find_custom_filter(src: str, trg: str, dataset: str) -> Optional[str]:
@@ -50,12 +56,15 @@ def build_config(config_path: str, src: str, trg: str) -> str:
         return json.loads(config_str)
 
 
-def generate(dataset: str, output: str, src: str, trg: str) -> None:
+def generate(dataset: str, output: str, src: str, trg: str, mode: Mode) -> None:
     # look whether there are custom filters produced by OpusCleaner UI first
     # if a custom filter is not found, use defaults
-    filter_path = (
-        find_custom_filter(src, trg, dataset) or f"{CURRENT_FOLDER}/configs/default.filters.json"
-    )
+    filter_path = None
+    if mode == Mode.custom:
+        filter_path = find_custom_filter(src, trg, dataset)
+    if filter_path is None:
+        filter_path = f"{CURRENT_FOLDER}/configs/default.filters.json"
+
     print(f"Using filter {filter_path}")
     config = build_config(filter_path, src, trg)
     with open(output, "w") as f:
@@ -71,6 +80,14 @@ if __name__ == "__main__":
     parser.add_argument("trg", metavar="TRG", type=str, help="Target language code")
     parser.add_argument("dataset", metavar="DATASET", type=str, help="Dataset name")
     parser.add_argument("output", metavar="OUTPUT_PATH", type=str, help="Write filter config here")
+    parser.add_argument(
+        "mode",
+        metavar="MODE",
+        type=Mode,
+        choices=list(Mode),
+        default=Mode.defaults,
+        help="What filters to use: custom dataset specific ones or the defaults",
+    )
     args = parser.parse_args()
 
-    generate(args.dataset, args.output, args.src, args.trg)
+    generate(args.dataset, args.output, args.src, args.trg, args.mode)

@@ -25,6 +25,8 @@ experiment:
   # Use the Opus Cleaner tool on the data cleaning step.
   # https://github.com/hplt-project/OpusCleaner
   use-opuscleaner: "true"
+  # "custom" to use dataset specific configs, "defaults" to use the same default setting for all datasets
+  opuscleaner-mode: "defaults"
 
   # Bicleaner is a tool that aims at detecting noisy sentence pairs in a parallel corpus.
   # See: docs/bicleaner.md
