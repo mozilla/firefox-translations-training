@@ -26,6 +26,7 @@ taskcluster = "^56.0.3"
 [tool.poetry.group.tensorboard.dependencies]
 marian-tensorboard = "^0.2.1"
 
+# This install group is for running local utilities.
 [tool.poetry.group.utils.dependencies]
 sacrebleu="2.0.0"
 mtdata="0.3.2"
@@ -35,8 +36,10 @@ blessed = "^1.20.0"
 huggingface-hub = "^0.20.3"
 websocket_client ="*"
 
+# This install group is for running tests. Note that any dependencies in the
+# pipeline are installed separately through the run_task test abstraction. This
+# list is only for things imported directly in the tests.
 [tool.poetry.group.tests.dependencies]
-sacrebleu="2.0.0"
 mtdata="0.3.2"
 requests="2.26.0"
 pytest="7.4.3"
@@ -47,9 +50,6 @@ sh = "^2.0.6"
 zstandard = "^0.22.0"
 translations_parser = {path="./tracking/", develop=true}
 taskcluster-taskgraph = "^7.0.3"
-matplotlib = "^3.8.3"
-eflomal = "1.0.0b1"
-humanize = "^4.9.0"
 
 [tool.black]
 extend-exclude= "/3rd_party"
