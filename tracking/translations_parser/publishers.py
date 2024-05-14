@@ -1,5 +1,6 @@
 import csv
 import logging
+import os
 from abc import ABC
 from collections import defaultdict
 from pathlib import Path
@@ -99,8 +100,9 @@ class WandB(Publisher):
         config.update(self.extra_kwargs.pop("config", {}))
 
         try:
-            # Check if a W&B run already exists with this name
             project = next(filter(lambda p: p.name == self.project, wandb.Api().projects()), None)
+            # Check if a W&B run already exists with this name
+            existing_runs = []
             if project and (name := self.extra_kwargs.get("name")):
                 existing_runs = list(
                     wandb.Api().runs(
@@ -108,7 +110,15 @@ class WandB(Publisher):
                         filters={"display_name": name, "group": self.extra_kwargs.get("group")},
                     )
                 )
-                if len(existing_runs) > 0:
+            if len(existing_runs) > 0:
+                if os.environ.get("RUN_ID", 0) > 0:
+                    logger.info(
+                        "Training has been resumed from an earlier run, data will be overwritten on W&B."
+                    )
+                    for run in existing_runs:
+                        logger.warning(f"Deleting existing run {run.display_name}.")
+                        run.delete()
+                else:
                     logger.warning(
                         f"This run already exists on W&B: {existing_runs}. No data will be published."
                     )
