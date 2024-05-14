@@ -84,9 +84,10 @@ tasks:
                 - bash
                 - -c
                 - >-
+                    export PATH=$PATH:~/.local/bin &&
+                    pip install --upgrade pip
                     pip install -r $VCS_PATH/pipeline/eval/requirements/eval.txt &&
                     pip install $VCS_PATH/tracking &&
-                    export PATH=$PATH:~/.local/bin &&
                     zstd --rm -d $MOZ_FETCHES_DIR/lex.s2t.pruned.zst &&
                     $VCS_PATH/pipeline/eval/eval.py
                     --src               {src_locale}

@@ -87,9 +87,10 @@ task-defaults:
             - bash
             - -c
             - >-
+                export PATH=$PATH:~/.local/bin &&
+                pip install --upgrade pip &&
                 pip install -r $VCS_PATH/pipeline/eval/requirements/eval.txt &&
                 pip install $VCS_PATH/tracking &&
-                export PATH=$PATH:~/.local/bin &&
                 sed -i -e "s,- .*fetches,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
                 sed -i -e "s,- .*artifacts,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
                 $VCS_PATH/pipeline/eval/eval.py
