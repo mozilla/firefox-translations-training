@@ -142,6 +142,7 @@ training_config:
     spm-vocab-size: 32000
     src: lt
     teacher-ensemble: 2
+    teacher-mode: 'two-stage'
     trg: en
     use-opuscleaner: 'false'
     vocab: NOT-YET-SUPPORTED
