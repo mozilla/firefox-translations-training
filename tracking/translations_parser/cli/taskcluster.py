@@ -73,6 +73,12 @@ def get_args() -> argparse.Namespace:
         default=None,
     )
     parser.add_argument(
+        "--wandb-publication",
+        action="store_true",
+        help="Trigger publication on Weight & Biases. Disabled by default. Can be set though env variable WANDB_PUBLICATION=True|False",
+        default=os.environ.get("WANDB_PUBLICATION", "false").lower() == "true",
+    )
+    parser.add_argument(
         "--taskcluster-secret",
         help="Taskcluster secret name used to store the Weight & Biases secret API Key.",
         type=str,
@@ -184,11 +190,13 @@ def boot() -> None:
     # Enable publication on weight and biases when project is set
     # But prevent running when explicitly disabled by operator
     publishers: list[Publisher] = [CSVExport(output_dir=args.output_dir)]
-    if os.environ.get("WANDB_PUBLICATION", "true").lower() == "false":
+    if not args.wandb_publication:
         logger.info(
             "Skip weight & biases publication as requested by operator through WANDB_PUBLICATION"
         )
-    elif project_name:
+    elif not project_name:
+        logger.info("Skip weight & biases publication as project name is not set")
+    else:
         publishers.append(
             WandB(
                 project=project_name,

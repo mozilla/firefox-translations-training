@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 from taskgraph.parameters import extend_parameters_schema
-from voluptuous import Optional, Required
+from voluptuous import Extra, Optional, Required
 
 
 # These defaults line up with the `config.ci.yml` pipeline as much as possible.
@@ -99,6 +99,9 @@ def get_defaults(_):
             # Taskcluster-specific configuration
             "taskcluster": {
                 "split-chunks": 2,
+                "worker-classes": {
+                    "default": "gcp-spot",
+                },
             },
             # Disable Weight & Biases publication on CI
             "wandb-publication": False,
@@ -154,6 +157,10 @@ extend_parameters_schema(
             },
             Optional("taskcluster"): {
                 Optional("split-chunks"): int,
+                Required("worker-classes"): {
+                    Required("default"): str,
+                    Extra: str,
+                },
             },
             Optional("wandb-publication"): bool,
         },

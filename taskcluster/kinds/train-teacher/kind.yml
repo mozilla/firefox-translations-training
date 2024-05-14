@@ -8,7 +8,7 @@ loader: taskgraph.loader.transform:loader
 transforms:
     - translations_taskgraph.transforms.training_continuation:transforms
     - translations_taskgraph.transforms.marian_args:transforms
-    - translations_taskgraph.transforms.worker_env
+    - translations_taskgraph.transforms.worker_selection
     - taskgraph.transforms.task_context
     - translations_taskgraph.transforms.cast_to
     - taskgraph.transforms.chunking
@@ -70,6 +70,7 @@ tasks:
                     - pipeline/train/configs/opustrainer/teacher.yml
                     - pipeline/train/configs/training/teacher.train.yml
                     - pipeline/train/train.sh
+                    - taskcluster/scripts/pipeline/train_taskcluster.py
                     - taskcluster/scripts/pipeline/train-taskcluster.sh
                 from-parameters:
                     marian_args: training_config.marian-args.training-teacher
@@ -78,7 +79,7 @@ tasks:
         worker-type:
             by-tasks-for:
                 github-pull-request: b-largegpu
-                default: b-largegpu-xlargedisk-standard
+                default: b-largegpu-xlargedisk
         worker:
             max-run-time: 2592000
             env:
@@ -119,7 +120,7 @@ tasks:
                     pip3 install $VCS_PATH/tracking &&
                     export PATH="$HOME/.local/bin:$PATH" &&
                     export MARIAN=$MOZ_FETCHES_DIR &&
-                    $VCS_PATH/taskcluster/scripts/pipeline/train-taskcluster.sh
+                    $VCS_PATH/taskcluster/scripts/pipeline/train_taskcluster.py
                     teacher
                     train
                     {src_locale}

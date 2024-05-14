@@ -60,77 +60,104 @@ valid-stages:
 
 workers:
     aliases:
-        # Use for quick tasks that don't require GPUs, eg: linting, tests
-        b-cpu:
+        b-linux-large-gcp-d2g:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
-            worker-type: 'b-linux-large-gcp'
-        # Use for tasks that don't require GPUs, but need lots of disk space
-        # eg: dataset cleaning & merging
-        b-cpu-largedisk:
+            worker-type: '{alias}'
+        b-linux-large-gcp-d2g-300gb:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
-            worker-type: 'b-linux-large-gcp-300gb'
-        # Use for tasks that don't require GPUs, but need immense amounts of disk space
-        # eg: alignments
-        b-cpu-xlargedisk:
+            worker-type: '{alias}'
+        b-linux-large-gcp-d2g-1tb:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
-            worker-type: 'b-linux-large-gcp-1tb'
-        # Use for tasks that don't require GPUs, but need immense amounts of disk space
-        # and higher reliability
-        b-cpu-xlargedisk-standard:
+            worker-type: '{alias}'
+        b-linux-large-gcp-d2g-1tb-standard:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
-            worker-type: 'b-linux-large-gcp-1tb-standard'
-        # Use for quick tasks that need a GPU, eg: evaluate
-        b-gpu:
+            worker-type: '{alias}'
+        b-linux-v100-gpu:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: 'b-linux-v100-gpu'
-        # Use for tasks that need lots of GPU power, but not lots of disk space
-        # eg: translation & scoring
-        b-largegpu:
+            worker-type: '{alias}'
+        b-linux-v100-gpu-4:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: 'b-linux-v100-gpu-4'
-        # Use for tasks that needs lots of GPU power and increased disk space
-        # eg: bicleaner
-        b-largegpu-largedisk:
+            worker-type: '{alias}'
+        b-linux-v100-gpu-4-300gb:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: 'b-linux-v100-gpu-4-300gb'
-        # Use for tasks that need lots of GPU power and immensive amounts of disk space
-        # eg: training
-        b-largegpu-xlargedisk:
+            worker-type: '{alias}'
+        b-linux-v100-gpu-4-300gb-standard:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: 'b-linux-v100-gpu-4-1tb'
-        # Use for tasks that needs lots of GPU power, increased disk space, and higher reliability
-        b-largegpu-largedisk-standard:
+            worker-type: '{alias}'
+        b-linux-v100-gpu-4-1tb:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: 'b-linux-v100-gpu-4-300gb-standard'
-        # Use for tasks that needs lots of GPU power, increased disk space, and higher reliability
-        b-largegpu-xlargedisk-standard:
+            worker-type: '{alias}'
+        b-linux-v100-gpu-4-1tb-standard:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: 'b-linux-v100-gpu-4-1tb-standard'
+            worker-type: '{alias}'
         images:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
             worker-type: '{alias}-gcp'
+
+# Ideally these would be in `workers.aliases` above, but those alias' are
+# resolved by Taskgraph, which is unaware of the `worker-class` lookups
+# we need to do below.
+local-worker-aliases:
+    # Use for quick tasks that don't require GPUs, eg: linting, tests
+    b-cpu:
+        by-worker-class:
+            gcp-standard: 'b-linux-large-gcp-d2g'
+            default: 'b-linux-large-gcp-d2g'
+    b-cpu-largedisk:
+        by-worker-class:
+            gcp-standard: 'b-linux-large-gcp-d2g-300gb'
+            default: 'b-linux-large-gcp-d2g-300gb'
+    # Use for tasks that don't require GPUs, but need immense amounts of disk space
+    # eg: alignments
+    b-cpu-xlargedisk:
+        by-worker-class:
+            gcp-standard: 'b-linux-large-gcp-d2g-1tb-standard'
+            default: 'b-linux-large-gcp-d2g-1tb'
+    # Use for quick tasks that need a GPU, eg: evaluate
+    b-gpu:
+        by-worker-class:
+            gcp-standard: 'b-linux-v100-gpu'
+            default: 'b-linux-v100-gpu'
+    # Use for tasks that need lots of GPU power, but not lots of disk space
+    # eg: translation & scoring
+    b-largegpu:
+        by-worker-class:
+            gcp-standard: 'b-linux-v100-gpu-4'
+            default: 'b-linux-v100-gpu-4'
+    # Use for tasks that needs lots of GPU power and increased disk space
+    # eg: bicleaner
+    b-largegpu-largedisk:
+        by-worker-class:
+            gcp-standard: 'b-linux-v100-gpu-4-300gb-standard'
+            default: 'b-linux-v100-gpu-4-300gb'
+    # Use for tasks that need lots of GPU power and immensive amounts of disk space
+    # eg: training
+    b-largegpu-xlargedisk:
+        by-worker-class:
+            gcp-standard: 'b-linux-v100-gpu-4-1tb-standard'
+            default: 'b-linux-v100-gpu-4-1tb'
 
 # Keys are worker type, and align with the `worker-type` entries in the
 # `worker.aliases` above.

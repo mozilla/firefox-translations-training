@@ -160,7 +160,9 @@ class TrainingParser:
         """
         for line in self.logs_iter:
             # When reading stdin stream, propagate raw lines to stdout
-            print(line, file=sys.stdout, end="")
+            # and force flush on stdout to make sure every line gets displayed
+            sys.stdout.buffer.write(line.encode("utf-8"))
+            sys.stdout.buffer.flush()
 
             self._current_index += 1
             headers, position = self.get_headers(line)
@@ -225,7 +227,8 @@ class TrainingParser:
         logger.debug("Reading Marian configuration.")
         config_yaml = ""
         while ("config",) in headers:
-            if "Model is being created" in text:
+            # Marian incorrectly logs some messages with [config] prefix.
+            if "Model is being created" in text or "Loaded model has been created" in text:
                 headers, text = next(logs_iter)
                 break
             config_yaml += f"{text}\n"
