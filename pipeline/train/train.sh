@@ -3,6 +3,8 @@
 # Train a model.
 #
 
+# Bust the cache.
+
 set -x
 set -euo pipefail
 
