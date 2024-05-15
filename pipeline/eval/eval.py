@@ -358,12 +358,13 @@ def main(args_list: Optional[list[str]] = None) -> None:
             publication=args.wandb_publication,
         )
         try:
-            # Build a valid task tag from the base dataset to detect importer, dataset aud augmentation.
-            # Set "teacher" as the default value for the tag, as the real model is already detected above.
-            _, importer, dataset, augmentation = parse_tag(f"eval_teacher_{args.dataset}")
+            _, importer, dataset, augmentation = parse_tag(
+                f"eval_{args.wandb_run_name}_{args.dataset}"
+            )
         except ValueError:
             print(
-                "Metric could not be published to W&B because the dataset could not be parsed: {args.dataset}"
+                "Metric could not be published to W&B because the dataset could not be parsed from tag "
+                f"'eval_{args.wandb_run_name}_{args.dataset}'."
             )
         else:
             wandb.handle_metrics(
