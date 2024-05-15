@@ -110,26 +110,39 @@ class WandB(Publisher):
                         filters={"display_name": name, "group": self.extra_kwargs.get("group")},
                     )
                 )
-            if len(existing_runs) > 0:
-                if os.environ.get("RUN_ID", 0) > 0:
-                    logger.info(
-                        "Training has been resumed from an earlier run, data will be overwritten on W&B."
-                    )
-                    for run in existing_runs:
-                        logger.warning(f"Deleting existing run {run.display_name}.")
-                        run.delete()
-                else:
+            if len(existing_runs) == 0:
+                # Start a new W&B run
+                self.wandb = wandb.init(
+                    project=self.project,
+                    config=config,
+                    **self.extra_kwargs,
+                )
+                return
+            elif len(existing_runs) == 1:
+                run = existing_runs[0]
+                # Avoid overriding an existing run on a first training, this should not happen
+                if int(os.environ.get("RUN_ID", 0)) < 1:
                     logger.warning(
-                        f"This run already exists on W&B: {existing_runs}. No data will be published."
+                        f"A W&B run already exists with name '{name}': {run}. No data will be published."
                     )
                     return
-
-            # Start a W&B run
-            self.wandb = wandb.init(
-                project=self.project,
-                config=config,
-                **self.extra_kwargs,
-            )
+                # Resume an existing run
+                logger.info(
+                    f"Training has been resumed from an earlier run wit name '{name}', "
+                    f"continue W&B publication with run {run}."
+                )
+                self.wandb = wandb.init(
+                    project=self.project,
+                    config=config,
+                    id=run.id,
+                    resume="must",
+                    **self.extra_kwargs,
+                )
+            else:
+                logger.warning(
+                    f"Multiple W&B runs already exist with name '{name}': {existing_runs}. No data will be published."
+                )
+                return
         except Exception as e:
             logger.error(f"WandB client could not be initialized: {e}. No data will be published.")
 
