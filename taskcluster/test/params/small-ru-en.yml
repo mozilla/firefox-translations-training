@@ -54,6 +54,7 @@ training_config:
     spm-vocab-size: 1000
     src: ru
     teacher-ensemble: 1
+    teacher-mode: 'two-stage'
     trg: en
     use-opuscleaner: 'true'
     vocab: NOT-YET-SUPPORTED

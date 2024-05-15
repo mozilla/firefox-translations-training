@@ -22,9 +22,10 @@ model_dir=$7
 best_model_metric=$8
 alignments=$9
 seed=${10}
-pretrained_model_mode=${11}
-pretrained_model_type=${12}
-extra_params=( "${@:13}" )
+teacher_mode=${11}
+pretrained_model_mode=${12}
+pretrained_model_type=${13}
+extra_params=( "${@:14}" )
 
 if [ "$pretrained_model_mode" != "use" ]; then
     # MOZ_FETCHES_DIR is not required for the "use" pretrained model mode
@@ -62,6 +63,7 @@ case "$pretrained_model_mode" in
         "$best_model_metric" \
         "$alignments" \
         "$seed" \
+        "$teacher_mode" \
         "${extra_params[@]}"
         ;;
 esac

@@ -25,7 +25,8 @@ best_model_metric=$9
 alignments=${10}
 # random seed, UINT
 seed=${11}
-extra_params=( "${@:12}" )
+teacher_mode=${12}
+extra_params=( "${@:13}" )
 
 COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
@@ -43,7 +44,12 @@ echo "### Preparing tsv datasets and config"
 
 # Generate a new OpusTrainer config based on a template to fill paths of the datasets
 new_config="${model_dir}/config.opustrainer.yml"
-cp "configs/opustrainer/${model_type}.yml" "${new_config}"
+if [ "${model_type}" == "teacher" ] ; then
+  echo "### Using teacher training mode: ${teacher_mode}"
+  cp "configs/opustrainer/${model_type}.${teacher_mode}.yml" "${new_config}"
+else
+  cp "configs/opustrainer/${model_type}.yml" "${new_config}"
+fi
 
 # Iterate over the training sets
 # split the input string into an array
