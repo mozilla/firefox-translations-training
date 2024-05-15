@@ -103,7 +103,7 @@ def get_artifact_mounts(pretrained_model: PretrainedModel, directory: str):
         artifact_mounts.append(
             {
                 "content": {"url": url},
-                "file": os.path.join(directory, "{this_chunk}", artifact_name),
+                "file": os.path.join(directory, artifact_name),
             }
         )
     return artifact_mounts
