@@ -88,8 +88,8 @@ tasks:
                     --models           "$MOZ_FETCHES_DIR/model*/*.npz"
                     --artifacts_prefix "$TASK_WORKDIR/artifacts/{dataset_sanitized}"
                     --marian           "$MARIAN"
-                    --workspace        $WORKSPACE
-                    --gpus             $GPUS
+                    --workspace        "$WORKSPACE"
+                    --gpus             "$GPUS"
                     --model_variant    gpu
 
         # Run after the teacher ensemble models are trained.

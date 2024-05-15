@@ -131,9 +131,8 @@ def main(args_list: Optional[list[str]] = None) -> None:
     parser.add_argument(
         "--gpus",
         required=False,
-        default=0,
-        type=int,
-        help="The number of GPUs to use (only for the gpu model variant)",
+        type=str,
+        help="Which GPUs to use (only for the gpu model variant)",
     )
     parser.add_argument(
         "--model_variant", type=str, help="The model variant to use, (gpu, cpu, quantized)"
@@ -164,11 +163,9 @@ def main(args_list: Optional[list[str]] = None) -> None:
     elif args.model_variant == "gpu":
         if not args.workspace:
             raise Exception("The workspace size was not provided")
-        # if not args.gpus:
-        #     raise Exception("The number of GPUs was not provided")
         marian_extra_args = [
             '--workspace', args.workspace,
-            '--devices', str(args.gpus),
+            '--devices', args.gpus,
         ]  # fmt: skip
     elif not args.model_variant == "cpu":
         raise Exception(f"Unsupported model variant {args.model_variant}")
@@ -193,6 +190,7 @@ def main(args_list: Optional[list[str]] = None) -> None:
     logger.info(f" >           metrics_file: {metrics_file}")
     logger.info(f" >           metrics_json: {metrics_json}")
     logger.info(f" >      marian_extra_args: {marian_extra_args}")
+    logger.info(f" >                   gpus: {args.gpus}")
 
     logger.info("Ensure that the artifacts directory exists.")
     os.makedirs(artifacts_dir, exist_ok=True)
@@ -252,8 +250,6 @@ def main(args_list: Optional[list[str]] = None) -> None:
     # The default comet model.
     # It should match the model used in https://github.com/mozilla/firefox-translations-models/
     comet_model_name = "Unbabel/wmt22-comet-da"
-    comet_mode = "cpu" if args.gpus == 0 else "gpu"
-    logger.info(f'Computing the COMET score with "{comet_model_name}" using the {comet_mode}')
 
     # COMET_MODEL_DIR allows tests to place the model in a data directory
     comet_checkpoint = comet.download_model(
@@ -263,9 +259,17 @@ def main(args_list: Optional[list[str]] = None) -> None:
     comet_data = []
     for source, target, target_ref in zip(source_lines, target_lines, target_ref_lines):
         comet_data.append({"src": source, "mt": target, "ref": target_ref})
-    comet_results = comet_model.predict(comet_data, gpus=args.gpus)
+    # GPU information comes in the form of a list of numbers, e.g. "0 1 2 3". Split these to
+    # get the GPU count.
+    gpu_count = len(args.gpus.split(" "))
+    if os.environ.get("COMET_CPU"):
+        gpu_count = 0  # Let tests override the CPU count.
+    comet_mode = "cpu" if gpu_count == 0 else "gpu"
+    logger.info(f'Computing the COMET score with "{comet_model_name}" using the {comet_mode}')
+
+    comet_results = comet_model.predict(comet_data, gpus=gpu_count)
     # Reduce the precision.
-    comet_score = float(round(comet_results.system_score * 1e4)) / 1e4
+    comet_score = round(comet_results.system_score, 4)
 
     metrics = {
         "bleu": {

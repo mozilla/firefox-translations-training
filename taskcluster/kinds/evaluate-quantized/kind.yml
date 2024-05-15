@@ -85,6 +85,7 @@ tasks:
                     --artifacts_prefix  "$TASK_WORKDIR/artifacts/{dataset_sanitized}"
                     --marian_config     "$TASK_WORKDIR/$VCS_PATH/pipeline/quantize/decoder.yml"
                     --marian            "$BMT_MARIAN"
+                    --gpus              "$GPUS"
                     --model_variant     quantized
 
         dependencies:

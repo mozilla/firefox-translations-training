@@ -86,8 +86,8 @@ task-defaults:
                 --dataset_prefix    "$MOZ_FETCHES_DIR/{dataset_sanitized}"
                 --artifacts_prefix  "$TASK_WORKDIR/artifacts/{dataset_sanitized}"
                 --marian            "$MARIAN"
-                --workspace         $WORKSPACE
-                --gpus              $GPUS
+                --workspace         "$WORKSPACE"
+                --gpus              "$GPUS"
                 --model_variant     gpu
 
 tasks:

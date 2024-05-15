@@ -81,7 +81,7 @@ def test_evaluate(params) -> None:
             # This is included via the poetry install
             "COMPRESSION_CMD": "zstd",
             "COMET_MODEL_DIR": model_path,
-            "GPUS": "0",
+            "COMET_CPU": "1",
         }
     elif model_type == "quantized":
         expected_marian_args = get_quantized_marian_args(data_dir, model_name)
@@ -93,7 +93,7 @@ def test_evaluate(params) -> None:
             # This is included via the poetry install
             "COMPRESSION_CMD": "zstd",
             "COMET_MODEL_DIR": model_path,
-            "GPUS": "0",
+            "COMET_CPU": "1",
         }
 
     # Run the evaluation.
