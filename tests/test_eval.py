@@ -15,9 +15,6 @@ current_folder = os.path.dirname(os.path.abspath(__file__))
 fixtures_path = os.path.join(current_folder, "fixtures")
 root_path = os.path.abspath(os.path.join(current_folder, ".."))
 
-# The evaluation in COMET is quite slow on CPUs.
-pytestmark = [pytest.mark.slow]
-
 
 def get_base_marian_args(data_dir: DataDir, model_name: str):
     return [
@@ -44,21 +41,36 @@ def get_quantized_marian_args(data_dir: DataDir, model_name: str):
     ]  # fmt: skip
 
 
-comet_forwards = 0.3268
-comet_backwards = 0.4306
+comet_score = 0.3268
+comet_skipped = "skipped"
 
 test_data = [
     # task_name                                                   model_type   model_name
-    ("evaluate-backward-sacrebleu-wmt09-en-ru",                   "base",      "final.model.npz.best-chrf.npz", comet_backwards),
-    ("evaluate-finetuned-student-sacrebleu-wmt09-en-ru",          "base",      "final.model.npz.best-chrf.npz", comet_forwards),
-    ("evaluate-student-sacrebleu-wmt09-en-ru",                    "base",      "final.model.npz.best-chrf.npz", comet_forwards),
-    ("evaluate-teacher-ensemble-sacrebleu-sacrebleu_wmt09-en-ru", "base",      "model*/*.npz",                  comet_forwards),
-    ("evaluate-quantized-sacrebleu-wmt09-en-ru",                  "quantized", "model.intgemm.alphas.bin",      comet_forwards)
+    ("evaluate-backward-sacrebleu-wmt09-en-ru",                   "base",      "final.model.npz.best-chrf.npz", comet_skipped),
+    ("evaluate-finetuned-student-sacrebleu-wmt09-en-ru",          "base",      "final.model.npz.best-chrf.npz", comet_skipped),
+    ("evaluate-teacher-ensemble-sacrebleu-sacrebleu_wmt09-en-ru", "base",      "model*/*.npz",                  comet_skipped),
+    ("evaluate-quantized-sacrebleu-wmt09-en-ru",                  "quantized", "model.intgemm.alphas.bin",      comet_skipped)
 ]  # fmt:skip
 
 
 @pytest.mark.parametrize("params", test_data, ids=[d[0] for d in test_data])
 def test_evaluate(params) -> None:
+    run_eval_test(params)
+
+
+# COMET is quite slow on CPU, so split out only a single test that exercises it.
+test_data_comet = [
+    ("evaluate-student-sacrebleu-wmt09-en-ru",                    "base",      "final.model.npz.best-chrf.npz", comet_score),
+]  # fmt:skip
+
+
+@pytest.mark.slow  # comet is slow to evaluate.
+@pytest.mark.parametrize("params", test_data_comet, ids=[d[0] for d in test_data_comet])
+def test_evaluate_comet(params) -> None:
+    run_eval_test(params)
+
+
+def run_eval_test(params) -> None:
     (task_name, model_type, model_name, comet) = params
 
     data_dir = DataDir("test_eval")
@@ -95,6 +107,9 @@ def test_evaluate(params) -> None:
             "COMET_MODEL_DIR": model_path,
             "COMET_CPU": "1",
         }
+
+    if comet == "skipped":
+        env["COMET_SKIP"] = "1"
 
     # Run the evaluation.
     data_dir.run_task(

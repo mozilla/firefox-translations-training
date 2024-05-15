@@ -48,7 +48,6 @@ import subprocess
 from textwrap import dedent, indent
 from typing import Optional
 
-import comet
 from sacrebleu.metrics.bleu import BLEU, BLEUScore
 from sacrebleu.metrics.chrf import CHRF, CHRFScore
 
@@ -251,25 +250,32 @@ def main(args_list: Optional[list[str]] = None) -> None:
     # It should match the model used in https://github.com/mozilla/firefox-translations-models/
     comet_model_name = "Unbabel/wmt22-comet-da"
 
-    # COMET_MODEL_DIR allows tests to place the model in a data directory
-    comet_checkpoint = comet.download_model(
-        comet_model_name, saving_directory=os.environ.get("COMET_MODEL_DIR")
-    )
-    comet_model = comet.load_from_checkpoint(comet_checkpoint)
-    comet_data = []
-    for source, target, target_ref in zip(source_lines, target_lines, target_ref_lines):
-        comet_data.append({"src": source, "mt": target, "ref": target_ref})
-    # GPU information comes in the form of a list of numbers, e.g. "0 1 2 3". Split these to
-    # get the GPU count.
-    gpu_count = len(args.gpus.split(" "))
-    if os.environ.get("COMET_CPU"):
-        gpu_count = 0  # Let tests override the CPU count.
-    comet_mode = "cpu" if gpu_count == 0 else "gpu"
-    logger.info(f'Computing the COMET score with "{comet_model_name}" using the {comet_mode}')
+    if os.environ.get("COMET_SKIP"):
+        comet_score = "skipped"
+        print("COMET_SKIP was set, so the COMET score will not be computed.")
+    else:
+        logger.info("Loading COMET")
+        import comet
 
-    comet_results = comet_model.predict(comet_data, gpus=gpu_count)
-    # Reduce the precision.
-    comet_score = round(comet_results.system_score, 4)
+        # COMET_MODEL_DIR allows tests to place the model in a data directory
+        comet_checkpoint = comet.download_model(
+            comet_model_name, saving_directory=os.environ.get("COMET_MODEL_DIR")
+        )
+        comet_model = comet.load_from_checkpoint(comet_checkpoint)
+        comet_data = []
+        for source, target, target_ref in zip(source_lines, target_lines, target_ref_lines):
+            comet_data.append({"src": source, "mt": target, "ref": target_ref})
+        # GPU information comes in the form of a list of numbers, e.g. "0 1 2 3". Split these to
+        # get the GPU count.
+        gpu_count = len(args.gpus.split(" "))
+        if os.environ.get("COMET_CPU"):
+            gpu_count = 0  # Let tests override the CPU count.
+        comet_mode = "cpu" if gpu_count == 0 else "gpu"
+        logger.info(f'Computing the COMET score with "{comet_model_name}" using the {comet_mode}')
+
+        comet_results = comet_model.predict(comet_data, gpus=gpu_count)
+        # Reduce the precision.
+        comet_score = round(comet_results.system_score, 4)
 
     metrics = {
         "bleu": {
