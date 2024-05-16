@@ -61,6 +61,8 @@ tasks:
         worker-type: b-largegpu-xlargedisk
         worker:
             max-run-time: 2592000
+            # train_taskcluster.py exits with 17 if a request to Taskcluster fails
+            retry-exit-status: [17]
             env:
                 ARTIFACT_EXT: zst
                 COMPRESSION_CMD: zstdmt
