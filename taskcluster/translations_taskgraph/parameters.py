@@ -27,6 +27,7 @@ def get_defaults(_):
                 "spm-vocab-size": 1000,
                 "best-model": "chrf",
                 "use-opuscleaner": "true",
+                "opuscleaner-mode": "custom",
                 "bicleaner": {
                     "default-threshold": 0.5,
                     "dataset-thresholds": {
@@ -133,6 +134,7 @@ extend_parameters_schema(
                 Optional("spm-vocab-size"): int,
                 Required("best-model"): str,
                 Required("use-opuscleaner"): str,
+                Optional("opuscleaner-mode"): str,
                 Required("bicleaner"): {
                     Required("default-threshold"): float,
                     Optional("dataset-thresholds"): {
