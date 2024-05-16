@@ -11,28 +11,28 @@ from tracking.translations_parser.utils import build_task_name, parse_tag
             ("teacher-1", "flores", "devtest", "aug-title"),
         ),
         (
-            "evaluate-quantized-mtdata_aug-mix_Neulab-tedtalks_eng-lit-lt-en-2_2",
-            ("quantized-2", "mtdata", "Neulab-tedtalks_eng-lit", "aug-mix"),
+            "evaluate-quantized-mtdata_aug-mix_Neulab-tedtalks_eng-lit-lt-en",
+            ("quantized", "mtdata", "Neulab-tedtalks_eng-lit", "aug-mix"),
         ),
         (
-            "evaluate-finetuned-student-sacrebleu-wmt19-lt-en",
-            ("finetuned-student-1", "sacrebleu", "wmt19", None),
+            "evaluate-finetune-teacher-sacrebleu-wmt19-lt-en-2_2",
+            ("finetune-teacher-2", "sacrebleu", "wmt19", None),
         ),
         (
-            "evaluate-student-2-sacrebleu-wmt19-lt-en",
-            ("student-2", "sacrebleu", "wmt19", None),
+            "evaluate-student-sacrebleu-wmt19-lt-en",
+            ("student", "sacrebleu", "wmt19", None),
         ),
         (
             "train-student-en-hu",
-            ("student-1", None, None, None),
+            ("student", None, None, None),
         ),
         (
             "eval_teacher-ensemble_mtdata_Neulab-tedtalks_test-1-eng-nld",
-            ("teacher-ensemble-1", "mtdata", "Neulab-tedtalks_test-1-eng-nld", None),
+            ("teacher-ensemble", "mtdata", "Neulab-tedtalks_test-1-eng-nld", None),
         ),
         (
             "eval_student-finetuned_flores_devtest",
-            ("student-finetuned-1", "flores", "devtest", None),
+            ("student-finetuned", "flores", "devtest", None),
         ),
         (
             "eval_teacher-base0_flores_devtest",
@@ -40,7 +40,7 @@ from tracking.translations_parser.utils import build_task_name, parse_tag
         ),
         (
             "train-backwards-en-ca",
-            ("backwards-1", None, None, None),
+            ("backwards", None, None, None),
         ),
         (
             "evaluate-teacher-flores-flores_dev-en-ca-1/2",
@@ -48,7 +48,11 @@ from tracking.translations_parser.utils import build_task_name, parse_tag
         ),
         (
             "train-teacher-ensemble",
-            ("teacher-ensemble-1", None, None, None),
+            ("teacher-ensemble", None, None, None),
+        ),
+        (
+            "evaluate-teacher-flores-flores_dev-en-ca",
+            ("teacher-1", "flores", "dev", None),
         ),
     ],
 )
@@ -65,7 +69,7 @@ def test_parse_tag(example, parsed_values):
                 "kind": "train-student",
                 "label": "train-student-lt-en",
             },
-            ("train", "student-1"),
+            ("train", "student"),
         ),
         (
             {

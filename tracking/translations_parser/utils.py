@@ -17,7 +17,7 @@ TRAIN_LABEL_REGEX = re.compile(
     r"train-"
     r"(?P<model>"
     r"(finetuned-student|student-finetuned|teacher-ensemble|teacher|teacher-base|teacher-finetuned"
-    r"|student|quantized|backwards|backward)"
+    r"|finetune-teacher|teacher-all|teacher-parallel|student|quantized|backwards|backward)"
     r")"
     r"(-?(?P<suffix>\d+))?"
     r"[_-]?"
@@ -31,7 +31,7 @@ EVAL_REGEX = re.compile(
     r"(evaluate|eval)[-_]"
     r"(?P<model>"
     r"(finetuned-student|student-finetuned|teacher-ensemble|teacher|teacher-base|teacher-finetuned"
-    r"|student|quantized|backwards|backward)"
+    r"|finetune-teacher|teacher-all|teacher-parallel|student|quantized|backwards|backward)"
     r")"
     r"(-?(?P<suffix>\d+))?"
     r"[_-]"
@@ -56,9 +56,14 @@ def parse_tag(tag, sep="_"):
     if not match:
         raise ValueError(tag)
     groups = match.groupdict()
-    # Always keep the index in the model name (teacher-1/2 → teacher-1)
-    suffix = groups.get("suffix") or groups.get("task_suffix") or "1"
-    model = f"{groups['model']}-{suffix}"
+    model = groups["model"]
+    suffix = groups.get("suffix") or groups.get("task_suffix")
+    if not suffix and model == "teacher":
+        # Keep the index on teacher runs for compatibility with legacy models
+        # https://github.com/mozilla/firefox-translations-training/issues/573
+        suffix = "1"
+    if suffix:
+        model = f"{model}-{suffix}"
     return model, groups.get("importer"), groups.get("dataset"), groups.get("aug")
 
 
