@@ -207,3 +207,30 @@ tasks:
     cmds:
       - >-
         PYTHONPATH=$(pwd) poetry run python -W ignore utils/run_model.py {{.CLI_ARGS}}
+
+  update-requirements:
+    desc: Update the requirements.txt file for a pipeline script.
+    summary: |
+      Example usage:
+      task update-requirements -- pipeline/eval/requirements/eval.in
+    cmds:
+      # Make sure a file was given to update.
+      - >-
+        if [[ -z "{{.CLI_ARGS}}" ]]; then
+          echo "Provide a path to the .in file";
+          echo "For example:"
+          echo "task update-requirements -- pipeline/eval/requirements/eval.in";
+          exit 1
+        fi
+      # Make sure the command is being run for docker
+      - >-
+        if [[ -z "$IS_DOCKER" ]]; then
+          task docker-run -- task update-requirements -- {{.CLI_ARGS}} && exit
+        fi
+      # Make sure pip-tools are available in docker.
+      - >-
+        if ! command -v pip-compile &> /dev/null; then
+          pip install pip-tools
+        fi
+      # Finally generate the hashes.
+      - pip-compile --generate-hashes {{.CLI_ARGS}} --allow-unsafe

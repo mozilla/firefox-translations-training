@@ -156,6 +156,9 @@ class DataDir:
         if not fetches_dir:
             fetches_dir = self.path
 
+        if extra_args:
+            command_parts.extend(extra_args)
+
         final_env = {
             **os.environ,
             **task_env,
@@ -165,18 +168,34 @@ class DataDir:
             **env,
         }
 
-        # Manually apply the environment variables, as they don't get added to the args
-        # through the subprocess.run
-        command_parts = [
-            part.replace("$TASK_WORKDIR/$VCS_PATH", root_path)
-            .replace("$VCS_PATH", root_path)
-            .replace("$TASK_WORKDIR", work_dir)
-            .replace("$MOZ_FETCHES_DIR", fetches_dir)
-            for part in command_parts
-        ]
+        # Expand out environment variables in environment, for instance MARIAN=$MOZ_FETCHES_DIR
+        # and FETCHES=./fetches will be expanded to MARIAN=./fetches
+        for key, value in final_env.items():
+            if not isinstance(value, str):
+                continue
+            expanded_value = final_env.get(value[1:])
+            if value and value[0] == "$" and expanded_value:
+                final_env[key] = expanded_value
 
-        if extra_args:
-            command_parts.extend(extra_args)
+        # Ensure the environment variables are sorted so that the longer variables get replaced first.
+        sorted_env = sorted(final_env.items(), key=lambda kv: kv[0])
+        sorted_env.reverse()
+
+        for index, p in enumerate(command_parts):
+            part = (
+                p.replace("$TASK_WORKDIR/$VCS_PATH", root_path)
+                .replace("$VCS_PATH", root_path)
+                .replace("$TASK_WORKDIR", work_dir)
+                .replace("$MOZ_FETCHES_DIR", fetches_dir)
+            )
+
+            # Apply the task environment.
+            for key, value in sorted_env:
+                env_var = f"${key}"
+                if env_var in part:
+                    part = part.replace(env_var, value)
+
+            command_parts[index] = part
 
         # If using a venv, prepend the binary directory to the path so it is used.
         python_bin_dir = get_python_bin_dir(requirements)
