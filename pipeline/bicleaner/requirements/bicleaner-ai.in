@@ -1,2 +1,3 @@
-# lock fails for Python 3.10
+# cython_hunspell doesn't have wheels for Python 3.10
+git+https://github.com/MSeal/cython_hunspell@2.0.3
 bicleaner-ai==3.0.1
