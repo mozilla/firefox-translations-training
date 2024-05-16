@@ -124,7 +124,7 @@ then
   PARSER=cat
 else
   echo "### Weight & Biases publication is available."
-  PARSER="parse_tc_logs --from-stream -v"
+  PARSER="parse_tc_logs --from-stream --publish-group-logs -v"
 fi
 
 echo "### Training ${model_dir}"
