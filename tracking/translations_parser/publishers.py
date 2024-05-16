@@ -248,9 +248,7 @@ class WandB(Publisher):
         # Add metrics from the speed folder
         for file in quantized_metrics:
             importer, dataset = file.stem.split("_", 1)
-            metrics["quantized-1"].append(
-                Metric.from_file(file, importer=importer, dataset=dataset)
-            )
+            metrics["quantized"].append(Metric.from_file(file, importer=importer, dataset=dataset))
         # Add metrics from tasks logs
         for file in logs_metrics:
             model_name, importer, dataset, aug = parse_tag(file.stem)
