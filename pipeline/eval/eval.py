@@ -51,6 +51,10 @@ from typing import Optional
 from sacrebleu.metrics.bleu import BLEU, BLEUScore
 from sacrebleu.metrics.chrf import CHRF, CHRFScore
 
+from pipeline.common.logging import get_logger
+
+logger = get_logger("eval")
+
 
 def run_bash_oneliner(command: str):
     """
@@ -64,9 +68,9 @@ def run_bash_oneliner(command: str):
     ]
     command = " \\\n".join(lines)
 
-    print("-----------------Running bash in one line--------------")
-    print(indent(command_dedented, "  "))
-    print("-------------------------------------------------------")
+    logger.info("-----------------Running bash in one line--------------")
+    logger.info(indent(command_dedented, "  "))
+    logger.info("-------------------------------------------------------")
     return subprocess.check_call(command, shell=True)
 
 
@@ -127,7 +131,7 @@ def main(args_list: Optional[list[str]] = None) -> None:
         "--gpus",
         required=False,
         type=str,
-        help="The number of GPUs to use (only for the gpu model variant)",
+        help="Which GPUs to use (only for the gpu model variant)",
     )
     parser.add_argument(
         "--model_variant", type=str, help="The model variant to use, (gpu, cpu, quantized)"
@@ -158,8 +162,6 @@ def main(args_list: Optional[list[str]] = None) -> None:
     elif args.model_variant == "gpu":
         if not args.workspace:
             raise Exception("The workspace size was not provided")
-        if not args.gpus:
-            raise Exception("The number of GPUs was not provided")
         marian_extra_args = [
             '--workspace', args.workspace,
             '--devices', args.gpus,
@@ -175,23 +177,24 @@ def main(args_list: Optional[list[str]] = None) -> None:
         # The final "false" argument tells Marian not to verify the correctness of the shortlist.
         marian_extra_args = marian_extra_args + ["--shortlist", args.shortlist, "false"]
 
-    print("The eval script is configured with the following:")
-    print(" >          artifacts_dir:", artifacts_dir)
-    print(" > source_file_compressed:", source_file_compressed)
-    print(" >            source_file:", source_file)
-    print(" >            target_file:", target_file)
-    print(" >        target_ref_file:", target_ref_file)
-    print(" >         marian_decoder:", marian_decoder)
-    print(" >        marian_log_file:", marian_log_file)
-    print(" >          language_pair:", language_pair)
-    print(" >           metrics_file:", metrics_file)
-    print(" >           metrics_json:", metrics_json)
-    print(" >      marian_extra_args:", marian_extra_args)
+    logger.info("The eval script is configured with the following:")
+    logger.info(f" >          artifacts_dir: {artifacts_dir}")
+    logger.info(f" > source_file_compressed: {source_file_compressed}")
+    logger.info(f" >            source_file: {source_file}")
+    logger.info(f" >            target_file: {target_file}")
+    logger.info(f" >        target_ref_file: {target_ref_file}")
+    logger.info(f" >         marian_decoder: {marian_decoder}")
+    logger.info(f" >        marian_log_file: {marian_log_file}")
+    logger.info(f" >          language_pair: {language_pair}")
+    logger.info(f" >           metrics_file: {metrics_file}")
+    logger.info(f" >           metrics_json: {metrics_json}")
+    logger.info(f" >      marian_extra_args: {marian_extra_args}")
+    logger.info(f" >                   gpus: {args.gpus}")
 
-    print("Ensure that the artifacts directory exists.")
+    logger.info("Ensure that the artifacts directory exists.")
     os.makedirs(artifacts_dir, exist_ok=True)
 
-    print("Save the original target sentences to the artifacts")
+    logger.info("Save the original target sentences to the artifacts")
 
     run_bash_oneliner(
         f"""
@@ -225,23 +228,56 @@ def main(args_list: Optional[list[str]] = None) -> None:
         target_ref_lines = file.readlines()
     with open(target_file, "r") as file:
         target_lines = file.readlines()
+    with open(source_file, "r") as file:
+        source_lines = file.readlines()
 
     compute_bleu = BLEU(trg_lang=trg)
     compute_chrf = CHRF()
 
-    print("Computing the BLEU score.")
+    logger.info("Computing the BLEU score.")
     bleu_score: BLEUScore = compute_bleu.corpus_score(target_lines, [target_ref_lines])
     bleu_details = json.loads(
         bleu_score.format(signature=compute_bleu.get_signature().format(), is_json=True)
     )
 
-    print("Computing the chrF score.")
+    logger.info("Computing the chrF score.")
     chrf_score: CHRFScore = compute_chrf.corpus_score(target_lines, [target_ref_lines])
     chrf_details = json.loads(
         chrf_score.format(signature=compute_chrf.get_signature().format(), is_json=True)
     )
 
-    data = {
+    # The default comet model.
+    # It should match the model used in https://github.com/mozilla/firefox-translations-models/
+    comet_model_name = "Unbabel/wmt22-comet-da"
+
+    if os.environ.get("COMET_SKIP"):
+        comet_score = "skipped"
+        print("COMET_SKIP was set, so the COMET score will not be computed.")
+    else:
+        logger.info("Loading COMET")
+        import comet
+
+        # COMET_MODEL_DIR allows tests to place the model in a data directory
+        comet_checkpoint = comet.download_model(
+            comet_model_name, saving_directory=os.environ.get("COMET_MODEL_DIR")
+        )
+        comet_model = comet.load_from_checkpoint(comet_checkpoint)
+        comet_data = []
+        for source, target, target_ref in zip(source_lines, target_lines, target_ref_lines):
+            comet_data.append({"src": source, "mt": target, "ref": target_ref})
+        # GPU information comes in the form of a list of numbers, e.g. "0 1 2 3". Split these to
+        # get the GPU count.
+        gpu_count = len(args.gpus.split(" "))
+        if os.environ.get("COMET_CPU"):
+            gpu_count = 0  # Let tests override the CPU count.
+        comet_mode = "cpu" if gpu_count == 0 else "gpu"
+        logger.info(f'Computing the COMET score with "{comet_model_name}" using the {comet_mode}')
+
+        comet_results = comet_model.predict(comet_data, gpus=gpu_count)
+        # Reduce the precision.
+        comet_score = round(comet_results.system_score, 4)
+
+    metrics = {
         "bleu": {
             "score": bleu_details["score"],
             # Example details:
@@ -276,15 +312,22 @@ def main(args_list: Optional[list[str]] = None) -> None:
             # }
             "details": chrf_details,
         },
+        "comet": {
+            "score": comet_score,
+            "details": {
+                "model": comet_model_name,
+                "score": comet_score,
+            },
+        },
     }
 
-    print(f"Writing {metrics_json}")
+    logger.info(f"Writing {metrics_json}")
     with open(metrics_json, "w") as file:
-        file.write(json.dumps(data, indent=2))
+        file.write(json.dumps(metrics, indent=2))
 
-    print(f'Writing the metrics in the older "text" format: {metrics_file}')
+    logger.info(f'Writing the metrics in the older "text" format: {metrics_file}')
     with open(metrics_file, "w") as file:
-        file.write(f"{bleu_details['score']}\n{chrf_details['score']}\n")
+        file.write(f"{bleu_details['score']}\n" f"{chrf_details['score']}\n" f"{comet_score}\n")
 
 
 if __name__ == "__main__":

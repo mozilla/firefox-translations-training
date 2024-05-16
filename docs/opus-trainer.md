@@ -42,7 +42,18 @@ Ability to split training into multiple stages. Each stage is configurable to us
 
 We use it to pretrain the teacher model on the augmented dataset that includes the original parallel corpus and 
 back-translations and then continue training on the original parallel corpus only
-(see [teacher config](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/opustrainer/teacher.yml)).
+(see [teacher config](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/opustrainer/teacher.two-stage.yml)).
+
+To switch to a [one stage](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/opustrainer/teacher.one-stage.yml) training
+use a config option:
+
+```yaml
+experiment:
+  ...
+  teacher-mode: "one-stage"
+```
+This is useful when the model stops training too early on the fine-tuning stage which usually indicates having a high quality back-translated data and noisy original parallel data.
+It likely will be the case when using a pre-trained student model as a backward model as it has higher quality than a shallow s2s model that we train as a part of the pipeline.
 
 ## Configuration
 

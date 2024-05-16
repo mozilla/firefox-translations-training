@@ -17,13 +17,13 @@ TRAIN_LABEL_REGEX = re.compile(
     r"train-"
     r"(?P<model>"
     r"(finetuned-student|student-finetuned|teacher-ensemble|teacher|teacher-base|teacher-finetuned"
-    r"|student|quantized|backwards|backward)"
-    r"(-?\d+)?"
+    r"|finetune-teacher|teacher-all|teacher-parallel|student|quantized|backwards|backward)"
     r")"
-    r"[_-]"
-    r"(?P<lang>[a-z]{2}-[a-z]{2})"
+    r"(-?(?P<suffix>\d+))?"
+    r"[_-]?"
+    r"(?P<lang>[a-z]{2}-[a-z]{2})?"
     r"-?"
-    r"-?(?P<suffix>[\d_\/]+)?$"
+    r"-?((?P<task_suffix>\d+)(\/|_)\d+)?"
     r"$"
 )
 EVAL_REGEX = re.compile(
@@ -31,9 +31,9 @@ EVAL_REGEX = re.compile(
     r"(evaluate|eval)[-_]"
     r"(?P<model>"
     r"(finetuned-student|student-finetuned|teacher-ensemble|teacher|teacher-base|teacher-finetuned"
-    r"|student|quantized|backwards|backward)"
-    r"(-?\d+)?"
+    r"|finetune-teacher|teacher-all|teacher-parallel|student|quantized|backwards|backward)"
     r")"
+    r"(-?(?P<suffix>\d+))?"
     r"[_-]"
     r"(?P<importer>flores|mtdata|sacrebleu)"
     r"(?P<extra_importer>-flores|-mtdata|-sacrebleu)?"
@@ -41,7 +41,7 @@ EVAL_REGEX = re.compile(
     r"(?P<aug>aug-[^_]+)?"
     r"_?(?P<dataset>[-\w_]*?(-[a-z]{3}-[a-z]{3})?)?"
     r"-?(?P<lang>[a-z]{2}-[a-z]{2})?"
-    r"-?(?P<suffix>[\d_\/]+)?$"
+    r"-?((?P<task_suffix>\d+)(\/|_)\d+)?"
     r"$"
 )
 MULTIPLE_TRAIN_SUFFIX = re.compile(r"(-\d+)/\d+$")
@@ -50,14 +50,21 @@ MULTIPLE_TRAIN_SUFFIX = re.compile(r"(-\d+)/\d+$")
 def parse_tag(tag, sep="_"):
     # First try to parse a simple training label
     match = TRAIN_LABEL_REGEX.match(tag)
-    if match is not None:
-        return match.groupdict()["model"], None, None, None
-    # Else try to parse an evaluation label with importer, dataset and auugmentation
-    match = EVAL_REGEX.match(tag)
+    if match is None:
+        # Else try to parse an evaluation label with importer, dataset and auugmentation
+        match = EVAL_REGEX.match(tag)
     if not match:
         raise ValueError(tag)
     groups = match.groupdict()
-    return groups["model"], groups["importer"], groups["dataset"], groups["aug"]
+    model = groups["model"]
+    suffix = groups.get("suffix") or groups.get("task_suffix")
+    if not suffix and model == "teacher":
+        # Keep the index on teacher runs for compatibility with legacy models
+        # https://github.com/mozilla/firefox-translations-training/issues/573
+        suffix = "1"
+    if suffix:
+        model = f"{model}-{suffix}"
+    return model, groups.get("importer"), groups.get("dataset"), groups.get("aug")
 
 
 def taskcluster_log_filter(headers: Sequence[Sequence[str]]) -> bool:
@@ -82,17 +89,6 @@ def build_task_name(task: dict):
     """
     Build a simpler task name using a Taskcluster task payload (without status)
     """
-    name = task["tags"]["kind"]
-    prefix = name.split("-")[0]
-    if prefix == "train":
-        # Remove "train-" prefix from training task only to avoid duplicates
-        name = name[6:]
-
-    # Teacher training may run multiple times (e.g. "-1/2" prefix)
-    suffix = ""
-    label = task["tags"].get("label")
-    if label and (re_match := MULTIPLE_TRAIN_SUFFIX.search(label)):
-        (suffix,) = re_match.groups()
-
-    # Final name uses the cleaned suffix
-    return prefix, name + suffix
+    prefix = task["tags"]["kind"].split("-")[0]
+    model, *_ = parse_tag(task["tags"]["label"])
+    return prefix, model
