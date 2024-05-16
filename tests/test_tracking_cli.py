@@ -126,8 +126,8 @@ def test_experiments_marian_1_10(wandb_mock, getargs_mock, caplog, samples_dir, 
             (logging.INFO, "Creating missing run backward with associated metrics"),
             (logging.INFO, "Creating missing run quantized with associated metrics"),
             (logging.INFO, "Creating missing run student-finetuned with associated metrics"),
-            (logging.INFO, "Creating missing run teacher-base0 with associated metrics"),
-            (logging.INFO, "Creating missing run teacher-base1 with associated metrics"),
+            (logging.INFO, "Creating missing run teacher-base-0 with associated metrics"),
+            (logging.INFO, "Creating missing run teacher-base-1 with associated metrics"),
             (logging.INFO, "Creating missing run teacher-ensemble with associated metrics"),
         ]
     )

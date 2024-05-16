@@ -15,6 +15,7 @@ from pathlib import Path
 from translations_parser.data import Metric
 from translations_parser.parser import TrainingParser
 from translations_parser.publishers import WandB
+from translations_parser.utils import parse_tag
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +91,11 @@ def main() -> None:
         project, group, *name = parents
         base_name = name[0]
         name = "_".join(name)
+        try:
+            name, *_ = parse_tag(f"train-{name}")
+        except ValueError:
+            logger.error(f"Invalid tag extracted from file @{path}: '{name}'")
+            continue
 
         # Publish a run for each file inside that group
         for file in files:
