@@ -27,10 +27,12 @@ logger = get_logger(__file__)
 # bicleaner-ai-download downloads the latest models from Hugging Face / Github
 # If a new model is released and you want to invalidate Taskcluster caches,
 # change this file since it is a part of the cache digest
-# The last model was added to https://huggingface.co/bitextor on Aug 29, 2023
+# The last model was added to https://huggingface.co/bitextor on Mar 11, 2024
 def _run_download(src: str, trg: str, dir: str) -> subprocess.CompletedProcess:
+    # use large multilingual models
+    model_type = "full-large" if trg == "xx" else "full"
     return subprocess.run(
-        ["bicleaner-ai-download", trg, src, "full", dir], capture_output=True, check=False
+        ["bicleaner-ai-download", trg, src, model_type, dir], capture_output=True, check=False
     )
 
 
