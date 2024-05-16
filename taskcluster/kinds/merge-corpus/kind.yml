@@ -14,7 +14,7 @@ transforms:
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
-    - bicleaner
+    - clean-corpus
     - toolchain
 
 task-defaults:
@@ -89,7 +89,7 @@ tasks:
             upstream-task-attributes:
                 cleaning-type:
                     by-cleaning-type:
-                        bicleaner-ai: bicleaner-ai
+                        clean-corpus: clean-corpus
 
         task-context:
             from-object:

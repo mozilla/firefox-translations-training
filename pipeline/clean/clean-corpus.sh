@@ -81,7 +81,7 @@ echo "### Language identification"
 test -s "${output_prefix}.${SRC}${TRG}.langid.${ARTIFACT_EXT}" ||
   # langid_fasttext.py will download this file if it is not already present. When it runs in
   # parallel, this will typically cause the file to be corrupt.
-  test -s tools/lid.176.bin || wget -O tools/lid.176.bin https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
+  test -s tools/lid.176.ftz || wget -O tools/lid.176.ftz https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.ftz
   ${COMPRESSION_CMD} -dc "${output_prefix}.${SRC}${TRG}.rule-based.${ARTIFACT_EXT}" |
   # memory intensive
   parallel --no-notice --pipe -k -j "$(echo "${threads}"/4 | bc)" --block 50M \
@@ -107,6 +107,15 @@ ${COMPRESSION_CMD} >"${output_prefix}.${TRG}.${ARTIFACT_EXT}"
 
 test -s "${output_prefix}.${SRC}.${ARTIFACT_EXT}" || exit 1
 test -s "${output_prefix}.${TRG}.${ARTIFACT_EXT}" || exit 1
+
+echo "### Checking length of the files"
+new_len_src="$(${COMPRESSION_CMD} -dc "${output_prefix}.${SRC}.${ARTIFACT_EXT}" | wc -l)"
+new_len_trg="$(${COMPRESSION_CMD} -dc "${output_prefix}.${TRG}.${ARTIFACT_EXT}" | wc -l)"
+orig_len_src="$(${COMPRESSION_CMD} -dc "${output_prefix}.${SRC}.${ARTIFACT_EXT}" | wc -l)"
+[[ ${new_len_src} -ge 1 ]] || exit 1
+[[ ${new_len_trg} -ge 1 ]] || exit 1
+[[ "${new_len_src}" = "${new_len_trg}" ]] || exit 1
+echo "### Filtered length: ${new_len_src} / ${orig_len_src}"
 
 echo "### Remove input_prefix from intermediate steps"
 rm -rf "${output_prefix}".*.nrm.${ARTIFACT_EXT} "${output_prefix}".*.langid.${ARTIFACT_EXT} \

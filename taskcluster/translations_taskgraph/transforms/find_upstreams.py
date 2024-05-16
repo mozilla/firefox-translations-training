@@ -63,12 +63,12 @@ def get_cleaning_type(upstreams):
     candidates = set()
 
     for upstream in upstreams:
-        if upstream.kind not in ("bicleaner", "clean-corpus"):
+        if upstream.kind not in ("bicleaner", "clean-corpus", "preprocess-corpus", "laser"):
             continue
 
         candidates.add(upstream.attributes["cleaning-type"])
 
-    for type_ in ("bicleaner-ai", "clean-corpus"):
+    for type_ in ("bicleaner-ai", "clean-corpus", "preprocess-corpus", "laser"):
         if type_ in candidates:
             return type_
 

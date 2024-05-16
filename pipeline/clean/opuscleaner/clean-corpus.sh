@@ -15,6 +15,7 @@ input_prefix=$1
 output_prefix=$2
 threads=$3
 dataset=$4
+preprocess=$5
 
 COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
@@ -27,10 +28,20 @@ cd "$(dirname "${0}")"
 dir="$(dirname "${output_prefix}")"
 mkdir -p "${dir}"
 
+echo "Downloading FastText model"
+# pre download fast text model as it's causing constant issues
+#filters_dir="/builds/worker/.local/lib/python3.10/site-packages/opuscleaner/filters"
+#wget -O "${filters_dir}/large.bin" https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
+
+echo "Downloading and installing LASER models"
+# install here due to a conflict on pip-compile lock
+#pip install laserembeddings
+#python3 -m laserembeddings download-models
+
 echo "### Generating cleaning config: ${dataset}.${SRC}-${TRG}.filters.json"
 # save new filter to dataset output dir
 filter_path="${output_prefix}.${SRC}-${TRG}.filters.json"
-python3 generate_filters.py "${input_prefix}" "${SRC}" "${TRG}" "${dataset}" "${filter_path}"
+python3 generate_filters.py "${input_prefix}" "${SRC}" "${TRG}" "${dataset}" "${filter_path}" --preprocess ${preprocess}
 test -s "${filter_path}" || exit 1
 
 echo "### Cleaning ${input_prefix} with filter ${filter_path}"

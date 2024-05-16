@@ -1,0 +1,54 @@
+# todo: to python
+common:
+  output_directory: /builds/worker/artifacts
+steps:
+- type: filter
+  parameters:
+    inputs:
+    - <src_input>
+    - <trg_input>
+    outputs:
+    - filtered.<src>.gz
+    - filtered.<trg>.gz
+    filters:
+    - LanguageIDFilter:
+        id_method: fasttext
+        fasttext_model_path: <fasttext_path>
+        languages:
+        - <src>
+        - <trg>
+        thresholds:
+        - 0.7
+        - 0.7
+    - CustomAlphaRatioFilter:
+        unit: word
+        name: word
+        languages:
+        - <src>
+        - <trg>
+        thresholds:
+        - 0.5
+        - 0.5
+      module: customfilter
+    - CustomAlphaRatioFilter:
+        unit: char
+        name: char
+        languages:
+        - <src>
+        - <trg>
+        thresholds:
+        - 0.4
+        - 0.4
+      module: customfilter
+    - LengthRatioFilter:
+        unit: word
+        name: word
+        threshold: 2
+    - CustomCachedLaserSimilarity:
+        path: laser_scores.pickle
+        threshold: 0.7
+      module: customfilter
+    - CustomCachedBicleanerAi:
+        path: bicleaner_scores.pickle
+        threshold: 0.7
+      module: customfilter

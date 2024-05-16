@@ -19,6 +19,8 @@ taskgraph:
 # These get attached to tasks in `kinds`.
 valid-stages:
     - clean-corpus
+    - preprocess
+    - laser
     - clean-mono
     - bicleaner
     - bicleaner-model
