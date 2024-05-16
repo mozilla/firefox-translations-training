@@ -30,7 +30,7 @@ CONTINUATION_ARTIFACTS = {
 }
 
 
-ARTIFACTS_URL = "{root_url}/api/queue/v1/task/{task_id}/runs/{run_id}/artifacts"
+ARTIFACTS_URL = "{root_url}/api/queue/v1/task/{task_id}/runs/{run_id}/artifactsueohtn"
 ARTIFACT_URL = "{root_url}/api/queue/v1/task/{task_id}/runs/{run_id}/artifacts/{artifact_name}"
 # The argument number where pretrained model mode is expected.
 # This is 1-indexed, not 0-indexed, so it should line up with the argument
