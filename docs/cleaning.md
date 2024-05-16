@@ -42,12 +42,18 @@ Another option is to use an all-in-one cleaning tool [OpusCleaner](https://githu
 
 Config setting:
 ```
-  use-opuscleaner: true
+  use-opuscleaner: "true"
 ```
+
+To enable custom per-dataset filter configs add:
+```
+  opuscleaner-mode: "custom"
+```
+
 
 ## Custom filter configs
 
-The idea behind the OpusCleaner is customizing filter rules for each language pair and dataset
+The idea behind OpusCleaner is customizing filter rules for each language pair and dataset
 to get a training corpus with less noise and train higher quality translation models.
 
 Filtering rules can be tuned in an interactive UI.
@@ -68,11 +74,18 @@ They will correspond to `opus_...` training datasets in the training pipeline co
 Configure cleaning rules for the datasets in the UI.
 
 Copy JSON files for the produced filters `data/train-parts/*.filter.json` to 
-`pipeline/clean/opuscleaner/configs/<src-lang-code>-<trg-lang-code>/`.
+`pipeline/clean/opuscleaner/configs/<src-lang-code>-<trg-lang-code>/` for langauge pair and dataset specific filters 
+(such filters will also apply to the opposite langauge pair)
+
+or to 
+
+`pipeline/clean/opuscleaner/configs/` for dataset specific filters that will apply to all language pairs.
+
+Make sure to replace the language codes to the template values `<src>` and `<trg>`. See examples in the directory.
 
 ### Default config
 
-If no custom config was specifed for the dataset, 
+If no custom config was specified for the dataset, 
 the [default config template](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/clean/opuscleaner/configs/default.filters.json) will be used.
 
 Modify if needed. Some rules require specifying source or target language. 
