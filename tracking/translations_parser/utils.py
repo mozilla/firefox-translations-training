@@ -30,10 +30,10 @@ TRAIN_LABEL_REGEX = re.compile(
     r"(-?(?P<suffix>\d+))?"
     r"[_-]?"
     #
-    # Match the languages.
+    # Match the languages. BCP 47 language tags can be 2 or 3 letters long.
     #   train-teacher-ru-en-1
     #                 ^^ ^^
-    r"(?P<lang>[a-z]{2}-[a-z]{2})?"
+    r"(?P<lang>[a-z]{2,3}-[a-z]{2,3})?"
     r"-?"
     #
     # Match the task chunking, for instance:
@@ -79,7 +79,7 @@ EVAL_REGEX = re.compile(
     #   evaluate-quantized-mtdata_aug-mix_Neulab-tedtalks_eng-lit-lt-en
     #                                     ^^^^^^^^^^^^^^^^^^^^^^^
     r"_?(?P<dataset>[-\w\d_]*?(-[a-z]{3}-[a-z]{3})?)?"
-    r"-?(?P<lang>[a-z]{2}-[a-z]{2})?"
+    r"-?(?P<lang>[a-z]{2,3}-[a-z]{2,3})?"
     #
     # Match the task chunking, for instance:
     #   evaluate-teacher-flores-flores_dev-en-ca-1/2

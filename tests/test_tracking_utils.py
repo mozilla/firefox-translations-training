@@ -67,6 +67,15 @@ from tracking.translations_parser.utils import ParsedTaskLabel, build_task_name,
             "evaluate-backward-url-gcp_pytest-dataset_a0017e-en-ru",
             ("backward", "url", "gcp_pytest-dataset_a0017e", None),
         ),
+        (
+            "train-teacher-ast-en-1",
+            ("teacher-1", None, None, None),
+        ),
+        (
+            # Test the 3-letter language codes like "Asturian".
+            "evaluate-student-sacrebleu-wmt19-ast-en",
+            ("student", "sacrebleu", "wmt19", None),
+        ),
     ],
 )
 def test_parse_task_label(task_label, parsed_values):
