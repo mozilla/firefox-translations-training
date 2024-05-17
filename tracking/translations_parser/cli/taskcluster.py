@@ -16,17 +16,14 @@ import argparse
 import logging
 import os
 import sys
-import tempfile
 from collections.abc import Iterator
 from io import TextIOWrapper
 from pathlib import Path
 
-import yaml
-
 import taskcluster
 from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import CSVExport, Publisher
-from translations_parser.utils import taskcluster_log_filter
+from translations_parser.utils import publish_group_logs_from_tasks, taskcluster_log_filter
 from translations_parser.wandb import add_wandb_arguments, get_wandb_publisher
 
 queue = taskcluster.Queue({"rootUrl": "https://firefox-ci-tc.services.mozilla.com"})
@@ -38,7 +35,6 @@ def get_args() -> argparse.Namespace:
     )
     input_group = parser.add_mutually_exclusive_group()
     input_group.add_argument(
-        "--input-file",
         "-i",
         help="Path to the Task Cluster log file.",
         type=Path,
@@ -121,8 +117,7 @@ def boot() -> None:
 
     if args.publish_group_logs:
         logger.info("Publishing experiment config to a 'group_logs' fake run.")
-
-        # Retrieve experiment configuration from task group
+        # Retrieve experiment configuration from the task group
         task_id = os.environ.get("TASK_ID")
         if not task_id:
             raise Exception("Group logs publication can only run in taskcluster")
@@ -132,15 +127,7 @@ def boot() -> None:
         queue.getTaskGroup(group_id)
         task_group = queue.task(group_id)
         config = task_group.get("extra", {}).get("action", {}).get("context", {}).get("input")
-
-        with tempfile.TemporaryDirectory() as temp_dir:
-            logs_folder = Path(temp_dir) / "logs"
-            config_path = Path(temp_dir) / "experiments" / project_name / group_name / "config.yml"
-            config_path.parent.mkdir(parents=True, exist_ok=True)
-            parents = str(logs_folder.resolve()).strip().split("/")
-            with config_path.open("w") as config_file:
-                yaml.dump(config, config_file)
-            WandB.publish_group_logs(parents, project_name, group_name, existing_runs=[])
+        publish_group_logs_from_tasks(args.project_name, args.group_name, config=config)
 
 
 def main() -> None:

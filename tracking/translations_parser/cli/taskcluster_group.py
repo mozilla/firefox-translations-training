@@ -14,14 +14,13 @@ from collections import defaultdict
 from pathlib import Path
 
 import wandb
-import yaml
 
 import taskcluster
-from taskcluster.download import downloadArtifactToBuf, downloadArtifactToFile
+from taskcluster.download import downloadArtifactToBuf
 from translations_parser.data import Metric
 from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import WandB
-from translations_parser.utils import build_task_name, parse_task_label
+from translations_parser.utils import build_task_name, parse_task_label, publish_logs_from_tasks
 
 MULTIPLE_TRAIN_SUFFIX = re.compile(r"(-\d+)/\d+$")
 KIND_TAG_TARGET = ("train", "finetune")
@@ -256,45 +255,7 @@ def publish_task_group(group_id: str, override: bool = False) -> None:
         )
 
     # Group and publish remaining metrics tasks via the logs publication
-    with tempfile.TemporaryDirectory() as temp_dir:
-        logs_folder = Path(temp_dir) / "logs"
-        metrics_folder = logs_folder / project_name / group_name / "metrics"
-        metrics_folder.mkdir(parents=True, exist_ok=True)
-
-        for metric_task_id, metrics_task in metrics_tasks.items():
-            filename = metrics_task["task"]["tags"]["label"]
-            if re_match := MULTIPLE_TRAIN_SUFFIX.search(filename):
-                (suffix,) = re_match.groups()
-                filename = MULTIPLE_TRAIN_SUFFIX.sub(suffix, filename)
-
-            metric_artifact = next(
-                (
-                    artifact["name"]
-                    for artifact in queue.listLatestArtifacts(metric_task_id)["artifacts"]
-                    if artifact["name"].endswith(".metrics")
-                ),
-                None,
-            )
-            if metric_artifact is None:
-                logger.error(f"No .metric artifact found for task {metric_task_id}, skipping.")
-                continue
-            with (metrics_folder / f"{filename}.metrics").open("wb") as log_file:
-                downloadArtifactToFile(
-                    log_file,
-                    taskId=metrics_task["status"]["taskId"],
-                    name=metric_artifact,
-                    queueService=queue,
-                )
-
-        # Dump experiment config so it is published on group_logs
-        config_path = Path(temp_dir) / "experiments" / project_name / group_name / "config.yml"
-        config_path.parent.mkdir(parents=True, exist_ok=True)
-
-        with config_path.open("w") as config_file:
-            yaml.dump(config, config_file)
-
-        parents = str(logs_folder.resolve()).strip().split("/")
-        WandB.publish_group_logs(parents, project_name, group_name, existing_runs=[])
+    publish_logs_from_tasks(project_name, group_name, metrics_tasks=metrics_tasks, config=config)
 
 
 def list_dependent_group_ids(task_id: str, known: set[str]):
