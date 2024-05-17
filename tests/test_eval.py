@@ -45,11 +45,11 @@ comet_score = 0.3268
 comet_skipped = "skipped"
 
 test_data = [
-    # task_name                                                   model_type   model_name
-    ("evaluate-backward-sacrebleu-wmt09-en-ru",                   "base",      "final.model.npz.best-chrf.npz", comet_skipped),
-    ("evaluate-finetuned-student-sacrebleu-wmt09-en-ru",          "base",      "final.model.npz.best-chrf.npz", comet_skipped),
-    ("evaluate-teacher-ensemble-sacrebleu-sacrebleu_wmt09-en-ru", "base",      "model*/*.npz",                  comet_skipped),
-    ("evaluate-quantized-sacrebleu-wmt09-en-ru",                  "quantized", "model.intgemm.alphas.bin",      comet_skipped)
+    # task_name                                          model_type   model_name
+    ("evaluate-backward-sacrebleu-wmt09-en-ru",          "base",      "final.model.npz.best-chrf.npz", comet_skipped),
+    ("evaluate-finetuned-student-sacrebleu-wmt09-en-ru", "base",      "final.model.npz.best-chrf.npz", comet_skipped),
+    ("evaluate-teacher-ensemble-sacrebleu-wmt09-en-ru",  "base",      "model*/*.npz",                  comet_skipped),
+    ("evaluate-quantized-sacrebleu-wmt09-en-ru",         "quantized", "model.intgemm.alphas.bin",      comet_skipped)
 ]  # fmt:skip
 
 

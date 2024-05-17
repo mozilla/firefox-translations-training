@@ -20,7 +20,7 @@ kind-dependencies:
     - toolchain
 
 tasks:
-    "{provider}-{dataset}-{src_locale}-{trg_locale}":
+    "{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}":
         description: teacher evaluation for {dataset} {src_locale}-{trg_locale}
         attributes:
             stage: evaluate-teacher-ensemble
