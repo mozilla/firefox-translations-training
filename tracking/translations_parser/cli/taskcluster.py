@@ -228,8 +228,8 @@ def main() -> None:
     """
     try:
         boot()
-    except Exception as e:
-        logger.error(f"Publication failed: {e}")
+    except Exception:
+        logger.exception("Publication failed")
         if os.environ.get("MOZ_AUTOMATION") is not None:
             # Stop cleanly when in taskcluster
             sys.exit(0)
