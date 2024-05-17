@@ -59,10 +59,30 @@ from tracking.translations_parser.utils import ParsedTaskLabel, build_task_name,
             "train-finetune-student-ru-en",
             ("finetune-student", None, None, None),
         ),
+        (
+            "train-teacher-ru-en-1",
+            ("teacher-1", None, None, None),
+        ),
+        (
+            "evaluate-backward-url-gcp_pytest-dataset_a0017e-en-ru",
+            ("backward", "url", "gcp_pytest-dataset_a0017e", None),
+        ),
     ],
 )
 def test_parse_task_label(task_label, parsed_values):
     assert parse_task_label(task_label) == ParsedTaskLabel(*parsed_values)
+
+
+def test_parse_labels_on_full_taskgraph():
+    """Ensure that all the taskgraph task labels parse."""
+    for task in get_full_taskgraph():
+        if not task.startswith("train-") and not task.startswith("evaluate-"):
+            continue
+        if task.startswith("train-vocab"):
+            continue
+        print(task)
+        # This throws when it fails to parse.
+        parse_task_label(task)
 
 
 @pytest.mark.parametrize(
