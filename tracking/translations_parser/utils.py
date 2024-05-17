@@ -12,36 +12,78 @@ DATASET_KEYWORDS = ["flores", "mtdata", "sacrebleu"]
 TAG_PROJECT_SUFFIX_REGEX = re.compile(r"((-\w{2}){2}|(-\w{3}){2})$")
 
 
+# This regex needs to work on historic runs as well as the current tasks.
 TRAIN_LABEL_REGEX = re.compile(
     r"^"
     r"train-"
+    #
+    # Capture what model is being run, for instance:
+    #   train-teacher-ru-en-1
+    #         ^^^^^^^
     r"(?P<model>"
     r"(finetuned-student|finetune-student|student-finetuned|teacher-ensemble|teacher|teacher-base|teacher-finetuned"
     r"|finetune-teacher|teacher-all|teacher-parallel|student|quantized|backwards|backward)"
     r")"
+    #
+    # Capture some legacy numeric suffixes.
     r"(-?(?P<suffix>\d+))?"
     r"[_-]?"
+    #
+    # Match the languages.
+    #   train-teacher-ru-en-1
+    #                 ^^ ^^
     r"(?P<lang>[a-z]{2}-[a-z]{2})?"
     r"-?"
+    #
+    # Match the task chunking, for instance:
+    #   train-teacher-ru-en-1/3
+    #                       ^
     r"-?((?P<task_suffix>\d+)(\/|_)\d+)?"
+    #
     r"$"
 )
 EVAL_REGEX = re.compile(
     r"^"
+    # Match evaluate steps.
     r"(evaluate|eval)[-_]"
+    #
+    # Capture what model is being run, for instance:
+    #   evaluate-student-sacrebleu-wmt19-lt-en
+    #            ^^^^^^^
     r"(?P<model>"
     r"(finetuned-student|finetune-student|student-finetuned|teacher-ensemble|teacher|teacher-base|teacher-finetuned"
     r"|finetune-teacher|teacher-all|teacher-parallel|student|quantized|backwards|backward)"
     r")"
+    #
+    # Capture some legacy numeric suffixes.
     r"(-?(?P<suffix>\d+))?"
     r"[_-]"
+    #
+    # Capture which importer is being used.
+    #   evaluate-teacher-flores-flores_aug-title_devtest-lt-en-1_2
+    #                    ^^^^^^
     r"(?P<importer>flores|mtdata|sacrebleu)"
     r"(?P<extra_importer>-flores|-mtdata|-sacrebleu)?"
     r"[_-]"
+    #
+    # Capture any augmentations
+    #   evaluate-teacher-flores-flores_aug-title_devtest-lt-en-1_2
+    #                                  ^^^^^^^^^
     r"(?P<aug>aug-[^_]+)?"
+    #
+    # Capture the dataset.
+    #   evaluate-quantized-mtdata_aug-mix_Neulab-tedtalks_eng-lit-lt-en
+    #                                     ^^^^^^^^^^^^^^^^^^^^^^^
     r"_?(?P<dataset>[-\w_]*?(-[a-z]{3}-[a-z]{3})?)?"
     r"-?(?P<lang>[a-z]{2}-[a-z]{2})?"
+    #
+    # Match the task chunking, for instance:
+    #   evaluate-teacher-flores-flores_dev-en-ca-1/2
+    #                                            ^
+    #   evaluate-teacher-flores-flores_aug-title_devtest-lt-en-1_2
+    #                                                          ^
     r"-?((?P<task_suffix>\d+)(\/|_)\d+)?"
+    #
     r"$"
 )
 MULTIPLE_TRAIN_SUFFIX = re.compile(r"(-\d+)/\d+$")
