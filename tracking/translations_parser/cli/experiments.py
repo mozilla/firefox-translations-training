@@ -92,7 +92,7 @@ def main() -> None:
         base_name = name[0]
         name = "_".join(name)
         try:
-            name, *_ = parse_task_label(f"train-{name}")
+            name = parse_task_label(f"train-{name}").model
         except ValueError:
             logger.error(f"Invalid tag extracted from file @{path}: '{name}'")
             continue

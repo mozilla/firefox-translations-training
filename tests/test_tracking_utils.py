@@ -1,10 +1,11 @@
 import pytest
+from fixtures import get_full_taskgraph
 
-from tracking.translations_parser.utils import build_task_name, parse_task_label
+from tracking.translations_parser.utils import ParsedTaskLabel, build_task_name, parse_task_label
 
 
 @pytest.mark.parametrize(
-    "example, parsed_values",
+    "task_label, parsed_values",
     [
         (
             "evaluate-teacher-flores-flores_aug-title_devtest-lt-en-1_2",
@@ -60,8 +61,8 @@ from tracking.translations_parser.utils import build_task_name, parse_task_label
         ),
     ],
 )
-def test_parse_task_label(example, parsed_values):
-    assert parse_task_label(example) == parsed_values
+def test_parse_task_label(task_label, parsed_values):
+    assert parse_task_label(task_label) == ParsedTaskLabel(*parsed_values)
 
 
 @pytest.mark.parametrize(

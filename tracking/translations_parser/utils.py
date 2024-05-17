@@ -2,6 +2,7 @@ import logging
 import re
 from collections.abc import Sequence
 from datetime import datetime
+from typing import NamedTuple, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -89,14 +90,24 @@ EVAL_REGEX = re.compile(
 MULTIPLE_TRAIN_SUFFIX = re.compile(r"(-\d+)/\d+$")
 
 
-def parse_task_label(tag, sep="_"):
+class ParsedTaskLabel(NamedTuple):
+    model: str
+    importer: Optional[str]
+    dataset: Optional[str]
+    augmentation: Optional[str]
+
+
+def parse_task_label(task_label: str) -> ParsedTaskLabel:
+    """
+    Parse details out of train-* and evaluate-* task labels.
+    """
     # First try to parse a simple training label
-    match = TRAIN_LABEL_REGEX.match(tag)
+    match = TRAIN_LABEL_REGEX.match(task_label)
     if match is None:
         # Else try to parse an evaluation label with importer, dataset and auugmentation
-        match = EVAL_REGEX.match(tag)
+        match = EVAL_REGEX.match(task_label)
     if not match:
-        raise ValueError(tag)
+        raise ValueError(task_label)
     groups = match.groupdict()
     model = groups["model"]
     suffix = groups.get("suffix") or groups.get("task_suffix")
@@ -106,7 +117,7 @@ def parse_task_label(tag, sep="_"):
         suffix = "1"
     if suffix:
         model = f"{model}-{suffix}"
-    return model, groups.get("importer"), groups.get("dataset"), groups.get("aug")
+    return ParsedTaskLabel(model, groups.get("importer"), groups.get("dataset"), groups.get("aug"))
 
 
 def taskcluster_log_filter(headers: Sequence[Sequence[str]]) -> bool:
@@ -132,5 +143,5 @@ def build_task_name(task: dict):
     Build a simpler task name using a Taskcluster task payload (without status)
     """
     prefix = task["tags"]["kind"].split("-")[0]
-    model, *_ = parse_task_label(task["tags"]["label"])
-    return prefix, model
+    label = parse_task_label(task["tags"]["label"])
+    return prefix, label.model

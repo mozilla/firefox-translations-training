@@ -226,7 +226,7 @@ def publish_task_group(group_id: str, override: bool = False) -> None:
             eval_label = eval_task["task"]["tags"].get("label", "")
 
             try:
-                model_name, _, _, _ = parse_task_label(eval_label)
+                model_name = parse_task_label(eval_label).model
             except ValueError:
                 continue
 
