@@ -26,7 +26,7 @@ charset-normalizer==3.3.2
     # via requests
 click==8.1.7
     # via sacremoses
-cyhunspell @ git+https://github.com/MSeal/cython_hunspell@2.0.3
+cyhunspell==2.0.3
     # via
     #   -r reqs.in
     #   fastspell
