@@ -47,7 +47,7 @@ EVAL_REGEX = re.compile(
 MULTIPLE_TRAIN_SUFFIX = re.compile(r"(-\d+)/\d+$")
 
 
-def parse_tag(tag, sep="_"):
+def parse_task_label(tag, sep="_"):
     # First try to parse a simple training label
     match = TRAIN_LABEL_REGEX.match(tag)
     if match is None:
@@ -90,5 +90,5 @@ def build_task_name(task: dict):
     Build a simpler task name using a Taskcluster task payload (without status)
     """
     prefix = task["tags"]["kind"].split("-")[0]
-    model, *_ = parse_tag(task["tags"]["label"])
+    model, *_ = parse_task_label(task["tags"]["label"])
     return prefix, model

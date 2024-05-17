@@ -20,7 +20,7 @@ from taskcluster.download import downloadArtifactToBuf, downloadArtifactToFile
 from translations_parser.data import Metric
 from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import WandB
-from translations_parser.utils import MULTIPLE_TRAIN_SUFFIX, build_task_name, parse_tag
+from translations_parser.utils import MULTIPLE_TRAIN_SUFFIX, build_task_name, parse_task_label
 
 KIND_TAG_TARGET = ("train", "finetune")
 queue = taskcluster.Queue({"rootUrl": "https://firefox-ci-tc.services.mozilla.com"})
@@ -226,7 +226,7 @@ def publish_task_group(group_id: str, override: bool = False) -> None:
             eval_label = eval_task["task"]["tags"].get("label", "")
 
             try:
-                model_name, _, _, _ = parse_tag(eval_label)
+                model_name, _, _, _ = parse_task_label(eval_label)
             except ValueError:
                 continue
 

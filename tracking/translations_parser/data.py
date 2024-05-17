@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Sequence
 
-from translations_parser.utils import parse_tag
+from translations_parser.utils import parse_task_label
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +84,7 @@ class Metric:
             raise ValueError(f"Metrics file could not be parsed: {e}")
         bleu_detok, chrf = values
         if importer is None:
-            _, importer, dataset, augmentation = parse_tag(metrics_file.stem)
+            _, importer, dataset, augmentation = parse_task_label(metrics_file.stem)
         return cls(
             importer=importer,
             dataset=dataset,

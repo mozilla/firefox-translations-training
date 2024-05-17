@@ -1,6 +1,6 @@
 import pytest
 
-from tracking.translations_parser.utils import build_task_name, parse_tag
+from tracking.translations_parser.utils import build_task_name, parse_task_label
 
 
 @pytest.mark.parametrize(
@@ -60,8 +60,8 @@ from tracking.translations_parser.utils import build_task_name, parse_tag
         ),
     ],
 )
-def test_parse_tag(example, parsed_values):
-    assert parse_tag(example) == parsed_values
+def test_parse_task_label(example, parsed_values):
+    assert parse_task_label(example) == parsed_values
 
 
 @pytest.mark.parametrize(
