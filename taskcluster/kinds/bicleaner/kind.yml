@@ -96,6 +96,7 @@ tasks:
                 # 5) "pack dir" - which needs to be where the `bicleaner-src-trg` fetch was unpacked to
                 - >-
                     pip install $MOZ_FETCHES_DIR/hunspell-0.5.5-cp310-cp310-linux_x86_64.whl &&
+                    pip install $MOZ_FETCHES_DIR/cyhunspell-2.0.3-cp310-cp310-linux_x86_64.whl &&
                     pip install $MOZ_FETCHES_DIR/kenlm-0.0.0-cp310-cp310-linux_x86_64.whl &&
                     pip install -r {bicleaner_reqs} &&
                     export PATH=$PATH:~/.local/bin &&
@@ -111,6 +112,7 @@ tasks:
         fetches:
             toolchain:
                 - hunspell
+                - cyhunspell
                 - kenlm
                 - cuda-toolkit-11
             "{provider}":
