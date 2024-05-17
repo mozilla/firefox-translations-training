@@ -65,12 +65,9 @@ def check_result(result: subprocess.CompletedProcess):
 
 
 def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None:
-    tmp_dir = os.path.join(tempfile.gettempdir(), "bicleaner")
+    tmp_dir = os.path.join(tempfile.gettempdir(), f"bicleaner-ai-{src}-{trg}")
     if not os.path.exists(tmp_dir):
         os.mkdir(tmp_dir)
-
-    original_src = src
-    original_trg = trg
 
     # Attempt to download a model.
     # 1: src-trg
@@ -79,43 +76,33 @@ def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None
     logger.info(f"Attempt 1 of 3: Downloading a model for {src}-{trg}")
     result = _run_download(src, trg, tmp_dir)
 
-    pack_path = os.path.join(tmp_dir, f"{src}-{trg}")
-    if os.path.exists(pack_path):
+    meta_path = os.path.join(tmp_dir, "metadata.yaml")
+    if os.path.exists(meta_path):
         check_result(result)
-        logger.info(f"The model for {src}-{trg} existed")
+        logger.info(f"The model for {src}-{trg} is downloaded")
     else:
         src, trg = trg, src
         logger.info(f"Attempt 2 of 3. Downloading a model for {src}-{trg}")
         result = _run_download(src, trg, tmp_dir)
 
-        pack_path = os.path.join(tmp_dir, f"{src}-{trg}")
-
-        if os.path.exists(pack_path):
+        if os.path.exists(meta_path):
             check_result(result)
-            print(f"The model for {src}-{trg} existed")
+            print(f"The model for {src}-{trg} is downloaded")
         else:
             logger.info("Attempt 3 of 3. Downloading the multilingual model en-xx")
             src = "en"
             trg = "xx"
             result = _run_download(src, trg, tmp_dir)
 
-            pack_path = os.path.join(tmp_dir, f"{src}-{trg}")
-            if not os.path.exists(pack_path):
+            if not os.path.exists(meta_path):
                 check_result(result)
-                raise Exception("Could not download the multilingual model.")
+                raise Exception("Could not download the multilingual model")
 
-    logger.info("Compress the downloaded pack.")
-    new_name = os.path.join(tmp_dir, f"bicleaner-ai-{original_src}-{original_trg}")
-    logger.info(f'pack_path: "{pack_path}"')
-    logger.info(f'new_name: "{new_name}"')
+            print(f"The model for {src}-{trg} is downloaded")
 
-    if os.path.isdir(new_name):
-        logger.info(f"rmtree {new_name}")
-        shutil.rmtree(new_name)
-
-    shutil.move(pack_path, new_name)
-    pack_path = new_name
+    pack_path = tmp_dir
     if compression_cmd:
+        logger.info("Compress the downloaded pack.")
         pack_path = _compress_dir(pack_path, compression_cmd)
 
     # Move to the expected path
