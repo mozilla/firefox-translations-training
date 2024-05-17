@@ -32,7 +32,7 @@ def _run_download(src: str, trg: str, dir: str) -> subprocess.CompletedProcess:
     # use large multilingual models
     model_type = "full-large" if trg == "xx" else "full"
     return subprocess.run(
-        ["bicleaner-ai-download", trg, src, model_type, dir], capture_output=True, check=False
+        ["bicleaner-ai-download", src, trg, model_type, dir], capture_output=True, check=False
     )
 
 
