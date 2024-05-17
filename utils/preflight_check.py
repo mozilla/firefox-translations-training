@@ -56,6 +56,7 @@ def load_yml(filename: str) -> any:
 def get_taskgraph_parameters() -> Parameters:
     # These are required by taskgraph.
     os.environ["TASK_ID"] = "fake_id"
+    os.environ["RUN_ID"] = "0"
     os.environ["TASKCLUSTER_ROOT_URL"] = "https://firefox-ci-tc.services.mozilla.com"
 
     # Load taskcluster/config.yml
