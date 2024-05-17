@@ -52,46 +52,6 @@ def get_args() -> argparse.Namespace:
         default=Path(__file__).parent.parent / "output",
     )
     parser.add_argument(
-        "--wandb-project",
-        help="Publish the training run to a Weight & Biases project.",
-        default=None,
-    )
-    parser.add_argument(
-        "--wandb-artifacts",
-        help="Directory containing training artifacts to publish on Weight & Biases.",
-        type=Path,
-        default=None,
-    )
-    parser.add_argument(
-        "--wandb-group",
-        help="Add the training run to a Weight & Biases group e.g. by language pair or experiment.",
-        default=None,
-    )
-    parser.add_argument(
-        "--wandb-run-name",
-        help="Use a custom name for the Weight & Biases run.",
-        default=None,
-    )
-    parser.add_argument(
-        "--wandb-publication",
-        action="store_true",
-        help="Trigger publication on Weight & Biases. Disabled by default. Can be set though env variable WANDB_PUBLICATION=True|False",
-        default=os.environ.get("WANDB_PUBLICATION", "false").lower() == "true",
-    )
-    parser.add_argument(
-        "--taskcluster-secret",
-        help="Taskcluster secret name used to store the Weight & Biases secret API Key.",
-        type=str,
-        default=os.environ.get("TASKCLUSTER_SECRET"),
-    )
-    parser.add_argument(
-        "--tags",
-        help="List of tags to use on Weight & Biases publication",
-        type=str,
-        default=["taskcluster"],
-        nargs="+",
-    )
-    parser.add_argument(
         "--verbose",
         "-v",
         help="Print debug messages.",
