@@ -305,14 +305,15 @@ def get_huggingface_any(language: str):
     )
 
 
-def get_remote_file_size(url: str) -> Optional[int]:
+def get_remote_file_size(url: str, display_not_200: bool = True) -> Optional[int]:
     try:
         response = requests.head(url, timeout=1)
 
         if response.status_code == 200:
             return humanize.naturalsize(int(response.headers.get("Content-Length", 0)))
         else:
-            print(f"Failed to retrieve file information. Status code: {response.status_code}")
+            if display_not_200:
+                print(f"Failed to retrieve file information. Status code: {response.status_code}")
             return None
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
@@ -389,6 +390,37 @@ def get_mtdata(source: str, target: str):
     print_yaml(names, exclude=excludes)
 
 
+def get_news_crawl(source: str, target: str):
+    for lang in (source, target):
+        datasets = []
+        for i in range(20):
+            year = 2007 + i
+            name = f"news-crawl_news.{year}"
+            url = (
+                f"https://data.statmt.org/news-crawl/{lang}/news.{year}.{lang}.shuffled.deduped.gz"
+            )
+            size = get_remote_file_size(url, display_not_200=False)
+            if size is not None:
+                datasets.append((name, url, size))
+
+        print("")
+        print("┌─────────────────────────────────────────────────────────────────────┐")
+        print(f"│ news-crawl ({lang}) - https://github.com/data.statmt.org/news-crawl     │")
+        print("└─────────────────────────────────────────────────────────────────────┘")
+        print_table(
+            [
+                [
+                    "Dataset",
+                    "URL",
+                    "Size",
+                ],
+                *[[name, url, size] for name, url, size in datasets],
+            ]
+        )
+
+        print_yaml([name for name, _, _ in datasets])
+
+
 def print_yaml(names: list[str], exclude: list[str] = []):
     cleaned = set()
     for name in names:
@@ -441,6 +473,7 @@ def main(args: Optional[list[str]] = None) -> None:
         "huggingface_mono",
         "huggingface_parallel",
         "huggingface_any",
+        "news-crawl",
     ]
     parser = argparse.ArgumentParser(
         description=__doc__,
@@ -487,6 +520,9 @@ def main(args: Optional[list[str]] = None) -> None:
 
     if args.importer == "huggingface_any" or not args.importer:
         get_huggingface_any(args.target if args.source == "en" else args.source)
+
+    if args.importer == "news-crawl" or not args.importer:
+        get_news_crawl(args.source, args.target)
 
 
 if __name__ == "__main__":
