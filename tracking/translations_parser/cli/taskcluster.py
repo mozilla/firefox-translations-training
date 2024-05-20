@@ -223,7 +223,7 @@ def boot() -> None:
 
 def main() -> None:
     """
-    Called from Python entrypoint
+    Entry point for the `parse_tc_logs` script.
     Catch every exception when running in Taskcluster to avoid crashing real training
     """
     try:
