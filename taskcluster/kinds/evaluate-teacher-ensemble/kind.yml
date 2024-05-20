@@ -109,7 +109,6 @@ tasks:
                     --workspace        "$WORKSPACE"
                     --gpus             "$GPUS"
                     --model_variant    gpu
-                    --dataset      {dataset}
 
         # Run after the teacher ensemble models are trained.
         from-deps:

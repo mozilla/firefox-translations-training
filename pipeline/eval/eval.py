@@ -55,8 +55,7 @@ from pipeline.common.logging import get_logger
 
 logger = get_logger("eval")
 try:
-    from translations_parser.data import Metric
-    from translations_parser.utils import parse_tag
+    from translations_parser.utils import metric_from_tc_context
     from translations_parser.wandb import add_wandb_arguments, get_wandb_publisher
 
     WANDB_AVAILABLE = True
@@ -144,11 +143,6 @@ def main(args_list: Optional[list[str]] = None) -> None:
     )
     parser.add_argument(
         "--model_variant", type=str, help="The model variant to use, (gpu, cpu, quantized)"
-    )
-    parser.add_argument(
-        "--dataset",
-        type=str,
-        help="The name of the dataset (e.g. 'flores-aug-inline-noise_devtest')",
     )
 
     # Add Weight & Biases CLI args when module is loaded
@@ -357,27 +351,14 @@ def main(args_list: Optional[list[str]] = None) -> None:
             artifacts=args.wandb_artifacts,
             publication=args.wandb_publication,
         )
-        try:
-            _, importer, dataset, augmentation = parse_tag(
-                f"eval_{args.wandb_run_name}_{args.dataset}"
-            )
-        except ValueError:
-            print(
-                "Metric could not be published to W&B because the dataset could not be parsed from tag "
-                f"'eval_{args.wandb_run_name}_{args.dataset}'."
-            )
-        else:
-            wandb.handle_metrics(
-                metrics=[
-                    Metric(
-                        importer=importer,
-                        dataset=dataset,
-                        augmentation=augmentation,
-                        chrf=chrf_details["score"],
-                        bleu_detok=bleu_details["score"],
-                    )
-                ]
-            )
+        wandb.handle_metrics(
+            metrics=[
+                metric_from_tc_context(
+                    chrf=chrf_details["score"],
+                    bleu_detok=bleu_details["score"],
+                )
+            ]
+        )
 
 
 if __name__ == "__main__":

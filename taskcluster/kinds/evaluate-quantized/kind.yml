@@ -104,7 +104,6 @@ tasks:
                     --marian            "$BMT_MARIAN"
                     --gpus              "$GPUS"
                     --model_variant     quantized
-                    --dataset          {dataset}
 
         dependencies:
             dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}

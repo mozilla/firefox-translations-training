@@ -1,8 +1,11 @@
 import logging
+import os
 import re
 from collections.abc import Sequence
 from datetime import datetime
 from typing import NamedTuple, Optional
+
+import taskcluster
 
 logger = logging.getLogger(__name__)
 
@@ -149,3 +152,27 @@ def build_task_name(task: dict):
     prefix = task["tags"]["kind"].split("-")[0]
     label = parse_task_label(task["tags"]["label"])
     return prefix, label.model
+
+
+def metric_from_tc_context(chrf: float, bleu: float):
+    """
+    Find the various names needed to build a metric directly from a Taskcluster task
+    """
+    from translations_parser.data import Metric
+
+    task_id = os.environ.get("TASK_ID")
+    if not task_id:
+        raise Exception("Evaluation metric can only be build in taskcluster")
+
+    # CI task groups do not expose any configuration, so we must use default values
+    queue = taskcluster.Queue({"rootUrl": os.environ["TASKCLUSTER_PROXY_URL"]})
+    task = queue.task(task_id)
+    parsed = parse_task_label(task["tags"]["label"])
+
+    return Metric(
+        importer=parsed.importer,
+        dataset=parsed.dataset,
+        augmentation=parsed.augmentation,
+        chrf=chrf,
+        bleu_detok=bleu,
+    )
