@@ -15,7 +15,7 @@ from pathlib import Path
 from translations_parser.data import Metric
 from translations_parser.parser import TrainingParser
 from translations_parser.publishers import WandB
-from translations_parser.utils import parse_tag
+from translations_parser.utils import parse_task_label
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +92,7 @@ def main() -> None:
         base_name = name[0]
         name = "_".join(name)
         try:
-            name, *_ = parse_tag(f"train-{name}")
+            name = parse_task_label(f"train-{name}").model
         except ValueError:
             logger.error(f"Invalid tag extracted from file @{path}: '{name}'")
             continue

@@ -10,7 +10,7 @@ import wandb
 import yaml
 
 from translations_parser.data import Metric, TrainingEpoch, TrainingLog, ValidationEpoch
-from translations_parser.utils import parse_tag
+from translations_parser.utils import parse_task_label
 
 logger = logging.getLogger(__name__)
 
@@ -251,7 +251,7 @@ class WandB(Publisher):
             metrics["quantized"].append(Metric.from_file(file, importer=importer, dataset=dataset))
         # Add metrics from tasks logs
         for file in logs_metrics:
-            model_name, importer, dataset, aug = parse_tag(file.stem)
+            model_name, importer, dataset, aug = parse_task_label(file.stem)
             with file.open("r") as f:
                 lines = f.readlines()
             try:
@@ -264,7 +264,7 @@ class WandB(Publisher):
                 logger.error(f"Could not parse metrics from {file.resolve()}: {e}")
         # Add metrics from .metrics files
         for file in direct_metrics:
-            model_name, importer, dataset, aug = parse_tag(file.stem)
+            model_name, importer, dataset, aug = parse_task_label(file.stem)
             try:
                 metrics[model_name].append(
                     Metric.from_file(file, importer=importer, dataset=dataset, augmentation=aug)

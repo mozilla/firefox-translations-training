@@ -223,13 +223,13 @@ def boot() -> None:
 
 def main() -> None:
     """
-    Called from Python entrypoint
+    Entry point for the `parse_tc_logs` script.
     Catch every exception when running in Taskcluster to avoid crashing real training
     """
     try:
         boot()
-    except Exception as e:
-        logger.error(f"Publication failed: {e}")
+    except Exception:
+        logger.exception("Publication failed")
         if os.environ.get("MOZ_AUTOMATION") is not None:
             # Stop cleanly when in taskcluster
             sys.exit(0)

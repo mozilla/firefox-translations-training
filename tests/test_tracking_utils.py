@@ -1,10 +1,11 @@
 import pytest
+from fixtures import get_full_taskgraph
 
-from tracking.translations_parser.utils import build_task_name, parse_tag
+from tracking.translations_parser.utils import ParsedTaskLabel, build_task_name, parse_task_label
 
 
 @pytest.mark.parametrize(
-    "example, parsed_values",
+    "task_label, parsed_values",
     [
         (
             "evaluate-teacher-flores-flores_aug-title_devtest-lt-en-1_2",
@@ -58,10 +59,46 @@ from tracking.translations_parser.utils import build_task_name, parse_tag
             "train-finetune-student-ru-en",
             ("finetune-student", None, None, None),
         ),
+        (
+            "train-teacher-ru-en-1",
+            ("teacher-1", None, None, None),
+        ),
+        (
+            "evaluate-backward-url-gcp_pytest-dataset_a0017e-en-ru",
+            ("backward", "url", "gcp_pytest-dataset_a0017e", None),
+        ),
+        (
+            "train-teacher-ast-en-1",
+            ("teacher-1", None, None, None),
+        ),
+        (
+            # Test the 3-letter language codes like "Asturian".
+            "evaluate-student-sacrebleu-wmt19-ast-en",
+            ("student", "sacrebleu", "wmt19", None),
+        ),
     ],
 )
-def test_parse_tag(example, parsed_values):
-    assert parse_tag(example) == parsed_values
+def test_parse_task_label(task_label, parsed_values):
+    assert parse_task_label(task_label) == ParsedTaskLabel(*parsed_values)
+
+
+def test_parse_labels_on_full_taskgraph():
+    """Ensure that all the taskgraph task labels parse."""
+    for task in get_full_taskgraph():
+        if not (
+            task.startswith("train-")
+            or task.startswith("evaluate-")
+            or task.startswith("finetune-")
+        ):
+            continue
+        if task.startswith("train-vocab"):
+            continue
+        if "https://storage.googleapis.com" in task:
+            # This is a temporary mitigation to get this landed until #611 is landed.
+            continue
+        print(task)
+        # This throws when it fails to parse.
+        parse_task_label(task)
 
 
 @pytest.mark.parametrize(
