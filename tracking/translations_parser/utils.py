@@ -15,8 +15,9 @@ TAG_PROJECT_SUFFIX_REGEX = re.compile(r"((-\w{2}){2}|(-\w{3}){2})$")
 
 # This regex needs to work on historic runs as well as the current tasks.
 TRAIN_LABEL_REGEX = re.compile(
+    # The "train-" prefix is optional because of "finetune-student-ru-en".
     r"^"
-    r"train-"
+    r"(train-)?"
     #
     # Capture what model is being run, for instance:
     #   train-teacher-ru-en-1

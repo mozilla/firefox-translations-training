@@ -85,7 +85,11 @@ def test_parse_task_label(task_label, parsed_values):
 def test_parse_labels_on_full_taskgraph():
     """Ensure that all the taskgraph task labels parse."""
     for task in get_full_taskgraph():
-        if not task.startswith("train-") and not task.startswith("evaluate-"):
+        if not (
+            task.startswith("train-")
+            or task.startswith("evaluate-")
+            or task.startswith("finetune-")
+        ):
             continue
         if task.startswith("train-vocab"):
             continue
