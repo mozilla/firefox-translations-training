@@ -1,9 +1,12 @@
+import hashlib
 import os
 import tempfile
 from collections import deque
 from io import TextIOWrapper
+from pathlib import Path
 from random import Random
 from typing import Iterable, Iterator, Optional
+from urllib.parse import urlparse
 
 
 class Dataset:
@@ -32,10 +35,30 @@ class Dataset:
         if not self.name:
             raise Exception(f"Could not find the name in the dataset key {dataset_key}")
 
-    def _escape(string: str) -> str:
-        # Keep in sync with dataset_helpers.py.
+    # Important! Keep in sync with dataset_helpers.py.
+    def _escape(dataset: str) -> str:
+        # URLs can be too large when used as Taskcluster labels. Create a nice identifier for them.
+        # See https://github.com/mozilla/firefox-translations-training/issues/527
+        if dataset.startswith("https://") or dataset.startswith("http://"):
+            url = urlparse(dataset)
+
+            hostname = url.hostname
+            if hostname == "storage.googleapis.com":
+                hostname = "gcp"
+
+            # Get the name of the file from theh path without the extension.
+            file = Path(url.path).stem
+            file = file.replace(".[LANG]", "").replace("[LANG]", "")
+
+            # Compute a hash to avoid any name collisions.
+            md5 = hashlib.md5()
+            md5.update(dataset.encode("utf-8"))
+            hash = md5.hexdigest()[:6]
+
+            dataset = f"{hostname}_{file}_{hash}"
+
         return (
-            string.replace("://", "_")
+            dataset.replace("://", "_")
             .replace("/", "_")
             .replace(".", "_")
             .replace(":", "_")
