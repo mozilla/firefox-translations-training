@@ -351,14 +351,12 @@ def main(args_list: Optional[list[str]] = None) -> None:
             artifacts=args.wandb_artifacts,
             publication=args.wandb_publication,
         )
-        wandb.handle_metrics(
-            metrics=[
-                metric_from_tc_context(
-                    chrf=chrf_details["score"],
-                    bleu_detok=bleu_details["score"],
-                )
-            ]
-        )
+        logger.info("Initializing Weight & Biases client")
+        wandb.open()
+        logger.info(f"Publishing metrics to Weight & Biases ({wandb.extra_kwargs})")
+        metric = metric_from_tc_context(chrf=chrf_details["score"], bleu=bleu_details["score"])
+        wandb.handle_metrics(metrics=[metric])
+        wandb.close()
 
 
 if __name__ == "__main__":

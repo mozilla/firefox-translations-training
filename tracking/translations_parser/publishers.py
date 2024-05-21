@@ -92,11 +92,9 @@ class WandB(Publisher):
         self.parser: TrainingParser | None = None
         self.wandb: wandb.sdk.wandb_run.Run | wandb.sdk.lib.disabled.RunDisabled | None = None
 
-    def open(self, parser) -> None:
-        if parser is None or self.parser is not None:
-            return
+    def open(self, parser=None) -> None:
         self.parser = parser
-        config = parser.config
+        config = getattr(parser, "config", {})
         config.update(self.extra_kwargs.pop("config", {}))
 
         try:
@@ -188,12 +186,13 @@ class WandB(Publisher):
             )
 
     def close(self) -> None:
-        if self.wandb is None or self.parser is None:
+        if self.wandb is None:
             return
-        # Store runtime logs as the main log artifact
-        # This will be overwritten in case an unhandled exception occurs
-        with (Path(self.wandb.dir) / "output.log").open("w") as f:
-            f.write(self.parser.logs_str)
+        if self.parser is not None:
+            # Store runtime logs as the main log artifact
+            # This will be overwritten in case an unhandled exception occurs
+            with (Path(self.wandb.dir) / "output.log").open("w") as f:
+                f.write(self.parser.logs_str)
 
         # Publish artifacts
         if self.artifacts:
