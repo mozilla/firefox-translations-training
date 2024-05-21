@@ -9,7 +9,7 @@
 # An "experiment" is an individual training run.
 experiment:
   # Provide an identifiable name for your experiment.
-  name: baseline_en_ru
+  name: baseline
 
   # The source and target languages. This is the language tag part of the
   # BCP 47 locale identifier.

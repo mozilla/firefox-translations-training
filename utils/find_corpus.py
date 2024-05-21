@@ -10,6 +10,7 @@ Usage:
 import argparse
 import logging
 import sys
+from datetime import datetime
 from typing import NamedTuple, Optional, TypeVar, Union
 
 import humanize
@@ -42,7 +43,7 @@ class OpusDataset(NamedTuple):
 
     latest: Union["True", "False"]
 
-    def name(self) -> str:
+    def corpus_key(self) -> str:
         return f"opus_{self.corpus}/{self.version}"
 
     def website_url(self) -> str:
@@ -52,17 +53,19 @@ class OpusDataset(NamedTuple):
         return humanize.naturalsize(self.size * 1024)
 
 
-def get_opus(source: str, target: str, download_url: bool):
+def fetch_opus(source: str, target: str) -> list[OpusDataset]:
     # This API is documented: https://opus.nlpl.eu/opusapi/
     url = f"https://opus.nlpl.eu/opusapi/?source={source}&target={target}&preprocessing=moses&version=latest"
-
-    print(f"Fetching datasets from:\n{url}\n")
 
     datasets = requests.get(url).json()
 
     # Convert the response into a typed object that is sorted.
     datasets_typed = [OpusDataset(**corpus_data) for corpus_data in datasets.get("corpora", [])]
-    datasets_typed = sorted(datasets_typed, key=lambda x: x.alignment_pairs or 0, reverse=True)
+    return sorted(datasets_typed, key=lambda x: x.alignment_pairs or 0, reverse=True)
+
+
+def get_opus(source: str, target: str, download_url: bool):
+    datasets = fetch_opus(source, target)
 
     print("")
     print("┌──────────────────────────────┐")
@@ -81,31 +84,33 @@ def get_opus(source: str, target: str, download_url: bool):
             *[
                 [
                     dataset.corpus,
-                    dataset.name(),
+                    dataset.corpus_key(),
                     dataset.alignment_pairs,
                     dataset.humanize_size(),
                     dataset.url if download_url else dataset.website_url(),
                 ]
-                for dataset in datasets_typed
+                for dataset in datasets
                 if dataset.alignment_pairs
             ],
         ]
     )
 
-    names = [f'opus_{d["corpus"]}/{d["version"]}' for d in datasets["corpora"]]
+    names = [dataset.corpus_key() for dataset in datasets]
     print_yaml(names, exclude=["OPUS100v", "WMT-News"])
 
 
-def get_sacrebleu(source: str, target: str):
+def fetch_sacrebleu(source: str, target: str) -> dict[str, dict[str, any]]:
     import sacrebleu
 
-    entries = [
-        (name, entry)
+    return {
+        name: entry
         for name, entry in sacrebleu.DATASETS.items()
         if f"{source}-{target}" in entry or f"{target}-{source}" in entry
-    ]
+    }
 
-    names = [f"sacrebleu_{name}" for name, entry in entries]
+
+def get_sacrebleu(source: str, target: str):
+    datasets_dict = fetch_sacrebleu(source, target)
 
     print("")
     print("┌─────────────────────────────────────────────────┐")
@@ -118,14 +123,14 @@ def get_sacrebleu(source: str, target: str):
                 [
                     #
                     name,
-                    entry["description"],
-                    ", ".join(entry["data"]),
+                    dataset["description"],
+                    ", ".join(dataset["data"]),
                 ]
-                for name, entry in entries
+                for name, dataset in datasets_dict.items()
             ],
         ]
     )
-    print_yaml(names)
+    print_yaml(list(datasets_dict.keys()))
 
 
 def get_size(tags: list[str]) -> str:
@@ -305,41 +310,33 @@ def get_huggingface_any(language: str):
     )
 
 
-def get_remote_file_size(url: str, display_not_200: bool = True) -> Optional[int]:
+def get_remote_file_size(
+    url: str, display_not_200: bool = True
+) -> tuple[Optional[int], Optional[str]]:
     try:
-        response = requests.head(url, timeout=1)
+        response = requests.head(url, timeout=1, allow_redirects=True)
 
         if response.status_code == 200:
-            return humanize.naturalsize(int(response.headers.get("Content-Length", 0)))
+            int_size = int(response.headers.get("Content-Length", 0))
+            return int_size, humanize.naturalsize(int_size)
         else:
             if display_not_200:
                 print(f"Failed to retrieve file information. Status code: {response.status_code}")
-            return None
+            return None, None
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
-        return None
+        return None, None
 
 
 T = TypeVar("T")
 
-
-def exclude_by_name(excludes: list[str], names: list[str], entries: list[T]) -> list[T]:
-    """Exclude entries by an excludes list, and a name list."""
-    filtered_entries = []
-    for name, entry in zip(names, entries):
-        filter = False
-        for exclude in excludes:
-            if exclude.lower() in name.lower():
-                filter = True
-                break
-
-        if not filter:
-            filtered_entries.append(entry)
-
-    return filtered_entries
+from mtdata.entry import Entry
 
 
-def get_mtdata(source: str, target: str):
+def fetch_mtdata(source: str, target: str) -> dict[str, Entry]:
+    """
+    Returns a dict that maps the corpus key to the mtdata entry.
+    """
     # mtdata outputs debug logs
     logging.disable(logging.CRITICAL)
 
@@ -353,14 +350,30 @@ def get_mtdata(source: str, target: str):
         get_entries(lang_pair(source_tricode + "-" + target_tricode), None, None, True),
         key=lambda entry: entry.did.group,
     )
-    excludes = ["opus", "newstest", "UNv1"]
 
-    def get_name(entry):
+    def get_corpus_key(entry):
         return (
             f"mtdata_{entry.did.group}-{entry.did.name}-{entry.did.version}-{entry.did.lang_str}"
         )
 
-    names = [get_name(entry) for entry in entries]
+    entries = {get_corpus_key(entry): entry for entry in entries}
+
+    excludes = ["opus", "newstest", "unv1"]  # lowercase excludes.
+
+    def is_excluded(corpus_key: str) -> bool:
+        for exclude in excludes:
+            if exclude in corpus_key.lower():
+                return True
+        return False
+
+    # Filter out the excluded entries.
+    return {
+        corpus_key: entry for corpus_key, entry in entries.items() if not is_excluded(corpus_key)
+    }
+
+
+def get_mtdata(source: str, target: str):
+    entries = fetch_mtdata(source, target)
 
     print("")
     print("┌────────────────────────────────────────────────┐")
@@ -376,32 +389,40 @@ def get_mtdata(source: str, target: str):
             *[
                 [
                     #
-                    get_name(entry),
+                    corpus_key,
                     entry.url,
                     # get_remote_file_size(entry.url),
                 ]
-                for entry in
+                for corpus_key, entry in entries.items()
                 # Filter out the excludes
-                exclude_by_name(excludes, names, entries)
             ],
         ]
     )
 
-    print_yaml(names, exclude=excludes)
+    print_yaml(entries.keys())
+
+
+class NewsCrawlDataset(NamedTuple):
+    name: str
+    url: str
+    size: Optional[int]
+    display_size: Optional[int]
+
+
+def fetch_news_crawl(lang: str) -> list[NewsCrawlDataset]:
+    datasets = []
+    for year in range(2007, datetime.now().year):
+        name = f"news-crawl_news.{year}"
+        url = f"https://data.statmt.org/news-crawl/{lang}/news.{year}.{lang}.shuffled.deduped.gz"
+        size, display_size = get_remote_file_size(url, display_not_200=False)
+        if size is not None:
+            datasets.append(NewsCrawlDataset(name, url, size, display_size))
+    return datasets
 
 
 def get_news_crawl(source: str, target: str):
     for lang in (source, target):
-        datasets = []
-        for i in range(20):
-            year = 2007 + i
-            name = f"news-crawl_news.{year}"
-            url = (
-                f"https://data.statmt.org/news-crawl/{lang}/news.{year}.{lang}.shuffled.deduped.gz"
-            )
-            size = get_remote_file_size(url, display_not_200=False)
-            if size is not None:
-                datasets.append((name, url, size))
+        datasets = fetch_news_crawl(lang)
 
         print("")
         print("┌─────────────────────────────────────────────────────────────────────┐")
@@ -414,11 +435,11 @@ def get_news_crawl(source: str, target: str):
                     "URL",
                     "Size",
                 ],
-                *[[name, url, size] for name, url, size in datasets],
+                *[[name, url, display_size] for name, url, _, display_size in datasets],
             ]
         )
 
-        print_yaml([name for name, _, _ in datasets])
+        print_yaml([name for name, _, _, _ in datasets])
 
 
 def print_yaml(names: list[str], exclude: list[str] = []):

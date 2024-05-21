@@ -49,6 +49,16 @@ tasks:
           poetry run python -W ignore utils/taskcluster_downloader.py
           --mode=model {{.CLI_ARGS}}
 
+  config-generator:
+    desc: Create a training config for a language pair
+    summary: |
+      The models will be saved to: ./data/taskcluster-model
+      Example: `task config-generator -- en fi`
+    deps: [poetry-install-utils]
+    cmds:
+      - >-
+          PYTHONPATH=$(pwd) poetry run python -W ignore utils/config_generator.py {{.CLI_ARGS}}
+
   opuscleaner:
     desc: Run the opuscleaner tool.
     deps: [poetry-install-opuscleaner]
