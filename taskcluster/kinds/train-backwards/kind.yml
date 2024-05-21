@@ -57,12 +57,15 @@ tasks:
                 - worker.env
         worker-type:
             by-tasks-for:
-                github-pull-request: b-largegpu
-                default: b-largegpu-largedisk
+                github-pull-request: b-largegpu-d2g
+                default: b-largegpu-d2g-largedisk
+
         worker:
+            docker-image: {"in-tree": "train"}
             max-run-time: 2592000
             # train_taskcluster.py exits with 17 if a request to Taskcluster fails
             retry-exit-status: [17]
+
             env:
                 ARTIFACT_EXT: zst
                 COMPRESSION_CMD: zstdmt
@@ -72,6 +75,7 @@ tasks:
 
                 # Weight & Biases publication token is stored in that secret
                 TASKCLUSTER_SECRET: project/translations/level-1/weights-and-biases
+
             artifacts:
                 - name: public/build
                   path: artifacts
