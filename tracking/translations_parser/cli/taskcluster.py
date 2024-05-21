@@ -35,6 +35,7 @@ def get_args() -> argparse.Namespace:
     )
     input_group = parser.add_mutually_exclusive_group()
     input_group.add_argument(
+        "--input-file",
         "-i",
         help="Path to the Task Cluster log file.",
         type=Path,
