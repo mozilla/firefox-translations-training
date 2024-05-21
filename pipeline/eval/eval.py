@@ -352,7 +352,8 @@ def main(args_list: Optional[list[str]] = None) -> None:
             publication=args.wandb_publication,
         )
         logger.info("Initializing Weight & Biases client")
-        wandb.open()
+        # Allow publishing metrics as a table on existing runs (i.e. previous trainings)
+        wandb.open(resume=True)
         logger.info(f"Publishing metrics to Weight & Biases ({wandb.extra_kwargs})")
         metric = metric_from_tc_context(chrf=chrf_details["score"], bleu=bleu_details["score"])
         wandb.handle_metrics(metrics=[metric])

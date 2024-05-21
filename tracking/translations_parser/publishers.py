@@ -92,7 +92,7 @@ class WandB(Publisher):
         self.parser: TrainingParser | None = None
         self.wandb: wandb.sdk.wandb_run.Run | wandb.sdk.lib.disabled.RunDisabled | None = None
 
-    def open(self, parser=None) -> None:
+    def open(self, parser=None, resume: bool = False) -> None:
         self.parser = parser
         config = getattr(parser, "config", {})
         config.update(self.extra_kwargs.pop("config", {}))
@@ -119,7 +119,7 @@ class WandB(Publisher):
             elif len(existing_runs) == 1:
                 run = existing_runs[0]
                 # Avoid overriding an existing run on a first training, this should not happen
-                if int(os.environ.get("RUN_ID", 0)) < 1:
+                if resume is False and int(os.environ.get("RUN_ID", 0)) < 1:
                     logger.warning(
                         f"A W&B run already exists with name '{name}': {run}. No data will be published."
                     )
