@@ -154,7 +154,7 @@ tasks:
 
         dependencies:
             dataset: dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
-            train-teacher: train-teacher-{src_locale}-{trg_locale}-{this_chunk}/{total_chunks}
+            train-teacher: train-teacher-{src_locale}-{trg_locale}-{this_chunk}
         fetches:
             dataset:
                 - artifact: "{dataset_sanitized}.{src_locale}.zst"
