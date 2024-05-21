@@ -110,6 +110,36 @@ workers:
             implementation: generic-worker
             os: linux
             worker-type: '{alias}'
+        b-linux-v100-gpu-d2g:
+            provisioner: '{trust-domain}-{level}'
+            implementation: docker-worker
+            os: linux
+            worker-type: 'b-linux-v100-gpu'
+        b-linux-v100-gpu-d2g-4:
+            provisioner: '{trust-domain}-{level}'
+            implementation: docker-worker
+            os: linux
+            worker-type: 'b-linux-v100-gpu-4'
+        b-linux-v100-gpu-d2g-4-300gb:
+            provisioner: '{trust-domain}-{level}'
+            implementation: docker-worker
+            os: linux
+            worker-type: 'b-linux-v100-gpu-4-300gb'
+        b-linux-v100-gpu-d2g-4-300gb-standard:
+            provisioner: '{trust-domain}-{level}'
+            implementation: docker-worker
+            os: linux
+            worker-type: 'b-linux-v100-gpu-4-300gb-standard'
+        b-linux-v100-gpu-d2g-4-1tb:
+            provisioner: '{trust-domain}-{level}'
+            implementation: docker-worker
+            os: linux
+            worker-type: 'b-linux-v100-gpu-4-1tb'
+        b-linux-v100-gpu-d2g-4-1tb-standard:
+            provisioner: '{trust-domain}-{level}'
+            implementation: docker-worker
+            os: linux
+            worker-type: 'b-linux-v100-gpu-4-1tb-standard'
         images:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
@@ -158,6 +188,29 @@ local-worker-aliases:
         by-worker-class:
             gcp-standard: 'b-linux-v100-gpu-4-1tb-standard'
             default: 'b-linux-v100-gpu-4-1tb'
+    # Use for quick tasks that need a GPU, eg: evaluate
+    b-gpu-d2g:
+        by-worker-class:
+            gcp-standard: 'b-linux-v100-gpu-d2g'
+            default: 'b-linux-v100-gpu-d2g'
+    # Use for tasks that need lots of GPU power, but not lots of disk space
+    # eg: translation & scoring
+    b-largegpu-d2g:
+        by-worker-class:
+            gcp-standard: 'b-linux-v100-gpu-d2g-4'
+            default: 'b-linux-v100-gpu-d2g-4'
+    # Use for tasks that needs lots of GPU power and increased disk space
+    # eg: bicleaner
+    b-largegpu-d2g-largedisk:
+        by-worker-class:
+            gcp-standard: 'b-linux-v100-gpu-d2g-4-300gb-standard'
+            default: 'b-linux-v100-gpu-d2g-4-300gb'
+    # Use for tasks that need lots of GPU power and immensive amounts of disk space
+    # eg: training
+    b-largegpu-d2g-xlargedisk:
+        by-worker-class:
+            gcp-standard: 'b-linux-v100-gpu-d2g-4-1tb-standard'
+            default: 'b-linux-v100-gpu-d2g-4-1tb'
 
 # Keys are worker type, and align with the `worker-type` entries in the
 # `worker.aliases` above.
@@ -188,6 +241,35 @@ worker-configuration:
             WORKSPACE: "12000"
 
     b-linux-v100-gpu-4-1tb-standard:
+        env:
+            GPUS: "0 1 2 3"
+            WORKSPACE: "12000"
+    b-linux-v100-gpu-d2g:
+        env:
+            GPUS: "0"
+            WORKSPACE: "12000"
+
+    b-linux-v100-gpu-d2g-4:
+        env:
+            GPUS: "0 1 2 3"
+            WORKSPACE: "12000"
+
+    b-linux-v100-gpu-d2g-4-300gb:
+        env:
+            GPUS: "0 1 2 3"
+            WORKSPACE: "12000"
+
+    b-linux-v100-gpu-d2g-4-1tb:
+        env:
+            GPUS: "0 1 2 3"
+            WORKSPACE: "12000"
+
+    b-linux-v100-gpu-d2g-4-300gb-standard:
+        env:
+            GPUS: "0 1 2 3"
+            WORKSPACE: "12000"
+
+    b-linux-v100-gpu-d2g-4-1tb-standard:
         env:
             GPUS: "0 1 2 3"
             WORKSPACE: "12000"
