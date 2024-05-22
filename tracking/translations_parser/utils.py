@@ -199,7 +199,7 @@ def metric_from_tc_context(chrf: float, bleu: float):
 def publish_group_logs_from_tasks(
     project: str | None = None,
     group: str | None = None,
-    metrics_tasks: Sequence[dict] = [],
+    metrics_tasks: dict[str, dict] = {},
     config: dict = {},
 ):
     """

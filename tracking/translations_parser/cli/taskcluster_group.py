@@ -149,7 +149,7 @@ def list_training_tasks(group_id: str, grouped_tasks: dict[str, list[dict]]) -> 
 
 def list_metrics_tasks(
     group_id: str, grouped_tasks: dict[str, list[dict]]
-) -> list[dict[str, dict]]:
+) -> dict[str, dict]:
     metrics_tasks = {task["status"]["taskId"]: task for task in grouped_tasks["evaluate"]}
 
     if not metrics_tasks:
