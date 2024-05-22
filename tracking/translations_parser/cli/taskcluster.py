@@ -109,13 +109,7 @@ def boot() -> None:
     # Use log filtering when using non-stream (for uploading past experiments)
     log_filter = taskcluster_log_filter if not args.from_stream else None
 
-    parser = TrainingParser(
-        lines,
-        publishers=publishers,
-        log_filter=log_filter,
-    )
-    parser.run()
-
+    # publish the config fist
     if args.publish_group_logs:
         logger.info("Publishing experiment config to a 'group_logs' fake run.")
         # Retrieve experiment configuration from the task group
@@ -129,6 +123,13 @@ def boot() -> None:
         task_group = queue.task(group_id)
         config = task_group.get("extra", {}).get("action", {}).get("context", {}).get("input")
         publish_group_logs_from_tasks(config=config)
+
+    parser = TrainingParser(
+        lines,
+        publishers=publishers,
+        log_filter=log_filter,
+    )
+    parser.run()
 
 
 def main() -> None:
