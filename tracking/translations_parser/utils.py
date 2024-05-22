@@ -1,8 +1,11 @@
 import logging
+import os
 import re
 from collections.abc import Sequence
 from datetime import datetime
 from typing import NamedTuple, Optional
+
+import taskcluster
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +83,11 @@ EVAL_REGEX = re.compile(
     #   evaluate-quantized-mtdata_aug-mix_Neulab-tedtalks_eng-lit-lt-en
     #                                     ^^^^^^^^^^^^^^^^^^^^^^^
     r"_?(?P<dataset>[-\w\d_]*?(-[a-z]{3}-[a-z]{3})?)?"
+    #
+    # Match language (project) suffix.
+    # evaluate-teacher-flores-devtest-ru-en-1
+    #                                 ^^^^^
+    #
     r"-?(?P<lang>[a-z]{2,3}-[a-z]{2,3})?"
     #
     # Match the task chunking, for instance:
@@ -87,11 +95,10 @@ EVAL_REGEX = re.compile(
     #                                            ^
     #   evaluate-teacher-flores-flores_aug-title_devtest-lt-en-1_2
     #                                                          ^
-    r"-?((?P<task_suffix>\d+)(\/|_)\d+)?"
+    r"(-(?P<task_suffix>\d+)([\/|_]\d+)?)?"
     #
     r"$"
 )
-MULTIPLE_TRAIN_SUFFIX = re.compile(r"(-\d+)/\d+$")
 
 
 class ParsedTaskLabel(NamedTuple):
@@ -114,6 +121,12 @@ def parse_task_label(task_label: str) -> ParsedTaskLabel:
         raise ValueError(task_label)
     groups = match.groupdict()
     model = groups["model"]
+
+    # Naming may be inconsistent between train and evaluation tasks
+    model = model.replace("finetuned", "finetune")
+    if model == "backward":
+        model = "backwards"
+
     suffix = groups.get("suffix") or groups.get("task_suffix")
     if not suffix and model == "teacher":
         # Keep the index on teacher runs for compatibility with legacy models
@@ -149,3 +162,27 @@ def build_task_name(task: dict):
     prefix = task["tags"]["kind"].split("-")[0]
     label = parse_task_label(task["tags"]["label"])
     return prefix, label.model
+
+
+def metric_from_tc_context(chrf: float, bleu: float):
+    """
+    Find the various names needed to build a metric directly from a Taskcluster task
+    """
+    from translations_parser.data import Metric
+
+    task_id = os.environ.get("TASK_ID")
+    if not task_id:
+        raise Exception("Evaluation metric can only be build in taskcluster")
+
+    # CI task groups do not expose any configuration, so we must use default values
+    queue = taskcluster.Queue({"rootUrl": os.environ["TASKCLUSTER_PROXY_URL"]})
+    task = queue.task(task_id)
+    parsed = parse_task_label(task["tags"]["label"])
+
+    return Metric(
+        importer=parsed.importer,
+        dataset=parsed.dataset,
+        augmentation=parsed.augmentation,
+        chrf=chrf,
+        bleu_detok=bleu,
+    )

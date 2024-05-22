@@ -33,7 +33,7 @@ from tracking.translations_parser.utils import ParsedTaskLabel, build_task_name,
         ),
         (
             "eval_student-finetuned_flores_devtest",
-            ("student-finetuned", "flores", "devtest", None),
+            ("student-finetune", "flores", "devtest", None),
         ),
         (
             "eval_teacher-base0_flores_devtest",
@@ -65,7 +65,7 @@ from tracking.translations_parser.utils import ParsedTaskLabel, build_task_name,
         ),
         (
             "evaluate-backward-url-gcp_pytest-dataset_a0017e-en-ru",
-            ("backward", "url", "gcp_pytest-dataset_a0017e", None),
+            ("backwards", "url", "gcp_pytest-dataset_a0017e", None),
         ),
         (
             "train-teacher-ast-en-1",
@@ -75,6 +75,10 @@ from tracking.translations_parser.utils import ParsedTaskLabel, build_task_name,
             # Test the 3-letter language codes like "Asturian".
             "evaluate-student-sacrebleu-wmt19-ast-en",
             ("student", "sacrebleu", "wmt19", None),
+        ),
+        (
+            "evaluate-teacher-flores-devtest-ru-en-1",
+            ("teacher-1", "flores", "devtest", None),
         ),
     ],
 )

@@ -8,6 +8,7 @@ Example:
 
 import argparse
 import logging
+import re
 import tempfile
 from collections import defaultdict
 from pathlib import Path
@@ -20,8 +21,9 @@ from taskcluster.download import downloadArtifactToBuf, downloadArtifactToFile
 from translations_parser.data import Metric
 from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import WandB
-from translations_parser.utils import MULTIPLE_TRAIN_SUFFIX, build_task_name, parse_task_label
+from translations_parser.utils import build_task_name, parse_task_label
 
+MULTIPLE_TRAIN_SUFFIX = re.compile(r"(-\d+)/\d+$")
 KIND_TAG_TARGET = ("train", "finetune")
 queue = taskcluster.Queue({"rootUrl": "https://firefox-ci-tc.services.mozilla.com"})
 
@@ -229,15 +231,6 @@ def publish_task_group(group_id: str, override: bool = False) -> None:
                 model_name = parse_task_label(eval_label).model
             except ValueError:
                 continue
-
-            if eval_label and (re_match := MULTIPLE_TRAIN_SUFFIX.search(eval_label)):
-                (suffix,) = re_match.groups()
-                model_name += suffix
-
-            # Training task may be named differently from the evaluation tasks, use training name by default
-            model_name = model_name.replace("finetuned", "finetune")
-            if model_name == "backward":
-                model_name = "backwards"
 
             # Evaluation tasks must be a dependency of the run and match its name
             if (

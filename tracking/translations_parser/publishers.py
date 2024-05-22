@@ -92,11 +92,9 @@ class WandB(Publisher):
         self.parser: TrainingParser | None = None
         self.wandb: wandb.sdk.wandb_run.Run | wandb.sdk.lib.disabled.RunDisabled | None = None
 
-    def open(self, parser) -> None:
-        if parser is None or self.parser is not None:
-            return
+    def open(self, parser=None, resume: bool = False) -> None:
         self.parser = parser
-        config = parser.config
+        config = getattr(parser, "config", {})
         config.update(self.extra_kwargs.pop("config", {}))
 
         try:
@@ -121,7 +119,7 @@ class WandB(Publisher):
             elif len(existing_runs) == 1:
                 run = existing_runs[0]
                 # Avoid overriding an existing run on a first training, this should not happen
-                if int(os.environ.get("RUN_ID", 0)) < 1:
+                if resume is False and int(os.environ.get("RUN_ID", 0)) < 1:
                     logger.warning(
                         f"A W&B run already exists with name '{name}': {run}. No data will be published."
                     )
@@ -188,12 +186,13 @@ class WandB(Publisher):
             )
 
     def close(self) -> None:
-        if self.wandb is None or self.parser is None:
+        if self.wandb is None:
             return
-        # Store runtime logs as the main log artifact
-        # This will be overwritten in case an unhandled exception occurs
-        with (Path(self.wandb.dir) / "output.log").open("w") as f:
-            f.write(self.parser.logs_str)
+        if self.parser is not None:
+            # Store runtime logs as the main log artifact
+            # This will be overwritten in case an unhandled exception occurs
+            with (Path(self.wandb.dir) / "output.log").open("w") as f:
+                f.write(self.parser.logs_str)
 
         # Publish artifacts
         if self.artifacts:
