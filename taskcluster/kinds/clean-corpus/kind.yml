@@ -79,6 +79,8 @@ tasks:
             # there might be intermittent issues with OpusCleaner, specifically FastText model downloading can fail
             retry-exit-status:
                 - 1
+                - 17
+                - 128
 
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []

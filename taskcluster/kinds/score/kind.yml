@@ -62,6 +62,8 @@ tasks:
                 - name: public/build
                   path: artifacts
                   type: directory
+            # 128 happens when cloning this repository fails
+            retry-exit-status: [128]
 
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
