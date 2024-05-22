@@ -8,6 +8,7 @@ Example:
 
 import argparse
 import logging
+import re
 import tempfile
 from collections import defaultdict
 from pathlib import Path
@@ -19,6 +20,7 @@ from taskcluster.download import downloadArtifactToBuf
 from translations_parser.data import Metric
 from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import WandB
+
 from translations_parser.utils import (
     MULTIPLE_TRAIN_SUFFIX,
     build_task_name,
@@ -26,6 +28,7 @@ from translations_parser.utils import (
     publish_group_logs_from_tasks,
 )
 
+MULTIPLE_TRAIN_SUFFIX = re.compile(r"(-\d+)/\d+$")
 KIND_TAG_TARGET = ("train", "finetune")
 queue = taskcluster.Queue({"rootUrl": "https://firefox-ci-tc.services.mozilla.com"})
 

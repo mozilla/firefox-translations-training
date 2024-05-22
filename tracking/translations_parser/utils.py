@@ -109,6 +109,7 @@ EVAL_REGEX = re.compile(
 queue = taskcluster.Queue({"rootUrl": "https://firefox-ci-tc.services.mozilla.com"})
 
 
+
 class ParsedTaskLabel(NamedTuple):
     model: str
     importer: Optional[str]
@@ -195,7 +196,6 @@ def metric_from_tc_context(chrf: float, bleu: float):
         bleu_detok=bleu,
     )
 
-
 def publish_group_logs_from_tasks(
     project: str | None = None,
     group: str | None = None,
@@ -260,3 +260,4 @@ def publish_group_logs_from_tasks(
 
         parents = str(logs_folder.resolve()).strip().split("/")
         WandB.publish_group_logs(parents, project, group, existing_runs=[])
+

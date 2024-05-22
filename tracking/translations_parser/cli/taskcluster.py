@@ -20,7 +20,6 @@ from collections.abc import Iterator
 from io import TextIOWrapper
 from pathlib import Path
 
-import taskcluster
 from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import CSVExport, Publisher
 from translations_parser.utils import publish_group_logs_from_tasks, taskcluster_log_filter

@@ -13,6 +13,19 @@ hunspell:
         strip-components: 1
         add-prefix: hunspell/
 
+cyhunspell:
+    description: cyhunspell 2.0.3 source
+    fetch:
+        type: static-url
+        url: https://github.com/MSeal/cython_hunspell/archive/refs/tags/2.0.3.tar.gz
+        sha256: ff23a1dfe72513817436ba26e6e4212a025cb1a93676ea741ef576f1f3deb55e
+        size: 2676953
+        artifact-name: cyhunspell.tar.zst
+        strip-components: 1
+        # Probably should be cyhunspell, but using the same prefix as
+        # hunspell above allows us to re-use the build script for it.
+        add-prefix: hunspell/
+
 kenlm:
     description: kenlm
     fetch:
@@ -20,3 +33,4 @@ kenlm:
         repo: https://github.com/kpu/kenlm
         revision: 4e6ac85c8d01ac91cb61dfbdc76cd652158c5969
         path-prefix: kenlm-source
+
