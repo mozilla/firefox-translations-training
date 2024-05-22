@@ -76,6 +76,10 @@ from tracking.translations_parser.utils import ParsedTaskLabel, build_task_name,
             "evaluate-student-sacrebleu-wmt19-ast-en",
             ("student", "sacrebleu", "wmt19", None),
         ),
+        (
+            "evaluate-teacher-flores-devtest-ru-en-1",
+            ("teacher-1", "flores", "devtest", None),
+        ),
     ],
 )
 def test_parse_task_label(task_label, parsed_values):

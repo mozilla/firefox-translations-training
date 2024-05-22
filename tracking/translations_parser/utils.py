@@ -83,6 +83,11 @@ EVAL_REGEX = re.compile(
     #   evaluate-quantized-mtdata_aug-mix_Neulab-tedtalks_eng-lit-lt-en
     #                                     ^^^^^^^^^^^^^^^^^^^^^^^
     r"_?(?P<dataset>[-\w\d_]*?(-[a-z]{3}-[a-z]{3})?)?"
+    #
+    # Match language (project) suffix.
+    # evaluate-teacher-flores-devtest-ru-en-1
+    #                                 ^^^^^
+    #
     r"-?(?P<lang>[a-z]{2,3}-[a-z]{2,3})?"
     #
     # Match the task chunking, for instance:
@@ -90,7 +95,7 @@ EVAL_REGEX = re.compile(
     #                                            ^
     #   evaluate-teacher-flores-flores_aug-title_devtest-lt-en-1_2
     #                                                          ^
-    r"-?((?P<task_suffix>\d+)(\/|_)\d+)?"
+    r"(-(?P<task_suffix>\d+)([\/|_]\d+)?)?"
     #
     r"$"
 )
