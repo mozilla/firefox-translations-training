@@ -356,7 +356,7 @@ def main(args_list: Optional[list[str]] = None) -> None:
             # Allow publishing metrics as a table on existing runs (i.e. previous trainings)
             wandb.open(resume=True)
             logger.info(f"Publishing metrics to Weight & Biases ({wandb.extra_kwargs})")
-            metric = metric_from_tc_context(chrf=chrf_details["score"], bleu=bleu_details["score"])
+            metric = metric_from_tc_context(chrf=chrf_details["score"], bleu=bleu_details["score"], comet=comet_score)
             wandb.handle_metrics(metrics=[metric])
             wandb.close()
 
