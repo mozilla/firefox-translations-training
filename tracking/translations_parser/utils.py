@@ -99,7 +99,6 @@ EVAL_REGEX = re.compile(
     #
     r"$"
 )
-MULTIPLE_TRAIN_SUFFIX = re.compile(r"(-\d+)/\d+$")
 
 
 class ParsedTaskLabel(NamedTuple):
@@ -122,6 +121,12 @@ def parse_task_label(task_label: str) -> ParsedTaskLabel:
         raise ValueError(task_label)
     groups = match.groupdict()
     model = groups["model"]
+
+    # Naming may be inconsistent between train and evaluation tasks
+    model = model.replace("finetuned", "finetune")
+    if model == "backward":
+        model = "backwards"
+
     suffix = groups.get("suffix") or groups.get("task_suffix")
     if not suffix and model == "teacher":
         # Keep the index on teacher runs for compatibility with legacy models
