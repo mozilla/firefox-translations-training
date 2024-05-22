@@ -26,9 +26,8 @@ def init():
                 [], returncode=1, stderr=b"Error: language pack does not exist."
             )
 
-        pack_dir = os.path.join(dir, pair)
-        os.makedirs(pack_dir, exist_ok=True)
-        with open(os.path.join(pack_dir, "metadata.yaml"), "w") as f:
+        os.makedirs(dir, exist_ok=True)
+        with open(os.path.join(dir, "metadata.yaml"), "w") as f:
             f.writelines([f"source_lang: {src}", "\n", f"target_lang: {trg}"])
 
         return CompletedProcess([], returncode=0)

@@ -19,7 +19,11 @@ RUN apt-get update -qq \
                           tar \
                           libxml2 \
                           libhunspell-dev \
-                          bc \
+                          bc  \
+                          autoconf \
+                          automake \
+                          autopoint \
+                          libtool \
     && apt-get clean
 
 RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | apt-key add -
