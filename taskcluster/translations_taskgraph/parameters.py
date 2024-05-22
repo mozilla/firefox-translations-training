@@ -38,7 +38,7 @@ def get_defaults(_):
             },
             "marian-args": {
                 "training-backward": {
-                    "disp-freq": "2",
+                    "disp-freq": "1",
                     "save-freq": "25",
                     "valid-freq": "50",
                     "after": "50u",
@@ -105,7 +105,7 @@ def get_defaults(_):
                 },
             },
             # Disable Weight & Biases publication on CI
-            "wandb-publication": True,
+            "wandb-publication": False,
         },
     }
 
