@@ -105,7 +105,7 @@ def get_defaults(_):
                 },
             },
             # Disable Weight & Biases publication on CI
-            "wandb-publication": True,
+            "wandb-publication": False,
         },
     }
 
