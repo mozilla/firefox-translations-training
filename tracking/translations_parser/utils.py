@@ -172,7 +172,7 @@ def build_task_name(task: dict):
     return prefix, label.model
 
 
-def metric_from_tc_context(chrf: float, bleu: float):
+def metric_from_tc_context(chrf: float, bleu: float, comet: float):
     """
     Find the various names needed to build a metric directly from a Taskcluster task
     """
@@ -193,6 +193,7 @@ def metric_from_tc_context(chrf: float, bleu: float):
         augmentation=parsed.augmentation,
         chrf=chrf,
         bleu_detok=bleu,
+        comet=comet,
     )
 
 

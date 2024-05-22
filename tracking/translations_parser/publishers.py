@@ -176,7 +176,11 @@ class WandB(Publisher):
                     title: wandb.plot.bar(
                         wandb.Table(
                             columns=["Metric", "Value"],
-                            data=[[key, getattr(metric, key)] for key in ("bleu_detok", "chrf")],
+                            data=[
+                                [key, getattr(metric, key)]
+                                for key in ("bleu_detok", "chrf", "comet")
+                                if getattr(metric, key) is not None
+                            ],
                         ),
                         "Metric",
                         "Value",

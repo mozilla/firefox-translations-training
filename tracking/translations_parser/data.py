@@ -56,6 +56,7 @@ class Metric:
     # Scores
     chrf: float
     bleu_detok: float
+    comet: float | None = None  # optional
 
     @classmethod
     def from_file(
@@ -79,10 +80,14 @@ class Metric:
                     values.append(float(line))
                 except ValueError:
                     continue
-            assert len(values) == 2, "file must contain exactly 2 float values"
+            assert len(values) in (2, 3), "file must contain 2 or 3 lines with a float value"
         except Exception as e:
             raise ValueError(f"Metrics file could not be parsed: {e}")
-        bleu_detok, chrf = values
+        if len(values) == 2:
+            bleu_detok, chrf = values
+            comet = None
+        if len(values) == 3:
+            bleu_detok, chrf, comet = values
         if importer is None:
             _, importer, dataset, augmentation = parse_task_label(metrics_file.stem)
         return cls(
@@ -91,6 +96,7 @@ class Metric:
             augmentation=augmentation,
             chrf=chrf,
             bleu_detok=bleu_detok,
+            comet=comet,
         )
 
     @classmethod
