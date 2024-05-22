@@ -128,7 +128,7 @@ def boot() -> None:
         queue.getTaskGroup(group_id)
         task_group = queue.task(group_id)
         config = task_group.get("extra", {}).get("action", {}).get("context", {}).get("input")
-        publish_group_logs_from_tasks(args.project_name, args.group_name, config=config)
+        publish_group_logs_from_tasks(config=config)
 
 
 def main() -> None:

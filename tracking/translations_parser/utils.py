@@ -20,6 +20,7 @@ DATASET_KEYWORDS = ["flores", "mtdata", "sacrebleu"]
 # Tags usually ends with project (e.g. `en-nl` or `eng-nld`)
 TAG_PROJECT_SUFFIX_REGEX = re.compile(r"((-\w{2}){2}|(-\w{3}){2})$")
 
+MULTIPLE_TRAIN_SUFFIX = re.compile(r"(-\d+)/\d+$")
 
 # This regex needs to work on historic runs as well as the current tasks.
 TRAIN_LABEL_REGEX = re.compile(
@@ -196,16 +197,31 @@ def metric_from_tc_context(chrf: float, bleu: float):
 
 
 def publish_group_logs_from_tasks(
-    project_name: str, group_name: str, metrics_tasks: Sequence[dict] = [], config: dict = {}
+    project: str | None = None,
+    group: str | None = None,
+    metrics_tasks: Sequence[dict] = [],
+    config: dict = {},
 ):
+    """
+    Publish a fake run, named 'group_logs' to Weight & Biases from a Taskcluster context.
+    In case project or group is left to None, both values will be detected from Taskcluster.
+    `metrics_tasks` optionally contains finished evaluation tasks that will be published as new runs.
+    """
     from translations_parser.publishers import WandB
+    from translations_parser.wandb import get_wandb_names
 
-    logger.info(
-        f"Handling group_logs publication with {len(metrics_tasks)} extra evaluation tasks."
-    )
+    message = "Handling group_logs publication"
+    if metrics_tasks:
+        message += f" with {len(metrics_tasks)} extra evaluation tasks"
+    logger.info(message)
+
+    if project is None or group is None:
+        logger.info("Retrieving W&B names from taskcluster attributes")
+        project, group, _ = get_wandb_names()
+
     with tempfile.TemporaryDirectory() as temp_dir:
         logs_folder = Path(temp_dir) / "logs"
-        metrics_folder = logs_folder / project_name / group_name / "metrics"
+        metrics_folder = logs_folder / project / group / "metrics"
         metrics_folder.mkdir(parents=True, exist_ok=True)
 
         # Group and publish remaining metrics tasks via the logs publication
@@ -236,11 +252,11 @@ def publish_group_logs_from_tasks(
                 )
 
         # Dump experiment config so it is published on group_logs
-        config_path = Path(temp_dir) / "experiments" / project_name / group_name / "config.yml"
+        config_path = Path(temp_dir) / "experiments" / project / group / "config.yml"
         config_path.parent.mkdir(parents=True, exist_ok=True)
 
         with config_path.open("w") as config_file:
             yaml.dump(config, config_file)
 
         parents = str(logs_folder.resolve()).strip().split("/")
-        WandB.publish_group_logs(parents, project_name, group_name, existing_runs=[])
+        WandB.publish_group_logs(parents, project, group, existing_runs=[])
