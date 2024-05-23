@@ -2,7 +2,7 @@
 # task config-generator -- en lt --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/eeb21584f863bf2dd99259f15a9b5b25350b2271/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/001d15d5f2775e0e4c57717057a1906069e29dcc/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -37,15 +37,42 @@ datasets:
   - sacrebleu_wmt19
 
   # The training data contains:
-  #   76,581,713 sentences
+  #   76,643,900 sentences
   # 
   # Skipped datasets:
-  #  - opus_CCMatrix/v1 - ignored datasets
-  #  - opus_bible-uedin/v1 - ignored datasets
-  #  - opus_ELRC-3069-wikipedia_health/v1 - not enough data
-  #  - opus_ELRC-wikipedia_health/v1 - not enough data
-  #  - opus_ELRC_2922/v1 - not enough data
-  #  - opus_Ubuntu/v14.10 - not enough data
+  #  - opus_CCMatrix/v1 - ignored datasets (23,298,470 sentences)
+  #  - opus_ELRC-3069-wikipedia_health/v1 - not enough data  (136 sentences)
+  #  - opus_ELRC-wikipedia_health/v1 - not enough data  (136 sentences)
+  #  - opus_ELRC_2922/v1 - not enough data  (135 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-president_lithuania-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-www.lrs.lt-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-www.lb.lt-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-kam.lt-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-euipo_2017-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-emea-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-vaccination-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-antibiotic-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-europarl_covid-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-ec_europa_covid-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-eur_lex_covid-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-presscorner_covid-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-nteu_tiera-1-eng-lit - duplicate with opus
+  #  - mtdata_EU-ecdc-1-eng-lit - duplicate with opus
+  #  - mtdata_Facebook-wikimatrix-1-eng-lit - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_train-1-eng-lit - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_test-1-eng-lit - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_dev-1-eng-lit - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-3-eng-lit - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-6-eng-lit - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-7.1-eng-lit - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-8-eng-lit - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-9-eng-lit - duplicate with opus
+  #  - mtdata_Statmt-europarl-9-lit-eng - duplicate with opus
+  #  - mtdata_Statmt-europarl-7-lit-eng - duplicate with opus
+  #  - mtdata_Statmt-europarl-10-lit-eng - duplicate with opus
+  #  - mtdata_Statmt-ccaligned-1-eng-lit_LT - duplicate with opus
+  #  - mtdata_Tilde-ecb-2017-eng-lit - duplicate with opus
   train:
   - opus_NLLB/v1  #                                       23,298,470 sentences
   - opus_ParaCrawl/v9 #                                  13,192,237 sentences
@@ -70,6 +97,7 @@ datasets:
   - opus_QED/v2.0a #                                         85,435 sentences
   - opus_TED2020/v1 #                                        75,484 sentences
   - opus_ECB/v1 #                                            69,805 sentences
+  - opus_bible-uedin/v1 #                                    62,187 sentences
   - opus_GNOME/v1 #                                          59,776 sentences
   - opus_NeuLab-TedTalks/v1 #                                45,963 sentences
   - opus_ELRC-591-www.lb.lt/v1 #                             33,261 sentences
@@ -99,20 +127,20 @@ datasets:
   - opus_ELRC-2740-vaccination/v1 #                             546 sentences
   - opus_ELRC-vaccination/v1 #                                  546 sentences
   - opus_ELRC_2923/v1 #                                         384 sentences
-  # - mtdata_ELRC-lithuanian_legislation_seimas_lithuania-1-eng-lit
-  # - mtdata_ELRC-eu_publications_medical_v2-1-eng-lit
-  # - mtdata_ELRC-wikipedia_health-1-eng-lit
-  # - mtdata_ELRC-nteu_tierb-1-eng-lit
-  # - mtdata_EU-eac_forms-1-eng-lit #                        ~31,162 sentences (3.5 MB)
-  # - mtdata_EU-eac_reference-1-eng-lit #                    ~31,162 sentences (3.5 MB)
-  # - mtdata_EU-dcep-1-eng-lit #                            ~510,025 sentences (57.6 MB)
-  # - mtdata_Statmt-wiki_titles-1-lit-eng #                  ~15,267 sentences (1.7 MB)
-  # - mtdata_Statmt-newsdev_enlt-2019-eng-lit #             ~402,756 sentences (45.5 MB)
-  # - mtdata_Statmt-newsdev_lten-2019-lit-eng #             ~402,756 sentences (45.5 MB)
-  # - mtdata_Tilde-eesc-2017-eng-lit #                    ~1,149,015 sentences (129.8 MB)
-  # - mtdata_Tilde-ema-2016-eng-lit #                       ~228,287 sentences (25.8 MB)
-  # - mtdata_Tilde-airbaltic-1-eng-lit #                        ~962 sentences (108.7 kB)
-  # - mtdata_Tilde-rapid-2016-eng-lit #                     ~180,798 sentences (20.4 MB)
+  - mtdata_ELRC-lithuanian_legislation_seimas_lithuania-1-eng-lit
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-lit
+  - mtdata_ELRC-wikipedia_health-1-eng-lit
+  - mtdata_ELRC-nteu_tierb-1-eng-lit
+  - mtdata_EU-eac_forms-1-eng-lit #                        ~31,162 sentences (3.5 MB)
+  - mtdata_EU-eac_reference-1-eng-lit #                    ~31,162 sentences (3.5 MB)
+  - mtdata_EU-dcep-1-eng-lit #                            ~510,025 sentences (57.6 MB)
+  - mtdata_Statmt-wiki_titles-1-lit-eng #                  ~15,267 sentences (1.7 MB)
+  - mtdata_Statmt-newsdev_enlt-2019-eng-lit #             ~402,756 sentences (45.5 MB)
+  - mtdata_Statmt-newsdev_lten-2019-lit-eng #             ~402,756 sentences (45.5 MB)
+  - mtdata_Tilde-eesc-2017-eng-lit #                    ~1,149,015 sentences (129.8 MB)
+  - mtdata_Tilde-ema-2016-eng-lit #                       ~228,287 sentences (25.8 MB)
+  - mtdata_Tilde-airbaltic-1-eng-lit #                        ~962 sentences (108.7 kB)
+  - mtdata_Tilde-rapid-2016-eng-lit #                     ~180,798 sentences (20.4 MB)
 
   # The monolingual data contains:
   #   ~209,074,237 sentences

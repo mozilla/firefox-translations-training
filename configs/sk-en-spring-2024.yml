@@ -2,7 +2,7 @@
 # task config-generator -- sk en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/eeb21584f863bf2dd99259f15a9b5b25350b2271/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/001d15d5f2775e0e4c57717057a1906069e29dcc/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: sk
@@ -35,16 +35,38 @@ datasets:
   - flores_aug-inline-noise_devtest
 
   # The training data contains:
-  #   111,106,513 sentences
+  #   111,168,672 sentences
   # 
   # Skipped datasets:
-  #  - opus_CCMatrix/v1 - ignored datasets
-  #  - opus_bible-uedin/v1 - ignored datasets
-  #  - opus_GNOME/v1 - not enough data
-  #  - opus_ELRC-3076-wikipedia_health/v1 - not enough data
-  #  - opus_ELRC-wikipedia_health/v1 - not enough data
-  #  - opus_ELRC_2922/v1 - not enough data
-  #  - opus_Ubuntu/v14.10 - not enough data
+  #  - opus_CCMatrix/v1 - ignored datasets (38,096,241 sentences)
+  #  - opus_GNOME/v1 - not enough data  (150 sentences)
+  #  - opus_ELRC-3076-wikipedia_health/v1 - not enough data  (134 sentences)
+  #  - opus_ELRC-wikipedia_health/v1 - not enough data  (134 sentences)
+  #  - opus_ELRC_2922/v1 - not enough data  (133 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-culture_slovak-1-eng-slk - duplicate with opus
+  #  - mtdata_ELRC-justice_slovak-1-eng-slk - duplicate with opus
+  #  - mtdata_ELRC-euipo_2017-1-eng-slk - duplicate with opus
+  #  - mtdata_ELRC-emea-1-eng-slk - duplicate with opus
+  #  - mtdata_ELRC-vaccination-1-eng-slk - duplicate with opus
+  #  - mtdata_ELRC-antibiotic-1-eng-slk - duplicate with opus
+  #  - mtdata_ELRC-europarl_covid-1-eng-slk - duplicate with opus
+  #  - mtdata_ELRC-ec_europa_covid-1-eng-slk - duplicate with opus
+  #  - mtdata_ELRC-eur_lex_covid-1-eng-slk - duplicate with opus
+  #  - mtdata_ELRC-presscorner_covid-1-eng-slk - duplicate with opus
+  #  - mtdata_ELRC-nteu_tiera-1-eng-slk - duplicate with opus
+  #  - mtdata_EU-ecdc-1-eng-slk - duplicate with opus
+  #  - mtdata_Facebook-wikimatrix-1-eng-slk - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_train-1-eng-slk - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_test-1-eng-slk - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_dev-1-eng-slk - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-6-eng-slk - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-7.1-eng-slk - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-8-eng-slk - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-9-eng-slk - duplicate with opus
+  #  - mtdata_Statmt-europarl-7-slk-eng - duplicate with opus
+  #  - mtdata_Statmt-ccaligned-1-eng-slk_SK - duplicate with opus
+  #  - mtdata_Tilde-ecb-2017-eng-slk - duplicate with opus
   train:
   - opus_NLLB/v1  #                                       38,096,241 sentences
   - opus_ParaCrawl/v9 #                                  22,902,149 sentences
@@ -67,6 +89,7 @@ datasets:
   - opus_TED2020/v1 #                                       106,067 sentences
   - opus_KDE4/v2 #                                          105,425 sentences
   - opus_NeuLab-TedTalks/v1 #                                67,607 sentences
+  - opus_bible-uedin/v1 #                                    62,159 sentences
   - opus_ELRC-5067-SciPar/v1 #                               60,468 sentences
   - opus_JRC-Acquis/v3.0 #                                   35,744 sentences
   - opus_PHP/v1 #                                            31,173 sentences
@@ -99,18 +122,18 @@ datasets:
   - opus_ELRC-2745-vaccination/v1 #                             510 sentences
   - opus_ELRC-vaccination/v1 #                                  510 sentences
   - opus_ELRC_2923/v1 #                                         448 sentences
-  # - mtdata_ELRC-annual_reports_immigration_asylum_policies_emn_contact_point_slovak-1-eng-slk
-  # - mtdata_ELRC-annual_reports_slovak_centre_human_rights-1-eng-slk
-  # - mtdata_ELRC-annual_reports_statistical_slovak-1-eng-slk
-  # - mtdata_ELRC-eu_publications_medical_v2-1-eng-slk
-  # - mtdata_ELRC-wikipedia_health-1-eng-slk
-  # - mtdata_ELRC-nteu_tierb-1-eng-slk
-  # - mtdata_EU-eac_forms-1-eng-slk #                        ~31,162 sentences (3.5 MB)
-  # - mtdata_EU-eac_reference-1-eng-slk #                    ~31,162 sentences (3.5 MB)
-  # - mtdata_EU-dcep-1-eng-slk #                            ~548,757 sentences (62.0 MB)
-  # - mtdata_Tilde-eesc-2017-eng-slk #                    ~1,269,685 sentences (143.5 MB)
-  # - mtdata_Tilde-ema-2016-eng-slk #                       ~238,237 sentences (26.9 MB)
-  # - mtdata_Tilde-rapid-2016-eng-slk #                     ~214,164 sentences (24.2 MB)
+  - mtdata_ELRC-annual_reports_immigration_asylum_policies_emn_contact_point_slovak-1-eng-slk
+  - mtdata_ELRC-annual_reports_slovak_centre_human_rights-1-eng-slk
+  - mtdata_ELRC-annual_reports_statistical_slovak-1-eng-slk
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-slk
+  - mtdata_ELRC-wikipedia_health-1-eng-slk
+  - mtdata_ELRC-nteu_tierb-1-eng-slk
+  - mtdata_EU-eac_forms-1-eng-slk #                        ~31,162 sentences (3.5 MB)
+  - mtdata_EU-eac_reference-1-eng-slk #                    ~31,162 sentences (3.5 MB)
+  - mtdata_EU-dcep-1-eng-slk #                            ~548,757 sentences (62.0 MB)
+  - mtdata_Tilde-eesc-2017-eng-slk #                    ~1,269,685 sentences (143.5 MB)
+  - mtdata_Tilde-ema-2016-eng-slk #                       ~238,237 sentences (26.9 MB)
+  - mtdata_Tilde-rapid-2016-eng-slk #                     ~214,164 sentences (24.2 MB)
 
   # The monolingual data contains:
   #   ~0 sentences

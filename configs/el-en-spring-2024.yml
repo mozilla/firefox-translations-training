@@ -2,7 +2,7 @@
 # task config-generator -- el en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/eeb21584f863bf2dd99259f15a9b5b25350b2271/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/001d15d5f2775e0e4c57717057a1906069e29dcc/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: el
@@ -37,32 +37,58 @@ datasets:
   - flores_aug-inline-noise_devtest
 
   # The training data contains:
-  #   163,498,761 sentences
+  #   159,976,981 sentences
   # 
   # Skipped datasets:
-  #  - opus_CCMatrix/v1 - ignored datasets
-  #  - opus_bible-uedin/v1 - ignored datasets
-  #  - opus_ELRC-3857-State_Budget_Executi/v1 - not enough data
-  #  - opus_ELRC-745-Convention_against_T/v1 - not enough data
-  #  - opus_ELRA-W0309/v1 - not enough data
-  #  - opus_ELRC-656-Macroeconomic_Develo/v1 - not enough data
-  #  - opus_ELRC-496-Convention_transfer_/v1 - not enough data
-  #  - opus_ELRA-W0196/v1 - not enough data
-  #  - opus_ELRA-W0207/v1 - not enough data
-  #  - opus_ELRA-W0308/v1 - not enough data
-  #  - opus_ELRC-662-Expression_interest/v1 - not enough data
-  #  - opus_ELRA-W0209/v1 - not enough data
-  #  - opus_ELRC-648-Letter_rights_person/v1 - not enough data
-  #  - opus_ELRC-658-Methodological_Recon/v1 - not enough data
-  #  - opus_ELRA-W0208/v1 - not enough data
-  #  - opus_ELRC-1022-COMPULSORY_EXPROPRIA/v1 - not enough data
-  #  - opus_ELRC-3856-PRESS/v1 - not enough data
-  #  - opus_ELRC-416-Swedish_Social_Secur/v1 - not enough data
-  #  - opus_ELRC-416-Swedish_Social_Secur/v1 - not enough data
-  #  - opus_ELRC-1021-Commitment_Property_/v1 - not enough data
-  #  - opus_ELRC-403-Rights_Arrested/v1 - not enough data
-  #  - opus_ELRA-W0301/v1 - not enough data
-  #  - opus_Ubuntu/v14.10 - not enough data
+  #  - opus_CCMatrix/v1 - ignored datasets (49,262,631 sentences)
+  #  - opus_MultiMaCoCu/v2 - ignored datasets (3,583,975 sentences)
+  #  - opus_ELRC-3857-State_Budget_Executi/v1 - not enough data  (180 sentences)
+  #  - opus_ELRC-745-Convention_against_T/v1 - not enough data  (165 sentences)
+  #  - opus_ELRA-W0309/v1 - not enough data  (164 sentences)
+  #  - opus_ELRC-656-Macroeconomic_Develo/v1 - not enough data  (151 sentences)
+  #  - opus_ELRC-496-Convention_transfer_/v1 - not enough data  (121 sentences)
+  #  - opus_ELRA-W0196/v1 - not enough data  (120 sentences)
+  #  - opus_ELRA-W0207/v1 - not enough data  (101 sentences)
+  #  - opus_ELRA-W0308/v1 - not enough data  (87 sentences)
+  #  - opus_ELRC-662-Expression_interest/v1 - not enough data  (85 sentences)
+  #  - opus_ELRA-W0209/v1 - not enough data  (84 sentences)
+  #  - opus_ELRC-648-Letter_rights_person/v1 - not enough data  (65 sentences)
+  #  - opus_ELRC-658-Methodological_Recon/v1 - not enough data  (45 sentences)
+  #  - opus_ELRA-W0208/v1 - not enough data  (44 sentences)
+  #  - opus_ELRC-1022-COMPULSORY_EXPROPRIA/v1 - not enough data  (38 sentences)
+  #  - opus_ELRC-3856-PRESS/v1 - not enough data  (35 sentences)
+  #  - opus_ELRC-416-Swedish_Social_Secur/v1 - not enough data  (30 sentences)
+  #  - opus_ELRC-416-Swedish_Social_Secur/v1 - not enough data  (29 sentences)
+  #  - opus_ELRC-1021-Commitment_Property_/v1 - not enough data  (23 sentences)
+  #  - opus_ELRC-403-Rights_Arrested/v1 - not enough data  (22 sentences)
+  #  - opus_ELRA-W0301/v1 - not enough data  (16 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-greek_administration-1-ell-eng - duplicate with opus
+  #  - mtdata_ELRC-greek_law-1-ell-eng - duplicate with opus
+  #  - mtdata_ELRC-euipo_2017-1-ell-eng - duplicate with opus
+  #  - mtdata_ELRC-press_releases_pio-1-ell-eng - duplicate with opus
+  #  - mtdata_ELRC-constitution_greece-1-ell-eng - duplicate with opus
+  #  - mtdata_ELRC-emea-1-ell-eng - duplicate with opus
+  #  - mtdata_ELRC-vaccination-1-ell-eng - duplicate with opus
+  #  - mtdata_ELRC-wikipedia_health-1-ell-eng - duplicate with opus
+  #  - mtdata_ELRC-antibiotic-1-ell-eng - duplicate with opus
+  #  - mtdata_ELRC-europarl_covid-1-ell-eng - duplicate with opus
+  #  - mtdata_ELRC-ec_europa_covid-1-ell-eng - duplicate with opus
+  #  - mtdata_ELRC-eur_lex_covid-1-ell-eng - duplicate with opus
+  #  - mtdata_ELRC-presscorner_covid-1-ell-eng - duplicate with opus
+  #  - mtdata_EU-ecdc-1-eng-ell - duplicate with opus
+  #  - mtdata_Facebook-wikimatrix-1-ell-eng - duplicate with opus
+  #  - mtdata_LinguaTools-wikititles-2014-ell-eng - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_train-1-eng-ell - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_test-1-eng-ell - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_dev-1-eng-ell - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-6-eng-ell - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-7.1-eng-ell - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-8-eng-ell - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-9-eng-ell - duplicate with opus
+  #  - mtdata_Statmt-europarl-7-ell-eng - duplicate with opus
+  #  - mtdata_Statmt-ccaligned-1-ell_GR-eng - duplicate with opus
+  #  - mtdata_Tilde-ecb-2017-ell-eng - duplicate with opus
   train:
   - opus_NLLB/v1  #                                       49,262,631 sentences
   - opus_OpenSubtitles/v2018 #                           40,492,942 sentences
@@ -72,7 +98,6 @@ datasets:
   - opus_DGT/v2019 #                                      5,099,790 sentences
   - opus_EUbookshop/v2 #                                  4,022,952 sentences
   - opus_MaCoCu/v2 #                                      3,583,978 sentences
-  - opus_MultiMaCoCu/v2 #                                 3,583,975 sentences
   - opus_XLEnt/v1.2 #                                     2,949,219 sentences
   - opus_LinguaTools-WikiTitles/v2014 #                   1,850,804 sentences
   - opus_Europarl/v8 #                                    1,292,180 sentences
@@ -93,6 +118,7 @@ datasets:
   - opus_ELRC-Press_Releases/v1 #                           117,171 sentences
   - opus_Wikipedia/v1.0 #                                   104,076 sentences
   - opus_ECB/v1 #                                           102,986 sentences
+  - opus_bible-uedin/v1 #                                    62,195 sentences
   - opus_ELRA-W0202/v1 #                                     61,967 sentences
   - opus_Tatoeba/v2023-04-12 #                               25,995 sentences
   - opus_ELRC-3562-EUR_LEX_covid/v1 #                        23,024 sentences
@@ -151,37 +177,37 @@ datasets:
   - opus_ELRC_2923/v1 #                                         420 sentences
   - opus_ELRC-646-International_Judici/v1 #                     289 sentences
   - opus_ELRA-W0307/v1 #                                        288 sentences
-  # - mtdata_ELRC-rights_arrested-1-ell-eng
-  # - mtdata_ELRC-swedish_social_security-1-ell-eng
-  # - mtdata_ELRC-greek_legislation_anticorruption_plan-1-ell-eng
-  # - mtdata_ELRC-convention_transfer_sentenced_persons-1-ell-eng
-  # - mtdata_ELRC-international_judicial_cooperation_civil_matters-1-ell-eng
-  # - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-ell-eng
-  # - mtdata_ELRC-macroeconomic_developments-1-ell-eng
-  # - mtdata_ELRC-methodological_reconciliation-1-ell-eng
-  # - mtdata_ELRC-expression_interest-1-ell-eng
-  # - mtdata_ELRC-memorandum_a_esm_programme-1-ell-eng
-  # - mtdata_ELRC-convention_against_torture_other_cruel_inhuman_or_degrading_treatment_or_punishment_united_nations-1-ell-eng
-  # - mtdata_ELRC-quarterly_reports_parliamentary_budget-1-ell-eng
-  # - mtdata_ELRC-collection_reports_greek_power_corporation-1-ell-eng
-  # - mtdata_ELRC-hellenic_foreign_affairs_announcements-1-ell-eng
-  # - mtdata_ELRC-prime_minister_hellenic-1-ell-eng
-  # - mtdata_ELRC-collection_about_cyprus_problem-1-ell-eng
-  # - mtdata_ELRC-commitment_property_open-1-ell-eng
-  # - mtdata_ELRC-compulsory_expropriation_process_greece-1-ell-eng
-  # - mtdata_ELRC-pio_publication_cyprus_has_always_been_europe_2017-1-ell-eng
-  # - mtdata_ELRC-pio_publication_window_cyprus-1-ell-eng
-  # - mtdata_ELRC-press_information_cyprus-1-ell-eng
-  # - mtdata_ELRC-governmental_about_migration_policy-1-ell-eng
-  # - mtdata_ELRC-eqf_referencing_report-1-ell-eng
-  # - mtdata_ELRC-hellenic_gaming_commission-1-ell-eng
-  # - mtdata_ELRC-eu_publications_medical_v2-1-ell-eng
-  # - mtdata_EU-eac_forms-1-ell-eng #                        ~31,162 sentences (3.5 MB)
-  # - mtdata_EU-eac_reference-1-ell-eng #                    ~31,162 sentences (3.5 MB)
-  # - mtdata_EU-dcep-1-ell-eng #                          ~1,178,828 sentences (133.2 MB)
-  # - mtdata_Tilde-eesc-2017-ell-eng #                    ~2,393,754 sentences (270.5 MB)
-  # - mtdata_Tilde-ema-2016-ell-eng #                       ~244,548 sentences (27.6 MB)
-  # - mtdata_Tilde-rapid-2016-ell-eng #                     ~586,564 sentences (66.3 MB)
+  - mtdata_ELRC-rights_arrested-1-ell-eng
+  - mtdata_ELRC-swedish_social_security-1-ell-eng
+  - mtdata_ELRC-greek_legislation_anticorruption_plan-1-ell-eng
+  - mtdata_ELRC-convention_transfer_sentenced_persons-1-ell-eng
+  - mtdata_ELRC-international_judicial_cooperation_civil_matters-1-ell-eng
+  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-ell-eng
+  - mtdata_ELRC-macroeconomic_developments-1-ell-eng
+  - mtdata_ELRC-methodological_reconciliation-1-ell-eng
+  - mtdata_ELRC-expression_interest-1-ell-eng
+  - mtdata_ELRC-memorandum_a_esm_programme-1-ell-eng
+  - mtdata_ELRC-convention_against_torture_other_cruel_inhuman_or_degrading_treatment_or_punishment_united_nations-1-ell-eng
+  - mtdata_ELRC-quarterly_reports_parliamentary_budget-1-ell-eng
+  - mtdata_ELRC-collection_reports_greek_power_corporation-1-ell-eng
+  - mtdata_ELRC-hellenic_foreign_affairs_announcements-1-ell-eng
+  - mtdata_ELRC-prime_minister_hellenic-1-ell-eng
+  - mtdata_ELRC-collection_about_cyprus_problem-1-ell-eng
+  - mtdata_ELRC-commitment_property_open-1-ell-eng
+  - mtdata_ELRC-compulsory_expropriation_process_greece-1-ell-eng
+  - mtdata_ELRC-pio_publication_cyprus_has_always_been_europe_2017-1-ell-eng
+  - mtdata_ELRC-pio_publication_window_cyprus-1-ell-eng
+  - mtdata_ELRC-press_information_cyprus-1-ell-eng
+  - mtdata_ELRC-governmental_about_migration_policy-1-ell-eng
+  - mtdata_ELRC-eqf_referencing_report-1-ell-eng
+  - mtdata_ELRC-hellenic_gaming_commission-1-ell-eng
+  - mtdata_ELRC-eu_publications_medical_v2-1-ell-eng
+  - mtdata_EU-eac_forms-1-ell-eng #                        ~31,162 sentences (3.5 MB)
+  - mtdata_EU-eac_reference-1-ell-eng #                    ~31,162 sentences (3.5 MB)
+  - mtdata_EU-dcep-1-ell-eng #                          ~1,178,828 sentences (133.2 MB)
+  - mtdata_Tilde-eesc-2017-ell-eng #                    ~2,393,754 sentences (270.5 MB)
+  - mtdata_Tilde-ema-2016-ell-eng #                       ~244,548 sentences (27.6 MB)
+  - mtdata_Tilde-rapid-2016-ell-eng #                     ~586,564 sentences (66.3 MB)
 
   # The monolingual data contains:
   #   ~30,691,547 sentences

@@ -2,7 +2,7 @@
 # task config-generator -- sl en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/eeb21584f863bf2dd99259f15a9b5b25350b2271/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/001d15d5f2775e0e4c57717057a1906069e29dcc/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: sl
@@ -35,12 +35,33 @@ datasets:
   - flores_aug-inline-noise_devtest
 
   # The training data contains:
-  #   90,871,021 sentences
+  #   89,057,699 sentences
   # 
   # Skipped datasets:
-  #  - opus_CCMatrix/v1 - ignored datasets
-  #  - opus_bible-uedin/v1 - ignored datasets
-  #  - opus_Ubuntu/v14.10 - not enough data
+  #  - opus_CCMatrix/v1 - ignored datasets (27,406,782 sentences)
+  #  - opus_MultiMaCoCu/v2 - ignored datasets (1,875,517 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-euipo_2017-1-eng-slv - duplicate with opus
+  #  - mtdata_ELRC-emea-1-eng-slv - duplicate with opus
+  #  - mtdata_ELRC-vaccination-1-eng-slv - duplicate with opus
+  #  - mtdata_ELRC-wikipedia_health-1-eng-slv - duplicate with opus
+  #  - mtdata_ELRC-antibiotic-1-eng-slv - duplicate with opus
+  #  - mtdata_ELRC-europarl_covid-1-eng-slv - duplicate with opus
+  #  - mtdata_ELRC-ec_europa_covid-1-eng-slv - duplicate with opus
+  #  - mtdata_ELRC-eur_lex_covid-1-eng-slv - duplicate with opus
+  #  - mtdata_ELRC-presscorner_covid-1-eng-slv - duplicate with opus
+  #  - mtdata_EU-ecdc-1-eng-slv - duplicate with opus
+  #  - mtdata_Facebook-wikimatrix-1-eng-slv - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_train-1-eng-slv - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_test-1-eng-slv - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_dev-1-eng-slv - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-6-eng-slv - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-7.1-eng-slv - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-8-eng-slv - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-9-eng-slv - duplicate with opus
+  #  - mtdata_Statmt-europarl-7-slv-eng - duplicate with opus
+  #  - mtdata_Statmt-ccaligned-1-eng-slv_SI - duplicate with opus
+  #  - mtdata_Tilde-ecb-2017-eng-slv - duplicate with opus
   train:
   - opus_NLLB/v1  #                                       27,406,782 sentences
   - opus_OpenSubtitles/v2018 #                           19,641,457 sentences
@@ -50,7 +71,6 @@ datasets:
   - opus_CCAligned/v1 #                                   4,366,555 sentences
   - opus_TildeMODEL/v2018 #                               2,048,216 sentences
   - opus_MaCoCu/v2 #                                      1,875,518 sentences
-  - opus_MultiMaCoCu/v2 #                                 1,875,517 sentences
   - opus_EMEA/v3 #                                        1,045,041 sentences
   - opus_XLEnt/v1.2 #                                       861,509 sentences
   - opus_ELRC-2727-EMEA/v1 #                                766,139 sentences
@@ -67,6 +87,7 @@ datasets:
   - opus_wikimedia/v20230407 #                               73,612 sentences
   - opus_ELRC-490-Secretariat_General_/v1 #                  63,070 sentences
   - opus_ELRA-W0191/v1 #                                     63,069 sentences
+  - opus_bible-uedin/v1 #                                    62,195 sentences
   - opus_ELRC-489-Secretariat_General_/v1 #                  55,185 sentences
   - opus_ELRA-W0190/v1 #                                     55,184 sentences
   - opus_JRC-Acquis/v3.0 #                                   53,390 sentences
@@ -103,18 +124,18 @@ datasets:
   - opus_ELRC-2737-vaccination/v1 #                             492 sentences
   - opus_ELRC-vaccination/v1 #                                  492 sentences
   - opus_ELRC_2923/v1 #                                         451 sentences
-  # - mtdata_ELRC-secretariat_general_part1-1-eng-slv
-  # - mtdata_ELRC-secretariat_general_part2-1-eng-slv
-  # - mtdata_ELRC-chapters_youth_2010_social_profile_young_people_slovenia_publication-1-eng-slv
-  # - mtdata_ELRC-statistical_reports_statistical_slovenia-1-eng-slv
-  # - mtdata_ELRC-agriculture_forestry_food_slovenia-1-eng-slv
-  # - mtdata_ELRC-eu_publications_medical_v2-1-eng-slv
-  # - mtdata_EU-eac_forms-1-eng-slv #                        ~31,162 sentences (3.5 MB)
-  # - mtdata_EU-eac_reference-1-eng-slv #                    ~31,162 sentences (3.5 MB)
-  # - mtdata_EU-dcep-1-eng-slv #                            ~539,490 sentences (61.0 MB)
-  # - mtdata_Tilde-eesc-2017-eng-slv #                    ~1,116,707 sentences (126.2 MB)
-  # - mtdata_Tilde-ema-2016-eng-slv #                       ~223,681 sentences (25.3 MB)
-  # - mtdata_Tilde-rapid-2016-eng-slv #                     ~203,695 sentences (23.0 MB)
+  - mtdata_ELRC-secretariat_general_part1-1-eng-slv
+  - mtdata_ELRC-secretariat_general_part2-1-eng-slv
+  - mtdata_ELRC-chapters_youth_2010_social_profile_young_people_slovenia_publication-1-eng-slv
+  - mtdata_ELRC-statistical_reports_statistical_slovenia-1-eng-slv
+  - mtdata_ELRC-agriculture_forestry_food_slovenia-1-eng-slv
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-slv
+  - mtdata_EU-eac_forms-1-eng-slv #                        ~31,162 sentences (3.5 MB)
+  - mtdata_EU-eac_reference-1-eng-slv #                    ~31,162 sentences (3.5 MB)
+  - mtdata_EU-dcep-1-eng-slv #                            ~539,490 sentences (61.0 MB)
+  - mtdata_Tilde-eesc-2017-eng-slv #                    ~1,116,707 sentences (126.2 MB)
+  - mtdata_Tilde-ema-2016-eng-slv #                       ~223,681 sentences (25.3 MB)
+  - mtdata_Tilde-rapid-2016-eng-slv #                     ~203,695 sentences (23.0 MB)
 
   # The monolingual data contains:
   #   ~0 sentences

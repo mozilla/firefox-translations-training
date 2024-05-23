@@ -2,7 +2,7 @@
 # task config-generator -- ro en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/eeb21584f863bf2dd99259f15a9b5b25350b2271/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/001d15d5f2775e0e4c57717057a1906069e29dcc/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: ro
@@ -37,18 +37,44 @@ datasets:
   - sacrebleu_wmt16
 
   # The training data contains:
-  #   174,636,220 sentences
+  #   174,698,415 sentences
   # 
   # Skipped datasets:
-  #  - opus_CCMatrix/v1 - ignored datasets
-  #  - opus_bible-uedin/v1 - ignored datasets
-  #  - opus_ELRA-W0308/v1 - not enough data
-  #  - opus_ELRC-648-Letter_rights_person/v1 - not enough data
-  #  - opus_ELRC-403-Rights_Arrested/v1 - not enough data
-  #  - opus_ELRA-W0301/v1 - not enough data
-  #  - opus_tldr-pages/v2023-08-29 - not enough data
-  #  - opus_ELRC-417-Swedish_Work_Environ/v1 - not enough data
-  #  - opus_Ubuntu/v14.10 - not enough data
+  #  - opus_CCMatrix/v1 - ignored datasets (55,607,023 sentences)
+  #  - opus_ELRA-W0308/v1 - not enough data  (92 sentences)
+  #  - opus_ELRC-648-Letter_rights_person/v1 - not enough data  (77 sentences)
+  #  - opus_ELRC-403-Rights_Arrested/v1 - not enough data  (24 sentences)
+  #  - opus_ELRA-W0301/v1 - not enough data  (21 sentences)
+  #  - opus_tldr-pages/v2023-08-29 - not enough data  (9 sentences)
+  #  - opus_ELRC-417-Swedish_Work_Environ/v1 - not enough data  (8 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-romanian_literature-1-eng-ron - duplicate with opus
+  #  - mtdata_ELRC-romanian_wikipedia-1-eng-ron - duplicate with opus
+  #  - mtdata_ELRC-romanian_news-1-eng-ron - duplicate with opus
+  #  - mtdata_ELRC-euipo_2017-1-eng-ron - duplicate with opus
+  #  - mtdata_ELRC-eir_spos-1-eng-ron - duplicate with opus
+  #  - mtdata_ELRC-eir_newsletter-1-eng-ron - duplicate with opus
+  #  - mtdata_ELRC-eir-1-eng-ron - duplicate with opus
+  #  - mtdata_ELRC-emea-1-eng-ron - duplicate with opus
+  #  - mtdata_ELRC-vaccination-1-eng-ron - duplicate with opus
+  #  - mtdata_ELRC-wikipedia_health-1-eng-ron - duplicate with opus
+  #  - mtdata_ELRC-antibiotic-1-eng-ron - duplicate with opus
+  #  - mtdata_ELRC-europarl_covid-1-eng-ron - duplicate with opus
+  #  - mtdata_ELRC-ec_europa_covid-1-eng-ron - duplicate with opus
+  #  - mtdata_ELRC-eur_lex_covid-1-eng-ron - duplicate with opus
+  #  - mtdata_ELRC-presscorner_covid-1-eng-ron - duplicate with opus
+  #  - mtdata_EU-ecdc-1-eng-ron - duplicate with opus
+  #  - mtdata_Facebook-wikimatrix-1-eng-ron - duplicate with opus
+  #  - mtdata_LinguaTools-wikititles-2014-eng-ron - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_train-1-eng-ron - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_test-1-eng-ron - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_dev-1-eng-ron - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-6-eng-ron - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-7.1-eng-ron - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-8-eng-ron - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-9-eng-ron - duplicate with opus
+  #  - mtdata_Statmt-europarl-7-ron-eng - duplicate with opus
+  #  - mtdata_Statmt-ccaligned-1-eng-ron_RO - duplicate with opus
   train:
   - opus_NLLB/v1  #                                       55,607,023 sentences
   - opus_OpenSubtitles/v2018 #                           50,693,226 sentences
@@ -80,6 +106,7 @@ datasets:
   - opus_ELRC-493-Romanian_news/v1 #                         98,099 sentences
   - opus_ELRA-W0194/v1 #                                     98,098 sentences
   - opus_ELITR-ECA/v1 #                                      92,826 sentences
+  - opus_bible-uedin/v1 #                                    62,195 sentences
   - opus_PHP/v1 #                                            30,391 sentences
   - opus_GNOME/v1 #                                          25,419 sentences
   - opus_ELRC-3577-EUR_LEX_covid/v1 #                        23,183 sentences
@@ -119,24 +146,24 @@ datasets:
   - opus_ELRC-2750-vaccination/v1 #                             496 sentences
   - opus_ELRC-vaccination/v1 #                                  496 sentences
   - opus_ELRC_2923/v1 #                                         319 sentences
-  # - mtdata_ELRC-rights_arrested-1-eng-ron
-  # - mtdata_ELRC-swedish_work_environment-1-eng-ron
-  # - mtdata_ELRC-romanian_new_criminal_procedure_code-1-eng-ron
-  # - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-eng-ron
-  # - mtdata_ELRC-romanian_ombudsman_archive-1-eng-ron
-  # - mtdata_ELRC-studies_reports_statistical_culture_institute_cultural_research_training-1-eng-ron
-  # - mtdata_ELRC-rural_development_programme_romania-1-eng-ron
-  # - mtdata_ELRC-eu_publications_medical_v2-1-eng-ron
-  # - mtdata_EU-eac_forms-1-eng-ron #                        ~31,162 sentences (3.5 MB)
-  # - mtdata_EU-eac_reference-1-eng-ron #                    ~31,162 sentences (3.5 MB)
-  # - mtdata_EU-dcep-1-eng-ron #                            ~389,297 sentences (44.0 MB)
-  # - mtdata_Statmt-newsdev_enro-2016-eng-ron #             ~402,756 sentences (45.5 MB)
-  # - mtdata_Statmt-newsdev_roen-2016-ron-eng #             ~402,756 sentences (45.5 MB)
-  # - mtdata_Tilde-eesc-2017-eng-ron #                    ~1,026,056 sentences (115.9 MB)
-  # - mtdata_Tilde-ema-2016-eng-ron #                       ~229,130 sentences (25.9 MB)
-  # - mtdata_Tilde-ecb-2017-eng-ron #                         ~1,778 sentences (200.9 kB)
-  # - mtdata_Tilde-rapid-2016-eng-ron #                     ~196,150 sentences (22.2 MB)
-  # - mtdata_Tilde-worldbank-1-eng-ron #                      ~6,413 sentences (724.7 kB)
+  - mtdata_ELRC-rights_arrested-1-eng-ron
+  - mtdata_ELRC-swedish_work_environment-1-eng-ron
+  - mtdata_ELRC-romanian_new_criminal_procedure_code-1-eng-ron
+  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-eng-ron
+  - mtdata_ELRC-romanian_ombudsman_archive-1-eng-ron
+  - mtdata_ELRC-studies_reports_statistical_culture_institute_cultural_research_training-1-eng-ron
+  - mtdata_ELRC-rural_development_programme_romania-1-eng-ron
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-ron
+  - mtdata_EU-eac_forms-1-eng-ron #                        ~31,162 sentences (3.5 MB)
+  - mtdata_EU-eac_reference-1-eng-ron #                    ~31,162 sentences (3.5 MB)
+  - mtdata_EU-dcep-1-eng-ron #                            ~389,297 sentences (44.0 MB)
+  - mtdata_Statmt-newsdev_enro-2016-eng-ron #             ~402,756 sentences (45.5 MB)
+  - mtdata_Statmt-newsdev_roen-2016-ron-eng #             ~402,756 sentences (45.5 MB)
+  - mtdata_Tilde-eesc-2017-eng-ron #                    ~1,026,056 sentences (115.9 MB)
+  - mtdata_Tilde-ema-2016-eng-ron #                       ~229,130 sentences (25.9 MB)
+  - mtdata_Tilde-ecb-2017-eng-ron #                         ~1,778 sentences (200.9 kB)
+  - mtdata_Tilde-rapid-2016-eng-ron #                     ~196,150 sentences (22.2 MB)
+  - mtdata_Tilde-worldbank-1-eng-ron #                      ~6,413 sentences (724.7 kB)
 
   # The monolingual data contains:
   #   ~26,127,789 sentences

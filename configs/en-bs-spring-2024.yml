@@ -2,7 +2,7 @@
 # task config-generator -- en bs --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/eeb21584f863bf2dd99259f15a9b5b25350b2271/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/001d15d5f2775e0e4c57717057a1906069e29dcc/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -35,17 +35,23 @@ datasets:
   - flores_aug-inline-noise_devtest
 
   # The training data contains:
-  #   95,135,616 sentences
+  #   94,895,603 sentences
   # 
   # Skipped datasets:
-  #  - opus_Ubuntu/v14.10 - not enough data
+  #  - opus_MultiHPLT/v1.1 - ignored datasets (240,013 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-wikipedia_health-1-bos-eng - duplicate with opus
+  #  - mtdata_Facebook-wikimatrix-1-bos-eng - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_train-1-eng-bos - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_test-1-eng-bos - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_dev-1-eng-bos - duplicate with opus
+  #  - mtdata_Statmt-ccaligned-1-bos_BA-eng - duplicate with opus
   train:
   - opus_NLLB/v1  #                                       79,334,034 sentences
   - opus_OpenSubtitles/v2018 #                           14,041,160 sentences
   - opus_XLEnt/v1.2 #                                       266,696 sentences
   - opus_Tanzil/v1 #                                        246,913 sentences
   - opus_HPLT/v1.1 #                                        240,015 sentences
-  - opus_MultiHPLT/v1.1 #                                   240,013 sentences
   - opus_WikiMatrix/v1 #                                    210,691 sentences
   - opus_CCAligned/v1 #                                     192,099 sentences
   - opus_GNOME/v1 #                                         164,960 sentences

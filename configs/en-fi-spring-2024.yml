@@ -2,7 +2,7 @@
 # task config-generator -- en fi --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/05963a02792d6e89b2e84a81356aefe69dbcc0d5/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/001d15d5f2775e0e4c57717057a1906069e29dcc/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -45,17 +45,51 @@ datasets:
   - sacrebleu_wmt15
 
   # The training data contains:
-  #   180,516,040 sentences
+  #   180,578,066 sentences
   # 
   # Skipped datasets:
-  #  - opus_CCMatrix/v1 - ignored datasets
-  #  - opus_bible-uedin/v1 - ignored datasets
-  #  - opus_ELRC-401-Swedish_Labour_Part2/v1 - not enough data
-  #  - opus_ELRC-406-Swedish_Labour_Part1/v1 - not enough data
-  #  - opus_ELRC-436-Swedish_Food/v1 - not enough data
-  #  - opus_ELRA-W0305/v1 - not enough data
-  #  - opus_MultiHPLT/v1.1 - not enough data
-  #  - opus_Ubuntu/v14.10 - not enough data
+  #  - opus_CCMatrix/v1 - ignored datasets (35,982,562 sentences)
+  #  - opus_ELRC-401-Swedish_Labour_Part2/v1 - not enough data  (171 sentences)
+  #  - opus_ELRC-406-Swedish_Labour_Part1/v1 - not enough data  (41 sentences)
+  #  - opus_ELRC-436-Swedish_Food/v1 - not enough data  (16 sentences)
+  #  - opus_ELRA-W0305/v1 - not enough data  (15 sentences)
+  #  - opus_MultiHPLT/v1.1 - ignored datasets (0 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-hallituskausi_2007_2011-1-eng-fin - duplicate with opus
+  #  - mtdata_ELRC-hallituskausi_2011_2015-1-eng-fin - duplicate with opus
+  #  - mtdata_ELRC-www.norden.org-1-eng-fin - duplicate with opus
+  #  - mtdata_ELRC-www.vtv.fi-1-eng-fin - duplicate with opus
+  #  - mtdata_ELRC-www.visitestonia.com-1-eng-fin - duplicate with opus
+  #  - mtdata_ELRC-valtioneuvosto.fi-1-eng-fin - duplicate with opus
+  #  - mtdata_ELRC-vnk.fi-1-eng-fin - duplicate with opus
+  #  - mtdata_ELRC-euipo_2017-1-eng-fin - duplicate with opus
+  #  - mtdata_ELRC-www.turku.fi-1-eng-fin - duplicate with opus
+  #  - mtdata_ELRC-www.vero.fi-1-eng-fin - duplicate with opus
+  #  - mtdata_ELRC-emea-1-eng-fin - duplicate with opus
+  #  - mtdata_ELRC-vaccination-1-eng-fin - duplicate with opus
+  #  - mtdata_ELRC-wikipedia_health-1-eng-fin - duplicate with opus
+  #  - mtdata_ELRC-antibiotic-1-eng-fin - duplicate with opus
+  #  - mtdata_ELRC-europarl_covid-1-eng-fin - duplicate with opus
+  #  - mtdata_ELRC-ec_europa_covid-1-eng-fin - duplicate with opus
+  #  - mtdata_ELRC-eur_lex_covid-1-eng-fin - duplicate with opus
+  #  - mtdata_ELRC-presscorner_covid-1-eng-fin - duplicate with opus
+  #  - mtdata_ELRC-nteu_tiera-1-eng-fin - duplicate with opus
+  #  - mtdata_EU-ecdc-1-eng-fin - duplicate with opus
+  #  - mtdata_Facebook-wikimatrix-1-eng-fin - duplicate with opus
+  #  - mtdata_LinguaTools-wikititles-2014-eng-fin - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_train-1-eng-fin - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_test-1-eng-fin - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_dev-1-eng-fin - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-3-eng-fin - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-6-eng-fin - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-7.1-eng-fin - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-8-eng-fin - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-9-eng-fin - duplicate with opus
+  #  - mtdata_Statmt-europarl-9-fin-eng - duplicate with opus
+  #  - mtdata_Statmt-europarl-7-fin-eng - duplicate with opus
+  #  - mtdata_Statmt-europarl-10-fin-eng - duplicate with opus
+  #  - mtdata_Statmt-ccaligned-1-eng-fin_FI - duplicate with opus
+  #  - mtdata_Tilde-ecb-2017-eng-fin - duplicate with opus
   train:
   - opus_NLLB/v1  #                                       35,982,562 sentences
   - opus_ParaCrawl/v9 #                                  31,315,914 sentences
@@ -85,6 +119,7 @@ datasets:
   - opus_infopankki/v1 #                                     84,645 sentences
   - opus_Tatoeba/v2023-04-12 #                               81,684 sentences
   - opus_GNOME/v1 #                                          62,184 sentences
+  - opus_bible-uedin/v1 #                                    62,026 sentences
   - opus_ELRC-724-Hallituskausi_2007_2/v1 #                  53,844 sentences
   - opus_ELRA-W0220/v1 #                                     53,843 sentences
   - opus_ELRC-1769-valtioneuvosto.fi/v1 #                    49,317 sentences
@@ -135,23 +170,23 @@ datasets:
   - opus_ELRC-3045-wikipedia_health/v1 #                        334 sentences
   - opus_ELRC-wikipedia_health/v1 #                             334 sentences
   - opus_ELRC_2922/v1 #                                         333 sentences
-  # - mtdata_ELRC-swedish_labour_part2-1-eng-fin
-  # - mtdata_ELRC-swedish_labour_part1-1-eng-fin
-  # - mtdata_ELRC-swedish_social_security-1-eng-fin
-  # - mtdata_ELRC-swedish_food-1-eng-fin
-  # - mtdata_ELRC-finnish_information_bank-1-eng-fin
-  # - mtdata_ELRC-eu_publications_medical_v2-1-eng-fin
-  # - mtdata_ELRC-nteu_tierb-1-eng-fin
-  # - mtdata_EU-eac_forms-1-eng-fin #                        ~31,162 sentences (3.5 MB)
-  # - mtdata_EU-eac_reference-1-eng-fin #                    ~31,162 sentences (3.5 MB)
-  # - mtdata_EU-dcep-1-eng-fin #                          ~1,039,474 sentences (117.5 MB)
-  # - mtdata_Statmt-wiki_titles-1-fin-eng #                  ~45,145 sentences (5.1 MB)
-  # - mtdata_Statmt-newsdev_fien-2015-fin-eng #             ~402,756 sentences (45.5 MB)
-  # - mtdata_Statmt-newsdev_enfi-2015-eng-fin #             ~402,756 sentences (45.5 MB)
-  # - mtdata_Tilde-eesc-2017-eng-fin #                    ~1,759,784 sentences (198.9 MB)
-  # - mtdata_Tilde-ema-2016-eng-fin #                       ~222,060 sentences (25.1 MB)
-  # - mtdata_Tilde-airbaltic-1-eng-fin #                        ~754 sentences (85.2 kB)
-  # - mtdata_Tilde-rapid-2016-eng-fin #                     ~365,302 sentences (41.3 MB)
+  - mtdata_ELRC-swedish_labour_part2-1-eng-fin
+  - mtdata_ELRC-swedish_labour_part1-1-eng-fin
+  - mtdata_ELRC-swedish_social_security-1-eng-fin
+  - mtdata_ELRC-swedish_food-1-eng-fin
+  - mtdata_ELRC-finnish_information_bank-1-eng-fin
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-fin
+  - mtdata_ELRC-nteu_tierb-1-eng-fin
+  - mtdata_EU-eac_forms-1-eng-fin #                        ~31,162 sentences (3.5 MB)
+  - mtdata_EU-eac_reference-1-eng-fin #                    ~31,162 sentences (3.5 MB)
+  - mtdata_EU-dcep-1-eng-fin #                          ~1,039,474 sentences (117.5 MB)
+  - mtdata_Statmt-wiki_titles-1-fin-eng #                  ~45,145 sentences (5.1 MB)
+  - mtdata_Statmt-newsdev_fien-2015-fin-eng #             ~402,756 sentences (45.5 MB)
+  - mtdata_Statmt-newsdev_enfi-2015-eng-fin #             ~402,756 sentences (45.5 MB)
+  - mtdata_Tilde-eesc-2017-eng-fin #                    ~1,759,784 sentences (198.9 MB)
+  - mtdata_Tilde-ema-2016-eng-fin #                       ~222,060 sentences (25.1 MB)
+  - mtdata_Tilde-airbaltic-1-eng-fin #                        ~754 sentences (85.2 kB)
+  - mtdata_Tilde-rapid-2016-eng-fin #                     ~365,302 sentences (41.3 MB)
 
   # The monolingual data contains:
   #   ~209,074,237 sentences

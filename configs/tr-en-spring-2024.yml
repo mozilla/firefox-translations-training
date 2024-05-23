@@ -2,7 +2,7 @@
 # task config-generator -- tr en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/eeb21584f863bf2dd99259f15a9b5b25350b2271/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/001d15d5f2775e0e4c57717057a1906069e29dcc/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: tr
@@ -40,13 +40,20 @@ datasets:
   - sacrebleu_wmt16
 
   # The training data contains:
-  #   122,910,087 sentences
+  #   121,323,758 sentences
   # 
   # Skipped datasets:
-  #  - opus_CCMatrix/v1 - ignored datasets
-  #  - opus_bible-uedin/v1 - ignored datasets
-  #  - opus_GNOME/v1 - not enough data
-  #  - opus_Ubuntu/v14.10 - not enough data
+  #  - opus_CCMatrix/v1 - ignored datasets (47,045,956 sentences)
+  #  - opus_MultiMaCoCu/v2 - ignored datasets (1,646,740 sentences)
+  #  - opus_GNOME/v1 - not enough data  (150 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-wikipedia_health-1-eng-tur - duplicate with opus
+  #  - mtdata_Facebook-wikimatrix-1-eng-tur - duplicate with opus
+  #  - mtdata_LinguaTools-wikititles-2014-eng-tur - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_train-1-eng-tur - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_test-1-eng-tur - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_dev-1-eng-tur - duplicate with opus
+  #  - mtdata_Statmt-ccaligned-1-eng-tur_TR - duplicate with opus
   train:
   - opus_NLLB/v1  #                                       47,045,956 sentences
   - opus_OpenSubtitles/v2018 #                           44,986,121 sentences
@@ -54,7 +61,6 @@ datasets:
   - opus_LinguaTools-WikiTitles/v2014 #                   3,915,248 sentences
   - opus_XLEnt/v1.2 #                                     3,809,464 sentences
   - opus_MaCoCu/v2 #                                      1,646,741 sentences
-  - opus_MultiMaCoCu/v2 #                                 1,646,740 sentences
   - opus_GoURMET/v1 #                                     1,308,307 sentences
   - opus_Tanzil/v1 #                                      1,189,967 sentences
   - opus_Tatoeba/v2023-04-12 #                              676,920 sentences
@@ -67,6 +73,7 @@ datasets:
   - opus_Wikipedia/v1.0 #                                   159,979 sentences
   - opus_KDE4/v2 #                                          153,438 sentences
   - opus_TED2013/v1.1 #                                     137,028 sentences
+  - opus_bible-uedin/v1 #                                    60,411 sentences
   - opus_infopankki/v1 #                                     44,030 sentences
   - opus_Bianet/v1 #                                         34,770 sentences
   - opus_PHP/v1 #                                            32,713 sentences
@@ -78,11 +85,11 @@ datasets:
   - opus_ELRC_2922/v1 #                                       2,367 sentences
   - opus_tldr-pages/v2023-08-29 #                             1,956 sentences
   - opus_TildeMODEL/v2018 #                                   1,584 sentences
-  # - mtdata_EU-eac_forms-1-eng-tur #                        ~31,162 sentences (3.5 MB)
-  # - mtdata_EU-eac_reference-1-eng-tur #                    ~31,162 sentences (3.5 MB)
-  # - mtdata_Statmt-newsdev_tren-2016-tur-eng #             ~402,756 sentences (45.5 MB)
-  # - mtdata_Statmt-newsdev_entr-2016-eng-tur #             ~402,756 sentences (45.5 MB)
-  # - mtdata_Tilde-worldbank-1-eng-tur #                      ~1,827 sentences (206.5 kB)
+  - mtdata_EU-eac_forms-1-eng-tur #                        ~31,162 sentences (3.5 MB)
+  - mtdata_EU-eac_reference-1-eng-tur #                    ~31,162 sentences (3.5 MB)
+  - mtdata_Statmt-newsdev_tren-2016-tur-eng #             ~402,756 sentences (45.5 MB)
+  - mtdata_Statmt-newsdev_entr-2016-eng-tur #             ~402,756 sentences (45.5 MB)
+  - mtdata_Tilde-worldbank-1-eng-tur #                      ~1,827 sentences (206.5 kB)
 
   # The monolingual data contains:
   #   ~21,920,291 sentences

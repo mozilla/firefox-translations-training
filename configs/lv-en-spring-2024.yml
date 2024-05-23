@@ -2,7 +2,7 @@
 # task config-generator -- lv en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/eeb21584f863bf2dd99259f15a9b5b25350b2271/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/001d15d5f2775e0e4c57717057a1906069e29dcc/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: lv
@@ -37,19 +37,39 @@ datasets:
   - sacrebleu_wmt17
 
   # The training data contains:
-  #   68,358,483 sentences
+  #   68,374,368 sentences
   # 
   # Skipped datasets:
-  #  - opus_CCMatrix/v1 - ignored datasets
-  #  - opus_bible-uedin/v1 - ignored datasets
-  #  - opus_ELRC-3089-wikipedia_health/v1 - not enough data
-  #  - opus_ELRC-wikipedia_health/v1 - not enough data
-  #  - opus_ELRC_2922/v1 - not enough data
-  #  - opus_ELRA-W0308/v1 - not enough data
-  #  - opus_ELRC-648-Letter_rights_person/v1 - not enough data
-  #  - opus_ELRC-403-Rights_Arrested/v1 - not enough data
-  #  - opus_ELRA-W0301/v1 - not enough data
-  #  - opus_Ubuntu/v14.10 - not enough data
+  #  - opus_CCMatrix/v1 - ignored datasets (16,685,969 sentences)
+  #  - opus_ELRC-3089-wikipedia_health/v1 - not enough data  (143 sentences)
+  #  - opus_ELRC-wikipedia_health/v1 - not enough data  (143 sentences)
+  #  - opus_ELRC_2922/v1 - not enough data  (142 sentences)
+  #  - opus_ELRA-W0308/v1 - not enough data  (108 sentences)
+  #  - opus_ELRC-648-Letter_rights_person/v1 - not enough data  (84 sentences)
+  #  - opus_ELRC-403-Rights_Arrested/v1 - not enough data  (23 sentences)
+  #  - opus_ELRA-W0301/v1 - not enough data  (20 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-mfa_latvia-1-eng-lav - duplicate with opus
+  #  - mtdata_ELRC-state_latvian-1-eng-lav - duplicate with opus
+  #  - mtdata_ELRC-www.visitestonia.com-1-eng-lav - duplicate with opus
+  #  - mtdata_ELRC-euipo_2017-1-eng-lav - duplicate with opus
+  #  - mtdata_ELRC-emea-1-eng-lav - duplicate with opus
+  #  - mtdata_ELRC-vaccination-1-eng-lav - duplicate with opus
+  #  - mtdata_ELRC-antibiotic-1-eng-lav - duplicate with opus
+  #  - mtdata_ELRC-europarl_covid-1-eng-lav - duplicate with opus
+  #  - mtdata_ELRC-covid19.gov.lv-1-eng-lav - duplicate with opus
+  #  - mtdata_ELRC-ec_europa_covid-1-eng-lav - duplicate with opus
+  #  - mtdata_ELRC-eur_lex_covid-1-eng-lav - duplicate with opus
+  #  - mtdata_ELRC-presscorner_covid-1-eng-lav - duplicate with opus
+  #  - mtdata_ELRC-nteu_tiera-1-eng-lav - duplicate with opus
+  #  - mtdata_EU-ecdc-1-eng-lav - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-6-eng-lav - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-7.1-eng-lav - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-8-eng-lav - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-9-eng-lav - duplicate with opus
+  #  - mtdata_Statmt-europarl-7-lav-eng - duplicate with opus
+  #  - mtdata_Statmt-ccaligned-1-eng-lav_LV - duplicate with opus
+  #  - mtdata_Tilde-ecb-2017-eng-lav - duplicate with opus
   train:
   - opus_NLLB/v1  #                                       16,685,969 sentences
   - opus_ParaCrawl/v9 #                                  13,064,066 sentences
@@ -80,6 +100,7 @@ datasets:
   - opus_ELRC-EUROPARL_covid/v1 #                            17,831 sentences
   - opus_ELRC-2022-EUIPO_2017/v1 #                           17,255 sentences
   - opus_ELRC-EUIPO_2017/v1 #                                17,255 sentences
+  - opus_bible-uedin/v1 #                                    15,885 sentences
   - opus_ELRC-1130-www.visitestonia.com/v1 #                 13,841 sentences
   - opus_ELRC-www.visitestonia.com/v1 #                      13,841 sentences
   - opus_ELRC-2888-EU_publications_medi/v1 #                 13,045 sentences
@@ -107,23 +128,23 @@ datasets:
   - opus_ELRC_2923/v1 #                                         580 sentences
   - opus_ELRC-2741-vaccination/v1 #                             521 sentences
   - opus_ELRC-vaccination/v1 #                                  521 sentences
-  # - mtdata_ELRC-international_agreements-1-eng-lav
-  # - mtdata_ELRC-rights_arrested-1-eng-lav
-  # - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-eng-lav
-  # - mtdata_ELRC-finance_economics_bank_latvia-1-eng-lav
-  # - mtdata_ELRC-eu_publications_medical_v2-1-eng-lav
-  # - mtdata_ELRC-wikipedia_health-1-eng-lav
-  # - mtdata_ELRC-nteu_tierb-1-eng-lav
-  # - mtdata_EU-eac_forms-1-eng-lav #                        ~31,162 sentences (3.5 MB)
-  # - mtdata_EU-eac_reference-1-eng-lav #                    ~31,162 sentences (3.5 MB)
-  # - mtdata_EU-dcep-1-eng-lav #                            ~524,054 sentences (59.2 MB)
-  # - mtdata_Statmt-newsdev_lven-2017-lav-eng #             ~402,756 sentences (45.5 MB)
-  # - mtdata_Statmt-newsdev_enlv-2017-eng-lav #             ~402,756 sentences (45.5 MB)
-  # - mtdata_Tilde-eesc-2017-eng-lav #                    ~1,122,956 sentences (126.9 MB)
-  # - mtdata_Tilde-ema-2016-eng-lav #                       ~231,439 sentences (26.2 MB)
-  # - mtdata_Tilde-airbaltic-1-eng-lav #                      ~1,050 sentences (118.7 kB)
-  # - mtdata_Tilde-fold-1-eng-lav #                          ~10,070 sentences (1.1 MB)
-  # - mtdata_Tilde-rapid-2016-eng-lav #                     ~198,906 sentences (22.5 MB)
+  - mtdata_ELRC-international_agreements-1-eng-lav
+  - mtdata_ELRC-rights_arrested-1-eng-lav
+  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-eng-lav
+  - mtdata_ELRC-finance_economics_bank_latvia-1-eng-lav
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-lav
+  - mtdata_ELRC-wikipedia_health-1-eng-lav
+  - mtdata_ELRC-nteu_tierb-1-eng-lav
+  - mtdata_EU-eac_forms-1-eng-lav #                        ~31,162 sentences (3.5 MB)
+  - mtdata_EU-eac_reference-1-eng-lav #                    ~31,162 sentences (3.5 MB)
+  - mtdata_EU-dcep-1-eng-lav #                            ~524,054 sentences (59.2 MB)
+  - mtdata_Statmt-newsdev_lven-2017-lav-eng #             ~402,756 sentences (45.5 MB)
+  - mtdata_Statmt-newsdev_enlv-2017-eng-lav #             ~402,756 sentences (45.5 MB)
+  - mtdata_Tilde-eesc-2017-eng-lav #                    ~1,122,956 sentences (126.9 MB)
+  - mtdata_Tilde-ema-2016-eng-lav #                       ~231,439 sentences (26.2 MB)
+  - mtdata_Tilde-airbaltic-1-eng-lav #                      ~1,050 sentences (118.7 kB)
+  - mtdata_Tilde-fold-1-eng-lav #                          ~10,070 sentences (1.1 MB)
+  - mtdata_Tilde-rapid-2016-eng-lav #                     ~198,906 sentences (22.5 MB)
 
   # The monolingual data contains:
   #   ~8,749,668 sentences

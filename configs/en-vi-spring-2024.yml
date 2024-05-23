@@ -2,7 +2,7 @@
 # task config-generator -- en vi --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/05963a02792d6e89b2e84a81356aefe69dbcc0d5/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/001d15d5f2775e0e4c57717057a1906069e29dcc/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -35,14 +35,19 @@ datasets:
   - flores_aug-inline-noise_devtest
 
   # The training data contains:
-  #   68,960,926 sentences
+  #   69,085,316 sentences
   # 
   # Skipped datasets:
-  #  - opus_CCMatrix/v1 - ignored datasets
-  #  - opus_bible-uedin/v1 - ignored datasets
-  #  - opus_GNOME/v1 - not enough data
-  #  - opus_Ubuntu/v14.10 - not enough data
-  #  - opus_XLEnt/v1.2 - not enough data
+  #  - opus_CCMatrix/v1 - ignored datasets (50,092,444 sentences)
+  #  - opus_GNOME/v1 - not enough data  (149 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - opus_XLEnt/v1.2 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-wikipedia_health-1-eng-vie - duplicate with opus
+  #  - mtdata_Facebook-wikimatrix-1-eng-vie - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_train-1-eng-vie - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_test-1-eng-vie - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_dev-1-eng-vie - duplicate with opus
+  #  - mtdata_Statmt-ccaligned-1-eng-vie_VN - duplicate with opus
   train:
   - opus_NLLB/v1  #                                       50,092,444 sentences
   - opus_CCAligned/v1 #                                  12,394,417 sentences
@@ -54,6 +59,7 @@ datasets:
   - opus_NeuLab-TedTalks/v1 #                               184,973 sentences
   - opus_StanfordNLP-NMT/v1.0 #                             133,167 sentences
   - opus_ELRC-wikipedia_health/v1 #                         126,413 sentences
+  - opus_bible-uedin/v1 #                                   124,390 sentences
   - opus_Wikipedia/v1.0 #                                    58,116 sentences
   - opus_KDE4/v2 #                                           42,782 sentences
   - opus_Tatoeba/v2023-04-12 #                                6,855 sentences

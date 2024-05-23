@@ -2,7 +2,7 @@
 # task config-generator -- en uk --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/eeb21584f863bf2dd99259f15a9b5b25350b2271/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/001d15d5f2775e0e4c57717057a1906069e29dcc/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -35,19 +35,24 @@ datasets:
   - flores_aug-inline-noise_devtest
 
   # The training data contains:
-  #   65,358,470 sentences
+  #   58,968,083 sentences
   # 
   # Skipped datasets:
-  #  - opus_CCMatrix/v1 - ignored datasets
-  #  - opus_bible-uedin/v1 - ignored datasets
-  #  - opus_GNOME/v1 - not enough data
-  #  - opus_Ubuntu/v14.10 - not enough data
+  #  - opus_CCMatrix/v1 - ignored datasets (20,240,171 sentences)
+  #  - opus_MultiMaCoCu/v2 - ignored datasets (6,406,288 sentences)
+  #  - opus_GNOME/v1 - not enough data  (150 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-wikipedia_health-1-eng-ukr - duplicate with opus
+  #  - mtdata_Facebook-wikimatrix-1-eng-ukr - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_train-1-eng-ukr - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_test-1-eng-ukr - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_dev-1-eng-ukr - duplicate with opus
+  #  - mtdata_Statmt-ccaligned-1-eng-ukr_UA - duplicate with opus
   train:
   - opus_NLLB/v1  #                                       20,240,171 sentences
   - opus_ParaCrawl/v9 #                                  14,079,832 sentences
   - opus_CCAligned/v1 #                                   8,547,377 sentences
   - opus_MaCoCu/v2 #                                      6,406,294 sentences
-  - opus_MultiMaCoCu/v2 #                                 6,406,288 sentences
   - opus_XLEnt/v1.2 #                                     3,671,061 sentences
   - opus_SUMMA/v1 #                                       1,574,611 sentences
   - opus_OpenSubtitles/v2018 #                              877,780 sentences
@@ -64,6 +69,7 @@ datasets:
   - opus_NeuLab-TedTalks/v1 #                               115,474 sentences
   - opus_ELRC-5181-Official_Parliament_/v1 #                 61,012 sentences
   - opus_ELRC-5174-French_Polish_Ukrain/v1 #                 36,228 sentences
+  - opus_bible-uedin/v1 #                                    15,901 sentences
   - opus_ELRC-5182-Official_Parliament_/v1 #                  8,800 sentences
   - opus_ELRC-3043-wikipedia_health/v1 #                      2,735 sentences
   - opus_ELRC-wikipedia_health/v1 #                           2,735 sentences
@@ -72,7 +78,7 @@ datasets:
   - opus_TildeMODEL/v2018 #                                   1,628 sentences
   - opus_ELRC-5217-Ukrainian_Legal_MT/v1 #                      997 sentences
   - opus_tldr-pages/v2023-08-29 #                               593 sentences
-  # - mtdata_Tilde-worldbank-1-eng-ukr #                      ~2,011 sentences (227.3 kB)
+  - mtdata_Tilde-worldbank-1-eng-ukr #                      ~2,011 sentences (227.3 kB)
 
   # The monolingual data contains:
   #   ~209,074,237 sentences

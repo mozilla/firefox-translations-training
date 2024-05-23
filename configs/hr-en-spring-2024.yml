@@ -2,7 +2,7 @@
 # task config-generator -- hr en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/eeb21584f863bf2dd99259f15a9b5b25350b2271/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/001d15d5f2775e0e4c57717057a1906069e29dcc/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: hr
@@ -35,24 +35,44 @@ datasets:
   - flores_aug-inline-noise_devtest
 
   # The training data contains:
-  #   111,238,935 sentences
+  #   99,724,833 sentences
   # 
   # Skipped datasets:
-  #  - opus_CCMatrix/v1 - ignored datasets
-  #  - opus_bible-uedin/v1 - ignored datasets
-  #  - opus_Ubuntu/v14.10 - not enough data
+  #  - opus_CCMatrix/v1 - ignored datasets (18,797,643 sentences)
+  #  - opus_MultiHPLT/v1.1 - ignored datasets (9,310,276 sentences)
+  #  - opus_MultiMaCoCu/v2 - ignored datasets (2,266,005 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-croatian_bank-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-croatian_mine_action-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-euipo_2017-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-agriculture-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-emea-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-vaccination-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-antibiotic-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-europarl_covid-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-ec_europa_covid-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-eur_lex_covid-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-presscorner_covid-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-nteu_tiera-1-eng-hrv - duplicate with opus
+  #  - mtdata_Facebook-wikimatrix-1-eng-hrv - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_train-1-eng-hrv - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_test-1-eng-hrv - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_dev-1-eng-hrv - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-6-eng-hrv - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-7.1-eng-hrv - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-8-eng-hrv - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-9-eng-hrv - duplicate with opus
+  #  - mtdata_Statmt-ccaligned-1-eng-hrv_HR - duplicate with opus
   train:
   - opus_OpenSubtitles/v2018  #                           35,131,729 sentences
   - opus_NLLB/v1 #                                       18,797,643 sentences
   - opus_ELRC-EMEA/v1 #                                  10,890,456 sentences
   - opus_CCAligned/v1 #                                   9,376,190 sentences
   - opus_HPLT/v1.1 #                                      9,310,369 sentences
-  - opus_MultiHPLT/v1.1 #                                 9,310,276 sentences
   - opus_ParaCrawl/v9 #                                   3,240,485 sentences
   - opus_XLEnt/v1.2 #                                     2,844,710 sentences
   - opus_ELRC-4142-NTEU_TierA/v1 #                        2,290,893 sentences
   - opus_MaCoCu/v2 #                                      2,266,007 sentences
-  - opus_MultiMaCoCu/v2 #                                 2,266,005 sentences
   - opus_ELRC-5067-SciPar/v1 #                              806,581 sentences
   - opus_TildeMODEL/v2018 #                                 745,616 sentences
   - opus_DGT/v2019 #                                        722,182 sentences
@@ -71,6 +91,7 @@ datasets:
   - opus_KDE4/v2 #                                           87,333 sentences
   - opus_TedTalks/v1 #                                       86,348 sentences
   - opus_ELRC-2542-Agriculture/v1 #                          68,376 sentences
+  - opus_bible-uedin/v1 #                                    62,179 sentences
   - opus_ELRC-4329-PRINCIPLE_MVEP_legal/v1 #                 44,460 sentences
   - opus_wikimedia/v20230407 #                               42,034 sentences
   - opus_GNOME/v1 #                                          35,429 sentences
@@ -128,30 +149,30 @@ datasets:
   - opus_ELRC_2922/v1 #                                         485 sentences
   - opus_ELRC-3284-EUROPARL_covid/v1 #                          475 sentences
   - opus_ELRC_2923/v1 #                                         288 sentences
-  # - mtdata_ELRC-government_websites_croatian-1-eng-hrv
-  # - mtdata_ELRC-croatian_swedish_crime_victim_compensation_support_authority-1-eng-hrv
-  # - mtdata_ELRC-statistical_reports_studies_croatian_bureau_statistics-1-eng-hrv
-  # - mtdata_ELRC-studies_challenges_croatian_accession_union_croatian_institute_finance-1-eng-hrv
-  # - mtdata_ELRC-journal_croatian_association_civil_engineers-1-eng-hrv
-  # - mtdata_ELRC-government_cooperation_ngos-1-eng-hrv
-  # - mtdata_ELRC-embassy_finland_zagreb-1-eng-hrv
-  # - mtdata_ELRC-foreign_affairs_croatia-1-eng-hrv
-  # - mtdata_ELRC-croatian_journal_fisheries-1-eng-hrv
-  # - mtdata_ELRC-rural_development_programme_period_2014_2020_croatian_rural_development_programme-1-eng-hrv
-  # - mtdata_ELRC-nature_protection_strategy_croatia-1-eng-hrv
-  # - mtdata_ELRC-university_library_zagreb-1-eng-hrv
-  # - mtdata_ELRC-acts_biological_landscape_diversity_environmental_protection-1-eng-hrv
-  # - mtdata_ELRC-swedish_migration_board_migrationsverket-1-eng-hrv
-  # - mtdata_ELRC-regional_development_funds-1-eng-hrv
-  # - mtdata_ELRC-eu_publications_medical_v2-1-eng-hrv
-  # - mtdata_ELRC-wikipedia_health-1-eng-hrv
-  # - mtdata_ELRC-nteu_tierb-1-eng-hrv
-  # - mtdata_EU-eac_reference-1-eng-hrv #                    ~31,162 sentences (3.5 MB)
-  # - mtdata_Tilde-eesc-2017-eng-hrv #                      ~216,663 sentences (24.5 MB)
-  # - mtdata_Tilde-ema-2016-eng-hrv #                       ~209,283 sentences (23.6 MB)
-  # - mtdata_Tilde-ecb-2017-eng-hrv #                           ~876 sentences (99.0 kB)
-  # - mtdata_Tilde-rapid-2016-eng-hrv #                      ~45,055 sentences (5.1 MB)
-  # - mtdata_Tilde-worldbank-1-eng-hrv #                      ~1,566 sentences (177.0 kB)
+  - mtdata_ELRC-government_websites_croatian-1-eng-hrv
+  - mtdata_ELRC-croatian_swedish_crime_victim_compensation_support_authority-1-eng-hrv
+  - mtdata_ELRC-statistical_reports_studies_croatian_bureau_statistics-1-eng-hrv
+  - mtdata_ELRC-studies_challenges_croatian_accession_union_croatian_institute_finance-1-eng-hrv
+  - mtdata_ELRC-journal_croatian_association_civil_engineers-1-eng-hrv
+  - mtdata_ELRC-government_cooperation_ngos-1-eng-hrv
+  - mtdata_ELRC-embassy_finland_zagreb-1-eng-hrv
+  - mtdata_ELRC-foreign_affairs_croatia-1-eng-hrv
+  - mtdata_ELRC-croatian_journal_fisheries-1-eng-hrv
+  - mtdata_ELRC-rural_development_programme_period_2014_2020_croatian_rural_development_programme-1-eng-hrv
+  - mtdata_ELRC-nature_protection_strategy_croatia-1-eng-hrv
+  - mtdata_ELRC-university_library_zagreb-1-eng-hrv
+  - mtdata_ELRC-acts_biological_landscape_diversity_environmental_protection-1-eng-hrv
+  - mtdata_ELRC-swedish_migration_board_migrationsverket-1-eng-hrv
+  - mtdata_ELRC-regional_development_funds-1-eng-hrv
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-hrv
+  - mtdata_ELRC-wikipedia_health-1-eng-hrv
+  - mtdata_ELRC-nteu_tierb-1-eng-hrv
+  - mtdata_EU-eac_reference-1-eng-hrv #                    ~31,162 sentences (3.5 MB)
+  - mtdata_Tilde-eesc-2017-eng-hrv #                      ~216,663 sentences (24.5 MB)
+  - mtdata_Tilde-ema-2016-eng-hrv #                       ~209,283 sentences (23.6 MB)
+  - mtdata_Tilde-ecb-2017-eng-hrv #                           ~876 sentences (99.0 kB)
+  - mtdata_Tilde-rapid-2016-eng-hrv #                      ~45,055 sentences (5.1 MB)
+  - mtdata_Tilde-worldbank-1-eng-hrv #                      ~1,566 sentences (177.0 kB)
 
   # The monolingual data contains:
   #   ~13,710,801 sentences

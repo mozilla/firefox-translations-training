@@ -2,7 +2,7 @@
 # task config-generator -- en sv --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/eeb21584f863bf2dd99259f15a9b5b25350b2271/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/001d15d5f2775e0e4c57717057a1906069e29dcc/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -35,14 +35,46 @@ datasets:
   - flores_aug-inline-noise_devtest
 
   # The training data contains:
-  #   211,338,187 sentences
+  #   211,400,324 sentences
   # 
   # Skipped datasets:
-  #  - opus_CCMatrix/v1 - ignored datasets
-  #  - opus_bible-uedin/v1 - ignored datasets
-  #  - opus_RF/v1 - not enough data
-  #  - opus_GNOME/v1 - not enough data
-  #  - opus_Ubuntu/v14.10 - not enough data
+  #  - opus_CCMatrix/v1 - ignored datasets (77,008,059 sentences)
+  #  - opus_RF/v1 - not enough data  (180 sentences)
+  #  - opus_GNOME/v1 - not enough data  (150 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-swedish_labour_part2-1-eng-swe - duplicate with opus
+  #  - mtdata_ELRC-swedish_labour_part1-1-eng-swe - duplicate with opus
+  #  - mtdata_ELRC-swedish_food-1-eng-swe - duplicate with opus
+  #  - mtdata_ELRC-www.norden.org-1-eng-swe - duplicate with opus
+  #  - mtdata_ELRC-www.sida.se-1-eng-swe - duplicate with opus
+  #  - mtdata_ELRC-www.visitestonia.com-1-eng-swe - duplicate with opus
+  #  - mtdata_ELRC-www.vtv.fi-1-eng-swe - duplicate with opus
+  #  - mtdata_ELRC-valtioneuvosto.fi-1-eng-swe - duplicate with opus
+  #  - mtdata_ELRC-vnk.fi-1-eng-swe - duplicate with opus
+  #  - mtdata_ELRC-euipo_2017-1-eng-swe - duplicate with opus
+  #  - mtdata_ELRC-www.turku.fi-1-eng-swe - duplicate with opus
+  #  - mtdata_ELRC-www.vero.fi-1-eng-swe - duplicate with opus
+  #  - mtdata_ELRC-emea-1-eng-swe - duplicate with opus
+  #  - mtdata_ELRC-vaccination-1-eng-swe - duplicate with opus
+  #  - mtdata_ELRC-wikipedia_health-1-eng-swe - duplicate with opus
+  #  - mtdata_ELRC-antibiotic-1-eng-swe - duplicate with opus
+  #  - mtdata_ELRC-europarl_covid-1-eng-swe - duplicate with opus
+  #  - mtdata_ELRC-ec_europa_covid-1-eng-swe - duplicate with opus
+  #  - mtdata_ELRC-eur_lex_covid-1-eng-swe - duplicate with opus
+  #  - mtdata_ELRC-presscorner_covid-1-eng-swe - duplicate with opus
+  #  - mtdata_ELRC-nteu_tiera-1-eng-swe - duplicate with opus
+  #  - mtdata_EU-ecdc-1-eng-swe - duplicate with opus
+  #  - mtdata_Facebook-wikimatrix-1-eng-swe - duplicate with opus
+  #  - mtdata_LinguaTools-wikititles-2014-eng-swe - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_train-1-eng-swe - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_test-1-eng-swe - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_dev-1-eng-swe - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-6-eng-swe - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-7.1-eng-swe - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-8-eng-swe - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-9-eng-swe - duplicate with opus
+  #  - mtdata_Statmt-europarl-7-swe-eng - duplicate with opus
+  #  - mtdata_Statmt-ccaligned-1-eng-swe_SE - duplicate with opus
   train:
   - opus_NLLB/v1  #                                       77,008,059 sentences
   - opus_ParaCrawl/v9 #                                  49,110,322 sentences
@@ -71,6 +103,7 @@ datasets:
   - opus_ELRC-www.turku.fi/v1 #                             107,773 sentences
   - opus_NeuLab-TedTalks/v1 #                                69,332 sentences
   - opus_wikimedia/v20230407 #                               63,135 sentences
+  - opus_bible-uedin/v1 #                                    62,137 sentences
   - opus_infopankki/v1 #                                     51,749 sentences
   - opus_ELRC-1770-valtioneuvosto.fi/v1 #                    49,084 sentences
   - opus_ELRC-valtioneuvosto.fi/v1 #                         49,084 sentences
@@ -136,30 +169,30 @@ datasets:
   - opus_ELRC_2923/v1 #                                         499 sentences
   - opus_ELRC-2752-vaccination/v1 #                             497 sentences
   - opus_ELRC-vaccination/v1 #                                  497 sentences
-  # - mtdata_ELRC-swedish_social_security-1-eng-swe
-  # - mtdata_ELRC-swedish_work_environment-1-eng-swe
-  # - mtdata_ELRC-social_insurance_försäkringskassan-1-eng-swe
-  # - mtdata_ELRC-finnish_information_bank-1-eng-swe
-  # - mtdata_ELRC-swedish_competition_authority_konkurrensverket-1-eng-swe
-  # - mtdata_ELRC-swedish_audit_riksrevisionen-1-eng-swe
-  # - mtdata_ELRC-swedish_swedish_crime_victim_compensation_support_authority-1-eng-swe
-  # - mtdata_ELRC-swedish_migration_board_migrationsverket-1-eng-swe
-  # - mtdata_ELRC-swedish_economic_regional_growth_tillväxtverket-1-eng-swe
-  # - mtdata_ELRC-annual_reports_swedish_pension_system-1-eng-swe
-  # - mtdata_ELRC-sweden_a_pocket_guide_book-1-eng-swe
-  # - mtdata_ELRC-eu_publications_medical_v2-1-eng-swe
-  # - mtdata_ELRC-nteu_tierb-1-eng-swe
-  # - mtdata_EU-eac_forms-1-eng-swe #                        ~31,162 sentences (3.5 MB)
-  # - mtdata_EU-eac_reference-1-eng-swe #                    ~31,162 sentences (3.5 MB)
-  # - mtdata_EU-dcep-1-eng-swe #                            ~980,674 sentences (110.8 MB)
-  # - mtdata_Lindat-khresmoi_summary_test-2-eng-swe #        ~11,808 sentences (1.3 MB)
-  # - mtdata_Lindat-khresmoi_summary_dev-2-eng-swe #         ~11,808 sentences (1.3 MB)
-  # - mtdata_Statmt-dcep_wmt17-1-swe-eng #                ~1,137,607 sentences (128.5 MB)
-  # - mtdata_Statmt-books_wmt17-1-swe-eng #                   ~2,797 sentences (316.2 kB)
-  # - mtdata_Tilde-eesc-2017-eng-swe #                    ~1,798,328 sentences (203.2 MB)
-  # - mtdata_Tilde-ema-2016-eng-swe #                       ~215,912 sentences (24.4 MB)
-  # - mtdata_Tilde-ecb-2017-eng-swe #                         ~3,314 sentences (374.5 kB)
-  # - mtdata_Tilde-rapid-2016-eng-swe #                     ~400,648 sentences (45.3 MB)
+  - mtdata_ELRC-swedish_social_security-1-eng-swe
+  - mtdata_ELRC-swedish_work_environment-1-eng-swe
+  - mtdata_ELRC-social_insurance_försäkringskassan-1-eng-swe
+  - mtdata_ELRC-finnish_information_bank-1-eng-swe
+  - mtdata_ELRC-swedish_competition_authority_konkurrensverket-1-eng-swe
+  - mtdata_ELRC-swedish_audit_riksrevisionen-1-eng-swe
+  - mtdata_ELRC-swedish_swedish_crime_victim_compensation_support_authority-1-eng-swe
+  - mtdata_ELRC-swedish_migration_board_migrationsverket-1-eng-swe
+  - mtdata_ELRC-swedish_economic_regional_growth_tillväxtverket-1-eng-swe
+  - mtdata_ELRC-annual_reports_swedish_pension_system-1-eng-swe
+  - mtdata_ELRC-sweden_a_pocket_guide_book-1-eng-swe
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-swe
+  - mtdata_ELRC-nteu_tierb-1-eng-swe
+  - mtdata_EU-eac_forms-1-eng-swe #                        ~31,162 sentences (3.5 MB)
+  - mtdata_EU-eac_reference-1-eng-swe #                    ~31,162 sentences (3.5 MB)
+  - mtdata_EU-dcep-1-eng-swe #                            ~980,674 sentences (110.8 MB)
+  - mtdata_Lindat-khresmoi_summary_test-2-eng-swe #        ~11,808 sentences (1.3 MB)
+  - mtdata_Lindat-khresmoi_summary_dev-2-eng-swe #         ~11,808 sentences (1.3 MB)
+  - mtdata_Statmt-dcep_wmt17-1-swe-eng #                ~1,137,607 sentences (128.5 MB)
+  - mtdata_Statmt-books_wmt17-1-swe-eng #                   ~2,797 sentences (316.2 kB)
+  - mtdata_Tilde-eesc-2017-eng-swe #                    ~1,798,328 sentences (203.2 MB)
+  - mtdata_Tilde-ema-2016-eng-swe #                       ~215,912 sentences (24.4 MB)
+  - mtdata_Tilde-ecb-2017-eng-swe #                         ~3,314 sentences (374.5 kB)
+  - mtdata_Tilde-rapid-2016-eng-swe #                     ~400,648 sentences (45.3 MB)
 
   # The monolingual data contains:
   #   ~209,074,237 sentences

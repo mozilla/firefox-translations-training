@@ -2,7 +2,7 @@
 # task config-generator -- en ru --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/05963a02792d6e89b2e84a81356aefe69dbcc0d5/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/001d15d5f2775e0e4c57717057a1906069e29dcc/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -48,15 +48,25 @@ datasets:
   - sacrebleu_wmt14
 
   # The training data contains:
-  #   250,048,886 sentences
+  #   250,111,081 sentences
   # 
   # Skipped datasets:
-  #  - opus_CCMatrix/v1 - ignored datasets
-  #  - opus_bible-uedin/v1 - ignored datasets
-  #  - opus_GNOME/v1 - not enough data
-  #  - opus_ELRC-3855-SWPS_University_Soci/v1 - not enough data
-  #  - opus_Ubuntu/v14.10 - not enough data
-  #  - opus_WikiTitles/v3 - not enough data
+  #  - opus_CCMatrix/v1 - ignored datasets (139,937,785 sentences)
+  #  - opus_GNOME/v1 - not enough data  (150 sentences)
+  #  - opus_ELRC-3855-SWPS_University_Soci/v1 - not enough data  (109 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - opus_WikiTitles/v3 - ignored datasets (0 sentences)
+  #  - mtdata_ELRC-wikipedia_health-1-eng-rus - duplicate with opus
+  #  - mtdata_Facebook-wikimatrix-1-eng-rus - duplicate with opus
+  #  - mtdata_LinguaTools-wikititles-2014-eng-rus - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_train-1-eng-rus - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_test-1-eng-rus - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_dev-1-eng-rus - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-1_bonus-eng-rus - duplicate with opus
+  #  - mtdata_Statmt-news_commentary-14-eng-rus - duplicate with opus
+  #  - mtdata_Statmt-news_commentary-15-eng-rus - duplicate with opus
+  #  - mtdata_Statmt-news_commentary-16-eng-rus - duplicate with opus
+  #  - mtdata_Statmt-ccaligned-1-eng-rus_RU - duplicate with opus
   train:
   - opus_NLLB/v1  #                                      139,937,785 sentences
   - opus_OpenSubtitles/v2018 #                           25,910,105 sentences
@@ -80,6 +90,7 @@ datasets:
   - opus_TED2013/v1.1 #                                     133,660 sentences
   - opus_ELRC-5183-SciPar_Ukraine/v1 #                      126,585 sentences
   - opus_infopankki/v1 #                                     75,305 sentences
+  - opus_bible-uedin/v1 #                                    62,195 sentences
   - opus_EUbookshop/v2 #                                     49,830 sentences
   - opus_WMT-News/v2019 #                                    36,637 sentences
   - opus_PHP/v1 #                                            30,064 sentences
@@ -93,15 +104,15 @@ datasets:
   - opus_tico-19/v2020-10-28 #                                3,071 sentences
   - opus_ELRC-5067-SciPar/v1 #                                3,064 sentences
   - opus_tldr-pages/v2023-08-29 #                             1,037 sentences
-  # - mtdata_Statmt-commoncrawl_wmt13-1-rus-eng #         ~8,126,649 sentences (918.3 MB)
-  # - mtdata_Statmt-news_commentary_wmt18-13-rus-eng #    ~1,001,393 sentences (113.2 MB)
-  # - mtdata_Statmt-wiki_titles-1-rus-eng #                 ~179,637 sentences (20.3 MB)
-  # - mtdata_Statmt-wiki_titles-2-rus-eng #                 ~193,345 sentences (21.8 MB)
-  # - mtdata_Tilde-airbaltic-1-eng-rus #                      ~1,288 sentences (145.6 kB)
-  # - mtdata_Tilde-czechtourism-1-eng-rus #                   ~7,561 sentences (854.5 kB)
-  # - mtdata_Tilde-worldbank-1-eng-rus #                     ~33,049 sentences (3.7 MB)
-  # - mtdata_UN-un_dev-1-eng-rus
-  # - mtdata_UN-un_test-1-eng-rus
+  - mtdata_Statmt-commoncrawl_wmt13-1-rus-eng #         ~8,126,649 sentences (918.3 MB)
+  - mtdata_Statmt-news_commentary_wmt18-13-rus-eng #    ~1,001,393 sentences (113.2 MB)
+  - mtdata_Statmt-wiki_titles-1-rus-eng #                 ~179,637 sentences (20.3 MB)
+  - mtdata_Statmt-wiki_titles-2-rus-eng #                 ~193,345 sentences (21.8 MB)
+  - mtdata_Tilde-airbaltic-1-eng-rus #                      ~1,288 sentences (145.6 kB)
+  - mtdata_Tilde-czechtourism-1-eng-rus #                   ~7,561 sentences (854.5 kB)
+  - mtdata_Tilde-worldbank-1-eng-rus #                     ~33,049 sentences (3.7 MB)
+  - mtdata_UN-un_dev-1-eng-rus
+  - mtdata_UN-un_test-1-eng-rus
 
   # The monolingual data contains:
   #   ~209,074,237 sentences

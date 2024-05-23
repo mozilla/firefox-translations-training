@@ -2,7 +2,7 @@
 # task config-generator -- en id --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/05963a02792d6e89b2e84a81356aefe69dbcc0d5/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/001d15d5f2775e0e4c57717057a1906069e29dcc/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -35,12 +35,20 @@ datasets:
   - flores_aug-inline-noise_devtest
 
   # The training data contains:
-  #   102,044,415 sentences
+  #   102,103,778 sentences
   # 
   # Skipped datasets:
-  #  - opus_CCMatrix/v1 - ignored datasets
-  #  - opus_bible-uedin/v1 - ignored datasets
-  #  - opus_Ubuntu/v14.10 - not enough data
+  #  - opus_CCMatrix/v1 - ignored datasets (70,545,705 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-wikipedia_health-1-eng-ind - duplicate with opus
+  #  - mtdata_Facebook-wikimatrix-1-eng-ind - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_train-1-eng-ind - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_test-1-eng-ind - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_dev-1-eng-ind - duplicate with opus
+  #  - mtdata_Statmt-news_commentary-14-eng-ind - duplicate with opus
+  #  - mtdata_Statmt-news_commentary-15-eng-ind - duplicate with opus
+  #  - mtdata_Statmt-news_commentary-16-eng-ind - duplicate with opus
+  #  - mtdata_Statmt-ccaligned-1-eng-ind_ID - duplicate with opus
   train:
   - opus_NLLB/v1  #                                       70,545,705 sentences
   - opus_CCAligned/v1 #                                  15,700,345 sentences
@@ -52,6 +60,7 @@ datasets:
   - opus_QED/v2.0a #                                        274,581 sentences
   - opus_TED2020/v1 #                                       165,059 sentences
   - opus_NeuLab-TedTalks/v1 #                                95,295 sentences
+  - opus_bible-uedin/v1 #                                    59,363 sentences
   - opus_GNOME/v1 #                                          47,234 sentences
   - opus_News-Commentary/v16 #                               18,054 sentences
   - opus_GlobalVoices/v2018q4 #                              16,043 sentences
