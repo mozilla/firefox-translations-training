@@ -64,7 +64,10 @@ def get_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--publish-group-logs",
-        help=("Enable publishing a group_logs fake run with the experiment configuration."),
+        help=(
+            "Enable publishing a group_logs fake run with the experiment configuration."
+            "This option requires W&B publication to be enabled, otherwise it will be ignored."
+        ),
         action="store_true",
         default=False,
     )
@@ -105,12 +108,13 @@ def boot() -> None:
     )
     if wandb_publisher:
         publishers.append(wandb_publisher)
+    elif args.publish_group_logs:
+        logger.warning(
+            "Ignoring --publish-group-logs option as Weight & Biases publication is disabled."
+        )
 
-    # Use log filtering when using non-stream (for uploading past experiments)
-    log_filter = taskcluster_log_filter if not args.from_stream else None
-
-    # publish the config fist
-    if args.publish_group_logs:
+    # Publish experiment configuration before parsing the training logs
+    if wandb_publisher and args.publish_group_logs:
         logger.info("Publishing experiment config to a 'group_logs' fake run.")
         # Retrieve experiment configuration from the task group
         task_id = os.environ.get("TASK_ID")
@@ -124,6 +128,8 @@ def boot() -> None:
         config = task_group.get("extra", {}).get("action", {}).get("context", {}).get("input")
         publish_group_logs_from_tasks(config=config)
 
+    # Use log filtering when using non-stream (for uploading past experiments)
+    log_filter = taskcluster_log_filter if not args.from_stream else None
     parser = TrainingParser(
         lines,
         publishers=publishers,
