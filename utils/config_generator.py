@@ -30,9 +30,12 @@ pretrained_student_models = {
 skip_datasets = [
     # The NLLB dataset is based off of the CCMatrix dataset, and is mostly duplicated.
     "CCMatrix",
-    # According the Bergamot researchers, the formal language of this dataset did not contribute
-    # to overall model quality. There is also Bible data inside of the NLLB dataset.
-    "bible-uedin",
+    # Skip Multi* datasets as they are generally multilingual versions of the original datasets.
+    "MultiMaCoCu",
+    "MultiHPLT",
+    # In Russian, the WikiTitles data had its direction reversed. The `LinguaTools-WikiTitles`
+    # version is fine.
+    "WikiTitles",
 ]
 
 # Do not include small datasets. This works around #508, and minimizes dataset tasks that
@@ -107,20 +110,21 @@ def add_train_data(
     visited_corpora = set()
 
     for dataset in opus_datasets:
+        sentences = dataset.alignment_pairs or 0
         # Some datasets are ignored or too small to be included.
         if dataset.corpus in skip_datasets:
-            skipped_datasets.append(f"{dataset.corpus_key()} - ignored datasets")
+            skipped_datasets.append(f"{dataset.corpus_key()} - ignored datasets ({sentences:,} sentences)")
             continue
         if (dataset.alignment_pairs or 0) < minimum_dataset_sentences:
-            skipped_datasets.append(f"{dataset.corpus_key()} - not enough data")
+            skipped_datasets.append(f"{dataset.corpus_key()} - not enough data  ({sentences:,} sentences)")
             continue
 
         visited_corpora.add(normalize_corpus_name(dataset.corpus))
-        total_sentences += dataset.alignment_pairs or 0
+        total_sentences += sentences
         corpus_key = dataset.corpus_key()
         train_datasets.append(corpus_key)
         train_datasets.yaml_add_eol_comment(
-            f"{dataset.alignment_pairs:,} sentences".rjust(70 - len(corpus_key), " "),
+            f"{sentences:,} sentences".rjust(70 - len(corpus_key), " "),
             len(train_datasets) - 1,
         )
 
@@ -130,17 +134,24 @@ def add_train_data(
     for corpus_key, entry in entries.items():
         corpus_name = normalize_corpus_name(entry.did.name)
         group_corpus_name = normalize_corpus_name(entry.did.group + entry.did.name)
-        if not (corpus_name in visited_corpora or group_corpus_name in visited_corpora):
-            train_datasets.append(corpus_key)
-            byte_size, display_size = get_remote_file_size(entry.url)
-            if byte_size:
-                # Don't add the sentences to the total, as these will be commented out by default.
-                sentences = estimate_sentence_size(byte_size)
-                train_datasets.yaml_add_eol_comment(
-                    f"~{sentences:,} sentences ".rjust(70 - len(corpus_key), " ")
-                    + f"({display_size})",
-                    len(train_datasets) - 1,
-                )
+        if corpus_name in visited_corpora or group_corpus_name in visited_corpora:
+            skipped_datasets.append(f"{corpus_key} - duplicate with opus")
+            continue
+
+        if entry.did.name in skip_datasets:
+            skipped_datasets.append(f"{entry.did.name} - ignored datasets")
+            continue
+
+        train_datasets.append(corpus_key)
+        byte_size, display_size = get_remote_file_size(entry.url)
+        if byte_size:
+            # Don't add the sentences to the total, as these will be commented out by default.
+            sentences = estimate_sentence_size(byte_size)
+            train_datasets.yaml_add_eol_comment(
+                f"~{sentences:,} sentences ".rjust(70 - len(corpus_key), " ")
+                + f"({display_size})",
+                len(train_datasets) - 1,
+            )
 
     train_comment = "\n".join(
         [
@@ -298,8 +309,6 @@ def apply_comments_to_yaml_string(yaml, prod_config, comment_section) -> str:
     output_stream = StringIO()
     yaml.dump(prod_config, output_stream)
     yaml_string: str = output_stream.getvalue()
-    # mtdata has lots of duplicates, so add them as commented out to begin with.
-    yaml_string = yaml_string.replace("  - mtdata_", "  # - mtdata_")
     yaml_string = apply_comment_section(comment_section, yaml_string)
 
     script_args = " ".join(sys.argv[1:])
