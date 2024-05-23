@@ -79,6 +79,7 @@ tasks:
 
             # Taskcluster proxy is required to read secrets
             taskcluster-proxy: true
+            retry-exit-status: [128]
 
         # The task needs to be able to read that secret to publish on Weight & Biases
         scopes:
