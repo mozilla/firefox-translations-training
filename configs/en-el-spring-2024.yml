@@ -1,0 +1,240 @@
+# The initial configuration was generated using:
+# task config-generator -- en el --name spring-2024
+#
+# The documentation for this config can be found here:
+# https://github.com/mozilla/firefox-translations-training/blob/05963a02792d6e89b2e84a81356aefe69dbcc0d5/taskcluster/configs/config.prod.yml
+experiment:
+  name: spring-2024
+  src: en
+  trg: el
+  best-model: chrf
+  use-opuscleaner: 'true'
+  opuscleaner-mode: defaults
+  bicleaner:
+    default-threshold: 0.5
+    dataset-thresholds: {}
+  mono-max-sentences-src: 500_000_000
+  mono-max-sentences-trg: 200_000_000
+  spm-sample-size: 10_000_000
+  spm-vocab-size: 32000
+  teacher-ensemble: 2
+  teacher-mode: two-stage
+  pretrained-models: {}
+datasets:
+
+  # Skipped test/devtest datasets:
+  #  - mtedx/valid - variant dataset
+  #  - mtedx/test - variant dataset
+  devtest:
+  - flores_aug-mix_dev
+  test:
+  - flores_devtest
+  - flores_aug-mix_devtest
+  - flores_aug-title_devtest
+  - flores_aug-upper_devtest
+  - flores_aug-typos_devtest
+  - flores_aug-noise_devtest
+  - flores_aug-inline-noise_devtest
+
+  # The training data contains:
+  #   163,498,761 sentences
+  # 
+  # Skipped datasets:
+  #  - opus_CCMatrix/v1 - ignored datasets
+  #  - opus_bible-uedin/v1 - ignored datasets
+  #  - opus_ELRC-3857-State_Budget_Executi/v1 - not enough data
+  #  - opus_ELRC-745-Convention_against_T/v1 - not enough data
+  #  - opus_ELRA-W0309/v1 - not enough data
+  #  - opus_ELRC-656-Macroeconomic_Develo/v1 - not enough data
+  #  - opus_ELRC-496-Convention_transfer_/v1 - not enough data
+  #  - opus_ELRA-W0196/v1 - not enough data
+  #  - opus_ELRA-W0207/v1 - not enough data
+  #  - opus_ELRA-W0308/v1 - not enough data
+  #  - opus_ELRC-662-Expression_interest/v1 - not enough data
+  #  - opus_ELRA-W0209/v1 - not enough data
+  #  - opus_ELRC-648-Letter_rights_person/v1 - not enough data
+  #  - opus_ELRC-658-Methodological_Recon/v1 - not enough data
+  #  - opus_ELRA-W0208/v1 - not enough data
+  #  - opus_ELRC-1022-COMPULSORY_EXPROPRIA/v1 - not enough data
+  #  - opus_ELRC-3856-PRESS/v1 - not enough data
+  #  - opus_ELRC-416-Swedish_Social_Secur/v1 - not enough data
+  #  - opus_ELRC-416-Swedish_Social_Secur/v1 - not enough data
+  #  - opus_ELRC-1021-Commitment_Property_/v1 - not enough data
+  #  - opus_ELRC-403-Rights_Arrested/v1 - not enough data
+  #  - opus_ELRA-W0301/v1 - not enough data
+  #  - opus_Ubuntu/v14.10 - not enough data
+  train:
+  - opus_NLLB/v1  #                                       49,262,631 sentences
+  - opus_OpenSubtitles/v2018 #                           40,492,942 sentences
+  - opus_ParaCrawl/v9 #                                  21,402,471 sentences
+  - opus_ELRC-EMEA/v1 #                                  13,691,653 sentences
+  - opus_CCAligned/v1 #                                   8,878,509 sentences
+  - opus_DGT/v2019 #                                      5,099,790 sentences
+  - opus_EUbookshop/v2 #                                  4,022,952 sentences
+  - opus_MaCoCu/v2 #                                      3,583,978 sentences
+  - opus_MultiMaCoCu/v2 #                                 3,583,975 sentences
+  - opus_XLEnt/v1.2 #                                     2,949,219 sentences
+  - opus_LinguaTools-WikiTitles/v2014 #                   1,850,804 sentences
+  - opus_Europarl/v8 #                                    1,292,180 sentences
+  - opus_EMEA/v3 #                                        1,073,225 sentences
+  - opus_ELRC-2711-EMEA/v1 #                                781,988 sentences
+  - opus_ELRC_2682/v1 #                                     781,987 sentences
+  - opus_ELRC-5067-SciPar/v1 #                              742,987 sentences
+  - opus_WikiMatrix/v1 #                                    620,802 sentences
+  - opus_wikimedia/v20230407 #                              589,733 sentences
+  - opus_QED/v2.0a #                                        550,438 sentences
+  - opus_ELITR-ECA/v1 #                                     381,561 sentences
+  - opus_TED2020/v1 #                                       269,407 sentences
+  - opus_SETIMES/v2 #                                       227,168 sentences
+  - opus_NeuLab-TedTalks/v1 #                               153,493 sentences
+  - opus_ELRC-presscorner_covid/v1 #                        152,003 sentences
+  - opus_KDE4/v2 #                                          144,894 sentences
+  - opus_GlobalVoices/v2018q4 #                             120,421 sentences
+  - opus_ELRC-Press_Releases/v1 #                           117,171 sentences
+  - opus_Wikipedia/v1.0 #                                   104,076 sentences
+  - opus_ECB/v1 #                                           102,986 sentences
+  - opus_ELRA-W0202/v1 #                                     61,967 sentences
+  - opus_Tatoeba/v2023-04-12 #                               25,995 sentences
+  - opus_ELRC-3562-EUR_LEX_covid/v1 #                        23,024 sentences
+  - opus_ELRC-EUR_LEX/v1 #                                   23,024 sentences
+  - opus_ELRC-842-Quarterly_Reports_Pa/v1 #                  21,248 sentences
+  - opus_ELRA-W0243/v1 #                                     21,247 sentences
+  - opus_ELRC-1175-EUIPO_2017/v1 #                           20,027 sentences
+  - opus_ELRC-EUIPO_2017/v1 #                                20,027 sentences
+  - opus_ELRC-EUROPARL_covid/v1 #                            19,587 sentences
+  - opus_JRC-Acquis/v3.0 #                                   17,717 sentences
+  - opus_GNOME/v1 #                                          17,389 sentences
+  - opus_ELRC-843-collection_reports_G/v1 #                  16,286 sentences
+  - opus_ELRA-W0244/v1 #                                     16,285 sentences
+  - opus_ELRC-antibiotic/v1 #                                16,083 sentences
+  - opus_ELRC-2872-EU_publications_medi/v1 #                 13,092 sentences
+  - opus_ELRC-EU_publications/v1 #                           13,092 sentences
+  - opus_ELRC-649-Greek_administration/v1 #                  12,510 sentences
+  - opus_ELRA-W0203/v1 #                                     12,509 sentences
+  - opus_EUconst/v1 #                                         9,990 sentences
+  - opus_SPC/v1 #                                             8,181 sentences
+  - opus_ELRC-3603-presscorner_covid/v1 #                     6,635 sentences
+  - opus_ELRC-936-Prime_Minister_Helle/v1 #                   5,323 sentences
+  - opus_ELRA-W0272/v1 #                                      5,322 sentences
+  - opus_TildeMODEL/v2018 #                                   5,238 sentences
+  - opus_ELRC-1787-Press_Releases_PIO/v1 #                    5,163 sentences
+  - opus_ELRC-PIO_Publication/v1 #                            3,949 sentences
+  - opus_ELRC-1984-Hellenic_Gaming_Comm/v1 #                  3,875 sentences
+  - opus_ELRC_3382/v1 #                                       3,818 sentences
+  - opus_ELRC-932-Hellenic_Foreign_Aff/v1 #                   3,471 sentences
+  - opus_ELRA-W0271/v1 #                                      3,470 sentences
+  - opus_ELRC-1067-PIO_Publication_Wind/v1 #                  2,629 sentences
+  - opus_ECDC/v2016-03-16 #                                   2,531 sentences
+  - opus_ELRC-3461-EC_EUROPA_covid/v1 #                       2,234 sentences
+  - opus_ELRC-EC_EUROPA/v1 #                                  2,234 sentences
+  - opus_ELRC-1981-EQF_Referencing_Repo/v1 #                  2,100 sentences
+  - opus_ELRC-652-Greek_law/v1 #                              1,980 sentences
+  - opus_ELRA-W0205/v1 #                                      1,979 sentences
+  - opus_ELRC-3058-wikipedia_health/v1 #                      1,871 sentences
+  - opus_ELRC-wikipedia_health/v1 #                           1,871 sentences
+  - opus_ELRC-1020-collection_about_Cyp/v1 #                  1,870 sentences
+  - opus_ELRC_2922/v1 #                                       1,870 sentences
+  - opus_ELRC-1070-Press_Information_Cy/v1 #                  1,863 sentences
+  - opus_ELRC-1970-governmental_about_M/v1 #                  1,435 sentences
+  - opus_ELRC-1065-PIO_Publication_Cypr/v1 #                  1,321 sentences
+  - opus_Books/v1 #                                           1,285 sentences
+  - opus_ELRC-419-Greek_legislation_An/v1 #                   1,070 sentences
+  - opus_ELRA-W0164/v1 #                                      1,069 sentences
+  - opus_ELRC-1986-Constitution_Greece/v1 #                   1,022 sentences
+  - opus_ELRC-3199-antibiotic/v1 #                              990 sentences
+  - opus_ELRC-5160-Press_Releases_PIO/v1 #                      955 sentences
+  - opus_ELRC-3290-EUROPARL_covid/v1 #                          692 sentences
+  - opus_ELRC-2735-vaccination/v1 #                             519 sentences
+  - opus_ELRC-vaccination/v1 #                                  519 sentences
+  - opus_ELRC-663-Memorandum_a_ESM/v1 #                         434 sentences
+  - opus_ELRA-W0210/v1 #                                        433 sentences
+  - opus_ELRC_2923/v1 #                                         420 sentences
+  - opus_ELRC-646-International_Judici/v1 #                     289 sentences
+  - opus_ELRA-W0307/v1 #                                        288 sentences
+  # - mtdata_ELRC-rights_arrested-1-ell-eng
+  # - mtdata_ELRC-swedish_social_security-1-ell-eng
+  # - mtdata_ELRC-greek_legislation_anticorruption_plan-1-ell-eng
+  # - mtdata_ELRC-convention_transfer_sentenced_persons-1-ell-eng
+  # - mtdata_ELRC-international_judicial_cooperation_civil_matters-1-ell-eng
+  # - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-ell-eng
+  # - mtdata_ELRC-macroeconomic_developments-1-ell-eng
+  # - mtdata_ELRC-methodological_reconciliation-1-ell-eng
+  # - mtdata_ELRC-expression_interest-1-ell-eng
+  # - mtdata_ELRC-memorandum_a_esm_programme-1-ell-eng
+  # - mtdata_ELRC-convention_against_torture_other_cruel_inhuman_or_degrading_treatment_or_punishment_united_nations-1-ell-eng
+  # - mtdata_ELRC-quarterly_reports_parliamentary_budget-1-ell-eng
+  # - mtdata_ELRC-collection_reports_greek_power_corporation-1-ell-eng
+  # - mtdata_ELRC-hellenic_foreign_affairs_announcements-1-ell-eng
+  # - mtdata_ELRC-prime_minister_hellenic-1-ell-eng
+  # - mtdata_ELRC-collection_about_cyprus_problem-1-ell-eng
+  # - mtdata_ELRC-commitment_property_open-1-ell-eng
+  # - mtdata_ELRC-compulsory_expropriation_process_greece-1-ell-eng
+  # - mtdata_ELRC-pio_publication_cyprus_has_always_been_europe_2017-1-ell-eng
+  # - mtdata_ELRC-pio_publication_window_cyprus-1-ell-eng
+  # - mtdata_ELRC-press_information_cyprus-1-ell-eng
+  # - mtdata_ELRC-governmental_about_migration_policy-1-ell-eng
+  # - mtdata_ELRC-eqf_referencing_report-1-ell-eng
+  # - mtdata_ELRC-hellenic_gaming_commission-1-ell-eng
+  # - mtdata_ELRC-eu_publications_medical_v2-1-ell-eng
+  # - mtdata_EU-eac_forms-1-ell-eng #                        ~31,162 sentences (3.5 MB)
+  # - mtdata_EU-eac_reference-1-ell-eng #                    ~31,162 sentences (3.5 MB)
+  # - mtdata_EU-dcep-1-ell-eng #                          ~1,178,828 sentences (133.2 MB)
+  # - mtdata_Tilde-eesc-2017-ell-eng #                    ~2,393,754 sentences (270.5 MB)
+  # - mtdata_Tilde-ema-2016-ell-eng #                       ~244,548 sentences (27.6 MB)
+  # - mtdata_Tilde-rapid-2016-ell-eng #                     ~586,564 sentences (66.3 MB)
+
+  # The monolingual data contains:
+  #   ~209,074,237 sentences
+  mono-src:
+  - news-crawl_news.2007  #          ~1,630,834 sentences (184.3 MB)
+  - news-crawl_news.2008 #          ~5,648,654 sentences (638.3 MB)
+  - news-crawl_news.2009 #          ~6,879,522 sentences (777.4 MB)
+  - news-crawl_news.2010 #          ~3,406,380 sentences (384.9 MB)
+  - news-crawl_news.2011 #          ~6,628,308 sentences (749.0 MB)
+  - news-crawl_news.2012 #          ~6,715,609 sentences (758.9 MB)
+  - news-crawl_news.2013 #         ~11,050,614 sentences (1.2 GB)
+  - news-crawl_news.2014 #         ~11,026,051 sentences (1.2 GB)
+  - news-crawl_news.2015 #         ~11,182,484 sentences (1.3 GB)
+  - news-crawl_news.2016 #          ~8,366,518 sentences (945.4 MB)
+  - news-crawl_news.2017 #         ~12,276,499 sentences (1.4 GB)
+  - news-crawl_news.2018 #          ~8,303,432 sentences (938.3 MB)
+  - news-crawl_news.2019 #         ~19,386,668 sentences (2.2 GB)
+  - news-crawl_news.2020 #         ~24,070,652 sentences (2.7 GB)
+  - news-crawl_news.2021 #         ~23,139,914 sentences (2.6 GB)
+  - news-crawl_news.2022 #         ~24,900,055 sentences (2.8 GB)
+  - news-crawl_news.2023 #         ~24,462,043 sentences (2.8 GB)
+
+  # The monolingual data contains:
+  #   ~30,691,547 sentences
+  mono-trg:
+  - news-crawl_news.2014  #            ~521,223 sentences (58.9 MB)
+  - news-crawl_news.2015 #          ~1,172,508 sentences (132.5 MB)
+  - news-crawl_news.2016 #            ~814,586 sentences (92.0 MB)
+  - news-crawl_news.2017 #            ~545,251 sentences (61.6 MB)
+  - news-crawl_news.2018 #            ~390,201 sentences (44.1 MB)
+  - news-crawl_news.2019 #          ~2,517,922 sentences (284.5 MB)
+  - news-crawl_news.2020 #          ~5,589,715 sentences (631.6 MB)
+  - news-crawl_news.2021 #          ~5,495,614 sentences (621.0 MB)
+  - news-crawl_news.2022 #          ~7,050,675 sentences (796.7 MB)
+  - news-crawl_news.2023 #          ~6,593,852 sentences (745.1 MB)
+marian-args:
+  decoding-backward:
+    beam-size: '12'
+    mini-batch-words: '2000'
+  decoding-teacher:
+    mini-batch-words: '4000'
+    precision: float16
+  training-backward:
+    early-stopping: '5'
+  training-teacher:
+    early-stopping: '20'
+  training-student:
+    early-stopping: '20'
+  training-student-finetuned:
+    early-stopping: '20'
+target-stage: all
+wandb-publication: true
+taskcluster:
+  split-chunks: 20
+  worker-classes:
+    default: gcp-spot

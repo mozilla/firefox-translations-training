@@ -1,0 +1,208 @@
+# The initial configuration was generated using:
+# task config-generator -- en cs --name spring-2024
+#
+# The documentation for this config can be found here:
+# https://github.com/mozilla/firefox-translations-training/blob/05963a02792d6e89b2e84a81356aefe69dbcc0d5/taskcluster/configs/config.prod.yml
+experiment:
+  name: spring-2024
+  src: en
+  trg: cs
+  best-model: chrf
+  use-opuscleaner: 'true'
+  opuscleaner-mode: defaults
+  bicleaner:
+    default-threshold: 0.5
+    dataset-thresholds: {}
+  mono-max-sentences-src: 500_000_000
+  mono-max-sentences-trg: 200_000_000
+  spm-sample-size: 10_000_000
+  spm-vocab-size: 32000
+  teacher-ensemble: 2
+  teacher-mode: two-stage
+  pretrained-models: {}
+datasets:
+
+  # Skipped test/devtest datasets:
+  #  - wmt18/test-ts - variant dataset
+  #  - wmt14/full - variant dataset
+  #  - wmt08/nc - variant dataset
+  #  - multi30k/2016 - variant dataset
+  devtest:
+  - flores_aug-mix_dev
+  - sacrebleu_aug-mix_wmt19
+  - sacrebleu_aug-mix_wmt17
+  - sacrebleu_aug-mix_wmt15
+  - sacrebleu_aug-mix_wmt13
+  - sacrebleu_aug-mix_wmt11
+  - sacrebleu_aug-mix_wmt09
+  test:
+  - flores_devtest
+  - flores_aug-mix_devtest
+  - flores_aug-title_devtest
+  - flores_aug-upper_devtest
+  - flores_aug-typos_devtest
+  - flores_aug-noise_devtest
+  - flores_aug-inline-noise_devtest
+  - sacrebleu_wmt20
+  - sacrebleu_wmt18
+  - sacrebleu_wmt16
+  - sacrebleu_wmt14
+  - sacrebleu_wmt12
+  - sacrebleu_wmt10
+  - sacrebleu_wmt08
+
+  # The training data contains:
+  #   213,488,337 sentences
+  # 
+  # Skipped datasets:
+  #  - opus_CCMatrix/v1 - ignored datasets
+  #  - opus_bible-uedin/v1 - ignored datasets
+  #  - opus_GNOME/v1 - not enough data
+  #  - opus_Ubuntu/v14.10 - not enough data
+  #  - opus_WikiTitles/v3 - not enough data
+  train:
+  - opus_NLLB/v1  #                                       56,307,029 sentences
+  - opus_ParaCrawl/v9 #                                  50,633,505 sentences
+  - opus_OpenSubtitles/v2018 #                           42,346,436 sentences
+  - opus_StanfordNLP-NMT/v1.0 #                          15,793,121 sentences
+  - opus_ELRC-EMEA/v1 #                                  12,891,707 sentences
+  - opus_CCAligned/v1 #                                  12,730,121 sentences
+  - opus_DGT/v2019 #                                      5,207,753 sentences
+  - opus_LinguaTools-WikiTitles/v2014 #                   4,813,030 sentences
+  - opus_XLEnt/v1.2 #                                     3,894,132 sentences
+  - opus_JRC-Acquis/v3.0 #                                1,273,411 sentences
+  - opus_ELRC-5067-SciPar/v1 #                            1,064,385 sentences
+  - opus_EMEA/v3 #                                        1,053,385 sentences
+  - opus_ELRC-2713-EMEA/v1 #                                779,083 sentences
+  - opus_ELRC_2682/v1 #                                     779,082 sentences
+  - opus_Europarl/v8 #                                      647,095 sentences
+  - opus_WikiMatrix/v1 #                                    519,195 sentences
+  - opus_EUbookshop/v2 #                                    455,472 sentences
+  - opus_QED/v2.0a #                                        441,508 sentences
+  - opus_ELITR-ECA/v1 #                                     295,788 sentences
+  - opus_Tanzil/v1 #                                        233,399 sentences
+  - opus_News-Commentary/v16 #                              218,509 sentences
+  - opus_TED2020/v1 #                                       170,611 sentences
+  - opus_wikimedia/v20230407 #                              146,717 sentences
+  - opus_KDE4/v2 #                                          134,071 sentences
+  - opus_ELRC-presscorner_covid/v1 #                        129,652 sentences
+  - opus_NeuLab-TedTalks/v1 #                               111,107 sentences
+  - opus_ECB/v1 #                                            63,716 sentences
+  - opus_WMT-News/v2019 #                                    44,859 sentences
+  - opus_Tatoeba/v2023-04-12 #                               34,628 sentences
+  - opus_PHP/v1 #                                            32,983 sentences
+  - opus_Wikipedia/v1.0 #                                    27,723 sentences
+  - opus_ELRC-3564-EUR_LEX_covid/v1 #                        22,637 sentences
+  - opus_ELRC-EUR_LEX/v1 #                                   22,637 sentences
+  - opus_GlobalVoices/v2018q4 #                              18,876 sentences
+  - opus_ELRC-427-Electronic_Exchange_/v1 #                  17,357 sentences
+  - opus_ELRC-2012-EUIPO_2017/v1 #                           15,945 sentences
+  - opus_ELRC-EUIPO_2017/v1 #                                15,945 sentences
+  - opus_ELRC-antibiotic/v1 #                                15,678 sentences
+  - opus_ELRC-2874-EU_publications_medi/v1 #                 13,161 sentences
+  - opus_ELRC-EU_publications/v1 #                           13,161 sentences
+  - opus_ELRC-EUROPARL_covid/v1 #                            11,142 sentences
+  - opus_EUconst/v1 #                                         9,953 sentences
+  - opus_ELRC-3605-presscorner_covid/v1 #                     6,229 sentences
+  - opus_ELRC-2406-Czech_Supreme_Audit/v1 #                   4,771 sentences
+  - opus_ELRC_3382/v1 #                                       3,722 sentences
+  - opus_TildeMODEL/v2018 #                                   3,100 sentences
+  - opus_ELRC-2405-Czech_Supreme_Audit/v1 #                   2,868 sentences
+  - opus_ECDC/v2016-03-16 #                                   2,559 sentences
+  - opus_ELRC-3463-EC_EUROPA_covid/v1 #                       2,386 sentences
+  - opus_ELRC-EC_EUROPA/v1 #                                  2,386 sentences
+  - opus_ELRC-40-Information_Portal_C/v1 #                    1,828 sentences
+  - opus_ELRC-Information_Portal/v1 #                         1,828 sentences
+  - opus_ELRC-3062-wikipedia_health/v1 #                      1,146 sentences
+  - opus_ELRC-wikipedia_health/v1 #                           1,146 sentences
+  - opus_ELRC_2922/v1 #                                       1,145 sentences
+  - opus_ELRC-3201-antibiotic/v1 #                              965 sentences
+  - opus_ELRC-3292-EUROPARL_covid/v1 #                          557 sentences
+  - opus_ELRC-2749-vaccination/v1 #                             520 sentences
+  - opus_ELRC-vaccination/v1 #                                  520 sentences
+  - opus_ELRC-2404-Czech_Supreme_Audit/v1 #                     403 sentences
+  - opus_ELRC_2923/v1 #                                         319 sentences
+  - opus_ELRC-2407-Czech_Supreme_Audit/v1 #                     234 sentences
+  # - mtdata_ELRC-information_portal_czech_president_czech_castle-1-ces-eng
+  # - mtdata_ELRC-electronic_exchange_social_security_information-1-ces-eng
+  # - mtdata_ELRC-czech_supreme_audit_office_2018_reports-1-ces-eng
+  # - mtdata_ELRC-czech_supreme_audit_office_2008_2017_reports-1-ces-eng
+  # - mtdata_ELRC-czech_supreme_audit_office_2003_2017_press_releases-1-ces-eng
+  # - mtdata_ELRC-czech_supreme_audit_office_2018_press_releases-1-ces-eng
+  # - mtdata_ELRC-eu_publications_medical_v2-1-ces-eng
+  # - mtdata_EU-eac_forms-1-ces-eng #                        ~31,162 sentences (3.5 MB)
+  # - mtdata_EU-eac_reference-1-ces-eng #                    ~31,162 sentences (3.5 MB)
+  # - mtdata_EU-dcep-1-ces-eng #                            ~533,693 sentences (60.3 MB)
+  # - mtdata_Lindat-khresmoi_summary_test-2-ces-eng #        ~11,808 sentences (1.3 MB)
+  # - mtdata_Lindat-khresmoi_summary_dev-2-ces-eng #         ~11,808 sentences (1.3 MB)
+  # - mtdata_Statmt-commoncrawl_wmt13-1-ces-eng #         ~8,126,649 sentences (918.3 MB)
+  # - mtdata_Statmt-europarl_wmt13-7-ces-eng #            ~5,819,755 sentences (657.6 MB)
+  # - mtdata_Statmt-news_commentary_wmt18-13-ces-eng #    ~1,001,393 sentences (113.2 MB)
+  # - mtdata_Statmt-wiki_titles-1-ces-eng #                  ~45,242 sentences (5.1 MB)
+  # - mtdata_Statmt-wiki_titles-2-ces-eng #                  ~47,995 sentences (5.4 MB)
+  # - mtdata_Tilde-eesc-2017-ces-eng #                    ~1,157,475 sentences (130.8 MB)
+  # - mtdata_Tilde-ema-2016-ces-eng #                       ~244,524 sentences (27.6 MB)
+  # - mtdata_Tilde-rapid-2019-ces-eng #                     ~255,063 sentences (28.8 MB)
+
+  # The monolingual data contains:
+  #   ~209,074,237 sentences
+  mono-src:
+  - news-crawl_news.2007  #          ~1,630,834 sentences (184.3 MB)
+  - news-crawl_news.2008 #          ~5,648,654 sentences (638.3 MB)
+  - news-crawl_news.2009 #          ~6,879,522 sentences (777.4 MB)
+  - news-crawl_news.2010 #          ~3,406,380 sentences (384.9 MB)
+  - news-crawl_news.2011 #          ~6,628,308 sentences (749.0 MB)
+  - news-crawl_news.2012 #          ~6,715,609 sentences (758.9 MB)
+  - news-crawl_news.2013 #         ~11,050,614 sentences (1.2 GB)
+  - news-crawl_news.2014 #         ~11,026,051 sentences (1.2 GB)
+  - news-crawl_news.2015 #         ~11,182,484 sentences (1.3 GB)
+  - news-crawl_news.2016 #          ~8,366,518 sentences (945.4 MB)
+  - news-crawl_news.2017 #         ~12,276,499 sentences (1.4 GB)
+  - news-crawl_news.2018 #          ~8,303,432 sentences (938.3 MB)
+  - news-crawl_news.2019 #         ~19,386,668 sentences (2.2 GB)
+  - news-crawl_news.2020 #         ~24,070,652 sentences (2.7 GB)
+  - news-crawl_news.2021 #         ~23,139,914 sentences (2.6 GB)
+  - news-crawl_news.2022 #         ~24,900,055 sentences (2.8 GB)
+  - news-crawl_news.2023 #         ~24,462,043 sentences (2.8 GB)
+
+  # The monolingual data contains:
+  #   ~58,503,718 sentences
+  mono-trg:
+  - news-crawl_news.2007  #             ~36,376 sentences (4.1 MB)
+  - news-crawl_news.2008 #          ~1,931,750 sentences (218.3 MB)
+  - news-crawl_news.2009 #          ~2,182,956 sentences (246.7 MB)
+  - news-crawl_news.2010 #          ~1,307,538 sentences (147.8 MB)
+  - news-crawl_news.2011 #          ~3,343,967 sentences (377.9 MB)
+  - news-crawl_news.2012 #          ~3,107,679 sentences (351.2 MB)
+  - news-crawl_news.2013 #          ~3,557,220 sentences (402.0 MB)
+  - news-crawl_news.2014 #          ~3,114,196 sentences (351.9 MB)
+  - news-crawl_news.2015 #          ~3,170,894 sentences (358.3 MB)
+  - news-crawl_news.2016 #          ~2,267,369 sentences (256.2 MB)
+  - news-crawl_news.2017 #          ~2,988,795 sentences (337.7 MB)
+  - news-crawl_news.2018 #          ~2,768,838 sentences (312.9 MB)
+  - news-crawl_news.2019 #          ~5,785,024 sentences (653.7 MB)
+  - news-crawl_news.2020 #          ~7,809,410 sentences (882.5 MB)
+  - news-crawl_news.2021 #          ~5,525,900 sentences (624.4 MB)
+  - news-crawl_news.2022 #          ~4,072,430 sentences (460.2 MB)
+  - news-crawl_news.2023 #          ~5,533,376 sentences (625.3 MB)
+marian-args:
+  decoding-backward:
+    beam-size: '12'
+    mini-batch-words: '2000'
+  decoding-teacher:
+    mini-batch-words: '4000'
+    precision: float16
+  training-backward:
+    early-stopping: '5'
+  training-teacher:
+    early-stopping: '20'
+  training-student:
+    early-stopping: '20'
+  training-student-finetuned:
+    early-stopping: '20'
+target-stage: all
+wandb-publication: true
+taskcluster:
+  split-chunks: 20
+  worker-classes:
+    default: gcp-spot
