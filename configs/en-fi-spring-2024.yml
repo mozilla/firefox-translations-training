@@ -2,7 +2,7 @@
 # task config-generator -- en fi --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/001d15d5f2775e0e4c57717057a1906069e29dcc/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/c2a6e7f8c899ba363c5058e200692bfd8e321299/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -21,17 +21,14 @@ experiment:
   teacher-mode: two-stage
   pretrained-models: {}
 datasets:
-
-  # Skipped test/devtest datasets:
-  #  - wmt18/test-ts - variant dataset
-  #  - wmt17/B - variant dataset
-  #  - wmt17/tworefs - variant dataset
-  #  - wmt16/B - variant dataset
-  #  - wmt16/tworefs - variant dataset
   devtest:
+  - mtdata_Neulab-tedtalks_dev-1-eng-fin
   - flores_aug-mix_dev
   - sacrebleu_aug-mix_wmt18
-  - sacrebleu_aug-mix_wmt16
+  - sacrebleu_aug-mix_wmt17
+  - sacrebleu_aug-mix_wmt17/tworefs
+  - sacrebleu_aug-mix_wmt16/B
+  - sacrebleu_aug-mix_wmt15
   test:
   - flores_devtest
   - flores_aug-mix_devtest
@@ -41,8 +38,10 @@ datasets:
   - flores_aug-noise_devtest
   - flores_aug-inline-noise_devtest
   - sacrebleu_wmt19
-  - sacrebleu_wmt17
-  - sacrebleu_wmt15
+  - sacrebleu_wmt18/test-ts
+  - sacrebleu_wmt17/B
+  - sacrebleu_wmt16
+  - sacrebleu_wmt16/tworefs
 
   # The training data contains:
   #   180,578,066 sentences
@@ -78,8 +77,6 @@ datasets:
   #  - mtdata_Facebook-wikimatrix-1-eng-fin - duplicate with opus
   #  - mtdata_LinguaTools-wikititles-2014-eng-fin - duplicate with opus
   #  - mtdata_Neulab-tedtalks_train-1-eng-fin - duplicate with opus
-  #  - mtdata_Neulab-tedtalks_test-1-eng-fin - duplicate with opus
-  #  - mtdata_Neulab-tedtalks_dev-1-eng-fin - duplicate with opus
   #  - mtdata_ParaCrawl-paracrawl-3-eng-fin - duplicate with opus
   #  - mtdata_ParaCrawl-paracrawl-6-eng-fin - duplicate with opus
   #  - mtdata_ParaCrawl-paracrawl-7.1-eng-fin - duplicate with opus
@@ -180,6 +177,7 @@ datasets:
   - mtdata_EU-eac_forms-1-eng-fin #                        ~31,162 sentences (3.5 MB)
   - mtdata_EU-eac_reference-1-eng-fin #                    ~31,162 sentences (3.5 MB)
   - mtdata_EU-dcep-1-eng-fin #                          ~1,039,474 sentences (117.5 MB)
+  - mtdata_Neulab-tedtalks_test-1-eng-fin #             ~3,117,009 sentences (352.2 MB)
   - mtdata_Statmt-wiki_titles-1-fin-eng #                  ~45,145 sentences (5.1 MB)
   - mtdata_Statmt-newsdev_fien-2015-fin-eng #             ~402,756 sentences (45.5 MB)
   - mtdata_Statmt-newsdev_enfi-2015-eng-fin #             ~402,756 sentences (45.5 MB)
@@ -189,39 +187,38 @@ datasets:
   - mtdata_Tilde-rapid-2016-eng-fin #                     ~365,302 sentences (41.3 MB)
 
   # The monolingual data contains:
-  #   ~209,074,237 sentences
+  #   ~195,823,002 sentences
   mono-src:
-  - news-crawl_news.2007  #          ~1,630,834 sentences (184.3 MB)
-  - news-crawl_news.2008 #          ~5,648,654 sentences (638.3 MB)
-  - news-crawl_news.2009 #          ~6,879,522 sentences (777.4 MB)
-  - news-crawl_news.2010 #          ~3,406,380 sentences (384.9 MB)
-  - news-crawl_news.2011 #          ~6,628,308 sentences (749.0 MB)
-  - news-crawl_news.2012 #          ~6,715,609 sentences (758.9 MB)
-  - news-crawl_news.2013 #         ~11,050,614 sentences (1.2 GB)
-  - news-crawl_news.2014 #         ~11,026,051 sentences (1.2 GB)
-  - news-crawl_news.2015 #         ~11,182,484 sentences (1.3 GB)
-  - news-crawl_news.2016 #          ~8,366,518 sentences (945.4 MB)
-  - news-crawl_news.2017 #         ~12,276,499 sentences (1.4 GB)
-  - news-crawl_news.2018 #          ~8,303,432 sentences (938.3 MB)
-  - news-crawl_news.2019 #         ~19,386,668 sentences (2.2 GB)
-  - news-crawl_news.2020 #         ~24,070,652 sentences (2.7 GB)
-  - news-crawl_news.2021 #         ~23,139,914 sentences (2.6 GB)
-  - news-crawl_news.2022 #         ~24,900,055 sentences (2.8 GB)
-  - news-crawl_news.2023 #         ~24,462,043 sentences (2.8 GB)
+  - news-crawl_news.2007  #          ~1,557,522 sentences (176M)
+  - news-crawl_news.2008 #          ~5,389,380 sentences (609M)
+  - news-crawl_news.2009 #          ~6,557,522 sentences (741M)
+  - news-crawl_news.2010 #          ~3,247,787 sentences (367M)
+  - news-crawl_news.2011 #          ~6,318,584 sentences (714M)
+  - news-crawl_news.2012 #          ~6,407,079 sentences (724M)
+  - news-crawl_news.2013 #         ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2014 #         ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2015 #         ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2016 #          ~7,982,300 sentences (902M)
+  - news-crawl_news.2017 #         ~11,504,424 sentences (1.3G)
+  - news-crawl_news.2018 #          ~7,920,353 sentences (895M)
+  - news-crawl_news.2019 #         ~17,699,115 sentences (2.0G)
+  - news-crawl_news.2020 #         ~22,123,893 sentences (2.5G)
+  - news-crawl_news.2021 #         ~21,238,938 sentences (2.4G)
+  - news-crawl_news.2022 #         ~23,008,849 sentences (2.6G)
+  - news-crawl_news.2023 #         ~23,008,849 sentences (2.6G)
 
   # The monolingual data contains:
-  #   ~12,713,084 sentences
+  #   ~11,592,916 sentences
   mono-trg:
-  - news-crawl_news.2014  #            ~564,074 sentences (63.7 MB)
-  - news-crawl_news.2015 #          ~1,682,769 sentences (190.2 MB)
-  - news-crawl_news.2016 #          ~1,399,566 sentences (158.2 MB)
-  - news-crawl_news.2017 #          ~1,325,031 sentences (149.7 MB)
-  - news-crawl_news.2018 #          ~1,082,707 sentences (122.3 MB)
-  - news-crawl_news.2019 #          ~1,754,416 sentences (198.2 MB)
-  - news-crawl_news.2020 #          ~1,474,030 sentences (166.6 MB)
-  - news-crawl_news.2021 #          ~1,162,817 sentences (131.4 MB)
-  - news-crawl_news.2022 #          ~1,119,923 sentences (126.6 MB)
-  - news-crawl_news.2023 #          ~1,147,751 sentences (129.7 MB)
+  - news-crawl_news.2015  #          ~1,601,769 sentences (181M)
+  - news-crawl_news.2016 #          ~1,336,283 sentences (151M)
+  - news-crawl_news.2017 #          ~1,265,486 sentences (143M)
+  - news-crawl_news.2018 #          ~1,035,398 sentences (117M)
+  - news-crawl_news.2019 #          ~1,672,566 sentences (189M)
+  - news-crawl_news.2020 #          ~1,407,079 sentences (159M)
+  - news-crawl_news.2021 #          ~1,106,194 sentences (125M)
+  - news-crawl_news.2022 #          ~1,070,796 sentences (121M)
+  - news-crawl_news.2023 #          ~1,097,345 sentences (124M)
 marian-args:
   decoding-backward:
     beam-size: '12'
