@@ -65,12 +65,12 @@ def fetch_opus(source: str, target: str) -> list[OpusDataset]:
 
 
 def get_opus(source: str, target: str, download_url: bool):
-    datasets = fetch_opus(source, target)
-
     print("")
     print("┌──────────────────────────────┐")
     print("│ OPUS - https://opus.nlpl.eu/ │")
     print("└──────────────────────────────┘")
+
+    datasets = fetch_opus(source, target)
 
     print_table(
         [
@@ -130,7 +130,7 @@ def get_sacrebleu(source: str, target: str):
             ],
         ]
     )
-    print_yaml(list(datasets_dict.keys()))
+    print_yaml(list(f"sacrebleu_{name}" for name in datasets_dict.keys()))
 
 
 def get_size(tags: list[str]) -> str:
