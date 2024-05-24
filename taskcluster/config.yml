@@ -60,22 +60,22 @@ valid-stages:
 
 workers:
     aliases:
-        b-linux-large-gcp-d2g:
+        b-linux-large-gcp:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
             worker-type: '{alias}'
-        b-linux-large-gcp-d2g-300gb:
+        b-linux-large-gcp-300gb:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
             worker-type: '{alias}'
-        b-linux-large-gcp-d2g-1tb:
+        b-linux-large-gcp-1tb:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
             worker-type: '{alias}'
-        b-linux-large-gcp-d2g-1tb-standard:
+        b-linux-large-gcp-1tb-standard:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
@@ -123,18 +123,18 @@ local-worker-aliases:
     # Use for quick tasks that don't require GPUs, eg: linting, tests
     b-cpu:
         by-worker-class:
-            gcp-standard: 'b-linux-large-gcp-d2g'
-            default: 'b-linux-large-gcp-d2g'
+            gcp-standard: 'b-linux-large-gcp'
+            default: 'b-linux-large-gcp'
     b-cpu-largedisk:
         by-worker-class:
-            gcp-standard: 'b-linux-large-gcp-d2g-300gb'
-            default: 'b-linux-large-gcp-d2g-300gb'
+            gcp-standard: 'b-linux-large-gcp-300gb'
+            default: 'b-linux-large-gcp-300gb'
     # Use for tasks that don't require GPUs, but need immense amounts of disk space
     # eg: alignments
     b-cpu-xlargedisk:
         by-worker-class:
-            gcp-standard: 'b-linux-large-gcp-d2g-1tb-standard'
-            default: 'b-linux-large-gcp-d2g-1tb'
+            gcp-standard: 'b-linux-large-gcp-1tb-standard'
+            default: 'b-linux-large-gcp-1tb'
     # Use for quick tasks that need a GPU, eg: evaluate
     b-gpu:
         by-worker-class:
