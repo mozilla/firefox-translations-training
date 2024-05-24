@@ -9,8 +9,8 @@ Usage:
 
 import argparse
 import logging
+import re
 import sys
-from datetime import datetime
 from typing import NamedTuple, Optional, TypeVar, Union
 
 import humanize
@@ -410,13 +410,58 @@ class NewsCrawlDataset(NamedTuple):
 
 
 def fetch_news_crawl(lang: str) -> list[NewsCrawlDataset]:
+    base_url = f"https://data.statmt.org/news-crawl/{lang}/"
+    response = requests.get(base_url, allow_redirects=True)
+
     datasets = []
-    for year in range(2007, datetime.now().year):
-        name = f"news-crawl_news.{year}"
-        url = f"https://data.statmt.org/news-crawl/{lang}/news.{year}.{lang}.shuffled.deduped.gz"
-        size, display_size = get_remote_file_size(url, display_not_200=False)
-        if size is not None:
-            datasets.append(NewsCrawlDataset(name, url, size, display_size))
+    if response.ok:
+        # Example row: (indentation and newlines added)
+        # <tr>
+        #     <td valign="top"><img src="/icons/compressed.gif" alt="[   ]"></td>
+        #     <td><a href="news.2013.en.shuffled.deduped.gz">news.2013.en.shuffled.deduped.gz</a></td>
+        #     <td align="right">2019-01-14 10:23  </td>
+        #     <td align="right">1.2G</td>
+        #     <td>&nbsp;</td>
+        # </tr>
+
+        regex = re.compile(
+            r"""
+            # Match the file name year.
+            # >news.2008.en.shuffled.deduped.gz<
+            #       ^^^^
+            >news.(\d+)\.\w+\.shuffled\.deduped\.gz<
+            [^\n]*
+
+            # Match the file size and unit.
+            # <td align="right">176M</td>
+            #                   ^^^^
+            <td\ align="right">
+                ([\d\.]+)(\w+)
+            </td>
+        """,
+            re.VERBOSE,
+        )
+
+        matches = re.findall(regex, response.text)
+
+        if matches:
+            for year, size_number, size_unit in matches:
+                if size_unit == "K":
+                    multiplier = 1_000
+                elif size_unit == "M":
+                    multiplier = 1_000_000
+                elif size_unit == "G":
+                    multiplier = 1_000_000_000
+
+                name = f"news-crawl_news.{year}"
+                url = f"https://data.statmt.org/news-crawl/{lang}/news.{year}.{lang}.shuffled.deduped.gz"
+                size = int(float(size_number) * multiplier)
+
+                datasets.append(NewsCrawlDataset(name, url, size, f"{size_number}{size_unit}"))
+        else:
+            print("The regex could not find newscrawl datasets for", lang)
+    else:
+        print("No newscrawl data was available for", lang)
     return datasets
 
 

@@ -53,11 +53,22 @@ flores_101_languages = {
 }  # fmt: skip
 
 
-def get_git_revision_hash() -> str:
-    return subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
+def get_git_revision_hash(remote_branch: str) -> str:
+    """
+    The git hash should be something that will always be around. Check the main branch for the
+    most common ancestor to the local changes. The prod config locally could be different than
+    remote, but it's better
+    """
+    return (
+        subprocess.check_output(["git", "merge-base", remote_branch, "HEAD"])
+        .decode("ascii")
+        .strip()
+    )
 
 
-def update_config(prod_config: any, name: str, source: str, target: str) -> dict[str, str]:
+def update_config(
+    prod_config: any, name: str, source: str, target: str, fast: bool
+) -> dict[str, str]:
     experiment = prod_config["experiment"]
 
     # Update the prod config for this language pair.
@@ -68,7 +79,9 @@ def update_config(prod_config: any, name: str, source: str, target: str) -> dict
 
     pretrained_model = pretrained_student_models.get((source, target))
     if pretrained_model:
-        experiment["teacher-mode"] = "two-stage"
+        # Switch to the one stage teacher mode, as the higher quality backtranslations lead
+        # to issues with early stopping when switching between stages.
+        experiment["teacher-mode"] = "one-stage"
         experiment["pretrained-models"]["train-backwards"]["urls"] = [pretrained_model]
     else:
         experiment["pretrained-models"] = {}
@@ -86,7 +99,7 @@ def update_config(prod_config: any, name: str, source: str, target: str) -> dict
     # comments too the top of a section.
     comment_section = {}
 
-    add_train_data(source, target, datasets["train"], comment_section)
+    add_train_data(source, target, datasets, comment_section, fast)
     add_test_data(
         source,
         target,
@@ -101,7 +114,7 @@ def update_config(prod_config: any, name: str, source: str, target: str) -> dict
 
 
 def add_train_data(
-    source: str, target: str, train_datasets: list[str], comment_section: dict[str, str]
+    source: str, target: str, datasets: list[str], comment_section: dict[str, str], fast: bool
 ):
     print("Fetching opus")
     opus_datasets = fetch_opus(source, target)
@@ -113,55 +126,69 @@ def add_train_data(
         sentences = dataset.alignment_pairs or 0
         # Some datasets are ignored or too small to be included.
         if dataset.corpus in skip_datasets:
-            skipped_datasets.append(f"{dataset.corpus_key()} - ignored datasets ({sentences:,} sentences)")
+            skipped_datasets.append(
+                f"{dataset.corpus_key()} - ignored datasets ({sentences:,} sentences)"
+            )
             continue
         if (dataset.alignment_pairs or 0) < minimum_dataset_sentences:
-            skipped_datasets.append(f"{dataset.corpus_key()} - not enough data  ({sentences:,} sentences)")
+            skipped_datasets.append(
+                f"{dataset.corpus_key()} - not enough data  ({sentences:,} sentences)"
+            )
             continue
 
         visited_corpora.add(normalize_corpus_name(dataset.corpus))
         total_sentences += sentences
         corpus_key = dataset.corpus_key()
-        train_datasets.append(corpus_key)
-        train_datasets.yaml_add_eol_comment(
+        datasets["train"].append(corpus_key)
+        datasets["train"].yaml_add_eol_comment(
             f"{sentences:,} sentences".rjust(70 - len(corpus_key), " "),
-            len(train_datasets) - 1,
+            len(datasets["train"]) - 1,
         )
 
     print("Fetching mtdata")
     entries = fetch_mtdata(source, target)
 
     for corpus_key, entry in entries.items():
-        corpus_name = normalize_corpus_name(entry.did.name)
-        group_corpus_name = normalize_corpus_name(entry.did.group + entry.did.name)
-        if corpus_name in visited_corpora or group_corpus_name in visited_corpora:
-            skipped_datasets.append(f"{corpus_key} - duplicate with opus")
-            continue
+        # mtdata can have test and devtest data as well.
+        if entry.did.name.endswith("test"):
+            dataset = datasets["test"]
+        if entry.did.name.endswith("dev"):
+            dataset = datasets["devtest"]
+        else:
+            dataset = datasets["train"]
+            corpus_name = normalize_corpus_name(entry.did.name)
+            group_corpus_name = normalize_corpus_name(entry.did.group + entry.did.name)
+            if corpus_name in visited_corpora or group_corpus_name in visited_corpora:
+                skipped_datasets.append(f"{corpus_key} - duplicate with opus")
+                continue
 
-        if entry.did.name in skip_datasets:
-            skipped_datasets.append(f"{entry.did.name} - ignored datasets")
-            continue
+            if entry.did.name in skip_datasets:
+                skipped_datasets.append(f"{entry.did.name} - ignored datasets")
+                continue
 
-        train_datasets.append(corpus_key)
-        byte_size, display_size = get_remote_file_size(entry.url)
-        if byte_size:
-            # Don't add the sentences to the total, as these will be commented out by default.
-            sentences = estimate_sentence_size(byte_size)
-            train_datasets.yaml_add_eol_comment(
-                f"~{sentences:,} sentences ".rjust(70 - len(corpus_key), " ")
-                + f"({display_size})",
-                len(train_datasets) - 1,
-            )
+        dataset.append(corpus_key)
+        if not fast:
+            byte_size, display_size = get_remote_file_size(entry.url)
+            if byte_size:
+                # Don't add the sentences to the total, as these will be commented out by default.
+                sentences = estimate_sentence_size(byte_size)
+                dataset.yaml_add_eol_comment(
+                    f"~{sentences:,} sentences ".rjust(70 - len(corpus_key), " ")
+                    + f"({display_size})",
+                    len(datasets["train"]) - 1,
+                )
 
-    train_comment = "\n".join(
-        [
-            "The training data contains:",
-            f"  {total_sentences:,} sentences",
-            "",
-            "Skipped datasets:",
-            *[f" - {d}" for d in skipped_datasets],
-        ]
-    )
+    comments = [
+        "The training data contains:",
+        f"  {total_sentences:,} sentences",
+    ]
+    if skipped_datasets:
+        comments.append("")
+        comments.append("Skipped datasets:")
+        for d in skipped_datasets:
+            comments.append(f" - {d}")
+
+    train_comment = "\n".join(comments)
 
     comment_section["  train:"] = train_comment
 
@@ -182,14 +209,13 @@ def normalize_corpus_name(corpus_name: str):
     #   mtdata: hallituskausi_2011_2015-1-eng-fin
     corpus_name = re.sub(r"[^a-z]", "", corpus_name.lower())
 
-    # Ignore train/test/dev splits.
+    # Datasets could be split by train/test/dev. Remove the "train" word so that it will match
+    # between Opus and mtdata.
     #   opus: NeuLab-TedTalks/v1
     #   mtdata: Neulab-tedtalks_train-1-eng-fin
     #   mtdata: Neulab-tedtalks_test-1-eng-fin
     #   mtdata: Neulab-tedtalks_dev-1-eng-fin
     corpus_name = re.sub(r"train$", "", corpus_name)
-    corpus_name = re.sub(r"test$", "", corpus_name)
-    corpus_name = re.sub(r"dev$", "", corpus_name)
 
     return corpus_name
 
@@ -221,7 +247,7 @@ def add_test_data(
     for d in fetch_sacrebleu(source, target):
         # Work around: PLW2901 `for` loop variable `dataset_name` overwritten by assignment target
         dataset_name = d
-        if "/" in dataset_name:
+        if dataset_name in skip_datasets:
             # This could be a dataset with a variant design.
             skipped_datasets.append(f"{dataset_name} - variant dataset")
         else:
@@ -232,14 +258,15 @@ def add_test_data(
                 devtest_datasets.append(f"sacrebleu_aug-mix_{dataset_name}")
             is_test = not is_test
 
-    test_comment = "\n".join(
-        [
-            "Skipped test/devtest datasets:",
-            *[f" - {d}" for d in skipped_datasets],
-        ]
-    )
+    if skipped_datasets:
+        test_comment = "\n".join(
+            [
+                "Skipped test/devtest datasets:",
+                *[f" - {d}" for d in skipped_datasets],
+            ]
+        )
 
-    comment_section["  devtest:"] = test_comment
+        comment_section["  devtest:"] = test_comment
 
 
 def estimate_sentence_size(bytes: int) -> int:
@@ -300,7 +327,7 @@ def strip_comments(yaml_text: str) -> list[str]:
     return result
 
 
-def apply_comments_to_yaml_string(yaml, prod_config, comment_section) -> str:
+def apply_comments_to_yaml_string(yaml, prod_config, comment_section, remote_branch: str) -> str:
     """
     ruamel.yaml only supports inline comments, so do direct string manipulation to apply
     all the comments needed.
@@ -318,7 +345,7 @@ def apply_comments_to_yaml_string(yaml, prod_config, comment_section) -> str:
             f"# task config-generator -- {script_args}",
             "#",
             "# The documentation for this config can be found here:",
-            f"# https://github.com/mozilla/firefox-translations-training/blob/{get_git_revision_hash()}/taskcluster/configs/config.prod.yml",
+            f"# https://github.com/mozilla/firefox-translations-training/blob/{get_git_revision_hash(remote_branch)}/taskcluster/configs/config.prod.yml",
             yaml_string,
         ]
     )
@@ -355,6 +382,18 @@ def main() -> None:
         required=True,
         help="The name of the config, which gets constructed like so: configs/{source}-{target}-{name}.yml",
     )
+    parser.add_argument(
+        "--remote_branch",
+        metavar="REF",
+        type=str,
+        default="origin/main",
+        help="The remote branch that contains the config.prod.yml. Typically origin/main, or origin/release",
+    )
+    parser.add_argument(
+        "--fast",
+        action="store_true",
+        help="Skip slow network requests like looking up dataset size",
+    )
 
     args = parser.parse_args()
 
@@ -380,8 +419,10 @@ def main() -> None:
     yaml_string = strip_comments(yaml_string)
     prod_config = yaml.load(StringIO(yaml_string))
 
-    comment_section = update_config(prod_config, args.name, args.source, args.target)
-    final_config = apply_comments_to_yaml_string(yaml, prod_config, comment_section)
+    comment_section = update_config(prod_config, args.name, args.source, args.target, args.fast)
+    final_config = apply_comments_to_yaml_string(
+        yaml, prod_config, comment_section, args.remote_branch
+    )
     final_config_path = root_dir / "configs" / f"{args.source}-{args.target}-{args.name}.yml"
 
     print("Writing config to:", str(final_config_path))
