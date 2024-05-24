@@ -1,0 +1,235 @@
+# The initial configuration was generated using:
+# task config-generator -- en da --name spring-2024
+#
+# The documentation for this config can be found here:
+# https://github.com/mozilla/firefox-translations-training/blob/c2a6e7f8c899ba363c5058e200692bfd8e321299/taskcluster/configs/config.prod.yml
+experiment:
+  name: spring-2024
+  src: en
+  trg: da
+  best-model: chrf
+  use-opuscleaner: 'true'
+  opuscleaner-mode: defaults
+  bicleaner:
+    default-threshold: 0.5
+    dataset-thresholds: {}
+  mono-max-sentences-src: 500_000_000
+  mono-max-sentences-trg: 200_000_000
+  spm-sample-size: 10_000_000
+  spm-vocab-size: 32000
+  teacher-ensemble: 2
+  teacher-mode: two-stage
+  pretrained-models: {}
+datasets:
+  devtest:
+  - mtdata_Neulab-tedtalks_dev-1-eng-dan
+  - flores_aug-mix_dev
+  test:
+  - flores_devtest
+  - flores_aug-mix_devtest
+  - flores_aug-title_devtest
+  - flores_aug-upper_devtest
+  - flores_aug-typos_devtest
+  - flores_aug-noise_devtest
+  - flores_aug-inline-noise_devtest
+
+  # The training data contains:
+  #   161,668,955 sentences
+  # 
+  # Skipped datasets:
+  #  - opus_CCMatrix/v1 - ignored datasets (52,273,664 sentences)
+  #  - opus_GNOME/v1 - not enough data  (150 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-www.norden.org-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-mst.dk-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-ufm.dk-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-www.dst.dk-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-www.dma.dk-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-www.geus.dk-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-naturstyrelsen.dk-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-www.trm.dk-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-um.dk-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-www.aarhus2017.dk-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-www.odense.dk-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-www.visitvejle.com-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-www.visitdenmark.dk-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-slks.dk-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-natmus.dk-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-gallery_denmark-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-royal_danish_library-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-danish_fsa-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-uk.fm.dk-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-spillemyndigheden.dk-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-rigsrevisionen.dk-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-euipo_2017-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-emea-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-vaccination-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-wikipedia_health-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-antibiotic-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-europarl_covid-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-ec_europa_covid-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-eur_lex_covid-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-presscorner_covid-1-dan-eng - duplicate with opus
+  #  - mtdata_ELRC-nteu_tiera-1-dan-eng - duplicate with opus
+  #  - mtdata_EU-ecdc-1-eng-dan - duplicate with opus
+  #  - mtdata_Facebook-wikimatrix-1-dan-eng - duplicate with opus
+  #  - mtdata_LinguaTools-wikititles-2014-dan-eng - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_train-1-eng-dan - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-6-eng-dan - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-7.1-eng-dan - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-8-eng-dan - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-9-eng-dan - duplicate with opus
+  #  - mtdata_Statmt-europarl-7-dan-eng - duplicate with opus
+  #  - mtdata_Statmt-ccaligned-1-dan_DK-eng - duplicate with opus
+  #  - mtdata_Tilde-ecb-2017-dan-eng - duplicate with opus
+  train:
+  - opus_NLLB/v1  #                                       52,273,664 sentences
+  - opus_ParaCrawl/v9 #                                  34,207,840 sentences
+  - opus_OpenSubtitles/v2018 #                           14,474,569 sentences
+  - opus_ELRC-4248-NTEU_TierA/v1 #                       13,756,130 sentences
+  - opus_ELRC-EMEA/v1 #                                  12,556,334 sentences
+  - opus_CCAligned/v1 #                                  10,738,610 sentences
+  - opus_DGT/v2019 #                                      5,152,323 sentences
+  - opus_EUbookshop/v2 #                                  4,980,755 sentences
+  - opus_LinguaTools-WikiTitles/v2014 #                   3,084,707 sentences
+  - opus_XLEnt/v1.2 #                                     3,042,401 sentences
+  - opus_Europarl/v8 #                                    1,991,647 sentences
+  - opus_EMEA/v3 #                                        1,093,780 sentences
+  - opus_JRC-Acquis/v3.0 #                                  808,916 sentences
+  - opus_ELRC-2716-EMEA/v1 #                                775,676 sentences
+  - opus_ELRC_2682/v1 #                                     775,675 sentences
+  - opus_WikiMatrix/v1 #                                    436,052 sentences
+  - opus_KDE4/v2 #                                          194,410 sentences
+  - opus_QED/v2.0a #                                        175,384 sentences
+  - opus_ELRC-presscorner_covid/v1 #                        145,352 sentences
+  - opus_ECB/v1 #                                           138,154 sentences
+  - opus_ELITR-ECA/v1 #                                     135,384 sentences
+  - opus_TED2020/v1 #                                        72,113 sentences
+  - opus_wikimedia/v20230407 #                               69,969 sentences
+  - opus_bible-uedin/v1 #                                    62,113 sentences
+  - opus_NeuLab-TedTalks/v1 #                                48,462 sentences
+  - opus_ELRC-847-mst.dk/v1 #                                36,750 sentences
+  - opus_ELRC-730-www.norden.org/v1 #                        36,626 sentences
+  - opus_ELRC-www.norden.org/v1 #                            36,626 sentences
+  - opus_Tatoeba/v2023-04-12 #                               32,790 sentences
+  - opus_ELRC-850-www.dst.dk/v1 #                            22,817 sentences
+  - opus_ELRC-848-laegemiddelstyrelsen/v1 #                  22,700 sentences
+  - opus_ELRC-3567-EUR_LEX_covid/v1 #                        21,239 sentences
+  - opus_ELRC-EUR_LEX/v1 #                                   21,239 sentences
+  - opus_ELRC-2013-EUIPO_2017/v1 #                           17,269 sentences
+  - opus_ELRC-EUIPO_2017/v1 #                                17,269 sentences
+  - opus_ELRA-W0214/v1 #                                     16,243 sentences
+  - opus_ELRC-antibiotic/v1 #                                13,310 sentences
+  - opus_ELRC-2877-EU_publications_medi/v1 #                 13,243 sentences
+  - opus_ELRC-EU_publications/v1 #                           13,243 sentences
+  - opus_ELRC-851-www.vikingeskibsmuse/v1 #                  12,404 sentences
+  - opus_ELRC-EUROPARL_covid/v1 #                            11,723 sentences
+  - opus_ELRC-849-ufm.dk/v1 #                                10,054 sentences
+  - opus_EUconst/v1 #                                        10,032 sentences
+  - opus_ELRC-1062-rigsrevisionen.dk/v1 #                     8,234 sentences
+  - opus_GlobalVoices/v2018q4 #                               7,311 sentences
+  - opus_ELRC-904-uk.fm.dk/v1 #                               6,949 sentences
+  - opus_ELRC-3608-presscorner_covid/v1 #                     6,262 sentences
+  - opus_ELRC-892-slks.dk/v1 #                                4,956 sentences
+  - opus_ELRC-885-www.aarhus2017.dk/v1 #                      4,709 sentences
+  - opus_TildeMODEL/v2018 #                                   4,420 sentences
+  - opus_ELRC-397-Danish_Higher_Educat/v1 #                   4,395 sentences
+  - opus_ELRA-W0157/v1 #                                      4,394 sentences
+  - opus_ELRC-439-Danish_Higher_Educat/v1 #                   4,149 sentences
+  - opus_ELRC-893-natmus.dk/v1 #                              3,950 sentences
+  - opus_ELRC-394-Danish_Higher_Educat/v1 #                   3,719 sentences
+  - opus_ELRC_3382/v1 #                                       3,406 sentences
+  - opus_ELRC-905-spillemyndigheden.dk/v1 #                   3,355 sentences
+  - opus_ELRC-856-naturstyrelsen.dk/v1 #                      3,118 sentences
+  - opus_ELRC-859-um.dk/v1 #                                  3,055 sentences
+  - opus_ELRC-857-www.trm.dk/v1 #                             3,015 sentences
+  - opus_ELRC-852-www.dma.dk/v1 #                             3,010 sentences
+  - opus_ELRC-3466-EC_EUROPA_covid/v1 #                       2,804 sentences
+  - opus_ELRC-EC_EUROPA/v1 #                                  2,804 sentences
+  - opus_ECDC/v2016-03-16 #                                   2,578 sentences
+  - opus_ELRC-897-Denmark_Space_Instit/v1 #                   1,940 sentences
+  - opus_ELRC-899-Danish_FSA/v1 #                             1,931 sentences
+  - opus_ELRC-426-Danish_Higher_Educat/v1 #                   1,886 sentences
+  - opus_ELRC-854-www.geus.dk/v1 #                            1,655 sentences
+  - opus_ELRC-891-www.visitdenmark.dk/v1 #                    1,603 sentences
+  - opus_ELRC-895-Royal_Danish_Library/v1 #                   1,547 sentences
+  - opus_ELRC-889-www.visitvejle.com/v1 #                     1,472 sentences
+  - opus_ELRC-886-www.odense.dk/v1 #                          1,427 sentences
+  - opus_ELRC-901-Denmark_Prosecution_/v1 #                   1,163 sentences
+  - opus_ELRC-900-Danish_Working_Envir/v1 #                   1,138 sentences
+  - opus_ELRC-890-Holstebro_Kunstmuseu/v1 #                   1,023 sentences
+  - opus_ELRC-3204-antibiotic/v1 #                              801 sentences
+  - opus_ELRC-894-Gallery_Denmark/v1 #                          769 sentences
+  - opus_ELRC-3295-EUROPARL_covid/v1 #                          634 sentences
+  - opus_ELRC-3066-wikipedia_health/v1 #                        523 sentences
+  - opus_ELRC-wikipedia_health/v1 #                             523 sentences
+  - opus_ELRC_2922/v1 #                                         522 sentences
+  - opus_tldr-pages/v2023-08-29 #                               495 sentences
+  - opus_ELRC-2754-vaccination/v1 #                             462 sentences
+  - opus_ELRC-vaccination/v1 #                                  462 sentences
+  - opus_ELRC_2923/v1 #                                         389 sentences
+  - mtdata_ELRC-danish_higher_education_science_3-1-dan-eng
+  - mtdata_ELRC-danish_higher_education_science_2-1-dan-eng
+  - mtdata_ELRC-danish_higher_education_science-1-dan-eng
+  - mtdata_ELRC-danish_higher_education_science_4-1-dan-eng
+  - mtdata_ELRC-laegemiddelstyrelsen.dk-1-dan-eng
+  - mtdata_ELRC-www.vikingeskibsmuseet.dk-1-dan-eng
+  - mtdata_ELRC-holstebro_kunstmuseum-1-dan-eng
+  - mtdata_ELRC-denmark_space_institute-1-dan-eng
+  - mtdata_ELRC-danish_working_environment_authority-1-dan-eng
+  - mtdata_ELRC-denmark_prosecution_service-1-dan-eng
+  - mtdata_ELRC-eu_publications_medical_v2-1-dan-eng
+  - mtdata_ELRC-nteu_tierb-1-dan-eng
+  - mtdata_EU-eac_forms-1-dan-eng #                        ~31,162 sentences (3.5 MB)
+  - mtdata_EU-eac_reference-1-dan-eng #                    ~31,162 sentences (3.5 MB)
+  - mtdata_EU-dcep-1-dan-eng #                          ~1,040,518 sentences (117.6 MB)
+  - mtdata_Neulab-tedtalks_test-1-eng-dan #             ~3,117,009 sentences (352.2 MB)
+  - mtdata_Tilde-eesc-2017-dan-eng #                    ~1,936,973 sentences (218.9 MB)
+  - mtdata_Tilde-ema-2016-dan-eng #                       ~215,232 sentences (24.3 MB)
+  - mtdata_Tilde-rapid-2016-dan-eng #                     ~451,067 sentences (51.0 MB)
+
+  # The monolingual data contains:
+  #   ~195,823,002 sentences
+  mono-src:
+  - news-crawl_news.2007  #          ~1,557,522 sentences (176M)
+  - news-crawl_news.2008 #          ~5,389,380 sentences (609M)
+  - news-crawl_news.2009 #          ~6,557,522 sentences (741M)
+  - news-crawl_news.2010 #          ~3,247,787 sentences (367M)
+  - news-crawl_news.2011 #          ~6,318,584 sentences (714M)
+  - news-crawl_news.2012 #          ~6,407,079 sentences (724M)
+  - news-crawl_news.2013 #         ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2014 #         ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2015 #         ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2016 #          ~7,982,300 sentences (902M)
+  - news-crawl_news.2017 #         ~11,504,424 sentences (1.3G)
+  - news-crawl_news.2018 #          ~7,920,353 sentences (895M)
+  - news-crawl_news.2019 #         ~17,699,115 sentences (2.0G)
+  - news-crawl_news.2020 #         ~22,123,893 sentences (2.5G)
+  - news-crawl_news.2021 #         ~21,238,938 sentences (2.4G)
+  - news-crawl_news.2022 #         ~23,008,849 sentences (2.6G)
+  - news-crawl_news.2023 #         ~23,008,849 sentences (2.6G)
+
+  # The monolingual data contains:
+  #   ~0 sentences
+  mono-trg: []
+marian-args:
+  decoding-backward:
+    beam-size: '12'
+    mini-batch-words: '2000'
+  decoding-teacher:
+    mini-batch-words: '4000'
+    precision: float16
+  training-backward:
+    early-stopping: '5'
+  training-teacher:
+    early-stopping: '20'
+  training-student:
+    early-stopping: '20'
+  training-student-finetuned:
+    early-stopping: '20'
+target-stage: all
+wandb-publication: true
+taskcluster:
+  split-chunks: 20
+  worker-classes:
+    default: gcp-spot

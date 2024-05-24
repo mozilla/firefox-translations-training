@@ -75,10 +75,6 @@ def test_opus(mock_opus_data, capsys):
         capsys,
         "The opus dataset outputs nicely.",
         """
-        Fetching datasets from:
-        https://opus.nlpl.eu/opusapi/?source=en&target=ca&preprocessing=moses&version=latest
-
-
         ┌──────────────────────────────┐
         │ OPUS - https://opus.nlpl.eu/ │
         └──────────────────────────────┘
