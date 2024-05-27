@@ -128,8 +128,14 @@ def get_metrics_from_task(task: dict) -> list[Metric]:
 
 def filter_task(task: dict) -> tuple[str, dict] | tuple[None, None]:
     if task["status"]["state"] == "completed" and "vocab" not in task["task"]["tags"]["kind"]:
-        prefix, task["name"] = build_task_name(task["task"])
-        return prefix, task
+        try:
+            prefix, task["name"] = build_task_name(task["task"])
+        except ValueError:
+            # Task label may be unrelated to training or validation
+            label = task["task"].get("tags", {}).get("label", "unknown")
+            logger.debug(f"Skipping task with label {label}")
+        else:
+            return prefix, task
 
     return None, None
 
