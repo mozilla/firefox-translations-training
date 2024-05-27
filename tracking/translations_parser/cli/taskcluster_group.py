@@ -264,7 +264,7 @@ def publish_task_group(group_id: str, override: bool = False) -> None:
     # Group and publish remaining metrics tasks via the logs publication
     publish_group_logs_from_tasks(
         project=project_name,
-        group0=group_name,
+        group=group_name,
         metrics_tasks=metrics_tasks,
         config=config,
     )
