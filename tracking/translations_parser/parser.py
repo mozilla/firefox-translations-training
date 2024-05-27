@@ -142,7 +142,7 @@ class TrainingParser:
         if results["stalled"] is not None:
             entry[f"{key}_stalled"] = float(results["stalled"])
         # Build a validation epoch from multiple lines
-        expected_keys = set(ValidationEpoch.__annotations__.keys()) - {"epoch", "up", "perplexity"}
+        expected_keys = {"ce_mean_words", "chrf", "bleu_detok"}
         if not (expected_keys - set(entry.keys())):
             validation_epoch = ValidationEpoch(epoch=epoch, up=up, **entry)
             self.validation.append(validation_epoch)
