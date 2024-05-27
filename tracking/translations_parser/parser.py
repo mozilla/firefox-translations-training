@@ -16,7 +16,11 @@ logger = logging.getLogger(__name__)
 
 HEADER_RE = re.compile(r"(?<=\[)(?P<value>.+?)\] ")
 VALIDATION_RE = re.compile(
-    r"Ep\.[ :]+(?P<ep>\d+)[ :]+Up\.[ :]+(?P<up>\d+)[ :]+(?P<key>[\w-]+)[ :]+(?P<value>[\d\.]+)"
+    r"Ep\.[ :]+(?P<ep>\d+)"
+    r"[ :]+Up\.[ :]+(?P<up>\d+)"
+    r"[ :]+(?P<key>[\w-]+)"
+    r"[ :]+(?P<value>[\d\.]+)"
+    r"([ :]+stalled (?P<stalled>\d+) times)?"
 )
 TRAINING_RE = re.compile(
     r"Ep\.[ :]+(?P<epoch>\d+)[ :]+"
@@ -128,14 +132,15 @@ class TrainingParser:
         """Parses a validation entry on multiple lines."""
         if ("valid",) not in headers or not (match := VALIDATION_RE.match(text)):
             return None
-        epoch, up, key, val = match.groups()
+        results = match.groupdict()
         # Replace items keys to match ValidationEpoch dataclass
-        key = key.replace("-", "_")
-        # Transform values to match output types
-        epoch, up = int(epoch), int(up)
-        val = ValidationEpoch.__annotations__[key](val)
+        key = results["key"].replace("-", "_")
+        epoch, up = int(results["ep"]), int(results["up"])
         entry = self._validation_entries[(epoch, up)]
-        entry[key] = val
+        # Transform values to match output types
+        entry[key] = ValidationEpoch.__annotations__[key](results["value"])
+        if results["stalled"] is not None:
+            entry[f"{key}_stalled"] = float(results["stalled"])
         # Build a validation epoch from multiple lines
         expected_keys = set(ValidationEpoch.__annotations__.keys()) - {"epoch", "up", "perplexity"}
         if not (expected_keys - set(entry.keys())):

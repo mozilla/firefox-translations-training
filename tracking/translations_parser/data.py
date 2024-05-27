@@ -31,7 +31,7 @@ class TrainingEpoch:
     sen: int
     cost: float
     time: float
-    rate: float
+    rate: float  # Words per second
     gnorm: float
 
 
@@ -43,6 +43,11 @@ class ValidationEpoch:
     ce_mean_words: float
     bleu_detok: float
     perplexity: float = None  # optional
+    # Optional stalled validation metrics
+    chrf_stalled: int | None = None
+    ce_mean_words_stalled: int | None = None
+    bleu_detok_stalled: int | None = None
+    perplexity_stalled: float = None  # optional
 
 
 @dataclass
