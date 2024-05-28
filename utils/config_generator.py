@@ -133,6 +133,8 @@ def add_train_data(
 
     for dataset in opus_datasets:
         sentences = dataset.alignment_pairs or 0
+        visited_corpora.add(normalize_corpus_name(dataset.corpus))
+
         # Some datasets are ignored or too small to be included.
         if dataset.corpus in skip_datasets:
             skipped_datasets.append(
@@ -145,7 +147,6 @@ def add_train_data(
             )
             continue
 
-        visited_corpora.add(normalize_corpus_name(dataset.corpus))
         total_sentences += sentences
         corpus_key = dataset.corpus_key()
         datasets["train"].append(corpus_key)
@@ -175,17 +176,31 @@ def add_train_data(
                 skipped_datasets.append(f"{entry.did.name} - ignored datasets")
                 continue
 
-        dataset.append(corpus_key)
-        if not fast and entry.did.name not in bad_mtdata_sizes:
+        if fast:
+            # Just add the dataset when in fast mode.
+            dataset.append(corpus_key)
+        else:
             byte_size, display_size = get_remote_file_size(entry.url)
-            if byte_size:
-                # Don't add the sentences to the total, as these will be commented out by default.
+            if byte_size is None:
+                # There was a network error, skip the dataset.
+                skipped_datasets.append(f"{corpus_key} - Error fetching ({entry.url})")
+            else:
+                # Don't add the sentences to the total_sentences, as mtdata is less reliable
+                # compared to opus.
                 sentences = estimate_sentence_size(byte_size)
-                dataset.yaml_add_eol_comment(
-                    f"~{sentences:,} sentences ".rjust(70 - len(corpus_key), " ")
-                    + f"({display_size})",
-                    len(datasets["train"]) - 1,
-                )
+                dataset.append(corpus_key)
+                if byte_size:
+                    dataset.yaml_add_eol_comment(
+                        f"~{sentences:,} sentences ".rjust(70 - len(corpus_key), " ")
+                        + f"({display_size})",
+                        len(datasets["train"]) - 1,
+                    )
+                else:
+                    dataset.yaml_add_eol_comment(
+                        "No Content-Length reported ".rjust(70 - len(corpus_key), " ")
+                        + f"({entry.url})",
+                        len(datasets["train"]) - 1,
+                    )
 
     comments = [
         "The training data contains:",
