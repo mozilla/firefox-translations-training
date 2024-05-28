@@ -28,7 +28,7 @@ cd "$(dirname "${0}")"
 dir="$(dirname "${output_prefix}")"
 mkdir -p "${dir}"
 
-echo "Downloading FastText model"
+echo "Downloading FastText model."
 # pre-download fast text model as it's causing constant issues
 filters_dir="/builds/worker/.local/lib/python3.10/site-packages/opuscleaner/filters"
 wget -O "${filters_dir}/large.bin" https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
