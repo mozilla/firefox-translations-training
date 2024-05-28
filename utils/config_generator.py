@@ -52,6 +52,15 @@ flores_101_languages = {
     "tr", "uk", "umb", "ur", "uz", "vi", "wo", "xh", "yo", "zh", "zh", "zu"
 }  # fmt: skip
 
+# mtdata points to raw downloads, and does some processing to normalize the data. This means
+# that if we measure the download size, it may be inaccurate.
+bad_mtdata_sizes = {
+    # These are stored in a big archive with train/test/dev. Keep "train" estimates as they are
+    # the largest, but ignore test/dev.
+    "tedtalks_test",
+    "tedtalks_dev",
+}
+
 
 def get_git_revision_hash(remote_branch: str) -> str:
     """
@@ -152,7 +161,7 @@ def add_train_data(
         # mtdata can have test and devtest data as well.
         if entry.did.name.endswith("test"):
             dataset = datasets["test"]
-        if entry.did.name.endswith("dev"):
+        elif entry.did.name.endswith("dev"):
             dataset = datasets["devtest"]
         else:
             dataset = datasets["train"]
@@ -167,7 +176,7 @@ def add_train_data(
                 continue
 
         dataset.append(corpus_key)
-        if not fast:
+        if not fast and entry.did.name not in bad_mtdata_sizes:
             byte_size, display_size = get_remote_file_size(entry.url)
             if byte_size:
                 # Don't add the sentences to the total, as these will be commented out by default.

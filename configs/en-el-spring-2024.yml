@@ -2,7 +2,7 @@
 # task config-generator -- en el --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/c2a6e7f8c899ba363c5058e200692bfd8e321299/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/fac7511f0f84af352c90502132a162a52009cee3/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -26,6 +26,7 @@ datasets:
   - flores_aug-mix_dev
   - sacrebleu_aug-mix_mtedx/test
   test:
+  - mtdata_Neulab-tedtalks_test-1-eng-ell
   - flores_devtest
   - flores_aug-mix_devtest
   - flores_aug-title_devtest
@@ -202,7 +203,6 @@ datasets:
   - mtdata_EU-eac_forms-1-ell-eng #                        ~31,162 sentences (3.5 MB)
   - mtdata_EU-eac_reference-1-ell-eng #                    ~31,162 sentences (3.5 MB)
   - mtdata_EU-dcep-1-ell-eng #                          ~1,178,828 sentences (133.2 MB)
-  - mtdata_Neulab-tedtalks_test-1-eng-ell #             ~3,117,009 sentences (352.2 MB)
   - mtdata_Tilde-eesc-2017-ell-eng #                    ~2,393,754 sentences (270.5 MB)
   - mtdata_Tilde-ema-2016-ell-eng #                       ~244,548 sentences (27.6 MB)
   - mtdata_Tilde-rapid-2016-ell-eng #                     ~586,564 sentences (66.3 MB)
