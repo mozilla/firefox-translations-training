@@ -2,7 +2,7 @@
 # task config-generator -- en ru --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/fac7511f0f84af352c90502132a162a52009cee3/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -23,7 +23,6 @@ experiment:
 datasets:
   devtest:
   - mtdata_Neulab-tedtalks_dev-1-eng-rus
-  - mtdata_UN-un_dev-1-eng-rus
   - flores_aug-mix_dev
   - sacrebleu_aug-mix_mtedx/test
   - sacrebleu_aug-mix_wmt20
@@ -33,7 +32,6 @@ datasets:
   - sacrebleu_aug-mix_wmt14/full
   test:
   - mtdata_Neulab-tedtalks_test-1-eng-rus
-  - mtdata_UN-un_test-1-eng-rus
   - flores_devtest
   - flores_aug-mix_devtest
   - flores_aug-title_devtest
@@ -66,7 +64,11 @@ datasets:
   #  - mtdata_Statmt-news_commentary-14-eng-rus - duplicate with opus
   #  - mtdata_Statmt-news_commentary-15-eng-rus - duplicate with opus
   #  - mtdata_Statmt-news_commentary-16-eng-rus - duplicate with opus
+  #  - mtdata_Statmt-wiki_titles-1-rus-eng - duplicate with opus
+  #  - mtdata_Statmt-wiki_titles-2-rus-eng - duplicate with opus
   #  - mtdata_Statmt-ccaligned-1-eng-rus_RU - duplicate with opus
+  #  - mtdata_UN-un_dev-1-eng-rus - Error fetching (https://drive.google.com/uc?export=download&id=13GI1F1hvwpMUGBSa0QC6ov4eE57GC_Zx)
+  #  - mtdata_UN-un_test-1-eng-rus - Error fetching (https://drive.google.com/uc?export=download&id=13GI1F1hvwpMUGBSa0QC6ov4eE57GC_Zx)
   train:
   - opus_NLLB/v1  #                                      139,937,785 sentences
   - opus_OpenSubtitles/v2018 #                           25,910,105 sentences
@@ -106,8 +108,6 @@ datasets:
   - opus_tldr-pages/v2023-08-29 #                             1,037 sentences
   - mtdata_Statmt-commoncrawl_wmt13-1-rus-eng #         ~8,126,649 sentences (918.3 MB)
   - mtdata_Statmt-news_commentary_wmt18-13-rus-eng #    ~1,001,393 sentences (113.2 MB)
-  - mtdata_Statmt-wiki_titles-1-rus-eng #                 ~179,637 sentences (20.3 MB)
-  - mtdata_Statmt-wiki_titles-2-rus-eng #                 ~193,345 sentences (21.8 MB)
   - mtdata_Tilde-airbaltic-1-eng-rus #                      ~1,288 sentences (145.6 kB)
   - mtdata_Tilde-czechtourism-1-eng-rus #                   ~7,561 sentences (854.5 kB)
   - mtdata_Tilde-worldbank-1-eng-rus #                     ~33,049 sentences (3.7 MB)

@@ -2,7 +2,7 @@
 # task config-generator -- en sl --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/fac7511f0f84af352c90502132a162a52009cee3/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -122,12 +122,12 @@ datasets:
   - opus_ELRC-2737-vaccination/v1 #                             492 sentences
   - opus_ELRC-vaccination/v1 #                                  492 sentences
   - opus_ELRC_2923/v1 #                                         451 sentences
-  - mtdata_ELRC-secretariat_general_part1-1-eng-slv
-  - mtdata_ELRC-secretariat_general_part2-1-eng-slv
-  - mtdata_ELRC-chapters_youth_2010_social_profile_young_people_slovenia_publication-1-eng-slv
-  - mtdata_ELRC-statistical_reports_statistical_slovenia-1-eng-slv
-  - mtdata_ELRC-agriculture_forestry_food_slovenia-1-eng-slv
-  - mtdata_ELRC-eu_publications_medical_v2-1-eng-slv
+  - mtdata_ELRC-secretariat_general_part1-1-eng-slv #      ~57,111 sentences (6.5 MB)
+  - mtdata_ELRC-secretariat_general_part2-1-eng-slv #      ~63,784 sentences (7.2 MB)
+  - mtdata_ELRC-chapters_youth_2010_social_profile_young_people_slovenia_publication-1-eng-slv # ~5,514 sentences (623.2 kB)
+  - mtdata_ELRC-statistical_reports_statistical_slovenia-1-eng-slv # ~10,753 sentences (1.2 MB)
+  - mtdata_ELRC-agriculture_forestry_food_slovenia-1-eng-slv # ~1,754 sentences (198.3 kB)
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-slv #     ~14,302 sentences (1.6 MB)
   - mtdata_EU-eac_forms-1-eng-slv #                        ~31,162 sentences (3.5 MB)
   - mtdata_EU-eac_reference-1-eng-slv #                    ~31,162 sentences (3.5 MB)
   - mtdata_EU-dcep-1-eng-slv #                            ~539,490 sentences (61.0 MB)

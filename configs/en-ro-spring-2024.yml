@@ -2,7 +2,7 @@
 # task config-generator -- en ro --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/fac7511f0f84af352c90502132a162a52009cee3/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -48,6 +48,7 @@ datasets:
   #  - opus_tldr-pages/v2023-08-29 - not enough data  (9 sentences)
   #  - opus_ELRC-417-Swedish_Work_Environ/v1 - not enough data  (8 sentences)
   #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-rights_arrested-1-eng-ron - duplicate with opus
   #  - mtdata_ELRC-romanian_literature-1-eng-ron - duplicate with opus
   #  - mtdata_ELRC-romanian_wikipedia-1-eng-ron - duplicate with opus
   #  - mtdata_ELRC-romanian_news-1-eng-ron - duplicate with opus
@@ -144,14 +145,13 @@ datasets:
   - opus_ELRC-2750-vaccination/v1 #                             496 sentences
   - opus_ELRC-vaccination/v1 #                                  496 sentences
   - opus_ELRC_2923/v1 #                                         319 sentences
-  - mtdata_ELRC-rights_arrested-1-eng-ron
-  - mtdata_ELRC-swedish_work_environment-1-eng-ron
-  - mtdata_ELRC-romanian_new_criminal_procedure_code-1-eng-ron
-  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-eng-ron
-  - mtdata_ELRC-romanian_ombudsman_archive-1-eng-ron
-  - mtdata_ELRC-studies_reports_statistical_culture_institute_cultural_research_training-1-eng-ron
-  - mtdata_ELRC-rural_development_programme_romania-1-eng-ron
-  - mtdata_ELRC-eu_publications_medical_v2-1-eng-ron
+  - mtdata_ELRC-swedish_work_environment-1-eng-ron #       ~13,557 sentences (1.5 MB)
+  - mtdata_ELRC-romanian_new_criminal_procedure_code-1-eng-ron # ~23,368 sentences (2.6 MB)
+  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-eng-ron # ~2,078 sentences (234.8 kB)
+  - mtdata_ELRC-romanian_ombudsman_archive-1-eng-ron #      ~4,888 sentences (552.4 kB)
+  - mtdata_ELRC-studies_reports_statistical_culture_institute_cultural_research_training-1-eng-ron # ~11,961 sentences (1.4 MB)
+  - mtdata_ELRC-rural_development_programme_romania-1-eng-ron # ~4,635 sentences (523.8 kB)
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-ron #     ~14,807 sentences (1.7 MB)
   - mtdata_EU-eac_forms-1-eng-ron #                        ~31,162 sentences (3.5 MB)
   - mtdata_EU-eac_reference-1-eng-ron #                    ~31,162 sentences (3.5 MB)
   - mtdata_EU-dcep-1-eng-ron #                            ~389,297 sentences (44.0 MB)

@@ -2,7 +2,7 @@
 # task config-generator -- cs en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/fac7511f0f84af352c90502132a162a52009cee3/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: cs
@@ -84,6 +84,8 @@ datasets:
   #  - mtdata_Statmt-news_commentary-14-ces-eng - duplicate with opus
   #  - mtdata_Statmt-news_commentary-15-ces-eng - duplicate with opus
   #  - mtdata_Statmt-news_commentary-16-ces-eng - duplicate with opus
+  #  - mtdata_Statmt-wiki_titles-1-ces-eng - duplicate with opus
+  #  - mtdata_Statmt-wiki_titles-2-ces-eng - duplicate with opus
   #  - mtdata_Statmt-europarl-10-ces-eng - duplicate with opus
   #  - mtdata_Statmt-ccaligned-1-ces_CZ-eng - duplicate with opus
   #  - mtdata_Tilde-ecb-2017-ces-eng - duplicate with opus
@@ -151,21 +153,19 @@ datasets:
   - opus_ELRC-2404-Czech_Supreme_Audit/v1 #                     403 sentences
   - opus_ELRC_2923/v1 #                                         319 sentences
   - opus_ELRC-2407-Czech_Supreme_Audit/v1 #                     234 sentences
-  - mtdata_ELRC-information_portal_czech_president_czech_castle-1-ces-eng
-  - mtdata_ELRC-electronic_exchange_social_security_information-1-ces-eng
-  - mtdata_ELRC-czech_supreme_audit_office_2018_reports-1-ces-eng
-  - mtdata_ELRC-czech_supreme_audit_office_2008_2017_reports-1-ces-eng
-  - mtdata_ELRC-czech_supreme_audit_office_2003_2017_press_releases-1-ces-eng
-  - mtdata_ELRC-czech_supreme_audit_office_2018_press_releases-1-ces-eng
-  - mtdata_ELRC-eu_publications_medical_v2-1-ces-eng
+  - mtdata_ELRC-information_portal_czech_president_czech_castle-1-ces-eng # ~2,009 sentences (227.1 kB)
+  - mtdata_ELRC-electronic_exchange_social_security_information-1-ces-eng # ~37,876 sentences (4.3 MB)
+  - mtdata_ELRC-czech_supreme_audit_office_2018_reports-1-ces-eng # ~415 sentences (47.0 kB)
+  - mtdata_ELRC-czech_supreme_audit_office_2008_2017_reports-1-ces-eng # ~3,154 sentences (356.4 kB)
+  - mtdata_ELRC-czech_supreme_audit_office_2003_2017_press_releases-1-ces-eng # ~5,314 sentences (600.5 kB)
+  - mtdata_ELRC-czech_supreme_audit_office_2018_press_releases-1-ces-eng # ~275 sentences (31.1 kB)
+  - mtdata_ELRC-eu_publications_medical_v2-1-ces-eng #     ~14,787 sentences (1.7 MB)
   - mtdata_EU-eac_forms-1-ces-eng #                        ~31,162 sentences (3.5 MB)
   - mtdata_EU-eac_reference-1-ces-eng #                    ~31,162 sentences (3.5 MB)
   - mtdata_EU-dcep-1-ces-eng #                            ~533,693 sentences (60.3 MB)
   - mtdata_Statmt-commoncrawl_wmt13-1-ces-eng #         ~8,126,649 sentences (918.3 MB)
   - mtdata_Statmt-europarl_wmt13-7-ces-eng #            ~5,819,755 sentences (657.6 MB)
   - mtdata_Statmt-news_commentary_wmt18-13-ces-eng #    ~1,001,393 sentences (113.2 MB)
-  - mtdata_Statmt-wiki_titles-1-ces-eng #                  ~45,242 sentences (5.1 MB)
-  - mtdata_Statmt-wiki_titles-2-ces-eng #                  ~47,995 sentences (5.4 MB)
   - mtdata_Tilde-eesc-2017-ces-eng #                    ~1,157,475 sentences (130.8 MB)
   - mtdata_Tilde-ema-2016-ces-eng #                       ~244,524 sentences (27.6 MB)
   - mtdata_Tilde-rapid-2019-ces-eng #                     ~255,063 sentences (28.8 MB)
