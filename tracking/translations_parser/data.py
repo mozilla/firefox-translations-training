@@ -33,6 +33,7 @@ class TrainingEpoch:
     time: float
     rate: float  # Words per second
     gnorm: float
+    learning_rate: float | None = None  # Optional
 
 
 @dataclass

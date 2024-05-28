@@ -30,6 +30,7 @@ TRAINING_RE = re.compile(
     r"Time[ :]+(?P<time>[\d\.]+)s[ :]+"
     r"(?P<rate>[\d\.]+) words\/s[ :]+"
     r"gNorm[ :]+(?P<gnorm>[\d\.]+)"
+    r"([ :]+L.r. (?P<learning_rate>[\d\.e-]+))?"
 )
 
 # Expected version of Marian for a clean parsing
@@ -109,13 +110,18 @@ class TrainingParser:
         match = TRAINING_RE.match(text)
         if not match:
             return None
-        values = match.groupdict()
-        # Update sen value from 1,234,567 to 1_234_567 that Python interprets
+        # Filter out null values
+        values = {k: v for k, v in match.groupdict().items() if v is not None}
+        # Update sen from 1,234,567 to 1_234_567 that Python can interpret
         values["sen"] = values["sen"].replace(",", "_")
-        # Transform values to match output types
-        training_epoch = TrainingEpoch(
-            **{k: TrainingEpoch.__annotations__[k](v) for k, v in values.items()}
-        )
+        # Cast values to match output types
+        casted_values = {
+            k: TrainingEpoch.__annotations__[k](v)
+            if callable(TrainingEpoch.__annotations__[k])
+            else float(v)
+            for k, v in values.items()
+        }
+        training_epoch = TrainingEpoch(**casted_values)
         self.training.append(training_epoch)
         for publisher in self.publishers:
             try:
