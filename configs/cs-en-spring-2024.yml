@@ -2,7 +2,7 @@
 # task config-generator -- cs en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/c2a6e7f8c899ba363c5058e200692bfd8e321299/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/fac7511f0f84af352c90502132a162a52009cee3/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: cs
@@ -34,6 +34,8 @@ datasets:
   - sacrebleu_aug-mix_wmt09
   - sacrebleu_aug-mix_wmt08/nc
   test:
+  - mtdata_Lindat-khresmoi_summary_test-2-ces-eng
+  - mtdata_Neulab-tedtalks_test-1-eng-ces
   - flores_devtest
   - flores_aug-mix_devtest
   - flores_aug-title_devtest
@@ -159,8 +161,6 @@ datasets:
   - mtdata_EU-eac_forms-1-ces-eng #                        ~31,162 sentences (3.5 MB)
   - mtdata_EU-eac_reference-1-ces-eng #                    ~31,162 sentences (3.5 MB)
   - mtdata_EU-dcep-1-ces-eng #                            ~533,693 sentences (60.3 MB)
-  - mtdata_Lindat-khresmoi_summary_test-2-ces-eng #        ~11,808 sentences (1.3 MB)
-  - mtdata_Neulab-tedtalks_test-1-eng-ces #             ~3,117,009 sentences (352.2 MB)
   - mtdata_Statmt-commoncrawl_wmt13-1-ces-eng #         ~8,126,649 sentences (918.3 MB)
   - mtdata_Statmt-europarl_wmt13-7-ces-eng #            ~5,819,755 sentences (657.6 MB)
   - mtdata_Statmt-news_commentary_wmt18-13-ces-eng #    ~1,001,393 sentences (113.2 MB)

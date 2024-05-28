@@ -2,7 +2,7 @@
 # task config-generator -- en ru --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/c2a6e7f8c899ba363c5058e200692bfd8e321299/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/fac7511f0f84af352c90502132a162a52009cee3/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -32,6 +32,8 @@ datasets:
   - sacrebleu_aug-mix_wmt15
   - sacrebleu_aug-mix_wmt14/full
   test:
+  - mtdata_Neulab-tedtalks_test-1-eng-rus
+  - mtdata_UN-un_test-1-eng-rus
   - flores_devtest
   - flores_aug-mix_devtest
   - flores_aug-title_devtest
@@ -102,7 +104,6 @@ datasets:
   - opus_tico-19/v2020-10-28 #                                3,071 sentences
   - opus_ELRC-5067-SciPar/v1 #                                3,064 sentences
   - opus_tldr-pages/v2023-08-29 #                             1,037 sentences
-  - mtdata_Neulab-tedtalks_test-1-eng-rus #             ~3,117,009 sentences (352.2 MB)
   - mtdata_Statmt-commoncrawl_wmt13-1-rus-eng #         ~8,126,649 sentences (918.3 MB)
   - mtdata_Statmt-news_commentary_wmt18-13-rus-eng #    ~1,001,393 sentences (113.2 MB)
   - mtdata_Statmt-wiki_titles-1-rus-eng #                 ~179,637 sentences (20.3 MB)
@@ -110,7 +111,6 @@ datasets:
   - mtdata_Tilde-airbaltic-1-eng-rus #                      ~1,288 sentences (145.6 kB)
   - mtdata_Tilde-czechtourism-1-eng-rus #                   ~7,561 sentences (854.5 kB)
   - mtdata_Tilde-worldbank-1-eng-rus #                     ~33,049 sentences (3.7 MB)
-  - mtdata_UN-un_test-1-eng-rus
 
   # The monolingual data contains:
   #   ~195,823,002 sentences
