@@ -59,6 +59,16 @@ tasks:
       - >-
           PYTHONPATH=$(pwd) poetry run python -W ignore utils/config_generator.py {{.CLI_ARGS}}
 
+  build-mono-nllb:
+    desc: Build a monolingual NLLB datasets.
+    summary: |
+      The dataset will be saved to: ./data/nllb/nllb-mono-{lang}.txt.gz
+      Example: `task build-mono-nllb -- sl`
+    deps: [poetry-install-utils]
+    cmds:
+      - >-
+          PYTHONPATH=$(pwd) poetry run python -W ignore utils/build-mono-nllb.py {{.CLI_ARGS}}
+
   opuscleaner:
     desc: Run the opuscleaner tool.
     deps: [poetry-install-opuscleaner]
