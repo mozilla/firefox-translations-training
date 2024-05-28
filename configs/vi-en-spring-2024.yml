@@ -2,7 +2,7 @@
 # task config-generator -- vi en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/fac7511f0f84af352c90502132a162a52009cee3/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: vi
@@ -25,7 +25,6 @@ datasets:
   - mtdata_Neulab-tedtalks_dev-1-eng-vie
   - flores_aug-mix_dev
   test:
-  - mtdata_Neulab-tedtalks_test-1-eng-vie
   - flores_devtest
   - flores_aug-mix_devtest
   - flores_aug-title_devtest
@@ -45,6 +44,7 @@ datasets:
   #  - mtdata_ELRC-wikipedia_health-1-eng-vie - duplicate with opus
   #  - mtdata_Facebook-wikimatrix-1-eng-vie - duplicate with opus
   #  - mtdata_Neulab-tedtalks_train-1-eng-vie - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_test-1-eng-vie - Error fetching (http://phontron.com/data/ted_talks.tar.gz)
   #  - mtdata_Statmt-ccaligned-1-eng-vie_VN - duplicate with opus
   train:
   - opus_NLLB/v1  #                                       50,092,444 sentences

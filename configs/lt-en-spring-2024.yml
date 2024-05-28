@@ -2,7 +2,7 @@
 # task config-generator -- lt en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/fac7511f0f84af352c90502132a162a52009cee3/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: lt
@@ -52,6 +52,7 @@ datasets:
   #  - mtdata_ELRC-euipo_2017-1-eng-lit - duplicate with opus
   #  - mtdata_ELRC-emea-1-eng-lit - duplicate with opus
   #  - mtdata_ELRC-vaccination-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-wikipedia_health-1-eng-lit - duplicate with opus
   #  - mtdata_ELRC-antibiotic-1-eng-lit - duplicate with opus
   #  - mtdata_ELRC-europarl_covid-1-eng-lit - duplicate with opus
   #  - mtdata_ELRC-ec_europa_covid-1-eng-lit - duplicate with opus
@@ -125,10 +126,9 @@ datasets:
   - opus_ELRC-2740-vaccination/v1 #                             546 sentences
   - opus_ELRC-vaccination/v1 #                                  546 sentences
   - opus_ELRC_2923/v1 #                                         384 sentences
-  - mtdata_ELRC-lithuanian_legislation_seimas_lithuania-1-eng-lit
-  - mtdata_ELRC-eu_publications_medical_v2-1-eng-lit
-  - mtdata_ELRC-wikipedia_health-1-eng-lit
-  - mtdata_ELRC-nteu_tierb-1-eng-lit
+  - mtdata_ELRC-lithuanian_legislation_seimas_lithuania-1-eng-lit # ~611,715 sentences (69.1 MB)
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-lit #     ~13,874 sentences (1.6 MB)
+  - mtdata_ELRC-nteu_tierb-1-eng-lit #                  ~6,946,588 sentences (785.0 MB)
   - mtdata_EU-eac_forms-1-eng-lit #                        ~31,162 sentences (3.5 MB)
   - mtdata_EU-eac_reference-1-eng-lit #                    ~31,162 sentences (3.5 MB)
   - mtdata_EU-dcep-1-eng-lit #                            ~510,025 sentences (57.6 MB)

@@ -2,7 +2,7 @@
 # task config-generator -- en sr --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/fac7511f0f84af352c90502132a162a52009cee3/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -71,7 +71,7 @@ datasets:
   - opus_EUbookshop/v2 #                                      1,608 sentences
   - opus_ELRC-3041-wikipedia_health/v1 #                        744 sentences
   - opus_ELRC_2922/v1 #                                         743 sentences
-  - mtdata_ELRC-swedish_social_security-1-eng-srp
+  - mtdata_ELRC-swedish_social_security-1-eng-srp #        ~18,804 sentences (2.1 MB)
   - mtdata_Tilde-worldbank-1-eng-srp #                      ~2,533 sentences (286.3 kB)
 
   # The monolingual data contains:

@@ -2,7 +2,7 @@
 # task config-generator -- lv en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/fac7511f0f84af352c90502132a162a52009cee3/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: lv
@@ -48,11 +48,13 @@ datasets:
   #  - opus_ELRA-W0301/v1 - not enough data  (20 sentences)
   #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
   #  - mtdata_ELRC-mfa_latvia-1-eng-lav - duplicate with opus
+  #  - mtdata_ELRC-rights_arrested-1-eng-lav - duplicate with opus
   #  - mtdata_ELRC-state_latvian-1-eng-lav - duplicate with opus
   #  - mtdata_ELRC-www.visitestonia.com-1-eng-lav - duplicate with opus
   #  - mtdata_ELRC-euipo_2017-1-eng-lav - duplicate with opus
   #  - mtdata_ELRC-emea-1-eng-lav - duplicate with opus
   #  - mtdata_ELRC-vaccination-1-eng-lav - duplicate with opus
+  #  - mtdata_ELRC-wikipedia_health-1-eng-lav - duplicate with opus
   #  - mtdata_ELRC-antibiotic-1-eng-lav - duplicate with opus
   #  - mtdata_ELRC-europarl_covid-1-eng-lav - duplicate with opus
   #  - mtdata_ELRC-covid19.gov.lv-1-eng-lav - duplicate with opus
@@ -126,13 +128,11 @@ datasets:
   - opus_ELRC_2923/v1 #                                         580 sentences
   - opus_ELRC-2741-vaccination/v1 #                             521 sentences
   - opus_ELRC-vaccination/v1 #                                  521 sentences
-  - mtdata_ELRC-international_agreements-1-eng-lav
-  - mtdata_ELRC-rights_arrested-1-eng-lav
-  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-eng-lav
-  - mtdata_ELRC-finance_economics_bank_latvia-1-eng-lav
-  - mtdata_ELRC-eu_publications_medical_v2-1-eng-lav
-  - mtdata_ELRC-wikipedia_health-1-eng-lav
-  - mtdata_ELRC-nteu_tierb-1-eng-lav
+  - mtdata_ELRC-international_agreements-1-eng-lav #      ~167,379 sentences (18.9 MB)
+  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-eng-lav # ~2,078 sentences (234.8 kB)
+  - mtdata_ELRC-finance_economics_bank_latvia-1-eng-lav #  ~12,153 sentences (1.4 MB)
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-lav #     ~14,470 sentences (1.6 MB)
+  - mtdata_ELRC-nteu_tierb-1-eng-lav #                  ~6,930,262 sentences (783.1 MB)
   - mtdata_EU-eac_forms-1-eng-lav #                        ~31,162 sentences (3.5 MB)
   - mtdata_EU-eac_reference-1-eng-lav #                    ~31,162 sentences (3.5 MB)
   - mtdata_EU-dcep-1-eng-lav #                            ~524,054 sentences (59.2 MB)
