@@ -1,8 +1,8 @@
 # The initial configuration was generated using:
-# task config-generator -- en uk --name spring-2024
+# task config-generator -- --name=spring-2024 --fast en uk
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/4a86accaaea086b57ff730c25c642dd711e11586/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -76,7 +76,7 @@ datasets:
   - opus_TildeMODEL/v2018 #                                   1,628 sentences
   - opus_ELRC-5217-Ukrainian_Legal_MT/v1 #                      997 sentences
   - opus_tldr-pages/v2023-08-29 #                               593 sentences
-  - mtdata_Tilde-worldbank-1-eng-ukr #                      ~2,011 sentences (227.3 kB)
+  - mtdata_Tilde-worldbank-1-eng-ukr
 
   # The monolingual data contains:
   #   ~195,823,002 sentences
@@ -100,7 +100,7 @@ datasets:
   - news-crawl_news.2023 #         ~23,008,849 sentences (2.6G)
 
   # The monolingual data contains:
-  #   ~463,898 sentences
+  #   ~59,651,800 sentences
   mono-trg:
   - news-crawl_news.2008  #              ~6,070 sentences (686K)
   - news-crawl_news.2009 #             ~30,088 sentences (3.4M)
@@ -111,6 +111,9 @@ datasets:
   - news-crawl_news.2014 #             ~87,610 sentences (9.9M)
   - news-crawl_news.2016 #             ~39,823 sentences (4.5M)
   - news-crawl_news.2018 #             ~84,955 sentences (9.6M)
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_uk_1.txt.zst # 34,928,072 sentences 
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_uk_2.txt.zst # 22,365,095 sentences 
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_uk_3.txt.zst # 1,894,735 sentences 
 marian-args:
   decoding-backward:
     beam-size: '12'

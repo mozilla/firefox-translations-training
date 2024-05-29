@@ -1,8 +1,8 @@
 # The initial configuration was generated using:
-# task config-generator -- en sv --name spring-2024
+# task config-generator -- --name=spring-2024 --fast en sv
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/4a86accaaea086b57ff730c25c642dd711e11586/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -169,28 +169,28 @@ datasets:
   - opus_ELRC_2923/v1 #                                         499 sentences
   - opus_ELRC-2752-vaccination/v1 #                             497 sentences
   - opus_ELRC-vaccination/v1 #                                  497 sentences
-  - mtdata_ELRC-swedish_social_security-1-eng-swe #        ~18,804 sentences (2.1 MB)
-  - mtdata_ELRC-swedish_work_environment-1-eng-swe #       ~13,557 sentences (1.5 MB)
-  - mtdata_ELRC-social_insurance_försäkringskassan-1-eng-swe # ~1,048 sentences (118.5 kB)
-  - mtdata_ELRC-finnish_information_bank-1-eng-swe #        ~3,398 sentences (384.0 kB)
-  - mtdata_ELRC-swedish_competition_authority_konkurrensverket-1-eng-swe # ~6,096 sentences (688.9 kB)
-  - mtdata_ELRC-swedish_audit_riksrevisionen-1-eng-swe #   ~22,683 sentences (2.6 MB)
-  - mtdata_ELRC-swedish_swedish_crime_victim_compensation_support_authority-1-eng-swe # ~1,039 sentences (117.5 kB)
-  - mtdata_ELRC-swedish_migration_board_migrationsverket-1-eng-swe # ~4,718 sentences (533.2 kB)
-  - mtdata_ELRC-swedish_economic_regional_growth_tillväxtverket-1-eng-swe # ~529 sentences (59.8 kB)
-  - mtdata_ELRC-annual_reports_swedish_pension_system-1-eng-swe # ~6,041 sentences (682.7 kB)
-  - mtdata_ELRC-sweden_a_pocket_guide_book-1-eng-swe #      ~1,524 sentences (172.3 kB)
-  - mtdata_ELRC-eu_publications_medical_v2-1-eng-swe #     ~14,048 sentences (1.6 MB)
-  - mtdata_ELRC-nteu_tierb-1-eng-swe #                 ~11,192,105 sentences (1.3 GB)
-  - mtdata_EU-eac_forms-1-eng-swe #                        ~31,162 sentences (3.5 MB)
-  - mtdata_EU-eac_reference-1-eng-swe #                    ~31,162 sentences (3.5 MB)
-  - mtdata_EU-dcep-1-eng-swe #                            ~980,674 sentences (110.8 MB)
-  - mtdata_Statmt-dcep_wmt17-1-swe-eng #                ~1,137,607 sentences (128.5 MB)
-  - mtdata_Statmt-books_wmt17-1-swe-eng #                   ~2,797 sentences (316.2 kB)
-  - mtdata_Tilde-eesc-2017-eng-swe #                    ~1,798,328 sentences (203.2 MB)
-  - mtdata_Tilde-ema-2016-eng-swe #                       ~215,912 sentences (24.4 MB)
-  - mtdata_Tilde-ecb-2017-eng-swe #                         ~3,314 sentences (374.5 kB)
-  - mtdata_Tilde-rapid-2016-eng-swe #                     ~400,648 sentences (45.3 MB)
+  - mtdata_ELRC-swedish_social_security-1-eng-swe
+  - mtdata_ELRC-swedish_work_environment-1-eng-swe
+  - mtdata_ELRC-social_insurance_försäkringskassan-1-eng-swe
+  - mtdata_ELRC-finnish_information_bank-1-eng-swe
+  - mtdata_ELRC-swedish_competition_authority_konkurrensverket-1-eng-swe
+  - mtdata_ELRC-swedish_audit_riksrevisionen-1-eng-swe
+  - mtdata_ELRC-swedish_swedish_crime_victim_compensation_support_authority-1-eng-swe
+  - mtdata_ELRC-swedish_migration_board_migrationsverket-1-eng-swe
+  - mtdata_ELRC-swedish_economic_regional_growth_tillväxtverket-1-eng-swe
+  - mtdata_ELRC-annual_reports_swedish_pension_system-1-eng-swe
+  - mtdata_ELRC-sweden_a_pocket_guide_book-1-eng-swe
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-swe
+  - mtdata_ELRC-nteu_tierb-1-eng-swe
+  - mtdata_EU-eac_forms-1-eng-swe
+  - mtdata_EU-eac_reference-1-eng-swe
+  - mtdata_EU-dcep-1-eng-swe
+  - mtdata_Statmt-dcep_wmt17-1-swe-eng
+  - mtdata_Statmt-books_wmt17-1-swe-eng
+  - mtdata_Tilde-eesc-2017-eng-swe
+  - mtdata_Tilde-ema-2016-eng-swe
+  - mtdata_Tilde-ecb-2017-eng-swe
+  - mtdata_Tilde-rapid-2016-eng-swe
 
   # The monolingual data contains:
   #   ~195,823,002 sentences
@@ -214,8 +214,11 @@ datasets:
   - news-crawl_news.2023 #         ~23,008,849 sentences (2.6G)
 
   # The monolingual data contains:
-  #   ~0 sentences
-  mono-trg: []
+  #   ~31,318,411 sentences
+  mono-trg:
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_sv_1.txt.zst  # 17,116,908 sentences 
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_sv_2.txt.zst # 12,553,860 sentences 
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_sv_3.txt.zst # 1,647,643 sentences 
 marian-args:
   decoding-backward:
     beam-size: '12'

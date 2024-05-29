@@ -1,8 +1,8 @@
 # The initial configuration was generated using:
-# task config-generator -- en lt --name spring-2024
+# task config-generator -- --name=spring-2024 --fast en lt
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/4a86accaaea086b57ff730c25c642dd711e11586/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -126,19 +126,19 @@ datasets:
   - opus_ELRC-2740-vaccination/v1 #                             546 sentences
   - opus_ELRC-vaccination/v1 #                                  546 sentences
   - opus_ELRC_2923/v1 #                                         384 sentences
-  - mtdata_ELRC-lithuanian_legislation_seimas_lithuania-1-eng-lit # ~611,715 sentences (69.1 MB)
-  - mtdata_ELRC-eu_publications_medical_v2-1-eng-lit #     ~13,874 sentences (1.6 MB)
-  - mtdata_ELRC-nteu_tierb-1-eng-lit #                  ~6,946,588 sentences (785.0 MB)
-  - mtdata_EU-eac_forms-1-eng-lit #                        ~31,162 sentences (3.5 MB)
-  - mtdata_EU-eac_reference-1-eng-lit #                    ~31,162 sentences (3.5 MB)
-  - mtdata_EU-dcep-1-eng-lit #                            ~510,025 sentences (57.6 MB)
-  - mtdata_Statmt-wiki_titles-1-lit-eng #                  ~15,267 sentences (1.7 MB)
-  - mtdata_Statmt-newsdev_enlt-2019-eng-lit #             ~402,756 sentences (45.5 MB)
-  - mtdata_Statmt-newsdev_lten-2019-lit-eng #             ~402,756 sentences (45.5 MB)
-  - mtdata_Tilde-eesc-2017-eng-lit #                    ~1,149,015 sentences (129.8 MB)
-  - mtdata_Tilde-ema-2016-eng-lit #                       ~228,287 sentences (25.8 MB)
-  - mtdata_Tilde-airbaltic-1-eng-lit #                        ~962 sentences (108.7 kB)
-  - mtdata_Tilde-rapid-2016-eng-lit #                     ~180,798 sentences (20.4 MB)
+  - mtdata_ELRC-lithuanian_legislation_seimas_lithuania-1-eng-lit
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-lit
+  - mtdata_ELRC-nteu_tierb-1-eng-lit
+  - mtdata_EU-eac_forms-1-eng-lit
+  - mtdata_EU-eac_reference-1-eng-lit
+  - mtdata_EU-dcep-1-eng-lit
+  - mtdata_Statmt-wiki_titles-1-lit-eng
+  - mtdata_Statmt-newsdev_enlt-2019-eng-lit
+  - mtdata_Statmt-newsdev_lten-2019-lit-eng
+  - mtdata_Tilde-eesc-2017-eng-lit
+  - mtdata_Tilde-ema-2016-eng-lit
+  - mtdata_Tilde-airbaltic-1-eng-lit
+  - mtdata_Tilde-rapid-2016-eng-lit
 
   # The monolingual data contains:
   #   ~195,823,002 sentences
@@ -162,13 +162,14 @@ datasets:
   - news-crawl_news.2023 #         ~23,008,849 sentences (2.6G)
 
   # The monolingual data contains:
-  #   ~5,442,476 sentences
+  #   ~15,965,342 sentences
   mono-trg:
   - news-crawl_news.2019  #          ~1,079,646 sentences (122M)
   - news-crawl_news.2020 #          ~1,088,495 sentences (123M)
   - news-crawl_news.2021 #          ~1,008,849 sentences (114M)
   - news-crawl_news.2022 #          ~1,079,646 sentences (122M)
   - news-crawl_news.2023 #          ~1,185,840 sentences (134M)
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_lt_1.txt.zst # 10,522,866 sentences 
 marian-args:
   decoding-backward:
     beam-size: '12'
