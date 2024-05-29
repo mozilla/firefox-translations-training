@@ -17,8 +17,8 @@ def get_defaults(_):
             "target-stage": "all",
             "experiment": {
                 "name": "ci",
-                "src": "ru",
-                "trg": "en",
+                "src": "en",
+                "trg": "fi",
                 "teacher-ensemble": 1,
                 "teacher-mode": "two-stage",
                 "mono-max-sentences-trg": 10000,
@@ -38,7 +38,7 @@ def get_defaults(_):
             },
             "marian-args": {
                 "training-backward": {
-                    "disp-freq": "1",
+                    "disp-freq": "2",
                     "save-freq": "25",
                     "valid-freq": "50",
                     "after": "50u",
@@ -79,22 +79,22 @@ def get_defaults(_):
             # to avoid bustage that doesn't show up until we run the training action.
             "datasets": {
                 "train": [
-                    "opus_ada83/v1",
-                    "opus_ELRC-3075-wikipedia_health/v1",
-                    "url_https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.[LANG].zst",
+                    "opus_ELRC-EC_EUROPA/v1",
+                    # "opus_ELRC-3075-wikipedia_health/v1",
+                    # "url_https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.[LANG].zst",
                 ],
                 "devtest": [
                     "flores_dev",
-                    "sacrebleu_aug-upper_wmt19",
+                    # "sacrebleu_aug-upper_wmt19",
                 ],
                 "test": [
                     "flores_devtest",
                 ],
                 "mono-src": [
-                    "news-crawl_news.2008",
+                    "news-crawl_news.2007",
                 ],
                 "mono-trg": [
-                    "news-crawl_news.2007",
+                    "news-crawl_news.2015",
                 ],
             },
             # Taskcluster-specific configuration
@@ -105,7 +105,7 @@ def get_defaults(_):
                 },
             },
             # Disable Weight & Biases publication on CI
-            "wandb-publication": False,
+            "wandb-publication": True,
         },
     }
 
