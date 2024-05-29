@@ -1,8 +1,8 @@
 # The initial configuration was generated using:
-# task config-generator -- ru en --name spring-2024
+# task config-generator -- --name=spring-2024 --fast ru en
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/4a86accaaea086b57ff730c25c642dd711e11586/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: ru
@@ -28,6 +28,7 @@ experiment:
 datasets:
   devtest:
   - mtdata_Neulab-tedtalks_dev-1-eng-rus
+  - mtdata_UN-un_dev-1-eng-rus
   - flores_aug-mix_dev
   - sacrebleu_aug-mix_mtedx/test
   - sacrebleu_aug-mix_wmt20
@@ -37,6 +38,7 @@ datasets:
   - sacrebleu_aug-mix_wmt14/full
   test:
   - mtdata_Neulab-tedtalks_test-1-eng-rus
+  - mtdata_UN-un_test-1-eng-rus
   - flores_devtest
   - flores_aug-mix_devtest
   - flores_aug-title_devtest
@@ -72,8 +74,6 @@ datasets:
   #  - mtdata_Statmt-wiki_titles-1-rus-eng - duplicate with opus
   #  - mtdata_Statmt-wiki_titles-2-rus-eng - duplicate with opus
   #  - mtdata_Statmt-ccaligned-1-eng-rus_RU - duplicate with opus
-  #  - mtdata_UN-un_dev-1-eng-rus - Error fetching (https://drive.google.com/uc?export=download&id=13GI1F1hvwpMUGBSa0QC6ov4eE57GC_Zx)
-  #  - mtdata_UN-un_test-1-eng-rus - Error fetching (https://drive.google.com/uc?export=download&id=13GI1F1hvwpMUGBSa0QC6ov4eE57GC_Zx)
   train:
   - opus_NLLB/v1  #                                      139,937,785 sentences
   - opus_OpenSubtitles/v2018 #                           25,910,105 sentences

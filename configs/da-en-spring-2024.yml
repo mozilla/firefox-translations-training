@@ -1,8 +1,8 @@
 # The initial configuration was generated using:
-# task config-generator -- da en --name spring-2024
+# task config-generator -- --name=spring-2024 --fast da en
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/4a86accaaea086b57ff730c25c642dd711e11586/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: da
@@ -189,8 +189,10 @@ datasets:
   - mtdata_Tilde-rapid-2016-dan-eng #                     ~451,067 sentences (51.0 MB)
 
   # The monolingual data contains:
-  #   ~0 sentences
-  mono-src: []
+  #   ~81,679,179 sentences
+  mono-src:
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_da_1.txt.zst  # 65,099,327 sentences 
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_da_2.txt.zst # 16,579,852 sentences 
 
   # The monolingual data contains:
   #   ~195,823,002 sentences
