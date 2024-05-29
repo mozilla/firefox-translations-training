@@ -2,7 +2,7 @@
 # task config-generator -- hr en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/3d592e570b8919dff511cd8af238335ed84c8d63/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: hr
@@ -173,7 +173,7 @@ datasets:
   - mtdata_Tilde-worldbank-1-eng-hrv #                      ~1,566 sentences (177.0 kB)
 
   # The monolingual data contains:
-  #   ~11,498,228 sentences
+  #   ~15,033,302 sentences
   mono-src:
   - news-crawl_news.2014  #             ~46,902 sentences (5.3M)
   - news-crawl_news.2019 #          ~1,398,230 sentences (158M)
@@ -181,6 +181,7 @@ datasets:
   - news-crawl_news.2021 #          ~2,398,230 sentences (271M)
   - news-crawl_news.2022 #          ~2,592,920 sentences (293M)
   - news-crawl_news.2023 #          ~2,451,327 sentences (277M)
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-hr.txt.gz # ~3,535,074 sentences
 
   # The monolingual data contains:
   #   ~195,823,002 sentences

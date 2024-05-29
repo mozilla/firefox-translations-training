@@ -2,7 +2,7 @@
 # task config-generator -- en uk --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/3d592e570b8919dff511cd8af238335ed84c8d63/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -100,7 +100,7 @@ datasets:
   - news-crawl_news.2023 #         ~23,008,849 sentences (2.6G)
 
   # The monolingual data contains:
-  #   ~463,898 sentences
+  #   ~74,097,220 sentences
   mono-trg:
   - news-crawl_news.2008  #              ~6,070 sentences (686K)
   - news-crawl_news.2009 #             ~30,088 sentences (3.4M)
@@ -111,6 +111,10 @@ datasets:
   - news-crawl_news.2014 #             ~87,610 sentences (9.9M)
   - news-crawl_news.2016 #             ~39,823 sentences (4.5M)
   - news-crawl_news.2018 #             ~84,955 sentences (9.6M)
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_uk_1.txt.zst # 34,928,072 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_uk_2.txt.zst # 22,365,095 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_uk_3.txt.zst # 1,894,735 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-uk.txt.gz # ~14,445,420 sentences
 marian-args:
   decoding-backward:
     beam-size: '12'
