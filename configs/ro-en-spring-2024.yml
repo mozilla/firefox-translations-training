@@ -22,7 +22,7 @@ experiment:
   pretrained-models: {}
 datasets:
   devtest:
-  - mtdata_Neulab-tedtalks_dev-1-eng-ron
+  - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-ron
   - flores_aug-mix_dev
   - sacrebleu_aug-mix_wmt16/dev
   test:

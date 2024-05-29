@@ -27,7 +27,7 @@ experiment:
       type: default
 datasets:
   devtest:
-  - mtdata_Neulab-tedtalks_dev-1-eng-rus
+  - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-rus
   - flores_aug-mix_dev
   - sacrebleu_aug-mix_mtedx/test
   - sacrebleu_aug-mix_wmt20
