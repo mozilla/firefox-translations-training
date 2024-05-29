@@ -1,3 +1,8 @@
+"""
+This script was used to download and filter monolingual data from HPLT.
+This is not a production importer that will be a part of the pipeline.
+It should be more efficient than this script as it's quite memory-intensive.
+"""
 import argparse
 import os
 from multiprocessing import Pool
