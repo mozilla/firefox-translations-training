@@ -1,8 +1,8 @@
 # The initial configuration was generated using:
-# task config-generator -- --name=spring-2024 --fast cs en
+# task config-generator -- cs en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/4a86accaaea086b57ff730c25c642dd711e11586/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/3d592e570b8919dff511cd8af238335ed84c8d63/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: cs
@@ -190,9 +190,10 @@ datasets:
   - news-crawl_news.2021 #          ~5,265,486 sentences (595M)
   - news-crawl_news.2022 #          ~3,884,955 sentences (439M)
   - news-crawl_news.2023 #          ~5,274,336 sentences (596M)
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_cs_1.txt.zst # 70,230,693 sentences 
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_cs_2.txt.zst # 25,123,829 sentences 
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_cs_3.txt.zst # 42,944,695 sentences 
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_cs_1.txt.zst # 70,230,693 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_cs_2.txt.zst # 25,123,829 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_cs_3.txt.zst # 42,944,695 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-cs.txt.gz
 
   # The monolingual data contains:
   #   ~195,823,002 sentences
