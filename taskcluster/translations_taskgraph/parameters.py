@@ -18,7 +18,7 @@ def get_defaults(_):
             "experiment": {
                 "name": "ci",
                 "src": "en",
-                "trg": "fi",
+                "trg": "tr",
                 "teacher-ensemble": 1,
                 "teacher-mode": "two-stage",
                 "mono-max-sentences-trg": 10000,
@@ -79,7 +79,7 @@ def get_defaults(_):
             # to avoid bustage that doesn't show up until we run the training action.
             "datasets": {
                 "train": [
-                    "opus_ELRC-EC_EUROPA/v1",
+                    "opus_ELRC-wikipedia_health/v1",
                     # "opus_ELRC-3075-wikipedia_health/v1",
                     # "url_https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.[LANG].zst",
                 ],
@@ -94,7 +94,7 @@ def get_defaults(_):
                     "news-crawl_news.2007",
                 ],
                 "mono-trg": [
-                    "news-crawl_news.2015",
+                    "news-crawl_news.2017",
                 ],
             },
             # Taskcluster-specific configuration
