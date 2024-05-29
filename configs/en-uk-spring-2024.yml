@@ -76,7 +76,7 @@ datasets:
   - opus_TildeMODEL/v2018 #                                   1,628 sentences
   - opus_ELRC-5217-Ukrainian_Legal_MT/v1 #                      997 sentences
   - opus_tldr-pages/v2023-08-29 #                               593 sentences
-  - mtdata_Tilde-worldbank-1-eng-ukr
+  - mtdata_Tilde-worldbank-1-eng-ukr #                      ~2,011 sentences (227.3 kB)
 
   # The monolingual data contains:
   #   ~195,823,002 sentences

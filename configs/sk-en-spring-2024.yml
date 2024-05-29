@@ -121,17 +121,17 @@ datasets:
   - opus_ELRC-2745-vaccination/v1 #                             510 sentences
   - opus_ELRC-vaccination/v1 #                                  510 sentences
   - opus_ELRC_2923/v1 #                                         448 sentences
-  - mtdata_ELRC-annual_reports_immigration_asylum_policies_emn_contact_point_slovak-1-eng-slk
-  - mtdata_ELRC-annual_reports_slovak_centre_human_rights-1-eng-slk
-  - mtdata_ELRC-annual_reports_statistical_slovak-1-eng-slk
-  - mtdata_ELRC-eu_publications_medical_v2-1-eng-slk
-  - mtdata_ELRC-nteu_tierb-1-eng-slk
-  - mtdata_EU-eac_forms-1-eng-slk
-  - mtdata_EU-eac_reference-1-eng-slk
-  - mtdata_EU-dcep-1-eng-slk
-  - mtdata_Tilde-eesc-2017-eng-slk
-  - mtdata_Tilde-ema-2016-eng-slk
-  - mtdata_Tilde-rapid-2016-eng-slk
+  - mtdata_ELRC-annual_reports_immigration_asylum_policies_emn_contact_point_slovak-1-eng-slk # ~8,514 sentences (962.1 kB)
+  - mtdata_ELRC-annual_reports_slovak_centre_human_rights-1-eng-slk # ~7,131 sentences (805.9 kB)
+  - mtdata_ELRC-annual_reports_statistical_slovak-1-eng-slk # ~5,839 sentences (659.8 kB)
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-slk #     ~14,669 sentences (1.7 MB)
+  - mtdata_ELRC-nteu_tierb-1-eng-slk #                  ~7,114,356 sentences (803.9 MB)
+  - mtdata_EU-eac_forms-1-eng-slk #                        ~31,162 sentences (3.5 MB)
+  - mtdata_EU-eac_reference-1-eng-slk #                    ~31,162 sentences (3.5 MB)
+  - mtdata_EU-dcep-1-eng-slk #                            ~548,757 sentences (62.0 MB)
+  - mtdata_Tilde-eesc-2017-eng-slk #                    ~1,269,685 sentences (143.5 MB)
+  - mtdata_Tilde-ema-2016-eng-slk #                       ~238,237 sentences (26.9 MB)
+  - mtdata_Tilde-rapid-2016-eng-slk #                     ~214,164 sentences (24.2 MB)
 
   # The monolingual data contains:
   #   ~37,969,053 sentences

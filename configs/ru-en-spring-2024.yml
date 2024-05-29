@@ -111,11 +111,11 @@ datasets:
   - opus_tico-19/v2020-10-28 #                                3,071 sentences
   - opus_ELRC-5067-SciPar/v1 #                                3,064 sentences
   - opus_tldr-pages/v2023-08-29 #                             1,037 sentences
-  - mtdata_Statmt-commoncrawl_wmt13-1-rus-eng
-  - mtdata_Statmt-news_commentary_wmt18-13-rus-eng
-  - mtdata_Tilde-airbaltic-1-eng-rus
-  - mtdata_Tilde-czechtourism-1-eng-rus
-  - mtdata_Tilde-worldbank-1-eng-rus
+  - mtdata_Statmt-commoncrawl_wmt13-1-rus-eng #         ~8,126,649 sentences (918.3 MB)
+  - mtdata_Statmt-news_commentary_wmt18-13-rus-eng #    ~1,001,393 sentences (113.2 MB)
+  - mtdata_Tilde-airbaltic-1-eng-rus #                      ~1,288 sentences (145.6 kB)
+  - mtdata_Tilde-czechtourism-1-eng-rus #                   ~7,561 sentences (854.5 kB)
+  - mtdata_Tilde-worldbank-1-eng-rus #                     ~33,049 sentences (3.7 MB)
 
   # The monolingual data contains:
   #   ~90,385,836 sentences

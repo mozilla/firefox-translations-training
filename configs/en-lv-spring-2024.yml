@@ -128,21 +128,21 @@ datasets:
   - opus_ELRC_2923/v1 #                                         580 sentences
   - opus_ELRC-2741-vaccination/v1 #                             521 sentences
   - opus_ELRC-vaccination/v1 #                                  521 sentences
-  - mtdata_ELRC-international_agreements-1-eng-lav
-  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-eng-lav
-  - mtdata_ELRC-finance_economics_bank_latvia-1-eng-lav
-  - mtdata_ELRC-eu_publications_medical_v2-1-eng-lav
-  - mtdata_ELRC-nteu_tierb-1-eng-lav
-  - mtdata_EU-eac_forms-1-eng-lav
-  - mtdata_EU-eac_reference-1-eng-lav
-  - mtdata_EU-dcep-1-eng-lav
-  - mtdata_Statmt-newsdev_lven-2017-lav-eng
-  - mtdata_Statmt-newsdev_enlv-2017-eng-lav
-  - mtdata_Tilde-eesc-2017-eng-lav
-  - mtdata_Tilde-ema-2016-eng-lav
-  - mtdata_Tilde-airbaltic-1-eng-lav
-  - mtdata_Tilde-fold-1-eng-lav
-  - mtdata_Tilde-rapid-2016-eng-lav
+  - mtdata_ELRC-international_agreements-1-eng-lav #      ~167,379 sentences (18.9 MB)
+  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-eng-lav # ~2,078 sentences (234.8 kB)
+  - mtdata_ELRC-finance_economics_bank_latvia-1-eng-lav #  ~12,153 sentences (1.4 MB)
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-lav #     ~14,470 sentences (1.6 MB)
+  - mtdata_ELRC-nteu_tierb-1-eng-lav #                  ~6,930,262 sentences (783.1 MB)
+  - mtdata_EU-eac_forms-1-eng-lav #                        ~31,162 sentences (3.5 MB)
+  - mtdata_EU-eac_reference-1-eng-lav #                    ~31,162 sentences (3.5 MB)
+  - mtdata_EU-dcep-1-eng-lav #                            ~524,054 sentences (59.2 MB)
+  - mtdata_Statmt-newsdev_lven-2017-lav-eng #             ~402,756 sentences (45.5 MB)
+  - mtdata_Statmt-newsdev_enlv-2017-eng-lav #             ~402,756 sentences (45.5 MB)
+  - mtdata_Tilde-eesc-2017-eng-lav #                    ~1,122,956 sentences (126.9 MB)
+  - mtdata_Tilde-ema-2016-eng-lav #                       ~231,439 sentences (26.2 MB)
+  - mtdata_Tilde-airbaltic-1-eng-lav #                      ~1,050 sentences (118.7 kB)
+  - mtdata_Tilde-fold-1-eng-lav #                          ~10,070 sentences (1.1 MB)
+  - mtdata_Tilde-rapid-2016-eng-lav #                     ~198,906 sentences (22.5 MB)
 
   # The monolingual data contains:
   #   ~195,823,002 sentences

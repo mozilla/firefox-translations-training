@@ -122,18 +122,18 @@ datasets:
   - opus_ELRC-2737-vaccination/v1 #                             492 sentences
   - opus_ELRC-vaccination/v1 #                                  492 sentences
   - opus_ELRC_2923/v1 #                                         451 sentences
-  - mtdata_ELRC-secretariat_general_part1-1-eng-slv
-  - mtdata_ELRC-secretariat_general_part2-1-eng-slv
-  - mtdata_ELRC-chapters_youth_2010_social_profile_young_people_slovenia_publication-1-eng-slv
-  - mtdata_ELRC-statistical_reports_statistical_slovenia-1-eng-slv
-  - mtdata_ELRC-agriculture_forestry_food_slovenia-1-eng-slv
-  - mtdata_ELRC-eu_publications_medical_v2-1-eng-slv
-  - mtdata_EU-eac_forms-1-eng-slv
-  - mtdata_EU-eac_reference-1-eng-slv
-  - mtdata_EU-dcep-1-eng-slv
-  - mtdata_Tilde-eesc-2017-eng-slv
-  - mtdata_Tilde-ema-2016-eng-slv
-  - mtdata_Tilde-rapid-2016-eng-slv
+  - mtdata_ELRC-secretariat_general_part1-1-eng-slv #      ~57,111 sentences (6.5 MB)
+  - mtdata_ELRC-secretariat_general_part2-1-eng-slv #      ~63,784 sentences (7.2 MB)
+  - mtdata_ELRC-chapters_youth_2010_social_profile_young_people_slovenia_publication-1-eng-slv # ~5,514 sentences (623.2 kB)
+  - mtdata_ELRC-statistical_reports_statistical_slovenia-1-eng-slv # ~10,753 sentences (1.2 MB)
+  - mtdata_ELRC-agriculture_forestry_food_slovenia-1-eng-slv # ~1,754 sentences (198.3 kB)
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-slv #     ~14,302 sentences (1.6 MB)
+  - mtdata_EU-eac_forms-1-eng-slv #                        ~31,162 sentences (3.5 MB)
+  - mtdata_EU-eac_reference-1-eng-slv #                    ~31,162 sentences (3.5 MB)
+  - mtdata_EU-dcep-1-eng-slv #                            ~539,490 sentences (61.0 MB)
+  - mtdata_Tilde-eesc-2017-eng-slv #                    ~1,116,707 sentences (126.2 MB)
+  - mtdata_Tilde-ema-2016-eng-slv #                       ~223,681 sentences (25.3 MB)
+  - mtdata_Tilde-rapid-2016-eng-slv #                     ~203,695 sentences (23.0 MB)
 
   # The monolingual data contains:
   #   ~195,823,002 sentences
