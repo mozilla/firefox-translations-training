@@ -24,7 +24,8 @@ datasets:
   devtest:
   - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-ell
   - flores_aug-mix_dev
-  - sacrebleu_aug-mix_mtedx/test
+  - sacrebleu_aug-mix_mtedx/valid
+
   test:
   - mtdata_Neulab-tedtalks_test-1-eng-ell
   - flores_devtest
@@ -34,7 +35,7 @@ datasets:
   - flores_aug-typos_devtest
   - flores_aug-noise_devtest
   - flores_aug-inline-noise_devtest
-  - sacrebleu_mtedx/valid
+  - sacrebleu_mtedx/test
 
   # The training data contains:
   #   159,976,981 sentences

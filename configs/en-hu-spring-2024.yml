@@ -22,12 +22,10 @@ experiment:
   pretrained-models: {}
 datasets:
   devtest:
-  - mtdata_Lindat-khresmoi_summary_dev-2-eng-hun
   - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-hun
   - flores_aug-mix_dev
   - sacrebleu_aug-mix_wmt08
   test:
-  - mtdata_Lindat-khresmoi_summary_test-2-eng-hun
   - mtdata_Neulab-tedtalks_test-1-eng-hun
   - flores_devtest
   - flores_aug-mix_devtest

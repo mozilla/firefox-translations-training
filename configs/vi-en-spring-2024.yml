@@ -66,6 +66,7 @@ datasets:
 
   # The monolingual data contains:
   #   ~381,396,864 sentences
+  # TODO: too much?
   mono-src:
   - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_vi_1.txt.zst  # 155,244,735 sentences
   - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_vi_2.txt.zst # 80,009,834 sentences

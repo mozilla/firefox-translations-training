@@ -26,8 +26,6 @@ datasets:
   - flores_aug-mix_dev
   - sacrebleu_aug-mix_wmt18
   - sacrebleu_aug-mix_wmt17
-  - sacrebleu_aug-mix_wmt17/tworefs
-  - sacrebleu_aug-mix_wmt16/B
   - sacrebleu_aug-mix_wmt15
   test:
   - mtdata_Neulab-tedtalks_test-1-eng-fin
@@ -39,10 +37,7 @@ datasets:
   - flores_aug-noise_devtest
   - flores_aug-inline-noise_devtest
   - sacrebleu_wmt19
-  - sacrebleu_wmt18/test-ts
-  - sacrebleu_wmt17/B
   - sacrebleu_wmt16
-  - sacrebleu_wmt16/tworefs
 
   # The training data contains:
   #   180,578,066 sentences

@@ -29,12 +29,11 @@ datasets:
   devtest:
   - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-rus
   - flores_aug-mix_dev
-  - sacrebleu_aug-mix_mtedx/test
   - sacrebleu_aug-mix_wmt20
   - sacrebleu_aug-mix_wmt18
   - sacrebleu_aug-mix_wmt17
   - sacrebleu_aug-mix_wmt15
-  - sacrebleu_aug-mix_wmt14/full
+
   test:
   - mtdata_Neulab-tedtalks_test-1-eng-rus
   - flores_devtest
@@ -44,10 +43,7 @@ datasets:
   - flores_aug-typos_devtest
   - flores_aug-noise_devtest
   - flores_aug-inline-noise_devtest
-  - sacrebleu_mtedx/valid
-  - sacrebleu_wmt20/tworefs
   - sacrebleu_wmt19
-  - sacrebleu_wmt18/test-ts
   - sacrebleu_wmt16
   - sacrebleu_wmt14
   - sacrebleu_wmt13
