@@ -2,7 +2,7 @@
 # task config-generator -- en id --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/c2a6e7f8c899ba363c5058e200692bfd8e321299/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/3d592e570b8919dff511cd8af238335ed84c8d63/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -25,6 +25,7 @@ datasets:
   - mtdata_Neulab-tedtalks_dev-1-eng-ind
   - flores_aug-mix_dev
   test:
+  - mtdata_Neulab-tedtalks_test-1-eng-ind
   - flores_devtest
   - flores_aug-mix_devtest
   - flores_aug-title_devtest
@@ -68,7 +69,6 @@ datasets:
   - opus_ELRC-wikipedia_health/v1 #                           2,680 sentences
   - opus_ELRC_2922/v1 #                                       2,679 sentences
   - opus_tldr-pages/v2023-08-29 #                             1,453 sentences
-  - mtdata_Neulab-tedtalks_test-1-eng-ind #             ~3,117,009 sentences (352.2 MB)
 
   # The monolingual data contains:
   #   ~195,823,002 sentences
@@ -92,8 +92,13 @@ datasets:
   - news-crawl_news.2023 #         ~23,008,849 sentences (2.6G)
 
   # The monolingual data contains:
-  #   ~0 sentences
-  mono-trg: []
+  #   ~75,950,749 sentences
+  mono-trg:
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_id_1.txt.zst  # 33,335,598 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_id_2.txt.zst # 7,889,038 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_id_3.txt.zst # 20,345,593 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_id_4.txt.zst # 14,380,520 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-id.txt.gz
 marian-args:
   decoding-backward:
     beam-size: '12'

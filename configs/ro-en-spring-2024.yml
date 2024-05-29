@@ -2,7 +2,7 @@
 # task config-generator -- ro en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/c2a6e7f8c899ba363c5058e200692bfd8e321299/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/3d592e570b8919dff511cd8af238335ed84c8d63/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: ro
@@ -26,6 +26,7 @@ datasets:
   - flores_aug-mix_dev
   - sacrebleu_aug-mix_wmt16/dev
   test:
+  - mtdata_Neulab-tedtalks_test-1-eng-ron
   - flores_devtest
   - flores_aug-mix_devtest
   - flores_aug-title_devtest
@@ -47,6 +48,7 @@ datasets:
   #  - opus_tldr-pages/v2023-08-29 - not enough data  (9 sentences)
   #  - opus_ELRC-417-Swedish_Work_Environ/v1 - not enough data  (8 sentences)
   #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-rights_arrested-1-eng-ron - duplicate with opus
   #  - mtdata_ELRC-romanian_literature-1-eng-ron - duplicate with opus
   #  - mtdata_ELRC-romanian_wikipedia-1-eng-ron - duplicate with opus
   #  - mtdata_ELRC-romanian_news-1-eng-ron - duplicate with opus
@@ -143,18 +145,16 @@ datasets:
   - opus_ELRC-2750-vaccination/v1 #                             496 sentences
   - opus_ELRC-vaccination/v1 #                                  496 sentences
   - opus_ELRC_2923/v1 #                                         319 sentences
-  - mtdata_ELRC-rights_arrested-1-eng-ron
-  - mtdata_ELRC-swedish_work_environment-1-eng-ron
-  - mtdata_ELRC-romanian_new_criminal_procedure_code-1-eng-ron
-  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-eng-ron
-  - mtdata_ELRC-romanian_ombudsman_archive-1-eng-ron
-  - mtdata_ELRC-studies_reports_statistical_culture_institute_cultural_research_training-1-eng-ron
-  - mtdata_ELRC-rural_development_programme_romania-1-eng-ron
-  - mtdata_ELRC-eu_publications_medical_v2-1-eng-ron
+  - mtdata_ELRC-swedish_work_environment-1-eng-ron #       ~13,557 sentences (1.5 MB)
+  - mtdata_ELRC-romanian_new_criminal_procedure_code-1-eng-ron # ~23,368 sentences (2.6 MB)
+  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-eng-ron # ~2,078 sentences (234.8 kB)
+  - mtdata_ELRC-romanian_ombudsman_archive-1-eng-ron #      ~4,888 sentences (552.4 kB)
+  - mtdata_ELRC-studies_reports_statistical_culture_institute_cultural_research_training-1-eng-ron # ~11,961 sentences (1.4 MB)
+  - mtdata_ELRC-rural_development_programme_romania-1-eng-ron # ~4,635 sentences (523.8 kB)
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-ron #     ~14,807 sentences (1.7 MB)
   - mtdata_EU-eac_forms-1-eng-ron #                        ~31,162 sentences (3.5 MB)
   - mtdata_EU-eac_reference-1-eng-ron #                    ~31,162 sentences (3.5 MB)
   - mtdata_EU-dcep-1-eng-ron #                            ~389,297 sentences (44.0 MB)
-  - mtdata_Neulab-tedtalks_test-1-eng-ron #             ~3,117,009 sentences (352.2 MB)
   - mtdata_Statmt-newsdev_enro-2016-eng-ron #             ~402,756 sentences (45.5 MB)
   - mtdata_Statmt-newsdev_roen-2016-ron-eng #             ~402,756 sentences (45.5 MB)
   - mtdata_Tilde-eesc-2017-eng-ron #                    ~1,026,056 sentences (115.9 MB)
@@ -164,7 +164,7 @@ datasets:
   - mtdata_Tilde-worldbank-1-eng-ron #                      ~6,413 sentences (724.7 kB)
 
   # The monolingual data contains:
-  #   ~24,920,348 sentences
+  #   ~138,767,591 sentences
   mono-src:
   - news-crawl_news.2015  #          ~1,088,495 sentences (123M)
   - news-crawl_news.2016 #          ~2,061,946 sentences (233M)
@@ -175,6 +175,9 @@ datasets:
   - news-crawl_news.2021 #          ~3,353,982 sentences (379M)
   - news-crawl_news.2022 #          ~3,831,858 sentences (433M)
   - news-crawl_news.2023 #          ~3,725,663 sentences (421M)
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_ro_1.txt.zst # 67,270,462 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_ro_2.txt.zst # 46,576,781 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-ro.txt.gz
 
   # The monolingual data contains:
   #   ~195,823,002 sentences

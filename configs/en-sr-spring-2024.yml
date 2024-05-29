@@ -2,7 +2,7 @@
 # task config-generator -- en sr --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/c2a6e7f8c899ba363c5058e200692bfd8e321299/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/3d592e570b8919dff511cd8af238335ed84c8d63/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -25,6 +25,7 @@ datasets:
   - mtdata_Neulab-tedtalks_dev-1-eng-srp
   - flores_aug-mix_dev
   test:
+  - mtdata_Neulab-tedtalks_test-1-eng-srp
   - flores_devtest
   - flores_aug-mix_devtest
   - flores_aug-title_devtest
@@ -70,8 +71,7 @@ datasets:
   - opus_EUbookshop/v2 #                                      1,608 sentences
   - opus_ELRC-3041-wikipedia_health/v1 #                        744 sentences
   - opus_ELRC_2922/v1 #                                         743 sentences
-  - mtdata_ELRC-swedish_social_security-1-eng-srp
-  - mtdata_Neulab-tedtalks_test-1-eng-srp #             ~3,117,009 sentences (352.2 MB)
+  - mtdata_ELRC-swedish_social_security-1-eng-srp #        ~18,804 sentences (2.1 MB)
   - mtdata_Tilde-worldbank-1-eng-srp #                      ~2,533 sentences (286.3 kB)
 
   # The monolingual data contains:
@@ -96,7 +96,7 @@ datasets:
   - news-crawl_news.2023 #         ~23,008,849 sentences (2.6G)
 
   # The monolingual data contains:
-  #   ~35,920,209 sentences
+  #   ~45,259,796 sentences
   mono-trg:
   - news-crawl_news.2008  #              ~3,522 sentences (398K)
   - news-crawl_news.2009 #             ~18,584 sentences (2.1M)
@@ -108,6 +108,7 @@ datasets:
   - news-crawl_news.2021 #          ~8,849,557 sentences (1.0G)
   - news-crawl_news.2022 #          ~9,734,513 sentences (1.1G)
   - news-crawl_news.2023 #          ~9,734,513 sentences (1.1G)
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-sr.txt.gz # ~9,339,587 sentences
 marian-args:
   decoding-backward:
     beam-size: '12'

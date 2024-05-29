@@ -2,7 +2,7 @@
 # task config-generator -- en lt --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/001d15d5f2775e0e4c57717057a1906069e29dcc/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/3d592e570b8919dff511cd8af238335ed84c8d63/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -26,15 +26,12 @@ experiment:
       mode: use
       type: default
 datasets:
-
-  # Skipped test/devtest datasets:
-  #  - wmt19/dev - variant dataset
   devtest:
+  - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-lit
   - flores_aug-mix_dev
   - sacrebleu_aug-mix_wmt19/dev
-  - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-lit
-
   test:
+  - mtdata_Neulab-tedtalks_test-1-eng-lit
   - flores_devtest
   - flores_aug-mix_devtest
   - flores_aug-title_devtest
@@ -43,11 +40,10 @@ datasets:
   - flores_aug-noise_devtest
   - flores_aug-inline-noise_devtest
   - sacrebleu_wmt19
-  - mtdata_Neulab-tedtalks_test-1-eng-lit
 
   # The training data contains:
   #   76,643,900 sentences
-  #
+  # 
   # Skipped datasets:
   #  - opus_CCMatrix/v1 - ignored datasets (23,298,470 sentences)
   #  - opus_ELRC-3069-wikipedia_health/v1 - not enough data  (136 sentences)
@@ -61,6 +57,7 @@ datasets:
   #  - mtdata_ELRC-euipo_2017-1-eng-lit - duplicate with opus
   #  - mtdata_ELRC-emea-1-eng-lit - duplicate with opus
   #  - mtdata_ELRC-vaccination-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-wikipedia_health-1-eng-lit - duplicate with opus
   #  - mtdata_ELRC-antibiotic-1-eng-lit - duplicate with opus
   #  - mtdata_ELRC-europarl_covid-1-eng-lit - duplicate with opus
   #  - mtdata_ELRC-ec_europa_covid-1-eng-lit - duplicate with opus
@@ -70,8 +67,6 @@ datasets:
   #  - mtdata_EU-ecdc-1-eng-lit - duplicate with opus
   #  - mtdata_Facebook-wikimatrix-1-eng-lit - duplicate with opus
   #  - mtdata_Neulab-tedtalks_train-1-eng-lit - duplicate with opus
-  #  -  - duplicate with opus
-  #  -  - duplicate with opus
   #  - mtdata_ParaCrawl-paracrawl-3-eng-lit - duplicate with opus
   #  - mtdata_ParaCrawl-paracrawl-6-eng-lit - duplicate with opus
   #  - mtdata_ParaCrawl-paracrawl-7.1-eng-lit - duplicate with opus
@@ -136,11 +131,10 @@ datasets:
   - opus_ELRC-2740-vaccination/v1 #                             546 sentences
   - opus_ELRC-vaccination/v1 #                                  546 sentences
   - opus_ELRC_2923/v1 #                                         384 sentences
-  # fails
-  # - mtdata_ELRC-lithuanian_legislation_seimas_lithuania-1-eng-lit
-  - mtdata_ELRC-eu_publications_medical_v2-1-eng-lit
-  - mtdata_ELRC-wikipedia_health-1-eng-lit
-  - mtdata_ELRC-nteu_tierb-1-eng-lit
+# fails
+#  - mtdata_ELRC-lithuanian_legislation_seimas_lithuania-1-eng-lit # ~611,715 sentences (69.1 MB)
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-lit #     ~13,874 sentences (1.6 MB)
+  - mtdata_ELRC-nteu_tierb-1-eng-lit #                  ~6,946,588 sentences (785.0 MB)
   - mtdata_EU-eac_forms-1-eng-lit #                        ~31,162 sentences (3.5 MB)
   - mtdata_EU-eac_reference-1-eng-lit #                    ~31,162 sentences (3.5 MB)
   - mtdata_EU-dcep-1-eng-lit #                            ~510,025 sentences (57.6 MB)
@@ -153,35 +147,36 @@ datasets:
   - mtdata_Tilde-rapid-2016-eng-lit #                     ~180,798 sentences (20.4 MB)
 
   # The monolingual data contains:
-  #   ~209,074,237 sentences
+  #   ~195,823,002 sentences
   mono-src:
-  - news-crawl_news.2007  #          ~1,630,834 sentences (184.3 MB)
-  - news-crawl_news.2008 #          ~5,648,654 sentences (638.3 MB)
-  - news-crawl_news.2009 #          ~6,879,522 sentences (777.4 MB)
-  - news-crawl_news.2010 #          ~3,406,380 sentences (384.9 MB)
-  - news-crawl_news.2011 #          ~6,628,308 sentences (749.0 MB)
-  - news-crawl_news.2012 #          ~6,715,609 sentences (758.9 MB)
-  - news-crawl_news.2013 #         ~11,050,614 sentences (1.2 GB)
-  - news-crawl_news.2014 #         ~11,026,051 sentences (1.2 GB)
-  - news-crawl_news.2015 #         ~11,182,484 sentences (1.3 GB)
-  - news-crawl_news.2016 #          ~8,366,518 sentences (945.4 MB)
-  - news-crawl_news.2017 #         ~12,276,499 sentences (1.4 GB)
-  - news-crawl_news.2018 #          ~8,303,432 sentences (938.3 MB)
-  - news-crawl_news.2019 #         ~19,386,668 sentences (2.2 GB)
-  - news-crawl_news.2020 #         ~24,070,652 sentences (2.7 GB)
-  - news-crawl_news.2021 #         ~23,139,914 sentences (2.6 GB)
-  - news-crawl_news.2022 #         ~24,900,055 sentences (2.8 GB)
-  - news-crawl_news.2023 #         ~24,462,043 sentences (2.8 GB)
+  - news-crawl_news.2007  #          ~1,557,522 sentences (176M)
+  - news-crawl_news.2008 #          ~5,389,380 sentences (609M)
+  - news-crawl_news.2009 #          ~6,557,522 sentences (741M)
+  - news-crawl_news.2010 #          ~3,247,787 sentences (367M)
+  - news-crawl_news.2011 #          ~6,318,584 sentences (714M)
+  - news-crawl_news.2012 #          ~6,407,079 sentences (724M)
+  - news-crawl_news.2013 #         ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2014 #         ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2015 #         ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2016 #          ~7,982,300 sentences (902M)
+  - news-crawl_news.2017 #         ~11,504,424 sentences (1.3G)
+  - news-crawl_news.2018 #          ~7,920,353 sentences (895M)
+  - news-crawl_news.2019 #         ~17,699,115 sentences (2.0G)
+  - news-crawl_news.2020 #         ~22,123,893 sentences (2.5G)
+  - news-crawl_news.2021 #         ~21,238,938 sentences (2.4G)
+  - news-crawl_news.2022 #         ~23,008,849 sentences (2.6G)
+  - news-crawl_news.2023 #         ~23,008,849 sentences (2.6G)
 
   # The monolingual data contains:
-  #   ~5,883,133 sentences
+  #   ~24,423,497 sentences
   mono-trg:
-  - news-crawl_news.2018  #            ~170,282 sentences (19.2 MB)
-  - news-crawl_news.2019 #          ~1,129,447 sentences (127.6 MB)
-  - news-crawl_news.2020 #          ~1,139,097 sentences (128.7 MB)
-  - news-crawl_news.2021 #          ~1,062,424 sentences (120.1 MB)
-  - news-crawl_news.2022 #          ~1,134,157 sentences (128.2 MB)
-  - news-crawl_news.2023 #          ~1,247,726 sentences (141.0 MB)
+  - news-crawl_news.2019  #          ~1,079,646 sentences (122M)
+  - news-crawl_news.2020 #          ~1,088,495 sentences (123M)
+  - news-crawl_news.2021 #          ~1,008,849 sentences (114M)
+  - news-crawl_news.2022 #          ~1,079,646 sentences (122M)
+  - news-crawl_news.2023 #          ~1,185,840 sentences (134M)
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_lt_1.txt.zst # 10,522,866 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-lt.txt.gz # ~8,458,155 sentences
 marian-args:
   decoding-backward:
     beam-size: '12'

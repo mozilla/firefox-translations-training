@@ -2,7 +2,7 @@
 # task config-generator -- en hu --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/c2a6e7f8c899ba363c5058e200692bfd8e321299/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/3d592e570b8919dff511cd8af238335ed84c8d63/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -27,6 +27,8 @@ datasets:
   - flores_aug-mix_dev
   - sacrebleu_aug-mix_wmt08
   test:
+  - mtdata_Lindat-khresmoi_summary_test-2-eng-hun
+  - mtdata_Neulab-tedtalks_test-1-eng-hun
   - flores_devtest
   - flores_aug-mix_devtest
   - flores_aug-title_devtest
@@ -117,12 +119,10 @@ datasets:
   - opus_ELRC-wikipedia_health/v1 #                             401 sentences
   - opus_ELRC_2922/v1 #                                         400 sentences
   - opus_ELRC_2923/v1 #                                         211 sentences
-  - mtdata_ELRC-eu_publications_medical_v2-1-eng-hun
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-hun #     ~15,298 sentences (1.7 MB)
   - mtdata_EU-eac_forms-1-eng-hun #                        ~31,162 sentences (3.5 MB)
   - mtdata_EU-eac_reference-1-eng-hun #                    ~31,162 sentences (3.5 MB)
   - mtdata_EU-dcep-1-eng-hun #                            ~546,644 sentences (61.8 MB)
-  - mtdata_Lindat-khresmoi_summary_test-2-eng-hun #        ~11,808 sentences (1.3 MB)
-  - mtdata_Neulab-tedtalks_test-1-eng-hun #             ~3,117,009 sentences (352.2 MB)
   - mtdata_Tilde-eesc-2017-eng-hun #                    ~1,098,560 sentences (124.1 MB)
   - mtdata_Tilde-ema-2016-eng-hun #                       ~237,326 sentences (26.8 MB)
   - mtdata_Tilde-rapid-2016-eng-hun #                     ~219,863 sentences (24.8 MB)
@@ -149,7 +149,7 @@ datasets:
   - news-crawl_news.2023 #         ~23,008,849 sentences (2.6G)
 
   # The monolingual data contains:
-  #   ~30,008,843 sentences
+  #   ~63,746,804 sentences
   mono-trg:
   - news-crawl_news.2007  #             ~26,548 sentences (3.0M)
   - news-crawl_news.2008 #          ~1,150,442 sentences (130M)
@@ -167,6 +167,10 @@ datasets:
   - news-crawl_news.2021 #          ~1,831,858 sentences (207M)
   - news-crawl_news.2022 #          ~2,274,336 sentences (257M)
   - news-crawl_news.2023 #          ~2,371,681 sentences (268M)
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_hu_1.txt.zst # 18,349,001 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_hu_2.txt.zst # 10,066,677 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_hu_3.txt.zst # 5,322,283 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-hu.txt.gz
 marian-args:
   decoding-backward:
     beam-size: '12'

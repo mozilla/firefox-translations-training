@@ -2,7 +2,7 @@
 # task config-generator -- bs en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/c2a6e7f8c899ba363c5058e200692bfd8e321299/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/3d592e570b8919dff511cd8af238335ed84c8d63/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: bs
@@ -25,6 +25,7 @@ datasets:
   - mtdata_Neulab-tedtalks_dev-1-eng-bos
   - flores_aug-mix_dev
   test:
+  - mtdata_Neulab-tedtalks_test-1-eng-bos
   - flores_devtest
   - flores_aug-mix_devtest
   - flores_aug-title_devtest
@@ -63,7 +64,6 @@ datasets:
   - opus_ELRC-3047-wikipedia_health/v1 #                        205 sentences
   - opus_ELRC-wikipedia_health/v1 #                             205 sentences
   - opus_ELRC_2922/v1 #                                         204 sentences
-  - mtdata_Neulab-tedtalks_test-1-eng-bos #             ~3,117,009 sentences (352.2 MB)
 
   # The monolingual data contains:
   #   ~8,982,298 sentences
@@ -74,6 +74,7 @@ datasets:
   - news-crawl_news.2021 #          ~2,079,646 sentences (235M)
   - news-crawl_news.2022 #          ~2,132,743 sentences (241M)
   - news-crawl_news.2023 #          ~2,106,194 sentences (238M)
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-bs.txt.gz
 
   # The monolingual data contains:
   #   ~195,823,002 sentences
