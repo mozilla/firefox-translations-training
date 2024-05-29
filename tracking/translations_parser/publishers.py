@@ -223,12 +223,21 @@ class WandB(Publisher):
         """
         from translations_parser.parser import TrainingParser
 
-        if (
-            len(wandb.Api().runs(project, filters={"display_name": "group_logs", "group": group}))
-            > 0
-        ):
-            logger.warning("Skipping group_logs fake run publication as it already exists")
-            return
+        try:
+            if (
+                len(
+                    wandb.Api().runs(
+                        path=project, filters={"display_name": "group_logs", "group": group}
+                    )
+                )
+                > 0
+            ):
+                logger.warning("Skipping group_logs fake run publication as it already exists")
+                return
+        except ValueError as e:
+            # Project may not exist yet as group_logs is published before the first training task
+            if "could not find project" not in str(e).lower():
+                logger.warning(f"Detection of a previous group_logs run failed: {e}")
 
         logs_dir = Path("/".join([*logs_parent_folder[:-1], "logs", project, group]))
         # Old experiments use `speed` directory for quantized metrics
