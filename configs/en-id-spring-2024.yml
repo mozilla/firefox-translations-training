@@ -94,10 +94,10 @@ datasets:
   # The monolingual data contains:
   #   ~75,950,749 sentences
   mono-trg:
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_id_1.txt.zst  # 33,335,598 sentences 
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_id_2.txt.zst # 7,889,038 sentences 
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_id_3.txt.zst # 20,345,593 sentences 
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_id_4.txt.zst # 14,380,520 sentences 
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_id_1.txt.zst  # 33,335,598 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_id_2.txt.zst # 7,889,038 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_id_3.txt.zst # 20,345,593 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_id_4.txt.zst # 14,380,520 sentences
   - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-id.txt.gz
 marian-args:
   decoding-backward:

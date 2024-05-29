@@ -100,8 +100,8 @@ datasets:
   - news-crawl_news.2021 #          ~3,814,159 sentences (431M)
   - news-crawl_news.2022 #          ~3,575,221 sentences (404M)
   - news-crawl_news.2023 #          ~2,796,460 sentences (316M)
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_tr_1.txt.zst # 111,027,588 sentences 
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_tr_2.txt.zst # 80,628,576 sentences 
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_tr_1.txt.zst # 111,027,588 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_tr_2.txt.zst # 80,628,576 sentences
   - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-tr.txt.gz
 
   # The monolingual data contains:

@@ -167,9 +167,9 @@ datasets:
   - news-crawl_news.2021 #          ~1,831,858 sentences (207M)
   - news-crawl_news.2022 #          ~2,274,336 sentences (257M)
   - news-crawl_news.2023 #          ~2,371,681 sentences (268M)
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_hu_1.txt.zst # 18,349,001 sentences 
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_hu_2.txt.zst # 10,066,677 sentences 
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_hu_3.txt.zst # 5,322,283 sentences 
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_hu_1.txt.zst # 18,349,001 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_hu_2.txt.zst # 10,066,677 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_hu_3.txt.zst # 5,322,283 sentences
   - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-hu.txt.gz
 marian-args:
   decoding-backward:

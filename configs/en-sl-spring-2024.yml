@@ -159,8 +159,8 @@ datasets:
   # The monolingual data contains:
   #   ~15,630,651 sentences
   mono-trg:
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_sl_1.txt.zst  # 5,566,147 sentences 
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-sl.txt.gz # ~10,064,504 sentences 
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_sl_1.txt.zst  # 5,566,147 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-sl.txt.gz # ~10,064,504 sentences
 marian-args:
   decoding-backward:
     beam-size: '12'

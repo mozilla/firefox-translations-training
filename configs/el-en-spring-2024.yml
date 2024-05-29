@@ -216,11 +216,11 @@ datasets:
   - news-crawl_news.2021 #          ~5,238,938 sentences (592M)
   - news-crawl_news.2022 #          ~6,725,663 sentences (760M)
   - news-crawl_news.2023 #          ~6,292,035 sentences (711M)
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_el_1.txt.zst # 61,793,309 sentences 
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_el_2.txt.zst # 21,376,989 sentences 
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_el_3.txt.zst # 30,114,693 sentences 
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_el_4.txt.zst # 42,131,870 sentences 
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_el_5.txt.zst # 47,484,354 sentences 
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_el_1.txt.zst # 61,793,309 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_el_2.txt.zst # 21,376,989 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_el_3.txt.zst # 30,114,693 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_el_4.txt.zst # 42,131,870 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_el_5.txt.zst # 47,484,354 sentences
   - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-el.txt.gz
 
   # The monolingual data contains:
