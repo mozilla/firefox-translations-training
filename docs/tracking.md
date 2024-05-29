@@ -68,3 +68,9 @@ You can parse a group (with other traversal tasks) by running:
 ```sh
 $ parse_tc_group <task_group_id>
 ```
+
+### Extend supported Marian metrics
+
+The parser does not supports arbitrary metrics (i.e. via the `--valid-metrics` argument).
+
+In order to support new values, you may want to update the regular expression matching Marian output lines in `tracking.translations_parser.parser` and the dataclass in `tracking.translations_parser.data`.
