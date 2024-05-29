@@ -1,8 +1,8 @@
 # The initial configuration was generated using:
-# task config-generator -- hr en --name spring-2024
+# task config-generator -- --name=spring-2024 --fast hr en
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/4a86accaaea086b57ff730c25c642dd711e11586/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: hr
@@ -48,7 +48,6 @@ datasets:
   #  - mtdata_ELRC-agriculture-1-eng-hrv - duplicate with opus
   #  - mtdata_ELRC-emea-1-eng-hrv - duplicate with opus
   #  - mtdata_ELRC-vaccination-1-eng-hrv - duplicate with opus
-  #  - mtdata_ELRC-wikipedia_health-1-eng-hrv - Error fetching (https://elrc-share.eu/repository/download/aa0aef588de811ea913100155d02670612a2e7d375fe4b139f1d93c27364672d/)
   #  - mtdata_ELRC-antibiotic-1-eng-hrv - duplicate with opus
   #  - mtdata_ELRC-europarl_covid-1-eng-hrv - duplicate with opus
   #  - mtdata_ELRC-ec_europa_covid-1-eng-hrv - duplicate with opus

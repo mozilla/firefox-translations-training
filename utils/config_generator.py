@@ -8,6 +8,7 @@ from pathlib import Path
 import ruamel.yaml
 
 from utils.find_corpus import (
+    fetch_hplt,
     fetch_mtdata,
     fetch_news_crawl,
     fetch_opus,
@@ -316,6 +317,20 @@ def add_mono_data(
             datasets.yaml_add_eol_comment(
                 f"~{sentences:,} sentences ".rjust(50 - len(dataset.name), " ")
                 + f"({dataset.display_size})",
+                len(datasets) - 1,
+            )
+
+    print("Fetching HPLT mono for", lang)
+    # use lower quality but higher volume of data for distillation and
+    # higher quality but lower amount of data for back-translations
+    hplt_prefix = "08" if "mono-src" in comment_key else "09"
+
+    for dataset in fetch_hplt(lang, (hplt_prefix,)):
+        datasets.append(dataset.name)
+        if dataset.lines_num:
+            sentence_count += dataset.lines_num
+            datasets.yaml_add_eol_comment(
+                f"{dataset.lines_num:,} sentences ".rjust(50 - len(dataset.name), " "),
                 len(datasets) - 1,
             )
 
