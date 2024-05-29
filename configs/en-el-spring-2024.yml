@@ -1,8 +1,8 @@
 # The initial configuration was generated using:
-# task config-generator -- --name=spring-2024 --fast en el
+# task config-generator -- en el --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/4a86accaaea086b57ff730c25c642dd711e11586/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/3d592e570b8919dff511cd8af238335ed84c8d63/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -64,6 +64,7 @@ datasets:
   #  - opus_ELRA-W0301/v1 - not enough data  (16 sentences)
   #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
   #  - mtdata_ELRC-rights_arrested-1-ell-eng - duplicate with opus
+  #  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-ell-eng - Error fetching (https://elrc-share.eu/repository/download/0102395e050811e8b7d400155d026706483f8695e5e94dc5beb5b835e17725bb/)
   #  - mtdata_ELRC-greek_administration-1-ell-eng - duplicate with opus
   #  - mtdata_ELRC-greek_law-1-ell-eng - duplicate with opus
   #  - mtdata_ELRC-expression_interest-1-ell-eng - duplicate with opus
@@ -181,7 +182,6 @@ datasets:
   - mtdata_ELRC-greek_legislation_anticorruption_plan-1-ell-eng # ~4,428 sentences (500.4 kB)
   - mtdata_ELRC-convention_transfer_sentenced_persons-1-ell-eng # ~131 sentences (14.8 kB)
   - mtdata_ELRC-international_judicial_cooperation_civil_matters-1-ell-eng # ~427 sentences (48.3 kB)
-  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-ell-eng # ~2,078 sentences (234.8 kB)
   - mtdata_ELRC-macroeconomic_developments-1-ell-eng #        ~175 sentences (19.8 kB)
   - mtdata_ELRC-methodological_reconciliation-1-ell-eng #      ~46 sentences (5.3 kB)
   - mtdata_ELRC-memorandum_a_esm_programme-1-ell-eng #        ~861 sentences (97.3 kB)
@@ -237,11 +237,12 @@ datasets:
   - news-crawl_news.2021 #          ~5,238,938 sentences (592M)
   - news-crawl_news.2022 #          ~6,725,663 sentences (760M)
   - news-crawl_news.2023 #          ~6,292,035 sentences (711M)
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_el_1.txt.zst # 25,711,557 sentences 
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_el_2.txt.zst # 8,043,350 sentences 
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_el_3.txt.zst # 10,986,586 sentences 
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_el_4.txt.zst # 15,968,743 sentences 
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_el_5.txt.zst # 18,485,251 sentences 
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_el_1.txt.zst # 25,711,557 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_el_2.txt.zst # 8,043,350 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_el_3.txt.zst # 10,986,586 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_el_4.txt.zst # 15,968,743 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_el_5.txt.zst # 18,485,251 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-el.txt.gz
 marian-args:
   decoding-backward:
     beam-size: '12'
