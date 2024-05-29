@@ -2,7 +2,7 @@
 # task config-generator -- id en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/3d592e570b8919dff511cd8af238335ed84c8d63/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: id
@@ -71,8 +71,12 @@ datasets:
   - opus_tldr-pages/v2023-08-29 #                             1,453 sentences
 
   # The monolingual data contains:
-  #   ~0 sentences
-  mono-src: []
+  #   ~207,562,176 sentences
+  mono-src:
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_id_1.txt.zst  # 102,919,516 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_id_2.txt.zst # 30,623,331 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_id_3.txt.zst # 74,019,329 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-id.txt.gz
 
   # The monolingual data contains:
   #   ~195,823,002 sentences

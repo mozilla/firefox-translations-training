@@ -2,7 +2,7 @@
 # task config-generator -- bs en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/3d592e570b8919dff511cd8af238335ed84c8d63/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: bs
@@ -74,6 +74,7 @@ datasets:
   - news-crawl_news.2021 #          ~2,079,646 sentences (235M)
   - news-crawl_news.2022 #          ~2,132,743 sentences (241M)
   - news-crawl_news.2023 #          ~2,106,194 sentences (238M)
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-bs.txt.gz
 
   # The monolingual data contains:
   #   ~195,823,002 sentences
