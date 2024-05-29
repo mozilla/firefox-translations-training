@@ -17,7 +17,7 @@ experiment:
   mono-max-sentences-trg: 200_000_000
   spm-sample-size: 10_000_000
   spm-vocab-size: 32000
-  teacher-ensemble: 2
+  teacher-ensemble: 1
   teacher-mode: two-stage
   pretrained-models: {}
 datasets:
@@ -225,7 +225,7 @@ marian-args:
     early-stopping: '20'
   training-student-finetuned:
     early-stopping: '20'
-target-stage: all
+target-stage: train-teacher
 wandb-publication: true
 taskcluster:
   split-chunks: 20
