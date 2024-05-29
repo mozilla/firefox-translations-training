@@ -1,8 +1,8 @@
 # The initial configuration was generated using:
-# task config-generator -- ru en --name spring-2024 --fast
+# task config-generator -- ru en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/e880dbefe77f3428aed2d8ccc4f840fe347b025b/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: ru
@@ -26,20 +26,17 @@ experiment:
       mode: use
       type: default
 datasets:
-
-  # Skipped test/devtest datasets:
-  #  - mtedx/valid - variant dataset
-  #  - mtedx/test - variant dataset
-  #  - wmt20/tworefs - variant dataset
-  #  - wmt18/test-ts - variant dataset
-  #  - wmt14/full - variant dataset
   devtest:
+  - mtdata_Neulab-tedtalks_dev-1-eng-rus
   - flores_aug-mix_dev
-  - sacrebleu_aug-mix_wmt19
+  - sacrebleu_aug-mix_mtedx/test
+  - sacrebleu_aug-mix_wmt20
+  - sacrebleu_aug-mix_wmt18
   - sacrebleu_aug-mix_wmt17
   - sacrebleu_aug-mix_wmt15
-  - sacrebleu_aug-mix_wmt13
+  - sacrebleu_aug-mix_wmt14/full
   test:
+  - mtdata_Neulab-tedtalks_test-1-eng-rus
   - flores_devtest
   - flores_aug-mix_devtest
   - flores_aug-title_devtest
@@ -47,10 +44,13 @@ datasets:
   - flores_aug-typos_devtest
   - flores_aug-noise_devtest
   - flores_aug-inline-noise_devtest
-  - sacrebleu_wmt20
-  - sacrebleu_wmt18
+  - sacrebleu_mtedx/valid
+  - sacrebleu_wmt20/tworefs
+  - sacrebleu_wmt19
+  - sacrebleu_wmt18/test-ts
   - sacrebleu_wmt16
   - sacrebleu_wmt14
+  - sacrebleu_wmt13
 
   # The training data contains:
   #   250,111,081 sentences
@@ -65,13 +65,15 @@ datasets:
   #  - mtdata_Facebook-wikimatrix-1-eng-rus - duplicate with opus
   #  - mtdata_LinguaTools-wikititles-2014-eng-rus - duplicate with opus
   #  - mtdata_Neulab-tedtalks_train-1-eng-rus - duplicate with opus
-  #  - mtdata_Neulab-tedtalks_test-1-eng-rus - duplicate with opus
-  #  - mtdata_Neulab-tedtalks_dev-1-eng-rus - duplicate with opus
   #  - mtdata_ParaCrawl-paracrawl-1_bonus-eng-rus - duplicate with opus
   #  - mtdata_Statmt-news_commentary-14-eng-rus - duplicate with opus
   #  - mtdata_Statmt-news_commentary-15-eng-rus - duplicate with opus
   #  - mtdata_Statmt-news_commentary-16-eng-rus - duplicate with opus
+  #  - mtdata_Statmt-wiki_titles-1-rus-eng - duplicate with opus
+  #  - mtdata_Statmt-wiki_titles-2-rus-eng - duplicate with opus
   #  - mtdata_Statmt-ccaligned-1-eng-rus_RU - duplicate with opus
+  #  - mtdata_UN-un_dev-1-eng-rus - Error fetching (https://drive.google.com/uc?export=download&id=13GI1F1hvwpMUGBSa0QC6ov4eE57GC_Zx)
+  #  - mtdata_UN-un_test-1-eng-rus - Error fetching (https://drive.google.com/uc?export=download&id=13GI1F1hvwpMUGBSa0QC6ov4eE57GC_Zx)
   train:
   - opus_NLLB/v1  #                                      139,937,785 sentences
   - opus_OpenSubtitles/v2018 #                           25,910,105 sentences
@@ -109,15 +111,11 @@ datasets:
   - opus_tico-19/v2020-10-28 #                                3,071 sentences
   - opus_ELRC-5067-SciPar/v1 #                                3,064 sentences
   - opus_tldr-pages/v2023-08-29 #                             1,037 sentences
-  - mtdata_Statmt-commoncrawl_wmt13-1-rus-eng
-  - mtdata_Statmt-news_commentary_wmt18-13-rus-eng
-  - mtdata_Statmt-wiki_titles-1-rus-eng
-  - mtdata_Statmt-wiki_titles-2-rus-eng
-  - mtdata_Tilde-airbaltic-1-eng-rus
-  - mtdata_Tilde-czechtourism-1-eng-rus
-  - mtdata_Tilde-worldbank-1-eng-rus
-  - mtdata_UN-un_dev-1-eng-rus
-  - mtdata_UN-un_test-1-eng-rus
+  - mtdata_Statmt-commoncrawl_wmt13-1-rus-eng #         ~8,126,649 sentences (918.3 MB)
+  - mtdata_Statmt-news_commentary_wmt18-13-rus-eng #    ~1,001,393 sentences (113.2 MB)
+  - mtdata_Tilde-airbaltic-1-eng-rus #                      ~1,288 sentences (145.6 kB)
+  - mtdata_Tilde-czechtourism-1-eng-rus #                   ~7,561 sentences (854.5 kB)
+  - mtdata_Tilde-worldbank-1-eng-rus #                     ~33,049 sentences (3.7 MB)
 
   # The monolingual data contains:
   #   ~90,385,836 sentences

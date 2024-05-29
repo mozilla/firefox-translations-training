@@ -2,7 +2,7 @@
 # task config-generator -- en sk --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/c2a6e7f8c899ba363c5058e200692bfd8e321299/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -25,6 +25,7 @@ datasets:
   - mtdata_Neulab-tedtalks_dev-1-eng-slk
   - flores_aug-mix_dev
   test:
+  - mtdata_Neulab-tedtalks_test-1-eng-slk
   - flores_devtest
   - flores_aug-mix_devtest
   - flores_aug-title_devtest
@@ -48,6 +49,7 @@ datasets:
   #  - mtdata_ELRC-euipo_2017-1-eng-slk - duplicate with opus
   #  - mtdata_ELRC-emea-1-eng-slk - duplicate with opus
   #  - mtdata_ELRC-vaccination-1-eng-slk - duplicate with opus
+  #  - mtdata_ELRC-wikipedia_health-1-eng-slk - duplicate with opus
   #  - mtdata_ELRC-antibiotic-1-eng-slk - duplicate with opus
   #  - mtdata_ELRC-europarl_covid-1-eng-slk - duplicate with opus
   #  - mtdata_ELRC-ec_europa_covid-1-eng-slk - duplicate with opus
@@ -119,16 +121,14 @@ datasets:
   - opus_ELRC-2745-vaccination/v1 #                             510 sentences
   - opus_ELRC-vaccination/v1 #                                  510 sentences
   - opus_ELRC_2923/v1 #                                         448 sentences
-  - mtdata_ELRC-annual_reports_immigration_asylum_policies_emn_contact_point_slovak-1-eng-slk
-  - mtdata_ELRC-annual_reports_slovak_centre_human_rights-1-eng-slk
-  - mtdata_ELRC-annual_reports_statistical_slovak-1-eng-slk
-  - mtdata_ELRC-eu_publications_medical_v2-1-eng-slk
-  - mtdata_ELRC-wikipedia_health-1-eng-slk
-  - mtdata_ELRC-nteu_tierb-1-eng-slk
+  - mtdata_ELRC-annual_reports_immigration_asylum_policies_emn_contact_point_slovak-1-eng-slk # ~8,514 sentences (962.1 kB)
+  - mtdata_ELRC-annual_reports_slovak_centre_human_rights-1-eng-slk # ~7,131 sentences (805.9 kB)
+  - mtdata_ELRC-annual_reports_statistical_slovak-1-eng-slk # ~5,839 sentences (659.8 kB)
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-slk #     ~14,669 sentences (1.7 MB)
+  - mtdata_ELRC-nteu_tierb-1-eng-slk #                  ~7,114,356 sentences (803.9 MB)
   - mtdata_EU-eac_forms-1-eng-slk #                        ~31,162 sentences (3.5 MB)
   - mtdata_EU-eac_reference-1-eng-slk #                    ~31,162 sentences (3.5 MB)
   - mtdata_EU-dcep-1-eng-slk #                            ~548,757 sentences (62.0 MB)
-  - mtdata_Neulab-tedtalks_test-1-eng-slk #             ~3,117,009 sentences (352.2 MB)
   - mtdata_Tilde-eesc-2017-eng-slk #                    ~1,269,685 sentences (143.5 MB)
   - mtdata_Tilde-ema-2016-eng-slk #                       ~238,237 sentences (26.9 MB)
   - mtdata_Tilde-rapid-2016-eng-slk #                     ~214,164 sentences (24.2 MB)

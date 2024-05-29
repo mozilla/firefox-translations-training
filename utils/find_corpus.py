@@ -316,13 +316,22 @@ def get_remote_file_size(
     try:
         response = requests.head(url, timeout=1, allow_redirects=True)
 
-        if response.status_code == 200:
-            int_size = int(response.headers.get("Content-Length", 0))
-            return int_size, humanize.naturalsize(int_size)
+        if response.ok:
+            if "Content-Length" in response.headers:
+                int_size = int(response.headers.get("Content-Length", 0))
+                return int_size, humanize.naturalsize(int_size)
+            # Try again using GET.
         else:
             if display_not_200:
                 print(f"Failed to retrieve file information. Status code: {response.status_code}")
             return None, None
+
+        # Sometimes when the HEAD does not have the Content-Length, the GET response does.
+        response = requests.get(url, timeout=1, allow_redirects=True, stream=True)
+        int_size = int(response.headers.get("Content-Length", 0))
+        response.close()
+        return int_size, humanize.naturalsize(int_size)
+
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
         return None, None
