@@ -11,6 +11,7 @@ from utils.find_corpus import (
     fetch_hplt,
     fetch_mtdata,
     fetch_news_crawl,
+    fetch_nllb_mono,
     fetch_opus,
     fetch_sacrebleu,
     get_remote_file_size,
@@ -331,6 +332,17 @@ def add_mono_data(
             sentence_count += dataset.lines_num
             datasets.yaml_add_eol_comment(
                 f"{dataset.lines_num:,} sentences ".rjust(50 - len(dataset.name), " "),
+                len(datasets) - 1,
+            )
+
+    print("Fetching NLLB mono for", lang)
+    for dataset in fetch_nllb_mono(lang):
+        datasets.append(dataset.name)
+        if dataset.display_size:
+            sentences = estimate_sentence_size(dataset.size)
+            sentence_count += sentences
+            datasets.yaml_add_eol_comment(
+                f"~{sentences:,} sentences ".rjust(50 - len(dataset.name), " "),
                 len(datasets) - 1,
             )
 

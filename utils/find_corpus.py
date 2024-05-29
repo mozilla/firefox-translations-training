@@ -323,7 +323,8 @@ def get_remote_file_size(
             # Try again using GET.
         else:
             if display_not_200:
-                print(f"Failed to retrieve file information. Status code: {response.status_code}")
+                print(f"Failed to retrieve file information for: {url}")
+                print(f"Status code: {response.status_code}")
             return None, None
 
         # Sometimes when the HEAD does not have the Content-Length, the GET response does.
@@ -535,6 +536,38 @@ def get_hplt_mono(source: str, target: str):
         print_yaml([name for name, _, _, _, _ in datasets])
 
 
+def fetch_nllb_mono(
+    lang: str,
+) -> list[MonoDataset]:
+    url = f"https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-{lang}.txt.gz"
+    size, display_size = get_remote_file_size(url)
+    if size is None:
+        return []
+    # There is only one file, but it's easier to return an array for the print_table call.
+    return [MonoDataset(f"url_{url}", url, size, display_size, None)]
+
+
+def get_nllb_mono(source: str, target: str):
+    for lang in (source, target):
+        datasets = fetch_nllb_mono(lang)
+
+        print("")
+        print("┌─────────────────────────────────────────────────────────────────────┐")
+        print(f"│ nllp mono ({lang}) - https://opus.nlpl.eu/NLLB/corpus/version/NLLB  │")
+        print("└─────────────────────────────────────────────────────────────────────┘")
+        print_table(
+            [
+                [
+                    "Dataset",
+                    "Size",
+                ],
+                *[[name, display_size] for name, _, display_size, _, _ in datasets],
+            ]
+        )
+
+        print_yaml([name for name, _, _, _, _ in datasets])
+
+
 def print_yaml(names: list[str], exclude: list[str] = []):
     cleaned = set()
     for name in names:
@@ -641,6 +674,9 @@ def main(args: Optional[list[str]] = None) -> None:
 
     if args.importer == "hplt-mono" or not args.importer:
         get_hplt_mono(args.source, args.target)
+
+    if args.importer == "nllb-mono" or not args.importer:
+        get_nllb_mono(args.source, args.target)
 
 
 if __name__ == "__main__":
