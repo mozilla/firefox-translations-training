@@ -2,7 +2,7 @@
 # task config-generator -- el en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/c2a6e7f8c899ba363c5058e200692bfd8e321299/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: el
@@ -26,6 +26,7 @@ datasets:
   - flores_aug-mix_dev
   - sacrebleu_aug-mix_mtedx/test
   test:
+  - mtdata_Neulab-tedtalks_test-1-eng-ell
   - flores_devtest
   - flores_aug-mix_devtest
   - flores_aug-title_devtest
@@ -62,8 +63,10 @@ datasets:
   #  - opus_ELRC-403-Rights_Arrested/v1 - not enough data  (22 sentences)
   #  - opus_ELRA-W0301/v1 - not enough data  (16 sentences)
   #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-rights_arrested-1-ell-eng - duplicate with opus
   #  - mtdata_ELRC-greek_administration-1-ell-eng - duplicate with opus
   #  - mtdata_ELRC-greek_law-1-ell-eng - duplicate with opus
+  #  - mtdata_ELRC-expression_interest-1-ell-eng - duplicate with opus
   #  - mtdata_ELRC-euipo_2017-1-ell-eng - duplicate with opus
   #  - mtdata_ELRC-press_releases_pio-1-ell-eng - duplicate with opus
   #  - mtdata_ELRC-constitution_greece-1-ell-eng - duplicate with opus
@@ -174,35 +177,32 @@ datasets:
   - opus_ELRC_2923/v1 #                                         420 sentences
   - opus_ELRC-646-International_Judici/v1 #                     289 sentences
   - opus_ELRA-W0307/v1 #                                        288 sentences
-  - mtdata_ELRC-rights_arrested-1-ell-eng
-  - mtdata_ELRC-swedish_social_security-1-ell-eng
-  - mtdata_ELRC-greek_legislation_anticorruption_plan-1-ell-eng
-  - mtdata_ELRC-convention_transfer_sentenced_persons-1-ell-eng
-  - mtdata_ELRC-international_judicial_cooperation_civil_matters-1-ell-eng
-  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-ell-eng
-  - mtdata_ELRC-macroeconomic_developments-1-ell-eng
-  - mtdata_ELRC-methodological_reconciliation-1-ell-eng
-  - mtdata_ELRC-expression_interest-1-ell-eng
-  - mtdata_ELRC-memorandum_a_esm_programme-1-ell-eng
-  - mtdata_ELRC-convention_against_torture_other_cruel_inhuman_or_degrading_treatment_or_punishment_united_nations-1-ell-eng
-  - mtdata_ELRC-quarterly_reports_parliamentary_budget-1-ell-eng
-  - mtdata_ELRC-collection_reports_greek_power_corporation-1-ell-eng
-  - mtdata_ELRC-hellenic_foreign_affairs_announcements-1-ell-eng
-  - mtdata_ELRC-prime_minister_hellenic-1-ell-eng
-  - mtdata_ELRC-collection_about_cyprus_problem-1-ell-eng
-  - mtdata_ELRC-commitment_property_open-1-ell-eng
-  - mtdata_ELRC-compulsory_expropriation_process_greece-1-ell-eng
-  - mtdata_ELRC-pio_publication_cyprus_has_always_been_europe_2017-1-ell-eng
-  - mtdata_ELRC-pio_publication_window_cyprus-1-ell-eng
-  - mtdata_ELRC-press_information_cyprus-1-ell-eng
-  - mtdata_ELRC-governmental_about_migration_policy-1-ell-eng
-  - mtdata_ELRC-eqf_referencing_report-1-ell-eng
-  - mtdata_ELRC-hellenic_gaming_commission-1-ell-eng
-  - mtdata_ELRC-eu_publications_medical_v2-1-ell-eng
+  - mtdata_ELRC-swedish_social_security-1-ell-eng #        ~18,804 sentences (2.1 MB)
+  - mtdata_ELRC-greek_legislation_anticorruption_plan-1-ell-eng # ~4,428 sentences (500.4 kB)
+  - mtdata_ELRC-convention_transfer_sentenced_persons-1-ell-eng # ~131 sentences (14.8 kB)
+  - mtdata_ELRC-international_judicial_cooperation_civil_matters-1-ell-eng # ~427 sentences (48.3 kB)
+  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-ell-eng # ~2,078 sentences (234.8 kB)
+  - mtdata_ELRC-macroeconomic_developments-1-ell-eng #        ~175 sentences (19.8 kB)
+  - mtdata_ELRC-methodological_reconciliation-1-ell-eng #      ~46 sentences (5.3 kB)
+  - mtdata_ELRC-memorandum_a_esm_programme-1-ell-eng #        ~861 sentences (97.3 kB)
+  - mtdata_ELRC-convention_against_torture_other_cruel_inhuman_or_degrading_treatment_or_punishment_united_nations-1-ell-eng # ~452 sentences (51.2 kB)
+  - mtdata_ELRC-quarterly_reports_parliamentary_budget-1-ell-eng # ~11,396 sentences (1.3 MB)
+  - mtdata_ELRC-collection_reports_greek_power_corporation-1-ell-eng # ~20,136 sentences (2.3 MB)
+  - mtdata_ELRC-hellenic_foreign_affairs_announcements-1-ell-eng # ~4,783 sentences (540.5 kB)
+  - mtdata_ELRC-prime_minister_hellenic-1-ell-eng #         ~7,167 sentences (810.0 kB)
+  - mtdata_ELRC-collection_about_cyprus_problem-1-ell-eng # ~2,396 sentences (270.8 kB)
+  - mtdata_ELRC-commitment_property_open-1-ell-eng #           ~36 sentences (4.1 kB)
+  - mtdata_ELRC-compulsory_expropriation_process_greece-1-ell-eng # ~76 sentences (8.7 kB)
+  - mtdata_ELRC-pio_publication_cyprus_has_always_been_europe_2017-1-ell-eng # ~2,018 sentences (228.1 kB)
+  - mtdata_ELRC-pio_publication_window_cyprus-1-ell-eng #   ~3,414 sentences (385.8 kB)
+  - mtdata_ELRC-press_information_cyprus-1-ell-eng #        ~2,335 sentences (263.9 kB)
+  - mtdata_ELRC-governmental_about_migration_policy-1-ell-eng # ~1,473 sentences (166.6 kB)
+  - mtdata_ELRC-eqf_referencing_report-1-ell-eng #          ~2,266 sentences (256.1 kB)
+  - mtdata_ELRC-hellenic_gaming_commission-1-ell-eng #      ~3,866 sentences (437.0 kB)
+  - mtdata_ELRC-eu_publications_medical_v2-1-ell-eng #     ~17,493 sentences (2.0 MB)
   - mtdata_EU-eac_forms-1-ell-eng #                        ~31,162 sentences (3.5 MB)
   - mtdata_EU-eac_reference-1-ell-eng #                    ~31,162 sentences (3.5 MB)
   - mtdata_EU-dcep-1-ell-eng #                          ~1,178,828 sentences (133.2 MB)
-  - mtdata_Neulab-tedtalks_test-1-eng-ell #             ~3,117,009 sentences (352.2 MB)
   - mtdata_Tilde-eesc-2017-ell-eng #                    ~2,393,754 sentences (270.5 MB)
   - mtdata_Tilde-ema-2016-ell-eng #                       ~244,548 sentences (27.6 MB)
   - mtdata_Tilde-rapid-2016-ell-eng #                     ~586,564 sentences (66.3 MB)
