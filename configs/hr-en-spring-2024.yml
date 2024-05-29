@@ -1,8 +1,8 @@
 # The initial configuration was generated using:
-# task config-generator -- --name=spring-2024 --fast hr en
+# task config-generator -- hr en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/4a86accaaea086b57ff730c25c642dd711e11586/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/3d592e570b8919dff511cd8af238335ed84c8d63/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: hr
@@ -48,6 +48,7 @@ datasets:
   #  - mtdata_ELRC-agriculture-1-eng-hrv - duplicate with opus
   #  - mtdata_ELRC-emea-1-eng-hrv - duplicate with opus
   #  - mtdata_ELRC-vaccination-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-wikipedia_health-1-eng-hrv - Error fetching (https://elrc-share.eu/repository/download/aa0aef588de811ea913100155d02670612a2e7d375fe4b139f1d93c27364672d/)
   #  - mtdata_ELRC-antibiotic-1-eng-hrv - duplicate with opus
   #  - mtdata_ELRC-europarl_covid-1-eng-hrv - duplicate with opus
   #  - mtdata_ELRC-ec_europa_covid-1-eng-hrv - duplicate with opus
@@ -172,7 +173,7 @@ datasets:
   - mtdata_Tilde-worldbank-1-eng-hrv #                      ~1,566 sentences (177.0 kB)
 
   # The monolingual data contains:
-  #   ~11,498,228 sentences
+  #   ~15,033,302 sentences
   mono-src:
   - news-crawl_news.2014  #             ~46,902 sentences (5.3M)
   - news-crawl_news.2019 #          ~1,398,230 sentences (158M)
@@ -180,6 +181,7 @@ datasets:
   - news-crawl_news.2021 #          ~2,398,230 sentences (271M)
   - news-crawl_news.2022 #          ~2,592,920 sentences (293M)
   - news-crawl_news.2023 #          ~2,451,327 sentences (277M)
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-hr.txt.gz # ~3,535,074 sentences 
 
   # The monolingual data contains:
   #   ~195,823,002 sentences

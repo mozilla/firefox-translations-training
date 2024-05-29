@@ -1,8 +1,8 @@
 # The initial configuration was generated using:
-# task config-generator -- --name=spring-2024 --fast en fi
+# task config-generator -- en fi --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/4a86accaaea086b57ff730c25c642dd711e11586/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/3d592e570b8919dff511cd8af238335ed84c8d63/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -208,7 +208,7 @@ datasets:
   - news-crawl_news.2023 #         ~23,008,849 sentences (2.6G)
 
   # The monolingual data contains:
-  #   ~25,586,214 sentences
+  #   ~39,868,411 sentences
   mono-trg:
   - news-crawl_news.2015  #          ~1,601,769 sentences (181M)
   - news-crawl_news.2016 #          ~1,336,283 sentences (151M)
@@ -221,6 +221,7 @@ datasets:
   - news-crawl_news.2023 #          ~1,097,345 sentences (124M)
   - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_fi_1.txt.zst # 9,694,730 sentences 
   - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_fi_2.txt.zst # 4,298,568 sentences 
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-fi.txt.gz # ~14,282,197 sentences 
 marian-args:
   decoding-backward:
     beam-size: '12'
