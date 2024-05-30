@@ -2,7 +2,7 @@
 # task config-generator -- en ru --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/b5ee6eeced6c113aaa413fa2f693ccfc340e1d2c/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/6745aba3f298ba328d01125a09001a5cdc89ef61/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -115,42 +115,44 @@ datasets:
   # The monolingual data contains:
   #   ~195,823,002 sentences
   mono-src:
-  - news-crawl_news.2007  #          ~1,557,522 sentences (176M)
-  - news-crawl_news.2008 #          ~5,389,380 sentences (609M)
-  - news-crawl_news.2009 #          ~6,557,522 sentences (741M)
-  - news-crawl_news.2010 #          ~3,247,787 sentences (367M)
-  - news-crawl_news.2011 #          ~6,318,584 sentences (714M)
-  - news-crawl_news.2012 #          ~6,407,079 sentences (724M)
-  - news-crawl_news.2013 #         ~10,619,469 sentences (1.2G)
-  - news-crawl_news.2014 #         ~10,619,469 sentences (1.2G)
-  - news-crawl_news.2015 #         ~10,619,469 sentences (1.2G)
-  - news-crawl_news.2016 #          ~7,982,300 sentences (902M)
-  - news-crawl_news.2017 #         ~11,504,424 sentences (1.3G)
-  - news-crawl_news.2018 #          ~7,920,353 sentences (895M)
-  - news-crawl_news.2019 #         ~17,699,115 sentences (2.0G)
-  - news-crawl_news.2020 #         ~22,123,893 sentences (2.5G)
-  - news-crawl_news.2021 #         ~21,238,938 sentences (2.4G)
-  - news-crawl_news.2022 #         ~23,008,849 sentences (2.6G)
-  - news-crawl_news.2023 #         ~23,008,849 sentences (2.6G)
+  - news-crawl_news.2007  #           ~1,557,522 sentences (176M)
+  - news-crawl_news.2008 #           ~5,389,380 sentences (609M)
+  - news-crawl_news.2009 #           ~6,557,522 sentences (741M)
+  - news-crawl_news.2010 #           ~3,247,787 sentences (367M)
+  - news-crawl_news.2011 #           ~6,318,584 sentences (714M)
+  - news-crawl_news.2012 #           ~6,407,079 sentences (724M)
+  - news-crawl_news.2013 #          ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2014 #          ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2015 #          ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2016 #           ~7,982,300 sentences (902M)
+  - news-crawl_news.2017 #          ~11,504,424 sentences (1.3G)
+  - news-crawl_news.2018 #           ~7,920,353 sentences (895M)
+  - news-crawl_news.2019 #          ~17,699,115 sentences (2.0G)
+  - news-crawl_news.2020 #          ~22,123,893 sentences (2.5G)
+  - news-crawl_news.2021 #          ~21,238,938 sentences (2.4G)
+  - news-crawl_news.2022 #          ~23,008,849 sentences (2.6G)
+  - news-crawl_news.2023 #          ~23,008,849 sentences (2.6G)
 
   # The monolingual data contains:
-  #   ~90,385,836 sentences
+  #   ~427,294,587 sentences
   mono-trg:
-  - news-crawl_news.2008  #             ~19,469 sentences (2.2M)
-  - news-crawl_news.2009 #             ~47,787 sentences (5.4M)
-  - news-crawl_news.2011 #          ~4,876,106 sentences (551M)
-  - news-crawl_news.2012 #          ~5,079,646 sentences (574M)
-  - news-crawl_news.2013 #          ~7,327,433 sentences (828M)
-  - news-crawl_news.2014 #          ~6,194,690 sentences (700M)
-  - news-crawl_news.2015 #          ~5,433,628 sentences (614M)
-  - news-crawl_news.2016 #          ~3,716,814 sentences (420M)
-  - news-crawl_news.2017 #          ~4,451,327 sentences (503M)
-  - news-crawl_news.2018 #          ~4,539,823 sentences (513M)
-  - news-crawl_news.2019 #          ~6,955,752 sentences (786M)
-  - news-crawl_news.2020 #          ~8,849,557 sentences (1.0G)
-  - news-crawl_news.2021 #          ~8,115,044 sentences (917M)
-  - news-crawl_news.2022 #          ~8,849,557 sentences (1.0G)
-  - news-crawl_news.2023 #         ~15,929,203 sentences (1.8G)
+  - news-crawl_news.2008  #              ~19,469 sentences (2.2M)
+  - news-crawl_news.2009 #              ~47,787 sentences (5.4M)
+  - news-crawl_news.2011 #           ~4,876,106 sentences (551M)
+  - news-crawl_news.2012 #           ~5,079,646 sentences (574M)
+  - news-crawl_news.2013 #           ~7,327,433 sentences (828M)
+  - news-crawl_news.2014 #           ~6,194,690 sentences (700M)
+  - news-crawl_news.2015 #           ~5,433,628 sentences (614M)
+  - news-crawl_news.2016 #           ~3,716,814 sentences (420M)
+  - news-crawl_news.2017 #           ~4,451,327 sentences (503M)
+  - news-crawl_news.2018 #           ~4,539,823 sentences (513M)
+  - news-crawl_news.2019 #           ~6,955,752 sentences (786M)
+  - news-crawl_news.2020 #           ~8,849,557 sentences (1.0G)
+  - news-crawl_news.2021 #           ~8,115,044 sentences (917M)
+  - news-crawl_news.2022 #           ~8,849,557 sentences (1.0G)
+  - news-crawl_news.2023 #          ~15,929,203 sentences (1.8G)
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_ru_1.txt.zst # 30,410,051 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-ru.txt.zst # 306,498,700 sentences
 marian-args:
   decoding-backward:
     beam-size: '12'

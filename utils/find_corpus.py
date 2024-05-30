@@ -323,7 +323,8 @@ def get_remote_file_size(
             # Try again using GET.
         else:
             if display_not_200:
-                print(f"Failed to retrieve file information. Status code: {response.status_code}")
+                print(f"Failed to retrieve file information for: {url}")
+                print(f"Status code: {response.status_code}")
             return None, None
 
         # Sometimes when the HEAD does not have the Content-Length, the GET response does.
@@ -411,14 +412,15 @@ def get_mtdata(source: str, target: str):
     print_yaml(entries.keys())
 
 
-class NewsCrawlDataset(NamedTuple):
+class MonoDataset(NamedTuple):
     name: str
     url: str
     size: Optional[int]
     display_size: Optional[int]
+    lines_num: Optional[int]
 
 
-def fetch_news_crawl(lang: str) -> list[NewsCrawlDataset]:
+def fetch_news_crawl(lang: str) -> list[MonoDataset]:
     base_url = f"https://data.statmt.org/news-crawl/{lang}/"
     response = requests.get(base_url, allow_redirects=True)
 
@@ -466,7 +468,7 @@ def fetch_news_crawl(lang: str) -> list[NewsCrawlDataset]:
                 url = f"https://data.statmt.org/news-crawl/{lang}/news.{year}.{lang}.shuffled.deduped.gz"
                 size = int(float(size_number) * multiplier)
 
-                datasets.append(NewsCrawlDataset(name, url, size, f"{size_number}{size_unit}"))
+                datasets.append(MonoDataset(name, url, size, f"{size_number}{size_unit}", None))
         else:
             print("The regex could not find newscrawl datasets for", lang)
     else:
@@ -489,11 +491,87 @@ def get_news_crawl(source: str, target: str):
                     "URL",
                     "Size",
                 ],
-                *[[name, url, display_size] for name, url, _, display_size in datasets],
+                *[[name, url, display_size] for name, url, _, display_size, _ in datasets],
             ]
         )
 
-        print_yaml([name for name, _, _, _ in datasets])
+        print_yaml([name for name, _, _, _, _ in datasets])
+
+
+def fetch_hplt(lang: str, prefixes=("08", "09")) -> list[MonoDataset]:
+    all_datasets = []
+    for threshold in prefixes:
+        for i in range(5):
+            shard_id = i + 1
+            base_url = f"https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/{threshold}/hplt_filtered_{lang}_{shard_id}.count.txt"
+            response = requests.get(base_url, allow_redirects=True)
+
+            if response.ok:
+                lines_number = int(response.content)
+                url = f"https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/{threshold}/hplt_filtered_{lang}_{shard_id}.txt.zst"
+                dataset = MonoDataset(f"url_{url}", url, None, None, lines_number)
+                all_datasets.append(dataset)
+
+    return all_datasets
+
+
+def get_hplt_mono(source: str, target: str):
+    for lang in (source, target):
+        datasets = fetch_hplt(lang)
+
+        print("")
+        print("┌─────────────────────────────────────────────────────────────────────┐")
+        print(f"│ hplt mono ({lang}) - https://hplt-project.org/datasets/v1.2         │")
+        print("└─────────────────────────────────────────────────────────────────────┘")
+        print_table(
+            [
+                [
+                    "Dataset",
+                    "Number of lines",
+                ],
+                *[[name, lines] for name, _, _, _, lines in datasets],
+            ]
+        )
+
+        print_yaml([name for name, _, _, _, _ in datasets])
+
+
+def fetch_nllb_mono(
+    lang: str,
+) -> list[MonoDataset]:
+    info_url = f"https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-{lang}.info.json"
+    url = f"https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-{lang}.txt.zst"
+    response = requests.get(info_url)
+
+    if response.ok:
+        info = response.json()
+        sentences = info["sentences_kept"]
+        assert sentences
+        # There is only one file, but it's easier to return an array for the print_table call.
+        return [MonoDataset(f"url_{url}", url, None, None, sentences)]
+
+    return []
+
+
+def get_nllb_mono(source: str, target: str):
+    for lang in (source, target):
+        datasets = fetch_nllb_mono(lang)
+
+        print("")
+        print("┌─────────────────────────────────────────────────────────────────────┐")
+        print(f"│ nllp mono ({lang}) - https://opus.nlpl.eu/NLLB/corpus/version/NLLB  │")
+        print("└─────────────────────────────────────────────────────────────────────┘")
+        print_table(
+            [
+                [
+                    "Dataset",
+                    "Size",
+                ],
+                *[[name, display_size] for name, _, display_size, _, _ in datasets],
+            ]
+        )
+
+        print_yaml([name for name, _, _, _, _ in datasets])
 
 
 def print_yaml(names: list[str], exclude: list[str] = []):
@@ -549,6 +627,7 @@ def main(args: Optional[list[str]] = None) -> None:
         "huggingface_parallel",
         "huggingface_any",
         "news-crawl",
+        "hplt-mono",
     ]
     parser = argparse.ArgumentParser(
         description=__doc__,
@@ -598,6 +677,12 @@ def main(args: Optional[list[str]] = None) -> None:
 
     if args.importer == "news-crawl" or not args.importer:
         get_news_crawl(args.source, args.target)
+
+    if args.importer == "hplt-mono" or not args.importer:
+        get_hplt_mono(args.source, args.target)
+
+    if args.importer == "nllb-mono" or not args.importer:
+        get_nllb_mono(args.source, args.target)
 
 
 if __name__ == "__main__":
