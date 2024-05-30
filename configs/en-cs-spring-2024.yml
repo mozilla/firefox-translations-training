@@ -209,6 +209,7 @@ datasets:
   - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_cs_1.txt.zst # 17,781,338 sentences
   - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_cs_2.txt.zst # 5,195,097 sentences
   - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_cs_3.txt.zst # 9,565,669 sentences
+  # TODO: better to split into shards
   - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-cs.txt.zst # 135,944,298 sentences
 marian-args:
   decoding-backward:

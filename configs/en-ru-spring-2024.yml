@@ -158,7 +158,8 @@ datasets:
   - news-crawl_news.2022 #           ~8,849,557 sentences (1.0G)
   - news-crawl_news.2023 #          ~15,929,203 sentences (1.8G)
   - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_ru_1.txt.zst # 30,410,051 sentences
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-ru.txt.zst # 306,498,700 sentences
+# TODO: this shard is too big, split into smaller ones and add one or two here
+#  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-ru.txt.zst # 306,498,700 sentences
 marian-args:
   decoding-backward:
     beam-size: '12'
