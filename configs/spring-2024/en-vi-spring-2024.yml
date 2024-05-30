@@ -1,0 +1,117 @@
+# The initial configuration was generated using:
+# task config-generator -- en vi --name spring-2024
+#
+# The documentation for this config can be found here:
+# https://github.com/mozilla/firefox-translations-training/blob/6745aba3f298ba328d01125a09001a5cdc89ef61/taskcluster/configs/config.prod.yml
+experiment:
+  name: spring-2024
+  src: en
+  trg: vi
+  best-model: chrf
+  use-opuscleaner: 'true'
+  opuscleaner-mode: defaults
+  bicleaner:
+    default-threshold: 0.5
+    dataset-thresholds: {}
+  mono-max-sentences-src: 500_000_000
+  mono-max-sentences-trg: 200_000_000
+  spm-sample-size: 10_000_000
+  spm-vocab-size: 32000
+  teacher-ensemble: 1
+  teacher-mode: two-stage
+  pretrained-models: {}
+datasets:
+  devtest:
+  - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-vie
+  - flores_aug-mix_dev
+  test:
+  - mtdata_Neulab-tedtalks_test-1-eng-vie
+  - flores_devtest
+  - flores_aug-mix_devtest
+  - flores_aug-title_devtest
+  - flores_aug-upper_devtest
+  - flores_aug-typos_devtest
+  - flores_aug-noise_devtest
+  - flores_aug-inline-noise_devtest
+
+  # The training data contains:
+  #   69,085,316 sentences
+  # 
+  # Skipped datasets:
+  #  - opus_CCMatrix/v1 - ignored datasets (50,092,444 sentences)
+  #  - opus_GNOME/v1 - not enough data  (149 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - opus_XLEnt/v1.2 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-wikipedia_health-1-eng-vie - duplicate with opus
+  #  - mtdata_Facebook-wikimatrix-1-eng-vie - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_train-1-eng-vie - duplicate with opus
+  #  - mtdata_Statmt-ccaligned-1-eng-vie_VN - duplicate with opus
+  train:
+  - opus_NLLB/v1  #                                       50,092,444 sentences
+  - opus_CCAligned/v1 #                                  12,394,417 sentences
+  - opus_OpenSubtitles/v2018 #                            3,505,276 sentences
+  - opus_WikiMatrix/v1 #                                  1,073,752 sentences
+  - opus_wikimedia/v20230407 #                              669,743 sentences
+  - opus_QED/v2.0a #                                        338,024 sentences
+  - opus_TED2020/v1 #                                       326,417 sentences
+  - opus_NeuLab-TedTalks/v1 #                               184,973 sentences
+  - opus_StanfordNLP-NMT/v1.0 #                             133,167 sentences
+  - opus_ELRC-wikipedia_health/v1 #                         126,413 sentences
+  - opus_bible-uedin/v1 #                                   124,390 sentences
+  - opus_Wikipedia/v1.0 #                                    58,116 sentences
+  - opus_KDE4/v2 #                                           42,782 sentences
+  - opus_Tatoeba/v2023-04-12 #                                6,855 sentences
+  - opus_ELRC-3086-wikipedia_health/v1 #                      4,274 sentences
+  - opus_ELRC_2922/v1 #                                       4,273 sentences
+
+  # The monolingual data contains:
+  #   ~195,823,002 sentences
+  mono-src:
+  - news-crawl_news.2007  #           ~1,557,522 sentences (176M)
+  - news-crawl_news.2008 #           ~5,389,380 sentences (609M)
+  - news-crawl_news.2009 #           ~6,557,522 sentences (741M)
+  - news-crawl_news.2010 #           ~3,247,787 sentences (367M)
+  - news-crawl_news.2011 #           ~6,318,584 sentences (714M)
+  - news-crawl_news.2012 #           ~6,407,079 sentences (724M)
+  - news-crawl_news.2013 #          ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2014 #          ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2015 #          ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2016 #           ~7,982,300 sentences (902M)
+  - news-crawl_news.2017 #          ~11,504,424 sentences (1.3G)
+  - news-crawl_news.2018 #           ~7,920,353 sentences (895M)
+  - news-crawl_news.2019 #          ~17,699,115 sentences (2.0G)
+  - news-crawl_news.2020 #          ~22,123,893 sentences (2.5G)
+  - news-crawl_news.2021 #          ~21,238,938 sentences (2.4G)
+  - news-crawl_news.2022 #          ~23,008,849 sentences (2.6G)
+  - news-crawl_news.2023 #          ~23,008,849 sentences (2.6G)
+
+  # The monolingual data contains:
+  #   ~194,858,161 sentences
+  mono-trg:
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_vi_1.txt.zst  # 48,256,245 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_vi_2.txt.zst # 17,551,973 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_vi_3.txt.zst # 22,201,589 sentences
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_vi_4.txt.zst # 12,770,882 sentences
+  # NLLB data might have lower quality, disable for back-translations
+#  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-vi.txt.zst # 94,077,472 sentences
+marian-args:
+  decoding-backward:
+    beam-size: '12'
+    mini-batch-words: '2000'
+  decoding-teacher:
+    mini-batch-words: '4000'
+    precision: float16
+  training-backward:
+    early-stopping: '5'
+  training-teacher:
+    early-stopping: '20'
+  training-student:
+    early-stopping: '20'
+  training-student-finetuned:
+    early-stopping: '20'
+target-stage: evaluate-teacher
+wandb-publication: true
+taskcluster:
+  split-chunks: 20
+  worker-classes:
+    default: gcp-spot
