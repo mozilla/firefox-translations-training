@@ -1,0 +1,132 @@
+# The initial configuration was generated using:
+# task config-generator -- sr en --name spring-2024
+#
+# The documentation for this config can be found here:
+# https://github.com/mozilla/firefox-translations-training/blob/6745aba3f298ba328d01125a09001a5cdc89ef61/taskcluster/configs/config.prod.yml
+experiment:
+  name: spring-2024
+  src: sr
+  trg: en
+  best-model: chrf
+  use-opuscleaner: 'true'
+  opuscleaner-mode: defaults
+  bicleaner:
+    default-threshold: 0.5
+    dataset-thresholds: {}
+  mono-max-sentences-src: 500_000_000
+  mono-max-sentences-trg: 200_000_000
+  spm-sample-size: 10_000_000
+  spm-vocab-size: 32000
+  teacher-ensemble: 2
+  teacher-mode: two-stage
+  pretrained-models: {}
+datasets:
+  devtest:
+  - mtdata_Neulab-tedtalks_dev-1-eng-srp
+  - flores_aug-mix_dev
+  test:
+  - mtdata_Neulab-tedtalks_test-1-eng-srp
+  - flores_devtest
+  - flores_aug-mix_devtest
+  - flores_aug-title_devtest
+  - flores_aug-upper_devtest
+  - flores_aug-typos_devtest
+  - flores_aug-noise_devtest
+  - flores_aug-inline-noise_devtest
+
+  # The training data contains:
+  #   78,565,711 sentences
+  # 
+  # Skipped datasets:
+  #  - opus_CCMatrix/v1 - ignored datasets (26,510,872 sentences)
+  #  - opus_MultiHPLT/v1.1 - ignored datasets (3,904,384 sentences)
+  #  - opus_GNOME/v1 - not enough data  (150 sentences)
+  #  - opus_ELRC-416-Swedish_Social_Secur/v1 - not enough data  (114 sentences)
+  #  - opus_ELRC-416-Swedish_Social_Secur/v1 - not enough data  (113 sentences)
+  #  - opus_tldr-pages/v2023-08-29 - not enough data  (26 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-wikipedia_health-1-eng-srp - duplicate with opus
+  #  - mtdata_Facebook-wikimatrix-1-eng-srp - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_train-1-eng-srp - duplicate with opus
+  #  - mtdata_Statmt-ccaligned-1-eng-srp_RS - duplicate with opus
+  train:
+  - opus_OpenSubtitles/v2018  #                           42,635,098 sentences
+  - opus_NLLB/v1 #                                       26,510,872 sentences
+  - opus_HPLT/v1.1 #                                      3,904,423 sentences
+  - opus_CCAligned/v1 #                                   1,992,692 sentences
+  - opus_XLEnt/v1.2 #                                     1,474,447 sentences
+  - opus_WikiMatrix/v1 #                                    395,569 sentences
+  - opus_GoURMET/v1 #                                       329,004 sentences
+  - opus_QED/v2.0a #                                        284,942 sentences
+  - opus_TED2020/v1 #                                       260,966 sentences
+  - opus_SETIMES/v2 #                                       225,169 sentences
+  - opus_wikimedia/v20230407 #                              217,199 sentences
+  - opus_NeuLab-TedTalks/v1 #                               152,477 sentences
+  - opus_bible-uedin/v1 #                                    62,131 sentences
+  - opus_KDE4/v2 #                                           60,827 sentences
+  - opus_Tatoeba/v2023-04-12 #                               21,760 sentences
+  - opus_GlobalVoices/v2018q4 #                              20,309 sentences
+  - opus_ELRC-wikipedia_health/v1 #                          12,707 sentences
+  - opus_TildeMODEL/v2018 #                                   2,024 sentences
+  - opus_EUbookshop/v2 #                                      1,608 sentences
+  - opus_ELRC-3041-wikipedia_health/v1 #                        744 sentences
+  - opus_ELRC_2922/v1 #                                         743 sentences
+  - mtdata_ELRC-swedish_social_security-1-eng-srp #        ~18,804 sentences (2.1 MB)
+  - mtdata_Tilde-worldbank-1-eng-srp #                      ~2,533 sentences (286.3 kB)
+
+  # The monolingual data contains:
+  #   ~71,175,617 sentences
+  mono-src:
+  - news-crawl_news.2008  #               ~3,522 sentences (398K)
+  - news-crawl_news.2009 #              ~18,584 sentences (2.1M)
+  - news-crawl_news.2010 #               ~9,734 sentences (1.1M)
+  - news-crawl_news.2011 #               ~2,530 sentences (286K)
+  - news-crawl_news.2018 #              ~18,584 sentences (2.1M)
+  - news-crawl_news.2019 #           ~1,929,203 sentences (218M)
+  - news-crawl_news.2020 #           ~5,619,469 sentences (635M)
+  - news-crawl_news.2021 #           ~8,849,557 sentences (1.0G)
+  - news-crawl_news.2022 #           ~9,734,513 sentences (1.1G)
+  - news-crawl_news.2023 #           ~9,734,513 sentences (1.1G)
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-sr.txt.zst # 35,255,408 sentences
+
+  # The monolingual data contains:
+  #   ~195,823,002 sentences
+  mono-trg:
+  - news-crawl_news.2007  #           ~1,557,522 sentences (176M)
+  - news-crawl_news.2008 #           ~5,389,380 sentences (609M)
+  - news-crawl_news.2009 #           ~6,557,522 sentences (741M)
+  - news-crawl_news.2010 #           ~3,247,787 sentences (367M)
+  - news-crawl_news.2011 #           ~6,318,584 sentences (714M)
+  - news-crawl_news.2012 #           ~6,407,079 sentences (724M)
+  - news-crawl_news.2013 #          ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2014 #          ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2015 #          ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2016 #           ~7,982,300 sentences (902M)
+  - news-crawl_news.2017 #          ~11,504,424 sentences (1.3G)
+  - news-crawl_news.2018 #           ~7,920,353 sentences (895M)
+  - news-crawl_news.2019 #          ~17,699,115 sentences (2.0G)
+  - news-crawl_news.2020 #          ~22,123,893 sentences (2.5G)
+  - news-crawl_news.2021 #          ~21,238,938 sentences (2.4G)
+  - news-crawl_news.2022 #          ~23,008,849 sentences (2.6G)
+  - news-crawl_news.2023 #          ~23,008,849 sentences (2.6G)
+marian-args:
+  decoding-backward:
+    beam-size: '12'
+    mini-batch-words: '2000'
+  decoding-teacher:
+    mini-batch-words: '4000'
+    precision: float16
+  training-backward:
+    early-stopping: '5'
+  training-teacher:
+    early-stopping: '20'
+  training-student:
+    early-stopping: '20'
+  training-student-finetuned:
+    early-stopping: '20'
+target-stage: all
+wandb-publication: true
+taskcluster:
+  split-chunks: 20
+  worker-classes:
+    default: gcp-spot

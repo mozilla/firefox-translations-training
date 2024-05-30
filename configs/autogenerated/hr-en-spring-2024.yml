@@ -1,0 +1,226 @@
+# The initial configuration was generated using:
+# task config-generator -- hr en --name spring-2024
+#
+# The documentation for this config can be found here:
+# https://github.com/mozilla/firefox-translations-training/blob/6745aba3f298ba328d01125a09001a5cdc89ef61/taskcluster/configs/config.prod.yml
+experiment:
+  name: spring-2024
+  src: hr
+  trg: en
+  best-model: chrf
+  use-opuscleaner: 'true'
+  opuscleaner-mode: defaults
+  bicleaner:
+    default-threshold: 0.5
+    dataset-thresholds: {}
+  mono-max-sentences-src: 500_000_000
+  mono-max-sentences-trg: 200_000_000
+  spm-sample-size: 10_000_000
+  spm-vocab-size: 32000
+  teacher-ensemble: 2
+  teacher-mode: two-stage
+  pretrained-models: {}
+datasets:
+  devtest:
+  - mtdata_Neulab-tedtalks_dev-1-eng-hrv
+  - flores_aug-mix_dev
+  test:
+  - mtdata_Neulab-tedtalks_test-1-eng-hrv
+  - flores_devtest
+  - flores_aug-mix_devtest
+  - flores_aug-title_devtest
+  - flores_aug-upper_devtest
+  - flores_aug-typos_devtest
+  - flores_aug-noise_devtest
+  - flores_aug-inline-noise_devtest
+
+  # The training data contains:
+  #   99,724,833 sentences
+  # 
+  # Skipped datasets:
+  #  - opus_CCMatrix/v1 - ignored datasets (18,797,643 sentences)
+  #  - opus_MultiHPLT/v1.1 - ignored datasets (9,310,276 sentences)
+  #  - opus_MultiMaCoCu/v2 - ignored datasets (2,266,005 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-croatian_bank-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-croatian_mine_action-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-euipo_2017-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-agriculture-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-emea-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-vaccination-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-wikipedia_health-1-eng-hrv - Error fetching (https://elrc-share.eu/repository/download/aa0aef588de811ea913100155d02670612a2e7d375fe4b139f1d93c27364672d/)
+  #  - mtdata_ELRC-antibiotic-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-europarl_covid-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-ec_europa_covid-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-eur_lex_covid-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-presscorner_covid-1-eng-hrv - duplicate with opus
+  #  - mtdata_ELRC-nteu_tiera-1-eng-hrv - duplicate with opus
+  #  - mtdata_Facebook-wikimatrix-1-eng-hrv - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_train-1-eng-hrv - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-6-eng-hrv - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-7.1-eng-hrv - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-8-eng-hrv - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-9-eng-hrv - duplicate with opus
+  #  - mtdata_Statmt-ccaligned-1-eng-hrv_HR - duplicate with opus
+  train:
+  - opus_OpenSubtitles/v2018  #                           35,131,729 sentences
+  - opus_NLLB/v1 #                                       18,797,643 sentences
+  - opus_ELRC-EMEA/v1 #                                  10,890,456 sentences
+  - opus_CCAligned/v1 #                                   9,376,190 sentences
+  - opus_HPLT/v1.1 #                                      9,310,369 sentences
+  - opus_ParaCrawl/v9 #                                   3,240,485 sentences
+  - opus_XLEnt/v1.2 #                                     2,844,710 sentences
+  - opus_ELRC-4142-NTEU_TierA/v1 #                        2,290,893 sentences
+  - opus_MaCoCu/v2 #                                      2,266,007 sentences
+  - opus_ELRC-5067-SciPar/v1 #                              806,581 sentences
+  - opus_TildeMODEL/v2018 #                                 745,616 sentences
+  - opus_DGT/v2019 #                                        722,182 sentences
+  - opus_ELRC-2706-EMEA/v1 #                                650,030 sentences
+  - opus_WikiMatrix/v1 #                                    259,499 sentences
+  - opus_QED/v2.0a #                                        208,129 sentences
+  - opus_SETIMES/v2 #                                       205,910 sentences
+  - opus_TED2020/v1 #                                       197,411 sentences
+  - opus_ELITR-ECA/v1 #                                     181,038 sentences
+  - opus_EuroPat/v3 #                                       154,775 sentences
+  - opus_ELRC-presscorner_covid/v1 #                        140,795 sentences
+  - opus_ELRC-Regional_Development/v1 #                     136,809 sentences
+  - opus_NeuLab-TedTalks/v1 #                               128,233 sentences
+  - opus_ELRC-Rural_Development/v1 #                        105,562 sentences
+  - opus_hrenWaC/v1 #                                        99,001 sentences
+  - opus_KDE4/v2 #                                           87,333 sentences
+  - opus_TedTalks/v1 #                                       86,348 sentences
+  - opus_ELRC-2542-Agriculture/v1 #                          68,376 sentences
+  - opus_bible-uedin/v1 #                                    62,179 sentences
+  - opus_ELRC-4329-PRINCIPLE_MVEP_legal/v1 #                 44,460 sentences
+  - opus_wikimedia/v20230407 #                               42,034 sentences
+  - opus_GNOME/v1 #                                          35,429 sentences
+  - opus_ELRC-3556-EUR_LEX_covid/v1 #                        22,010 sentences
+  - opus_ELRC-EUR_LEX/v1 #                                   22,010 sentences
+  - opus_ELRC-651-government_websites_/v1 #                  21,341 sentences
+  - opus_ELRC-government_websites/v1 #                       21,341 sentences
+  - opus_ELRA-W0204/v1 #                                     21,340 sentences
+  - opus_ELRC-943-Journal_Croatian_Ass/v1 #                  18,478 sentences
+  - opus_ELRA-W0273/v1 #                                     18,477 sentences
+  - opus_ELRC-1015-Croatian_Mine_Action/v1 #                 17,602 sentences
+  - opus_ELRA-W0131/v1 #                                     17,601 sentences
+  - opus_ELRC-1174-EUIPO_2017/v1 #                           17,205 sentences
+  - opus_ELRC-EUIPO_2017/v1 #                                17,205 sentences
+  - opus_ELRC-2866-EU_publications_medi/v1 #                 12,837 sentences
+  - opus_ELRC-EU_publications/v1 #                           12,837 sentences
+  - opus_ELRC-921-studies_challenges_C/v1 #                  11,781 sentences
+  - opus_ELRA-W0266/v1 #                                     11,780 sentences
+  - opus_ELRC-915-statistical_reports_/v1 #                  11,738 sentences
+  - opus_ELRC-statistical_reports/v1 #                       11,738 sentences
+  - opus_ELRA-W0264/v1 #                                     11,737 sentences
+  - opus_ELRC-788-Croatian_Bank/v1 #                         11,708 sentences
+  - opus_ELRA-W0226/v1 #                                     11,707 sentences
+  - opus_ELRC-EUROPARL_covid/v1 #                            10,175 sentences
+  - opus_ELRC-2541-Regional_Development/v1 #                  7,911 sentences
+  - opus_ELRC-3597-presscorner_covid/v1 #                     6,645 sentences
+  - opus_EUbookshop/v2 #                                      6,104 sentences
+  - opus_ELRC-992-Rural_Development_Pr/v1 #                   5,202 sentences
+  - opus_ELRC_3382/v1 #                                       3,671 sentences
+  - opus_ELRC-989-Foreign_Affairs_Croa/v1 #                   3,103 sentences
+  - opus_ELRC-Foreign_Affairs/v1 #                            3,103 sentences
+  - opus_ELRA-W0293/v1 #                                      3,102 sentences
+  - opus_ELRC-3478-EC_EUROPA_covid/v1 #                       2,595 sentences
+  - opus_ELRC-EC_EUROPA/v1 #                                  2,595 sentences
+  - opus_Tatoeba/v2023-04-12 #                                2,454 sentences
+  - opus_ELRC-991-Croatian_Journal_Fis/v1 #                   2,408 sentences
+  - opus_ELRA-W0294/v1 #                                      2,407 sentences
+  - opus_ELRC-1080-Acts_Biological_Land/v1 #                  2,329 sentences
+  - opus_ELRA-W0142/v1 #                                      2,328 sentences
+  - opus_ELRC-1058-University_Library_Z/v1 #                  2,310 sentences
+  - opus_ELRA-W0135/v1 #                                      2,309 sentences
+  - opus_ELRC-986-Embassy_Finland_Zagr/v1 #                   1,967 sentences
+  - opus_ELRA-W0292/v1 #                                      1,966 sentences
+  - opus_ELRC-1159-Swedish_Migration_Bo/v1 #                  1,112 sentences
+  - opus_ELRC-Swedish_Migration/v1 #                          1,112 sentences
+  - opus_ELRC-3193-antibiotic/v1 #                            1,070 sentences
+  - opus_ELRC-antibiotic/v1 #                                 1,070 sentences
+  - opus_ELRC-984-Government_Cooperati/v1 #                   1,026 sentences
+  - opus_ELRA-W0291/v1 #                                      1,025 sentences
+  - opus_ELRC-996-nature_protection_st/v1 #                     970 sentences
+  - opus_ELRC-825-Croatian_Swedish_Cri/v1 #                     907 sentences
+  - opus_ELRA-W0238/v1 #                                        906 sentences
+  - opus_ELRC-2753-vaccination/v1 #                             509 sentences
+  - opus_ELRC-vaccination/v1 #                                  509 sentences
+  - opus_ELRC_2922/v1 #                                         485 sentences
+  - opus_ELRC-3284-EUROPARL_covid/v1 #                          475 sentences
+  - opus_ELRC_2923/v1 #                                         288 sentences
+  - mtdata_ELRC-government_websites_croatian-1-eng-hrv #   ~24,015 sentences (2.7 MB)
+  - mtdata_ELRC-croatian_swedish_crime_victim_compensation_support_authority-1-eng-hrv # ~579 sentences (65.5 kB)
+  - mtdata_ELRC-statistical_reports_studies_croatian_bureau_statistics-1-eng-hrv # ~14,093 sentences (1.6 MB)
+  - mtdata_ELRC-studies_challenges_croatian_accession_union_croatian_institute_finance-1-eng-hrv # ~15,627 sentences (1.8 MB)
+  - mtdata_ELRC-journal_croatian_association_civil_engineers-1-eng-hrv # ~16,779 sentences (1.9 MB)
+  - mtdata_ELRC-government_cooperation_ngos-1-eng-hrv #     ~1,423 sentences (160.9 kB)
+  - mtdata_ELRC-embassy_finland_zagreb-1-eng-hrv #          ~2,023 sentences (228.7 kB)
+  - mtdata_ELRC-foreign_affairs_croatia-1-eng-hrv #         ~3,064 sentences (346.3 kB)
+  - mtdata_ELRC-croatian_journal_fisheries-1-eng-hrv #      ~2,903 sentences (328.1 kB)
+  - mtdata_ELRC-rural_development_programme_period_2014_2020_croatian_rural_development_programme-1-eng-hrv # ~5,189 sentences (586.4 kB)
+  - mtdata_ELRC-nature_protection_strategy_croatia-1-eng-hrv # ~1,121 sentences (126.7 kB)
+  - mtdata_ELRC-university_library_zagreb-1-eng-hrv #       ~3,294 sentences (372.3 kB)
+  - mtdata_ELRC-acts_biological_landscape_diversity_environmental_protection-1-eng-hrv # ~2,721 sentences (307.5 kB)
+  - mtdata_ELRC-swedish_migration_board_migrationsverket-1-eng-hrv # ~863 sentences (97.6 kB)
+  - mtdata_ELRC-regional_development_funds-1-eng-hrv #      ~7,471 sentences (844.3 kB)
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-hrv #     ~14,220 sentences (1.6 MB)
+  - mtdata_ELRC-nteu_tierb-1-eng-hrv #                  ~1,846,267 sentences (208.6 MB)
+  - mtdata_EU-eac_reference-1-eng-hrv #                    ~31,162 sentences (3.5 MB)
+  - mtdata_Tilde-eesc-2017-eng-hrv #                      ~216,663 sentences (24.5 MB)
+  - mtdata_Tilde-ema-2016-eng-hrv #                       ~209,283 sentences (23.6 MB)
+  - mtdata_Tilde-ecb-2017-eng-hrv #                           ~876 sentences (99.0 kB)
+  - mtdata_Tilde-rapid-2016-eng-hrv #                      ~45,055 sentences (5.1 MB)
+  - mtdata_Tilde-worldbank-1-eng-hrv #                      ~1,566 sentences (177.0 kB)
+
+  # The monolingual data contains:
+  #   ~23,164,713 sentences
+  mono-src:
+  - news-crawl_news.2014  #              ~46,902 sentences (5.3M)
+  - news-crawl_news.2019 #           ~1,398,230 sentences (158M)
+  - news-crawl_news.2020 #           ~2,610,619 sentences (295M)
+  - news-crawl_news.2021 #           ~2,398,230 sentences (271M)
+  - news-crawl_news.2022 #           ~2,592,920 sentences (293M)
+  - news-crawl_news.2023 #           ~2,451,327 sentences (277M)
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-hr.txt.zst # 11,666,485 sentences
+
+  # The monolingual data contains:
+  #   ~195,823,002 sentences
+  mono-trg:
+  - news-crawl_news.2007  #           ~1,557,522 sentences (176M)
+  - news-crawl_news.2008 #           ~5,389,380 sentences (609M)
+  - news-crawl_news.2009 #           ~6,557,522 sentences (741M)
+  - news-crawl_news.2010 #           ~3,247,787 sentences (367M)
+  - news-crawl_news.2011 #           ~6,318,584 sentences (714M)
+  - news-crawl_news.2012 #           ~6,407,079 sentences (724M)
+  - news-crawl_news.2013 #          ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2014 #          ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2015 #          ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2016 #           ~7,982,300 sentences (902M)
+  - news-crawl_news.2017 #          ~11,504,424 sentences (1.3G)
+  - news-crawl_news.2018 #           ~7,920,353 sentences (895M)
+  - news-crawl_news.2019 #          ~17,699,115 sentences (2.0G)
+  - news-crawl_news.2020 #          ~22,123,893 sentences (2.5G)
+  - news-crawl_news.2021 #          ~21,238,938 sentences (2.4G)
+  - news-crawl_news.2022 #          ~23,008,849 sentences (2.6G)
+  - news-crawl_news.2023 #          ~23,008,849 sentences (2.6G)
+marian-args:
+  decoding-backward:
+    beam-size: '12'
+    mini-batch-words: '2000'
+  decoding-teacher:
+    mini-batch-words: '4000'
+    precision: float16
+  training-backward:
+    early-stopping: '5'
+  training-teacher:
+    early-stopping: '20'
+  training-student:
+    early-stopping: '20'
+  training-student-finetuned:
+    early-stopping: '20'
+target-stage: all
+wandb-publication: true
+taskcluster:
+  split-chunks: 20
+  worker-classes:
+    default: gcp-spot
