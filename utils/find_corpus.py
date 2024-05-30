@@ -539,12 +539,18 @@ def get_hplt_mono(source: str, target: str):
 def fetch_nllb_mono(
     lang: str,
 ) -> list[MonoDataset]:
-    url = f"https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-{lang}.txt.gz"
-    size, display_size = get_remote_file_size(url)
-    if size is None:
-        return []
-    # There is only one file, but it's easier to return an array for the print_table call.
-    return [MonoDataset(f"url_{url}", url, size, display_size, None)]
+    info_url = f"https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-{lang}.info.json"
+    url = f"https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-{lang}.txt.zst"
+    response = requests.get(info_url)
+
+    if response.ok:
+        info = response.json()
+        sentences = info["sentences_kept"]
+        assert sentences
+        # There is only one file, but it's easier to return an array for the print_table call.
+        return [MonoDataset(f"url_{url}", url, None, None, sentences)]
+
+    return []
 
 
 def get_nllb_mono(source: str, target: str):
