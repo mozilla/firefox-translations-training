@@ -16,7 +16,11 @@ logger = logging.getLogger(__name__)
 
 HEADER_RE = re.compile(r"(?<=\[)(?P<value>.+?)\] ")
 VALIDATION_RE = re.compile(
-    r"Ep\.[ :]+(?P<ep>\d+)[ :]+Up\.[ :]+(?P<up>\d+)[ :]+(?P<key>[\w-]+)[ :]+(?P<value>[\d\.]+)"
+    r"Ep\.[ :]+(?P<ep>\d+)"
+    r"[ :]+Up\.[ :]+(?P<up>\d+)"
+    r"[ :]+(?P<key>[\w-]+)"
+    r"[ :]+(?P<value>[\d\.]+)"
+    r"([ :]+stalled (?P<stalled>\d+) times)?"
 )
 TRAINING_RE = re.compile(
     r"Ep\.[ :]+(?P<epoch>\d+)[ :]+"
@@ -26,6 +30,7 @@ TRAINING_RE = re.compile(
     r"Time[ :]+(?P<time>[\d\.]+)s[ :]+"
     r"(?P<rate>[\d\.]+) words\/s[ :]+"
     r"gNorm[ :]+(?P<gnorm>[\d\.]+)"
+    r"([ :]+L.r. (?P<learning_rate>[\d\.e-]+))?"
 )
 
 # Expected version of Marian for a clean parsing
@@ -105,13 +110,18 @@ class TrainingParser:
         match = TRAINING_RE.match(text)
         if not match:
             return None
-        values = match.groupdict()
-        # Update sen value from 1,234,567 to 1_234_567 that Python interprets
+        # Filter out null values
+        values = {k: v for k, v in match.groupdict().items() if v is not None}
+        # Update sen from 1,234,567 to 1_234_567 that Python can interpret
         values["sen"] = values["sen"].replace(",", "_")
-        # Transform values to match output types
-        training_epoch = TrainingEpoch(
-            **{k: TrainingEpoch.__annotations__[k](v) for k, v in values.items()}
-        )
+        # Cast values to match output types
+        casted_values = {
+            k: TrainingEpoch.__annotations__[k](v)
+            if callable(TrainingEpoch.__annotations__[k])
+            else float(v)
+            for k, v in values.items()
+        }
+        training_epoch = TrainingEpoch(**casted_values)
         self.training.append(training_epoch)
         for publisher in self.publishers:
             try:
@@ -128,16 +138,25 @@ class TrainingParser:
         """Parses a validation entry on multiple lines."""
         if ("valid",) not in headers or not (match := VALIDATION_RE.match(text)):
             return None
-        epoch, up, key, val = match.groups()
+        results = match.groupdict()
         # Replace items keys to match ValidationEpoch dataclass
-        key = key.replace("-", "_")
-        # Transform values to match output types
-        epoch, up = int(epoch), int(up)
-        val = ValidationEpoch.__annotations__[key](val)
+        key = results["key"].replace("-", "_")
+        epoch, up = int(results["ep"]), int(results["up"])
         entry = self._validation_entries[(epoch, up)]
-        entry[key] = val
+        # Transform values to match output types
+        entry[key] = ValidationEpoch.__annotations__[key](results["value"])
+        if results["stalled"] is not None:
+            entry[f"{key}_stalled"] = float(results["stalled"])
         # Build a validation epoch from multiple lines
-        expected_keys = set(ValidationEpoch.__annotations__.keys()) - {"epoch", "up", "perplexity"}
+        expected_keys = set(
+            key
+            for key in ValidationEpoch.__annotations__.keys()
+            if not (
+                # Stalled data are not necessary present on validation entries
+                key.endswith("_stalled")
+                or key in ("epoch", "up", "perplexity")
+            )
+        )
         if not (expected_keys - set(entry.keys())):
             validation_epoch = ValidationEpoch(epoch=epoch, up=up, **entry)
             self.validation.append(validation_epoch)
