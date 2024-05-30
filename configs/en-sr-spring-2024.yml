@@ -108,7 +108,8 @@ datasets:
   - news-crawl_news.2021 #           ~8,849,557 sentences (1.0G)
   - news-crawl_news.2022 #           ~9,734,513 sentences (1.1G)
   - news-crawl_news.2023 #           ~9,734,513 sentences (1.1G)
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-sr.txt.zst # 35,255,408 sentences
+  # NLLB data might have lower quality, disable for back-translations
+#  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-sr.txt.zst # 35,255,408 sentences
 marian-args:
   decoding-backward:
     beam-size: '12'

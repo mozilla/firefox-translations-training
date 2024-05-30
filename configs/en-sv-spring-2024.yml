@@ -217,7 +217,8 @@ datasets:
   - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_sv_1.txt.zst  # 17,116,908 sentences
   - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_sv_2.txt.zst # 12,553,860 sentences
   - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_sv_3.txt.zst # 1,647,643 sentences
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-sv.txt.zst # 160,683,026 sentences
+  # NLLB data might have lower quality, disable for back-translations
+#  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-sv.txt.zst # 160,683,026 sentences
 marian-args:
   decoding-backward:
     beam-size: '12'
