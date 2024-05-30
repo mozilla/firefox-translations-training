@@ -159,16 +159,17 @@ datasets:
   - opus_ELRC-901-Denmark_Prosecution_/v1 #                   1,163 sentences
   - opus_ELRC-900-Danish_Working_Envir/v1 #                   1,138 sentences
   - opus_ELRC-890-Holstebro_Kunstmuseu/v1 #                   1,023 sentences
-  - opus_ELRC-3204-antibiotic/v1 #                              801 sentences
-  - opus_ELRC-894-Gallery_Denmark/v1 #                          769 sentences
-  - opus_ELRC-3295-EUROPARL_covid/v1 #                          634 sentences
-  - opus_ELRC-3066-wikipedia_health/v1 #                        523 sentences
-  - opus_ELRC-wikipedia_health/v1 #                             523 sentences
-  - opus_ELRC_2922/v1 #                                         522 sentences
-  - opus_tldr-pages/v2023-08-29 #                               495 sentences
-  - opus_ELRC-2754-vaccination/v1 #                             462 sentences
-  - opus_ELRC-vaccination/v1 #                                  462 sentences
-  - opus_ELRC_2923/v1 #                                         389 sentences
+# remove to work around https://github.com/mozilla/firefox-translations-training/issues/653
+#  - opus_ELRC-3204-antibiotic/v1 #                              801 sentences
+#  - opus_ELRC-894-Gallery_Denmark/v1 #                          769 sentences
+#  - opus_ELRC-3295-EUROPARL_covid/v1 #                          634 sentences
+#  - opus_ELRC-3066-wikipedia_health/v1 #                        523 sentences
+#  - opus_ELRC-wikipedia_health/v1 #                             523 sentences
+#  - opus_ELRC_2922/v1 #                                         522 sentences
+#  - opus_tldr-pages/v2023-08-29 #                               495 sentences
+#  - opus_ELRC-2754-vaccination/v1 #                             462 sentences
+#  - opus_ELRC-vaccination/v1 #                                  462 sentences
+#  - opus_ELRC_2923/v1 #                                         389 sentences
   - mtdata_ELRC-danish_higher_education_science_3-1-dan-eng # ~12,611 sentences (1.4 MB)
   - mtdata_ELRC-danish_higher_education_science_2-1-dan-eng # ~13,011 sentences (1.5 MB)
   - mtdata_ELRC-danish_higher_education_science-1-dan-eng # ~6,646 sentences (751.0 kB)

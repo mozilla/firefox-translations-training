@@ -147,10 +147,11 @@ datasets:
   - opus_ELRC_2923/v1 #                                         319 sentences
   - mtdata_ELRC-swedish_work_environment-1-eng-ron #       ~13,557 sentences (1.5 MB)
   - mtdata_ELRC-romanian_new_criminal_procedure_code-1-eng-ron # ~23,368 sentences (2.6 MB)
-  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-eng-ron # ~2,078 sentences (234.8 kB)
+# maybe too long
+#  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-eng-ron # ~2,078 sentences (234.8 kB)
   - mtdata_ELRC-romanian_ombudsman_archive-1-eng-ron #      ~4,888 sentences (552.4 kB)
-  - mtdata_ELRC-studies_reports_statistical_culture_institute_cultural_research_training-1-eng-ron # ~11,961 sentences (1.4 MB)
-  - mtdata_ELRC-rural_development_programme_romania-1-eng-ron # ~4,635 sentences (523.8 kB)
+#  - mtdata_ELRC-studies_reports_statistical_culture_institute_cultural_research_training-1-eng-ron # ~11,961 sentences (1.4 MB)
+#  - mtdata_ELRC-rural_development_programme_romania-1-eng-ron # ~4,635 sentences (523.8 kB)
   - mtdata_ELRC-eu_publications_medical_v2-1-eng-ron #     ~14,807 sentences (1.7 MB)
   - mtdata_EU-eac_forms-1-eng-ron #                        ~31,162 sentences (3.5 MB)
   - mtdata_EU-eac_reference-1-eng-ron #                    ~31,162 sentences (3.5 MB)

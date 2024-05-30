@@ -129,7 +129,8 @@ datasets:
   - opus_ELRC-2741-vaccination/v1 #                             521 sentences
   - opus_ELRC-vaccination/v1 #                                  521 sentences
   - mtdata_ELRC-international_agreements-1-eng-lav #      ~167,379 sentences (18.9 MB)
-  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-eng-lav # ~2,078 sentences (234.8 kB)
+# maybe too long
+#  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-eng-lav # ~2,078 sentences (234.8 kB)
   - mtdata_ELRC-finance_economics_bank_latvia-1-eng-lav #  ~12,153 sentences (1.4 MB)
   - mtdata_ELRC-eu_publications_medical_v2-1-eng-lav #     ~14,470 sentences (1.6 MB)
   - mtdata_ELRC-nteu_tierb-1-eng-lav #                  ~6,930,262 sentences (783.1 MB)
