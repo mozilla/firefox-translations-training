@@ -140,6 +140,8 @@ datasets:
   - opus_ELRC-649-Greek_administration/v1 #                  12,510 sentences
   - opus_ELRA-W0203/v1 #                                     12,509 sentences
   - opus_EUconst/v1 #                                         9,990 sentences
+  # This was failing
+  # - opus_SPC/v1 #                                             8,181 sentences
   - opus_SPC/v1 #                                             8,181 sentences
   - opus_ELRC-3603-presscorner_covid/v1 #                     6,635 sentences
   - opus_ELRC-936-Prime_Minister_Helle/v1 #                   5,323 sentences
