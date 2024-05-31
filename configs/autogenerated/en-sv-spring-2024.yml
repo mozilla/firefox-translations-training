@@ -2,7 +2,7 @@
 # task config-generator -- en sv --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/6745aba3f298ba328d01125a09001a5cdc89ef61/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/50d5507202f316d24097fe0efd1b3dfbadb6906f/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -46,6 +46,7 @@ datasets:
   #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
   #  - mtdata_ELRC-swedish_labour_part2-1-eng-swe - duplicate with opus
   #  - mtdata_ELRC-swedish_labour_part1-1-eng-swe - duplicate with opus
+  #  - swedish_work_environment - ignored datasets
   #  - mtdata_ELRC-swedish_food-1-eng-swe - duplicate with opus
   #  - mtdata_ELRC-www.norden.org-1-eng-swe - duplicate with opus
   #  - mtdata_ELRC-www.sida.se-1-eng-swe - duplicate with opus
@@ -170,7 +171,6 @@ datasets:
   - opus_ELRC-2752-vaccination/v1 #                             497 sentences
   - opus_ELRC-vaccination/v1 #                                  497 sentences
   - mtdata_ELRC-swedish_social_security-1-eng-swe #        ~18,804 sentences (2.1 MB)
-  - mtdata_ELRC-swedish_work_environment-1-eng-swe #       ~13,557 sentences (1.5 MB)
   - mtdata_ELRC-social_insurance_försäkringskassan-1-eng-swe # ~1,048 sentences (118.5 kB)
   - mtdata_ELRC-finnish_information_bank-1-eng-swe #        ~3,398 sentences (384.0 kB)
   - mtdata_ELRC-swedish_competition_authority_konkurrensverket-1-eng-swe # ~6,096 sentences (688.9 kB)

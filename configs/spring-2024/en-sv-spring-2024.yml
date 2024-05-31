@@ -168,7 +168,8 @@ datasets:
   - opus_ELRC-2752-vaccination/v1 #                             497 sentences
   - opus_ELRC-vaccination/v1 #                                  497 sentences
   - mtdata_ELRC-swedish_social_security-1-eng-swe #        ~18,804 sentences (2.1 MB)
-  - mtdata_ELRC-swedish_work_environment-1-eng-swe #       ~13,557 sentences (1.5 MB)
+  # This failed in the task.
+  # - mtdata_ELRC-swedish_work_environment-1-eng-swe #       ~13,557 sentences (1.5 MB)
   - mtdata_ELRC-social_insurance_försäkringskassan-1-eng-swe # ~1,048 sentences (118.5 kB)
   - mtdata_ELRC-finnish_information_bank-1-eng-swe #        ~3,398 sentences (384.0 kB)
   - mtdata_ELRC-swedish_competition_authority_konkurrensverket-1-eng-swe # ~6,096 sentences (688.9 kB)
