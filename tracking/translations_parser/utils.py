@@ -126,7 +126,7 @@ def parse_task_label(task_label: str) -> ParsedTaskLabel:
         # Else try to parse an evaluation label with importer, dataset and auugmentation
         match = EVAL_REGEX.match(task_label)
     if not match:
-        raise ValueError(task_label)
+        raise ValueError(f"Label could not be parsed: {task_label}")
     groups = match.groupdict()
     model = groups["model"]
 
@@ -168,7 +168,10 @@ def build_task_name(task: dict):
     Build a simpler task name using a Taskcluster task payload (without status)
     """
     prefix = task["tags"]["kind"].split("-")[0]
-    label = parse_task_label(task["tags"]["label"])
+    label_value = task.get("tags", {}).get("label", None)
+    if label_value is None:
+        raise ValueError("Task has no label")
+    label = parse_task_label(label_value)
     return prefix, label.model
 
 
