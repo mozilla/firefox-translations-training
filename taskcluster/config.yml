@@ -135,6 +135,9 @@ local-worker-aliases:
         by-worker-class:
             gcp-standard: 'b-linux-large-gcp-1tb-standard'
             default: 'b-linux-large-gcp-1tb'
+    b-cpu-xxlargedisk:
+        by-worker-class:
+            default: 'b-linux-large-gcp-2tb'
     # Use for quick tasks that need a GPU, eg: evaluate
     b-gpu:
         by-worker-class:
