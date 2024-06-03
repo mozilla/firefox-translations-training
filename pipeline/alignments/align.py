@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
-Calculates alignments for a parallel corpus
+Calculates the word alignments for a parallel corpus. Each token in a source sentence is aligned
+to a token in the target sentence. The alignments are symmetrized so that the alignemnts agree
+going in both the source-target and target-source directions.
+
+This script uses eflomal for alignment computation, and atools from fast_align for symmetrizing.
 
 Example:
     BIN=bin python pipeline/alignments/align.py \
@@ -34,6 +38,9 @@ def run(
     priors_input_path: Optional[str],
     priors_output_path: Optional[str],
 ):
+    """
+    Run the alignment step, symmetrize step, and write out the priors.
+    """
     bin = os.environ["BIN"]
 
     tmp_dir = os.path.join(os.path.dirname(output_path), "tmp")
@@ -49,64 +56,64 @@ def run(
         subprocess.check_call([COMPRESSION_CMD, "-d", "-f", "--rm", corpus_trg])
         corpus_trg = corpus_trg[:-4]
 
-    with ExitStack() as stack:
-        fwd_path, rev_path = align(
+    fwd_path, rev_path = align(
+        corpus_src=corpus_src,
+        corpus_trg=corpus_trg,
+        priors_input_path=priors_input_path,
+        tmp_dir=tmp_dir,
+    )
+
+    symmetrize(bin=bin, fwd_path=fwd_path, rev_path=rev_path, output_path=output_path)
+
+    if priors_output_path:
+        write_priors(
             corpus_src=corpus_src,
             corpus_trg=corpus_trg,
-            priors_input_path=priors_input_path,
-            stack=stack,
-            tmp_dir=tmp_dir,
+            fwd_path=fwd_path,
+            rev_path=rev_path,
+            priors_output_path=priors_output_path,
         )
-        symmetrize(
-            bin=bin, fwd_path=fwd_path, rev_path=rev_path, output_path=output_path, stack=stack
-        )
-
-        if priors_output_path:
-            write_priors(
-                corpus_src=corpus_src,
-                corpus_trg=corpus_trg,
-                fwd_path=fwd_path,
-                rev_path=rev_path,
-                priors_output_path=priors_output_path,
-                stack=stack,
-            )
 
 
 def align(
     corpus_src: str,
     corpus_trg: str,
     priors_input_path: Optional[str],
-    stack: ExitStack,
     tmp_dir: str,
 ):
-    if priors_input_path:
-        logger.info(f"Using provided priors: {priors_input_path}")
-        priors_input = stack.enter_context(open(priors_input_path, "r", encoding="utf-8"))
-    else:
-        priors_input = None
+    """
+    Run eflomal, the "Efficient Low-Memory Aligner".
+    https://github.com/robertostling/eflomal
+    """
+    with ExitStack() as stack:
+        if priors_input_path:
+            logger.info(f"Using provided priors: {priors_input_path}")
+            priors_input = stack.enter_context(open(priors_input_path, "r", encoding="utf-8"))
+        else:
+            priors_input = None
 
-    # We use eflomal aligner.
-    # It is less memory intensive than fast_align.
-    # fast_align failed with OOM in a large white-space tokenized corpus
-    aligner = eflomal.Aligner()
-    src_input = stack.enter_context(open(corpus_src, "r", encoding="utf-8"))
-    trg_input = stack.enter_context(open(corpus_trg, "r", encoding="utf-8"))
-    fwd_path = os.path.join(tmp_dir, "aln.fwd")
-    rev_path = os.path.join(tmp_dir, "aln.rev")
-    logger.info("Calculating alignments...")
-    aligner.align(
-        src_input,
-        trg_input,
-        links_filename_fwd=fwd_path,
-        links_filename_rev=rev_path,
-        priors_input=priors_input,
-        quiet=False,
-        use_gdb=False,
-    )
-    return fwd_path, rev_path
+        # We use eflomal aligner.
+        # It is less memory intensive than fast_align.
+        # fast_align failed with OOM in a large white-space tokenized corpus
+        aligner = eflomal.Aligner()
+        src_input = stack.enter_context(open(corpus_src, "r", encoding="utf-8"))
+        trg_input = stack.enter_context(open(corpus_trg, "r", encoding="utf-8"))
+        fwd_path = os.path.join(tmp_dir, "aln.fwd")
+        rev_path = os.path.join(tmp_dir, "aln.rev")
+        logger.info("Calculating alignments...")
+        aligner.align(
+            src_input,
+            trg_input,
+            links_filename_fwd=fwd_path,
+            links_filename_rev=rev_path,
+            priors_input=priors_input,
+            quiet=False,
+            use_gdb=False,
+        )
+        return fwd_path, rev_path
 
 
-def symmetrize(bin: str, fwd_path: str, rev_path: str, output_path: str, stack: ExitStack):
+def symmetrize(bin: str, fwd_path: str, rev_path: str, output_path: str):
     """
     Symmetrize the forward and reverse alignments of the corpus.
 
@@ -115,36 +122,37 @@ def symmetrize(bin: str, fwd_path: str, rev_path: str, output_path: str, stack: 
     It uses `atools` binary from `fast_align`
     """
     logger.info("Symmetrizing alignments...")
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    # Wrap the file with a compressor stream if it needs to be compressed
-    with zstandard.ZstdCompressor().stream_writer(
-        stack.enter_context(open(output_path, "wb"))
-    ) if output_path.endswith(".zst") else stack.enter_context(
-        open(output_path, "w", encoding="utf-8")
-    ) as stream:
-        with subprocess.Popen(
-            [
-                os.path.join(bin, "atools"),
-                "-i",
-                fwd_path,
-                "-j",
-                rev_path,
-                "-c",
-                "grow-diag-final-and",
-            ],
-            stdout=subprocess.PIPE,
-            text=True,
-            bufsize=1,
-            encoding="utf-8",
-        ) as proc:
-            for line in proc.stdout:
-                stream.write(line.encode("utf-8") if output_path.endswith(".zst") else line)
+    with ExitStack() as stack:
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        # Wrap the file with a compressor stream if it needs to be compressed
+        with zstandard.ZstdCompressor().stream_writer(
+            stack.enter_context(open(output_path, "wb"))
+        ) if output_path.endswith(".zst") else stack.enter_context(
+            open(output_path, "w", encoding="utf-8")
+        ) as stream:
+            with subprocess.Popen(
+                [
+                    os.path.join(bin, "atools"),
+                    "-i",
+                    fwd_path,
+                    "-j",
+                    rev_path,
+                    "-c",
+                    "grow-diag-final-and",
+                ],
+                stdout=subprocess.PIPE,
+                text=True,
+                bufsize=1,
+                encoding="utf-8",
+            ) as proc:
+                for line in proc.stdout:
+                    stream.write(line.encode("utf-8") if output_path.endswith(".zst") else line)
 
-            proc.wait()
-            # Check for any errors in the subprocess execution
-            if proc.returncode != 0:
-                logger.error(f"atools exit code: {proc.returncode}")
-                raise subprocess.CalledProcessError(proc.returncode, proc.args)
+                proc.wait()
+                # Check for any errors in the subprocess execution
+                if proc.returncode != 0:
+                    logger.error(f"atools exit code: {proc.returncode}")
+                    raise subprocess.CalledProcessError(proc.returncode, proc.args)
 
 
 def write_priors(
@@ -153,17 +161,21 @@ def write_priors(
     fwd_path: str,
     rev_path: str,
     priors_output_path: str,
-    stack: ExitStack,
 ):
+    """
+    Write out the "priors" so that alignments can be generated quickly the next time alignments
+    are needed.
+    """
     logger.info("Calculating priors...")
-    src_input = stack.enter_context(open(corpus_src, "r", encoding="utf-8"))
-    trg_input = stack.enter_context(open(corpus_trg, "r", encoding="utf-8"))
-    fwd_f = stack.enter_context(open(fwd_path, "r", encoding="utf-8"))
-    rev_f = stack.enter_context(open(rev_path, "r", encoding="utf-8"))
-    priors_tuple = eflomal.calculate_priors(src_input, trg_input, fwd_f, rev_f)
-    logger.info(f"Writing priors to {priors_output_path}...")
-    priors_output = stack.enter_context(open(priors_output_path, "w", encoding="utf-8"))
-    eflomal.write_priors(priors_output, *priors_tuple)
+    with ExitStack() as stack:
+        src_input = stack.enter_context(open(corpus_src, "r", encoding="utf-8"))
+        trg_input = stack.enter_context(open(corpus_trg, "r", encoding="utf-8"))
+        fwd_f = stack.enter_context(open(fwd_path, "r", encoding="utf-8"))
+        rev_f = stack.enter_context(open(rev_path, "r", encoding="utf-8"))
+        priors_tuple = eflomal.calculate_priors(src_input, trg_input, fwd_f, rev_f)
+        logger.info(f"Writing priors to {priors_output_path}...")
+        priors_output = stack.enter_context(open(priors_output_path, "w", encoding="utf-8"))
+        eflomal.write_priors(priors_output, *priors_tuple)
 
 
 def main() -> None:
