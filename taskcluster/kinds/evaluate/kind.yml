@@ -50,6 +50,7 @@ task-defaults:
             wandb_publication: training_config.wandb-publication
     worker-type: b-gpu
     worker:
+        chain-of-trust: true
         artifacts:
             - name: public/build
               path: artifacts
