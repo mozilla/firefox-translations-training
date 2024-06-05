@@ -43,6 +43,7 @@ task-defaults:
             - "{dataset_sanitized}.{trg_locale}.zst"
     worker-type: b-cpu-largedisk
     worker:
+        chain-of-trust: true
         docker-image: {"in-tree": "train"}
         max-run-time: 86400
         artifacts:
