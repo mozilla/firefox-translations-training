@@ -14,7 +14,6 @@ import os
 from pathlib import Path
 
 from taskgraph.transforms.base import TransformSequence
-from taskgraph.util.path import match as match_path
 
 KIND_DIR = Path(__file__).parent.parent.parent / "kinds"
 
@@ -36,17 +35,10 @@ PIPELINE_DIRS.extend(
 transforms = TransformSequence()
 
 
-def check(files_changed, patterns):
-    for pattern in patterns:
-        for path in files_changed:
-            if match_path(path, pattern):
-                return True
-    return False
-
-
 @transforms.add
 def skip_unless_pipeline_changed(config, jobs):
-    if not check(config.params["files_changed"], PIPELINE_DIRS):
-        return
+    for job in jobs:
+        job.setdefault("optimization", {})
+        job["optimization"]["skip-unless-changed"] = PIPELINE_DIRS
 
-    yield from jobs
+        yield job
