@@ -225,7 +225,7 @@ tasks:
                               features:
                                   taskclusterProxy: true
     
-                              image: mozillareleases/taskgraph:decision-v8.2.0@sha256:86c8f0d2e9558707b393edc0b9feb9869e6d41659c1592e94192d24856c97949
+                              image: mozillareleases/taskgraph:decision-v9.0.0@sha256:e56c7e5cd467c2ce497c344b358f68cc84a4f73f3422e507a97b397d4e617fbd
                               maxRunTime: 1800
                               onExitStatus:
                                 retry:
