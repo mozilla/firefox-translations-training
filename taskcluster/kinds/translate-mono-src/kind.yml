@@ -108,7 +108,7 @@ tasks:
 
         from-deps:
             group-by: all
-            set-name: false
+            set-name: null
             unique-kinds: false
             kinds:
                 - train-teacher
