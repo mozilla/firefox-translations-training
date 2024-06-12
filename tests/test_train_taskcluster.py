@@ -132,13 +132,14 @@ PARTIAL_ARTIFACTS = [
 
 
 @pytest.mark.parametrize(
-    "current_run_id,resumable_run_id,run_artifacts,orig_pretrained_model_mode,expected_pretrained_model_mode",
+    "current_run_id,resumable_run_id,run_artifacts,artifact_response_code,orig_pretrained_model_mode,expected_pretrained_model_mode",
     (
         pytest.param(
             0,
             None,
             # not used unless resumable_run_id is set
             {},
+            200,
             "",
             "",
             id="run_0_no_continuation",
@@ -148,6 +149,7 @@ PARTIAL_ARTIFACTS = [
             None,
             # not used unless resumable_run_id is set
             {},
+            200,
             "init",
             "init",
             id="run_0_no_continuation_with_pretrained_model",
@@ -159,6 +161,7 @@ PARTIAL_ARTIFACTS = [
             1,
             0,
             {0: FULL_ARTIFACTS},
+            200,
             "",
             "continue",
             id="run_1_continues_run_0",
@@ -167,6 +170,7 @@ PARTIAL_ARTIFACTS = [
             2,
             1,
             {1: FULL_ARTIFACTS},
+            200,
             "",
             "continue",
             id="run_2_continues_run_1",
@@ -175,6 +179,7 @@ PARTIAL_ARTIFACTS = [
             2,
             0,
             {1: PARTIAL_ARTIFACTS, 0: FULL_ARTIFACTS},
+            200,
             "",
             "continue",
             id="run_2_continues_run_0",
@@ -183,6 +188,7 @@ PARTIAL_ARTIFACTS = [
             3,
             1,
             {2: PARTIAL_ARTIFACTS, 1: FULL_ARTIFACTS, 0: PARTIAL_ARTIFACTS},
+            200,
             "",
             "continue",
             id="run_3_continues_run_1",
@@ -191,6 +197,7 @@ PARTIAL_ARTIFACTS = [
             2,
             None,
             {1: PARTIAL_ARTIFACTS, 0: PARTIAL_ARTIFACTS},
+            200,
             "",
             "",
             id="run_2_cant_continue_earlier_runs",
@@ -199,9 +206,19 @@ PARTIAL_ARTIFACTS = [
             2,
             None,
             {1: PARTIAL_ARTIFACTS, 0: PARTIAL_ARTIFACTS},
+            200,
             "use",
             "use",
             id="run_2_cant_continue_earlier_runs_preserves_pretrained_model_mode",
+        ),
+        pytest.param(
+            2,
+            0,
+            {1: PARTIAL_ARTIFACTS, 0: FULL_ARTIFACTS},
+            404,
+            "",
+            "",
+            id="artifacts_are_404",
         ),
     ),
 )
@@ -209,6 +226,7 @@ def test_autocontinue(
     current_run_id,
     resumable_run_id,
     run_artifacts,
+    artifact_response_code,
     orig_pretrained_model_mode,
     expected_pretrained_model_mode,
 ):
@@ -243,9 +261,10 @@ def test_autocontinue(
                 ):
                     # No action needed here; we will check that the right calls were
                     # made based on the current_run_id later.
-                    resp.status_code = 200
-                    resp._content = b""
-                    resp.raw = io.StringIO("")
+                    resp.status_code = artifact_response_code
+                    if resp.status_code == 200:
+                        resp._content = b""
+                        resp.raw = io.StringIO("")
                 elif url.endswith("live.log") or url.endswith("live_backing.log"):
                     resp.status_code = 400
                     resp._content = (
@@ -295,15 +314,19 @@ def test_autocontinue(
 
                     # However, we only expect to fetch the artifacts for the run we resume from...
                     if prev_run_id == resumable_run_id:
+                        i = 0
                         for artifact in run_artifacts[prev_run_id]:
-                            # ...but even then, we don't expect to download the Taskcluster logs.
+                            # ...but even then, we don't expect to download the Taskcluster logs
                             if not artifact["name"].startswith("public/logs"):
-                                calls.append(
-                                    mock.call(
-                                        f"https://some.cluster/api/queue/v1/task/abcdef/runs/{prev_run_id}/artifacts/{artifact['name']}",
-                                        stream=True,
-                                    ),
-                                )
+                                # or anything after the first artifact if the response code is not 200
+                                if artifact_response_code == 200 or i == 0:
+                                    i += 1
+                                    calls.append(
+                                        mock.call(
+                                            f"https://some.cluster/api/queue/v1/task/abcdef/runs/{prev_run_id}/artifacts/{artifact['name']}",
+                                            stream=True,
+                                        ),
+                                    )
                     prev_run_id = prev_run_id - 1
 
                 assert tt_mock["requests"].get.call_args_list == calls
