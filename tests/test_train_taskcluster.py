@@ -132,12 +132,11 @@ PARTIAL_ARTIFACTS = [
 
 
 @pytest.mark.parametrize(
-    "current_run_id,resumable_run_id,reasons_created,run_artifacts,orig_pretrained_model_mode,expected_pretrained_model_mode",
+    "current_run_id,resumable_run_id,run_artifacts,orig_pretrained_model_mode,expected_pretrained_model_mode",
     (
         pytest.param(
             0,
             None,
-            ["scheduled"],
             # not used unless resumable_run_id is set
             {},
             "",
@@ -147,7 +146,6 @@ PARTIAL_ARTIFACTS = [
         pytest.param(
             0,
             None,
-            ["scheduled"],
             # not used unless resumable_run_id is set
             {},
             "init",
@@ -160,7 +158,6 @@ PARTIAL_ARTIFACTS = [
         pytest.param(
             1,
             0,
-            ["scheduled", "retry"],
             {0: FULL_ARTIFACTS},
             "",
             "continue",
@@ -169,7 +166,6 @@ PARTIAL_ARTIFACTS = [
         pytest.param(
             2,
             1,
-            ["scheduled", "retry", "retry"],
             {1: FULL_ARTIFACTS},
             "",
             "continue",
@@ -178,7 +174,6 @@ PARTIAL_ARTIFACTS = [
         pytest.param(
             2,
             0,
-            ["scheduled", "rerun", "retry"],
             {1: PARTIAL_ARTIFACTS, 0: FULL_ARTIFACTS},
             "",
             "continue",
@@ -187,7 +182,6 @@ PARTIAL_ARTIFACTS = [
         pytest.param(
             3,
             1,
-            ["scheduled", "rerun", "exception", "retry"],
             {2: PARTIAL_ARTIFACTS, 1: FULL_ARTIFACTS, 0: PARTIAL_ARTIFACTS},
             "",
             "continue",
@@ -196,7 +190,6 @@ PARTIAL_ARTIFACTS = [
         pytest.param(
             2,
             None,
-            ["scheduled", "rerun", "exception"],
             {1: PARTIAL_ARTIFACTS, 0: PARTIAL_ARTIFACTS},
             "",
             "",
@@ -205,7 +198,6 @@ PARTIAL_ARTIFACTS = [
         pytest.param(
             2,
             None,
-            ["scheduled", "retry", "rerun"],
             {1: PARTIAL_ARTIFACTS, 0: PARTIAL_ARTIFACTS},
             "use",
             "use",
@@ -216,7 +208,6 @@ PARTIAL_ARTIFACTS = [
 def test_autocontinue(
     current_run_id,
     resumable_run_id,
-    reasons_created,
     run_artifacts,
     orig_pretrained_model_mode,
     expected_pretrained_model_mode,
