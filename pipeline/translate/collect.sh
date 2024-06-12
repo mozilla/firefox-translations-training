@@ -38,8 +38,12 @@ COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 
 echo "### Collecting translations"
 
-find "${chunks_dir}" -name '*.out' |  # For example, finds "fetches/file.1.out", "fetches/file.2.out", etc.
-  sort -t '.' -k2,2n |                      # Sort by the number in "file.1.out", e.g. 1 here.
+# TODO: Do not rely on sorting for collecting the translated corpus as it is error prone.
+# TODO: Output both source and target sentences from each "translate" task instead and produce a full parallel corpus as an output here.
+# TODO: See https://github.com/mozilla/firefox-translations-training/issues/675
+# For example, finds "fetches/file.1.out", "fetches/file.2.out", etc.
+# Sort by the number in "file.1.out", e.g. 1 here.
+python -c "import glob; print('\n'.join(sorted(glob.glob('${chunks_dir}/*.out'), key=lambda x: int(x.split('.')[1]))))" |
   xargs cat |                               # Combine all of these files together.
   ${COMPRESSION_CMD} >"${output_path}"
 
