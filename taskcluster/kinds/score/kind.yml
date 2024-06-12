@@ -44,7 +44,7 @@ tasks:
                 - attributes
                 - run.command
 
-        worker-type: b-largegpu
+        worker-type: b-largegpu-largedisk
         worker:
             max-run-time: 2592000
             env:
