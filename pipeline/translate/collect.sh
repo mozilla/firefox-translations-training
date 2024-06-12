@@ -43,7 +43,7 @@ echo "### Collecting translations"
 # TODO: See https://github.com/mozilla/firefox-translations-training/issues/675
 # For example, finds "fetches/file.1.out", "fetches/file.2.out", etc.
 # Sort by the number in "file.1.out", e.g. 1 here.
-python -c "import glob; print('\n'.join(sorted(glob.glob('${chunks_dir}/*.out'), key=lambda x: int(x.split('.')[1]))))" |
+python3 -c "import glob; print('\n'.join(sorted(glob.glob('${chunks_dir}/*.out'), key=lambda x: int(x.split('.')[1]))))" |
   xargs cat |                               # Combine all of these files together.
   ${COMPRESSION_CMD} >"${output_path}"
 
