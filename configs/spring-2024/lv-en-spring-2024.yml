@@ -17,7 +17,7 @@ experiment:
   mono-max-sentences-trg: 200_000_000
   spm-sample-size: 10_000_000
   spm-vocab-size: 32000
-  teacher-ensemble: 1
+  teacher-ensemble: 2
   teacher-mode: two-stage
   pretrained-models: {}
 datasets:
@@ -189,7 +189,10 @@ marian-args:
     early-stopping: '20'
   training-student-finetuned:
     early-stopping: '20'
-target-stage: evaluate-teacher
+target-stage: all
+start-stage: train-teacher
+# The group with the proper first teacher that depends on the correct merge-mono-trg
+previous_group_ids: ["C3zMlqX0REamKdL2jy9FUw"]
 wandb-publication: true
 taskcluster:
   split-chunks: 20
