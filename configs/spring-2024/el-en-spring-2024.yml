@@ -19,7 +19,12 @@ experiment:
   spm-vocab-size: 32000
   teacher-ensemble: 1
   teacher-mode: two-stage
-  pretrained-models: {}
+  pretrained-models:
+     train-backwards:
+      urls:
+        - "https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/UMKG4cgoTFmsJMnpQVoczw/artifacts/public/build"
+      mode: use
+      type: default
 datasets:
   devtest:
   - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-ell
