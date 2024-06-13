@@ -139,14 +139,14 @@ local-worker-aliases:
         by-worker-class:
             gcp-standard: 'b-linux-large-gcp-300gb'
             default: 'b-linux-large-gcp-300gb'
-    # VM workers with 1 TB of disk space, 32 vCPUs, and 256 GiB of RAM
+    # VM workers with 1 TB of disk space, 32 vCPUs, and 256 GiB of memory
     # Use for tasks that don't require GPUs, but need immense amounts of disk space
     # eg: alignments
     b-cpu-xlargedisk-32-256:
         by-worker-class:
             gcp-standard: 'b-linux-large-gcp-1tb-32-256-standard'
             default: 'b-linux-large-gcp-1tb-32-256'
-    # VM workers with 1 TB of disk space, 64 vCPUs, and 512 GiB of RAM
+    # VM workers with 1 TB of disk space, 64 vCPUs, and 512 GiB of memory
     # Use for tasks that don't require GPUs, but need immense amounts of disk space
     # eg: alignments
     b-cpu-xlargedisk-64-512:
