@@ -74,23 +74,23 @@ def main(args):
 
             run_artifacts = set([os.path.basename(a["name"]) for a in resp.json()["artifacts"]])
 
+            resumable = True
             if run_artifacts.issuperset(CONTINUATION_ARTIFACTS):
                 logging.info(
                     f"Run {prev_run_id} appears to have the artifacts we need! Downloading them..."
                 )
             else:
                 logging.info(f"Run {prev_run_id} is missing some necessary artifacts...")
-                prev_run_id -= 1
-                continue
+                resumable = False
 
-            for artifact in resp.json()["artifacts"]:
-                # Skip Taskcluster logs - we only care about artifacts that the training tools create.
-                if artifact["name"].startswith("public/log"):
-                    continue
-                out_name = os.path.basename(artifact["name"])
-                logging.info(f"Fetching {artifact['name']}...")
+            if resumable:
+                for artifact in resp.json()["artifacts"]:
+                    # Skip Taskcluster logs - we only care about artifacts that the training tools create.
+                    if artifact["name"].startswith("public/log"):
+                        continue
+                    out_name = os.path.basename(artifact["name"])
+                    logging.info(f"Fetching {artifact['name']}...")
 
-                try:
                     r = requests.get(
                         ARTIFACT_URL.format(
                             root_url=root_url,
@@ -100,19 +100,28 @@ def main(args):
                         ),
                         stream=True,
                     )
-                    r.raise_for_status()
-                except Exception:
-                    logging.exception("Caught exception, exiting with distinct code...")
-                    sys.exit(DOWNLOAD_ERROR_EXIT_CODE)
+                    if 400 <= r.status_code <= 500:
+                        logging.exception(
+                            f"Got 4xx error for {artifact['name']}, run {run_id} is not resumable..."
+                        )
+                        resumable = False
+                        break
+                    elif r.status_code >= 500:
+                        logging.exception("Caught exception, exiting with distinct code...")
+                        sys.exit(DOWNLOAD_ERROR_EXIT_CODE)
 
-                with open(os.path.join(model_dir, out_name), "wb+") as fd:
-                    for chunk in r.iter_content(chunk_size=8192):
-                        fd.write(chunk)
+                    with open(os.path.join(model_dir, out_name), "wb+") as fd:
+                        for chunk in r.iter_content(chunk_size=8192):
+                            fd.write(chunk)
 
-            # We successfully downloaded all the artifacts from a previous run. Override
-            # the pretrained model mode and we're done!
-            pretrained_model_mode = "continue"
-            break
+            if resumable:
+                # We successfully downloaded all the artifacts from a previous run. Override
+                # the pretrained model mode and we're done!
+                pretrained_model_mode = "continue"
+                break
+            else:
+                # We weren't able to get all of the necessary artifacts; try the next previous run
+                prev_run_id -= 1
 
     if pretrained_model_mode:
         if len(script_args) < PRETRAINED_MODEL_MODE_ARG_NUMBER:
