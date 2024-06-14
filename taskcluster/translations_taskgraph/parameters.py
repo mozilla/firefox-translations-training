@@ -38,7 +38,7 @@ def get_defaults(_):
             },
             "marian-args": {
                 "training-backward": {
-                    "disp-freq": "1",
+                    "disp-freq": "2",
                     "save-freq": "25",
                     "valid-freq": "50",
                     "after": "50u",
