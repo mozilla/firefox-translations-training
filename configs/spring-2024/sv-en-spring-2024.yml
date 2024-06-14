@@ -239,7 +239,7 @@ marian-args:
 target-stage: all
 start-stage: train-teacher
 # The group with the proper first teacher that depends on the correct merge-mono-trg
-previous_group_ids: ["O5nwoBdFSACkjNaOhhIwzw"]
+previous_group_ids: ["Ho5REbqjSG-NqOm3NT8p7w"]
 wandb-publication: true
 taskcluster:
   split-chunks: 20
