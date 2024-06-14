@@ -32,6 +32,15 @@ datasets=( "${@:3}" )
 
 COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
 
+# https://stackoverflow.com/questions/41962359/shuffling-numbers-in-bash-using-seed
+# Deterministic shuffling
+get_seeded_random()
+{
+  seed="$1"
+  openssl enc -aes-256-ctr -pass pass:"$seed" -nosalt \
+    </dev/zero 2>/dev/null
+}
+
 echo "### Merging the following datasets:"
 ls $datasets
 
@@ -40,7 +49,7 @@ mkdir -p "${dir}"
 
 ${COMPRESSION_CMD} -dc "${datasets[@]}" |
   ${BIN}/dedupe |
-  shuf -n "${max_sentences}" |
+  shuf -n "${max_sentences}" --random-source=<(get_seeded_random 42) |
   ${COMPRESSION_CMD} >"${output}"
 
 
