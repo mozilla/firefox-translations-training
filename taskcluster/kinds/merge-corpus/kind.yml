@@ -17,66 +17,6 @@ kind-dependencies:
     - bicleaner
     - toolchain
 
-task-defaults:
-    attributes:
-        src_locale: "{src_locale}"
-        trg_locale: "{trg_locale}"
-        cache:
-            resources:
-                - pipeline/clean/merge-corpus.sh
-    task-context:
-        from-parameters:
-            src_locale: training_config.experiment.src
-            trg_locale: training_config.experiment.trg
-        substitution-fields:
-            - name
-            - label
-            - description
-            - worker.env
-            - dependencies
-            - fetches
-            - attributes
-            - run.command
-    upstreams-config:
-        upstream-artifacts:
-            - "{dataset_sanitized}.{src_locale}.zst"
-            - "{dataset_sanitized}.{trg_locale}.zst"
-    worker-type: b-cpu-largedisk
-    worker:
-        docker-image: {"in-tree": "train"}
-        max-run-time: 86400
-        artifacts:
-            - name: public/build
-              path: /builds/worker/artifacts
-              type: directory
-        env:
-            SRC: "{src_locale}"
-            TRG: "{trg_locale}"
-            COMPRESSION_CMD: zstdmt
-            ARTIFACT_EXT: zst
-        # 128 happens when cloning this repository fails
-        retry-exit-status: [128]
-
-    # Don't run unless explicitly scheduled
-    run-on-tasks-for: []
-
-    run:
-        using: run-task
-        command:
-            - bash
-            - -c
-            # Arguments are:
-            # 1) output prefix
-            # 2) input files
-            - >-
-                export BIN=$MOZ_FETCHES_DIR &&
-                $VCS_PATH/pipeline/clean/merge-corpus.sh
-                artifacts/{artifact_prefix}
-                $MOZ_FETCHES_DIR/*.zst
-    fetches:
-        toolchain:
-            - preprocess
-
 tasks:
     merge-corpus:
         label: merge-corpus-{src_locale}-{trg_locale}
@@ -84,15 +24,70 @@ tasks:
         attributes:
             dataset-category: train
             stage: merge-corpus
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
             cache:
                 type: merge-corpus
+                resources:
+                    - pipeline/clean/merge-corpus.sh
+
+        task-context:
+            from-parameters:
+                src_locale: training_config.experiment.src
+                trg_locale: training_config.experiment.trg
+            from-object:
+                artifact_prefix: corpus
+            substitution-fields:
+                - name
+                - label
+                - description
+                - worker.env
+                - dependencies
+                - fetches
+                - attributes
+                - run.command
 
         upstreams-config:
+            upstream-artifacts:
+                - "{dataset_sanitized}.{src_locale}.zst"
+                - "{dataset_sanitized}.{trg_locale}.zst"
             upstream-task-attributes:
                 cleaning-type:
                     by-cleaning-type:
                         bicleaner-ai: bicleaner-ai
 
-        task-context:
-            from-object:
-                artifact_prefix: corpus
+        worker-type: b-cpu-largedisk
+        worker:
+            docker-image: {"in-tree": "train"}
+            max-run-time: 86400
+            artifacts:
+                - name: public/build
+                  path: /builds/worker/artifacts
+                  type: directory
+            env:
+                SRC: "{src_locale}"
+                TRG: "{trg_locale}"
+                COMPRESSION_CMD: zstdmt
+                ARTIFACT_EXT: zst
+            # 128 happens when cloning this repository fails
+            retry-exit-status: [128]
+
+        # Don't run unless explicitly scheduled
+        run-on-tasks-for: []
+
+        run:
+            using: run-task
+            command:
+                - bash
+                - -c
+                # Arguments are:
+                # 1) output prefix
+                # 2) input files
+                - >-
+                    export BIN=$MOZ_FETCHES_DIR &&
+                    $VCS_PATH/pipeline/clean/merge-corpus.sh
+                    artifacts/{artifact_prefix}
+                    $MOZ_FETCHES_DIR/*.zst
+        fetches:
+            toolchain:
+                - preprocess
