@@ -220,7 +220,7 @@ marian-args:
     early-stopping: '20'
   training-student-finetuned:
     early-stopping: '20'
-target-stage: all
+target-stage: evaluate-teacher-ensemble
 start-stage: train-teacher
 previous_group_ids: ["Dp4pGjK1RyOyBGRaUZNazw"]
 wandb-publication: true
