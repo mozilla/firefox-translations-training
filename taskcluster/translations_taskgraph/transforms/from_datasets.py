@@ -188,5 +188,6 @@ def jobs_for_mono_datasets(config, jobs):
             subjob["attributes"]["locale"] = locale
             subjob["attributes"]["src_locale"] = src
             subjob["attributes"]["trg_locale"] = trg
+            subjob["attributes"]["dataset_sanitized"] = subs["dataset_sanitized"]
 
             yield subjob
