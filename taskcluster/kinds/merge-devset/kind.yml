@@ -7,7 +7,7 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.worker_selection
-    - translations_taskgraph.transforms.find_upstreams:by_locales
+    - taskgraph.transforms.from_deps
     - taskgraph.transforms.task_context
     - taskgraph.transforms.run:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
@@ -31,12 +31,19 @@ tasks:
                 resources:
                     - pipeline/clean/merge-corpus.sh
 
-        upstreams-config:
-            upstream-task-attributes:
-                kind: dataset
-            upstream-artifacts:
-                - "{dataset_sanitized}.{src_locale}.zst"
-                - "{dataset_sanitized}.{trg_locale}.zst"
+        from-deps:
+            unique-kinds: false
+            kinds:
+                - dataset
+            with-attributes:
+                dataset-category: devtest
+            group-by: all
+            fetches:
+                dataset:
+                    - artifact: "{dataset_sanitized}.{src_locale}.zst"
+                      extract: false
+                    - artifact: "{dataset_sanitized}.{trg_locale}.zst"
+                      extract: false
 
         task-context:
             from-object:
