@@ -118,6 +118,7 @@ def jobs_from_datasets(config, jobs):
             subjob["attributes"]["dataset"] = dataset
             subjob["attributes"]["src_locale"] = src
             subjob["attributes"]["trg_locale"] = trg
+            subjob["attributes"]["dataset_sanitized"] = subs["dataset_sanitized"]
 
             yield subjob
 
