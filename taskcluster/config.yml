@@ -70,12 +70,22 @@ workers:
             implementation: docker-worker
             os: linux
             worker-type: '{alias}'
-        b-linux-large-gcp-1tb:
+        b-linux-large-gcp-1tb-32-256:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
             worker-type: '{alias}'
-        b-linux-large-gcp-1tb-standard:
+        b-linux-large-gcp-1tb-32-256-standard:
+            provisioner: '{trust-domain}-{level}'
+            implementation: docker-worker
+            os: linux
+            worker-type: '{alias}'
+        b-linux-large-gcp-1tb-64-512:
+            provisioner: '{trust-domain}-{level}'
+            implementation: docker-worker
+            os: linux
+            worker-type: '{alias}'
+        b-linux-large-gcp-1tb-64-512-standard:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
@@ -129,12 +139,20 @@ local-worker-aliases:
         by-worker-class:
             gcp-standard: 'b-linux-large-gcp-300gb'
             default: 'b-linux-large-gcp-300gb'
+    # VM workers with 1 TB of disk space, 32 vCPUs, and 256 GiB of memory
     # Use for tasks that don't require GPUs, but need immense amounts of disk space
     # eg: alignments
-    b-cpu-xlargedisk:
+    b-cpu-xlargedisk-32-256:
         by-worker-class:
-            gcp-standard: 'b-linux-large-gcp-1tb-standard'
-            default: 'b-linux-large-gcp-1tb'
+            gcp-standard: 'b-linux-large-gcp-1tb-32-256-standard'
+            default: 'b-linux-large-gcp-1tb-32-256'
+    # VM workers with 1 TB of disk space, 64 vCPUs, and 512 GiB of memory
+    # Use for tasks that don't require GPUs, but need immense amounts of disk space
+    # eg: alignments
+    b-cpu-xlargedisk-64-512:
+        by-worker-class:
+            gcp-standard: 'b-linux-large-gcp-1tb-64-512-standard'
+            default: 'b-linux-large-gcp-1tb-64-512'
     # Use for quick tasks that need a GPU, eg: evaluate
     b-gpu:
         by-worker-class:
