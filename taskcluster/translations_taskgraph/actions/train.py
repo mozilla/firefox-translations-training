@@ -1,6 +1,8 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+import json
+import logging
 
 from taskgraph.actions.registry import register_callback_action
 from taskgraph.decision import taskgraph_decision
@@ -9,6 +11,8 @@ from taskgraph.taskgraph import TaskGraph
 from taskgraph.util.taskcluster import get_ancestors, get_artifact
 
 from translations_taskgraph.parameters import get_defaults
+
+logger = logging.getLogger(__name__)
 
 TRAIN_ON_PROJECTS = (
     "https://github.com/mozilla/firefox-translations-training",
@@ -400,7 +404,32 @@ def train_action(parameters, graph_config, input, task_group_id, task_id):
 
     # Override the `existing_tasks` explicitly provided in the action's input
     existing_tasks = input.pop("existing_tasks", {})
+
+    # Find and log `overridden_existing_tasks`
+    overridden_existing_tasks = {
+        existing_task: parameters["existing_tasks"][existing_task]
+        for existing_task in existing_tasks.keys()
+        if existing_task in parameters["existing_tasks"]
+    }
+
+    if overridden_existing_tasks:
+        logger.info(
+            f"Old values for `overridden_existing_tasks`: {json.dumps(overridden_existing_tasks, indent=2)}"
+        )
+
+    # Do the override!
     parameters["existing_tasks"].update(existing_tasks)
+
+    # Log the new values for the `overridden_existing_tasks`
+    new_values_for_overridden = {
+        existing_task: parameters["existing_tasks"][existing_task]
+        for existing_task in overridden_existing_tasks.keys()
+    }
+
+    if new_values_for_overridden:
+        logger.info(
+            f"New values for `overridden_existing_tasks`: {json.dumps(new_values_for_overridden, indent=2)}"
+        )
 
     parameters["target_tasks_method"] = "train-target-tasks"
     parameters["optimize_target_tasks"] = True
