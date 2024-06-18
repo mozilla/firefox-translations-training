@@ -398,6 +398,10 @@ def train_action(parameters, graph_config, input, task_group_id, task_id):
         # an identical name.
         parameters["existing_tasks"] = get_ancestors(start_task_ids)
 
+    # Override the `existing_tasks` explicitly provided in the action's input
+    existing_tasks = input.pop("existing_tasks", {})
+    parameters["existing_tasks"].update(existing_tasks)
+
     parameters["target_tasks_method"] = "train-target-tasks"
     parameters["optimize_target_tasks"] = True
     parameters["tasks_for"] = "action"
