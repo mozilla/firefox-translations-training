@@ -7,14 +7,15 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.worker_selection
-    - translations_taskgraph.transforms.find_upstreams:by_locales
     - taskgraph.transforms.task_context
+    - taskgraph.transforms.from_deps
+    - translations_taskgraph.transforms.fetches_from_upstream
     - taskgraph.transforms.run:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
-    - bicleaner
+    - post-bicleaner-dummy
     - toolchain
 
 tasks:
@@ -42,19 +43,20 @@ tasks:
                 - label
                 - description
                 - worker.env
-                - dependencies
                 - fetches
                 - attributes
                 - run.command
 
-        upstreams-config:
-            upstream-artifacts:
-                - "{dataset_sanitized}.{src_locale}.zst"
-                - "{dataset_sanitized}.{trg_locale}.zst"
-            upstream-task-attributes:
-                cleaning-type:
-                    by-cleaning-type:
-                        bicleaner-ai: bicleaner-ai
+        from-deps:
+            unique-kinds: false
+            kinds:
+                - post-bicleaner-dummy
+            group-by: all
+
+        fetches-from-upstreams:
+            attribute: fetched_artifacts
+            extra:
+                extract: false
 
         worker-type: b-cpu-largedisk
         worker:
@@ -88,6 +90,10 @@ tasks:
                     $VCS_PATH/pipeline/clean/merge-corpus.sh
                     artifacts/{artifact_prefix}
                     $MOZ_FETCHES_DIR/*.zst
+
+        dependencies:
+            toolchain-preprocess: toolchain-preprocess
+
         fetches:
             toolchain:
                 - preprocess
