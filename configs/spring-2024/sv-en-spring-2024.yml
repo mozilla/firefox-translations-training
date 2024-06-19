@@ -19,7 +19,12 @@ experiment:
   spm-vocab-size: 32000
   teacher-ensemble: 2
   teacher-mode: two-stage
-  pretrained-models: {}
+  pretrained-models:
+     train-backwards:
+      urls:
+        - "https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/SAN-vjuBSt-lSiKFoCFPfg/artifacts/public/build"
+      mode: use
+      type: default
 datasets:
   devtest:
   - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-swe
@@ -237,10 +242,6 @@ marian-args:
   training-student-finetuned:
     early-stopping: '20'
 target-stage: evaluate-teacher-ensemble
-start-stage: train-teacher
-# The group with the proper first teacher that depends on the correct merge-mono-trg
-previous_group_ids: ["c3uDQYs-Rj2-ECGePZ013g"]
-existing_tasks: { "train-teacher-sv-en-1": "Kzzk99d_TumsRdwe05sxEA" } # the good teacher
 wandb-publication: true
 taskcluster:
   split-chunks: 20
