@@ -26,7 +26,7 @@ RUN apt-get update -qq \
                           bc \
                           libopenblas-dev \
                           openssl \
-                          libssl-dev \
+                          libssl-dev  \
          && apt-get clean
 
 RUN mkdir /builds/worker/tools && \
