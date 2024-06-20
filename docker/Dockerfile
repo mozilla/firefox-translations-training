@@ -27,10 +27,6 @@ RUN apt-get update -qq \
                           libopenblas-dev \
                           openssl \
                           libssl-dev \
-                          pkg-config \
-                          libre2-dev \
-                          libglib2.0-dev \
-                          python3-pybind11  \
          && apt-get clean
 
 RUN mkdir /builds/worker/tools && \
@@ -55,9 +51,9 @@ RUN ./compile-preprocess.sh preprocess/build $(nproc)
 
 RUN git clone https://github.com/marian-nmt/marian-dev.git marian-dev
 # Use the same revision as in taskcluster/kinds/fetch/toolchains.yml
-## it corresponds to v1.12.14 2d067afb 2024-02-16 11:44:13 -0500
-#RUN cd marian-dev && git checkout 2d067afb9ce5e3a0b6c32585706affc6e7295920
-#RUN ./compile-marian.sh marian-dev/build $(nproc) false
+# it corresponds to v1.12.14 2d067afb 2024-02-16 11:44:13 -0500
+RUN cd marian-dev && git checkout 2d067afb9ce5e3a0b6c32585706affc6e7295920
+RUN ./compile-marian.sh marian-dev/build $(nproc) false
 
 ENV MARIAN=/builds/worker/tools/marian-dev/build
 
