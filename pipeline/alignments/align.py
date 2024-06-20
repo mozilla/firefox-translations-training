@@ -12,7 +12,6 @@ Example:
 """
 
 import argparse
-import multiprocessing
 import os
 import shutil
 import subprocess
@@ -97,13 +96,27 @@ def decompress(file_path: str):
 
 
 def tokenize(input_path: str, output_path: str, lang: str) -> None:
+    try:
+        from mosestokenizer import MosesTokenizer
+    except RuntimeError:
+        # https://github.com/Helsinki-NLP/opus-fast-mosestokenizer/issues/6
+        import pkgutil
+
+        module_path = pkgutil.find_loader("mosestokenizer").get_filename()
+        lib_path = os.path.abspath(os.path.join(os.path.dirname(module_path), "lib"))
+        logger.warning(f"Setting LD_LIBRARY_PATH to {lib_path}")
+        os.environ["LD_LIBRARY_PATH"] = lib_path
+        from mosestokenizer import MosesTokenizer
+
+    from tqdm import tqdm
+
     logger.info(f"Tokenizing {input_path} with Moses tokenizer")
+    tokenizer = MosesTokenizer(lang)
+
     with open(input_path, "r") as input_file, open(output_path, "w") as output_file:
-        subprocess.check_call(
-            ["sacremoses", "-l", lang, "-j", str(multiprocessing.cpu_count()), "tokenize"],
-            stdin=input_file,
-            stdout=output_file,
-        )
+        for line in tqdm(input_file, mininterval=60):
+            tokens = tokenizer.tokenize(line)
+            output_file.write(" ".join(tokens) + "\n")
 
 
 def align(

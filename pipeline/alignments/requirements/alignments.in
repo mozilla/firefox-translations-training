@@ -1,4 +1,3 @@
 eflomal==1.0.0b1
-# this one is supposed to be faster but it requires more tricks for installation
-#opus-fast-mosestokenizer==0.0.8.5
-sacremoses==0.1.1
+opus-fast-mosestokenizer==0.0.8.5
+tqdm

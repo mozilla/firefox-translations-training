@@ -4,19 +4,13 @@
 #
 #    pip-compile pipeline/alignments/requirements/alignments.in
 #
-click==8.1.7
-    # via sacremoses
 cython==3.0.9
     # via eflomal
 eflomal==1.0.0b1
     # via -r pipeline/alignments/requirements/alignments.in
-joblib==1.4.2
-    # via sacremoses
 numpy==1.26.4
     # via eflomal
-regex==2024.5.15
-    # via sacremoses
-sacremoses==0.1.1
+opus-fast-mosestokenizer==0.0.8.5
     # via -r pipeline/alignments/requirements/alignments.in
 tqdm==4.66.4
-    # via sacremoses
+    # via -r pipeline/alignments/requirements/alignments.in
