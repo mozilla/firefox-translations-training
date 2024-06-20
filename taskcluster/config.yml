@@ -1,7 +1,7 @@
 ---
 trust-domain: "translations"
 task-priority: low
-task-deadline-after: 60 days
+task-deadline-after: 10 days
 task-expires-after: 90 days
 treeherder:
     group-names:
