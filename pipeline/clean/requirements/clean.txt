@@ -184,7 +184,7 @@ numpy==2.0.0 \
     # via fasttext
 # WARNING: pip install will require the following package to be hashed.
 # Consider using a hashable URL like https://github.com/jazzband/pip-tools/archive/SOMECOMMIT.zip
-opuscleaner @ git+https://github.com/gregtatum/OpusCleaner.git@spring2024
+opuscleaner @ git+https://github.com/mozilla/OpusCleaner.git@spring2024
     # via -r pipeline/clean/requirements/clean.in
 pybind11==2.12.0 \
     --hash=sha256:5e3c557a84b06b969247630407fc4d985bed157b4253b13153b8e8e165e0c3dc \
