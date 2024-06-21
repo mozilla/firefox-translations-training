@@ -3,7 +3,7 @@
 Calculates alignments for a parallel corpus
 
 Example:
-    BIN=bin python pipeline/alignments/align.py \
+    BIN=bin SRC=ru TRG=en python pipeline/alignments/align.py \
         --corpus_src=fetches/corpus.ru.zst
         --corpus_trg=fetches/corpus.en.zst
         --output_path=artifacts/corpus.aln.zst
