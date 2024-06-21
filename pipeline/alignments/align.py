@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 """
-Calculates alignments for a parallel corpus
+Calculates alignments for a parallel corpus.
+
+Some efficiency measures were implemented as it needs to process 500M sentences long corpus for the student model:
+1. Tokenization with Moses with remapping the alignments back to whitespace based tokenization to reduce vocabulary size
+    and improve accuracy
+2. Using fast C++ Moses tokenizer
+2. Parallelization with multiprocessing (tokenization and remapping)
+3. Buffering on writing the output files to improve throughput
+
 
 Example:
     BIN=bin SRC=ru TRG=en python pipeline/alignments/align.py \
@@ -12,6 +20,7 @@ Example:
 """
 
 import argparse
+import multiprocessing
 import os
 import shutil
 import subprocess
@@ -228,6 +237,21 @@ def map_indices(tok_sentence: str, orig_sentence: str) -> Dict[int, int]:
     return tok_to_orig_indices
 
 
+def remap_line(params):
+    src, trg, tok_src, tok_trg, aln = params
+    src_map = map_indices(tok_src, src)
+    trg_map = map_indices(tok_trg, trg)
+
+    remapped_aln = []
+    for pair in aln.split():
+        src_idx, trg_idx = map(int, pair.split("-"))
+        new_pair = (src_map[src_idx], trg_map[trg_idx])
+        if new_pair not in remapped_aln:
+            remapped_aln.append(new_pair)
+
+    return " ".join([f"{idx1}-{idx2}" for idx1, idx2 in remapped_aln]) + "\n"
+
+
 def remap(
     src_path: str,
     trg_path: str,
@@ -242,35 +266,25 @@ def remap(
     :param trg_path: path to whitespace-tokenized sentences in target language
     :param tok_src_path: path to Moses tokenization sentences in source language
     :param tok_trg_path: path to Moses tokenization sentences in target language
-    :param aln_path: path to the alignments calcualate for Moses-tokenized corpus
+    :param aln_path: path to the alignments calculate for Moses-tokenized corpus
     :param output_aln_path: path to output alignments file remapped to whitespace-tokenized corpus
     """
     logger.info("Remapping alignments to whitespace tokenization")
 
     with ExitStack() as stack:
-        output = stack.enter_context(open(output_aln_path, "w"))
-        for src, trg, tok_src, tok_trg, aln in tqdm(
-            zip(
-                stack.enter_context(open(src_path)),
-                stack.enter_context(open(trg_path)),
-                stack.enter_context(open(tok_src_path)),
-                stack.enter_context(open(tok_trg_path)),
-                stack.enter_context(open(aln_path)),
-            ),
-            mininterval=60,
-        ):
-            # Get the indices mapping
-            src_map = map_indices(tok_src, src)
-            trg_map = map_indices(tok_trg, trg)
+        pool = stack.enter_context(multiprocessing.Pool(processes=multiprocessing.cpu_count()))
+        output = stack.enter_context(open(output_aln_path, "w", buffering=500000))
 
-            remapped_aln = []
-            for pair in aln.split():
-                src_idx, trg_idx = map(int, pair.split("-"))
-                new_pair = (src_map[src_idx], trg_map[trg_idx])
-                if new_pair not in remapped_aln:
-                    remapped_aln.append(new_pair)
+        lines = zip(
+            stack.enter_context(open(src_path)),
+            stack.enter_context(open(trg_path)),
+            stack.enter_context(open(tok_src_path)),
+            stack.enter_context(open(tok_trg_path)),
+            stack.enter_context(open(aln_path)),
+        )
 
-            output.write(" ".join([f"{idx1}-{idx2}" for idx1, idx2 in remapped_aln]) + "\n")
+        for aln in tqdm(pool.imap(remap_line, lines, chunksize=10000), mininterval=10):
+            output.write(aln)
 
 
 def main() -> None:
