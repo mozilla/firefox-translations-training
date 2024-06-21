@@ -33,11 +33,11 @@ def tokenize_lines(params) -> List[str]:
     from mosestokenizer import MosesTokenizer
 
     try:
-        tokenizer = MosesTokenizer(lang)
+        tokenizer = MosesTokenizer(lang, aggressive_dash_splits=True)
     except RuntimeError as err:
         msg = str(err)
         if "No known abbreviations for language" in msg:
-            tokenizer = MosesTokenizer("en")
+            tokenizer = MosesTokenizer("en", aggressive_dash_splits=True)
         else:
             raise err
 
