@@ -20,6 +20,7 @@ from contextlib import ExitStack
 from enum import Enum
 from typing import Dict, Optional
 
+from tqdm import tqdm
 import zstandard
 
 from pipeline.common.logging import get_logger
@@ -108,10 +109,17 @@ def tokenize(input_path: str, output_path: str, lang: str) -> None:
         os.environ["LD_LIBRARY_PATH"] = lib_path
         from mosestokenizer import MosesTokenizer
 
-    from tqdm import tqdm
-
     logger.info(f"Tokenizing {input_path} with Moses tokenizer")
-    tokenizer = MosesTokenizer(lang)
+
+    try:
+        tokenizer = MosesTokenizer(lang)
+    except RuntimeError as err:
+        msg = str(err)
+        if 'No known abbreviations for language' in msg:
+            logger.warning("%s - attempting fall-back to English version", msg)
+            tokenizer = MosesTokenizer('en')
+        else:
+            raise err
 
     with open(input_path, "r") as input_file, open(output_path, "w") as output_file:
         for line in tqdm(input_file, mininterval=60):
@@ -271,13 +279,13 @@ def remap(
 
     with ExitStack() as stack:
         output = stack.enter_context(open(output_aln_path, "w"))
-        for src, trg, tok_src, tok_trg, aln in zip(
+        for src, trg, tok_src, tok_trg, aln in tqdm(zip(
             stack.enter_context(open(src_path)),
             stack.enter_context(open(trg_path)),
             stack.enter_context(open(tok_src_path)),
             stack.enter_context(open(tok_trg_path)),
             stack.enter_context(open(aln_path)),
-        ):
+        ), mininterval=60):
             # Get the indices mapping
             src_map = map_indices(tok_src, src)
             trg_map = map_indices(tok_trg, trg)
