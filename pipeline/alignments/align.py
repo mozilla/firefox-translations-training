@@ -20,9 +20,10 @@ from contextlib import ExitStack
 from enum import Enum
 from typing import Dict, Optional
 
-from tqdm import tqdm
 import zstandard
+from tqdm import tqdm
 
+from pipeline.alignments.tokenizer import tokenize
 from pipeline.common.logging import get_logger
 
 logger = get_logger("alignments")
@@ -55,8 +56,8 @@ def run(
     if tokenization == Tokenization.moses:
         tokenized_src, tokenized_trg = corpus_src + ".moses", corpus_trg + ".moses"
         output_aln = os.path.join(tmp_dir, "aln")
-        tokenize(corpus_src, tokenized_src, src)
-        tokenize(corpus_trg, tokenized_trg, trg)
+        tokenize(corpus_src, tokenized_src, src, chunk_size=500000)
+        tokenize(corpus_trg, tokenized_trg, trg, chunk_size=500000)
     else:
         tokenized_src, tokenized_trg = corpus_src, corpus_trg
         output_aln = output_path
@@ -94,37 +95,6 @@ def decompress(file_path: str):
         subprocess.check_call([COMPRESSION_CMD, "-d", "-f", "--rm", file_path])
         return file_path[:-4]
     return file_path
-
-
-def tokenize(input_path: str, output_path: str, lang: str) -> None:
-    try:
-        from mosestokenizer import MosesTokenizer
-    except RuntimeError:
-        # https://github.com/Helsinki-NLP/opus-fast-mosestokenizer/issues/6
-        import pkgutil
-
-        module_path = pkgutil.find_loader("mosestokenizer").get_filename()
-        lib_path = os.path.abspath(os.path.join(os.path.dirname(module_path), "lib"))
-        logger.warning(f"Setting LD_LIBRARY_PATH to {lib_path}")
-        os.environ["LD_LIBRARY_PATH"] = lib_path
-        from mosestokenizer import MosesTokenizer
-
-    logger.info(f"Tokenizing {input_path} with Moses tokenizer")
-
-    try:
-        tokenizer = MosesTokenizer(lang)
-    except RuntimeError as err:
-        msg = str(err)
-        if 'No known abbreviations for language' in msg:
-            logger.warning("%s - attempting fall-back to English version", msg)
-            tokenizer = MosesTokenizer('en')
-        else:
-            raise err
-
-    with open(input_path, "r") as input_file, open(output_path, "w") as output_file:
-        for line in tqdm(input_file, mininterval=60):
-            tokens = tokenizer.tokenize(line)
-            output_file.write(" ".join(tokens) + "\n")
 
 
 def align(
@@ -279,13 +249,16 @@ def remap(
 
     with ExitStack() as stack:
         output = stack.enter_context(open(output_aln_path, "w"))
-        for src, trg, tok_src, tok_trg, aln in tqdm(zip(
-            stack.enter_context(open(src_path)),
-            stack.enter_context(open(trg_path)),
-            stack.enter_context(open(tok_src_path)),
-            stack.enter_context(open(tok_trg_path)),
-            stack.enter_context(open(aln_path)),
-        ), mininterval=60):
+        for src, trg, tok_src, tok_trg, aln in tqdm(
+            zip(
+                stack.enter_context(open(src_path)),
+                stack.enter_context(open(trg_path)),
+                stack.enter_context(open(tok_src_path)),
+                stack.enter_context(open(tok_trg_path)),
+                stack.enter_context(open(aln_path)),
+            ),
+            mininterval=60,
+        ):
             # Get the indices mapping
             src_map = map_indices(tok_src, src)
             trg_map = map_indices(tok_trg, trg)
