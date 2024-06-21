@@ -37,7 +37,6 @@ def tokenize_lines(params) -> List[str]:
     except RuntimeError as err:
         msg = str(err)
         if "No known abbreviations for language" in msg:
-            logger.warning("%s - attempting fall-back to English version", msg)
             tokenizer = MosesTokenizer("en")
         else:
             raise err
