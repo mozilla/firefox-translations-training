@@ -511,6 +511,7 @@ def get_python_bin_dir(requirements: Optional[str]) -> Optional[str]:
             print("Removing the venv due to an error in its creation.")
             shutil.rmtree(venv_dir)
             raise exception
+    print(f"Using virtual environment {venv_dir}")
 
     return python_bin_dir
 
