@@ -3,8 +3,7 @@
 Calculates alignments for a parallel corpus.
 
 Some efficiency measures were implemented as it needs to process 500M sentences long corpus for the student model:
-1. Tokenization with Moses with remapping the alignments back to whitespace based tokenization to reduce vocabulary size
-    and improve accuracy
+1. Tokenization with Moses with remapping the alignments back to whitespace based tokenization to reduce vocabulary size and improve accuracy
 2. Using fast C++ Moses tokenizer
 2. Parallelization with multiprocessing (tokenization and remapping)
 3. Buffering on writing the output files to improve throughput
@@ -206,52 +205,6 @@ def write_priors(
         eflomal.write_priors(priors_output, *priors_tuple)
 
 
-def map_indices(tok_sentence: str, orig_sentence: str) -> Dict[int, int]:
-    """
-    Map token indices from tokenized sentence to original sentence.
-    :param tok_sentence: tokenized sentence
-    :param orig_sentence: original sentence
-    :return: Dictionary of indices that maps tokenized words to original words
-    """
-    tok_words = tok_sentence.split()
-    orig_words = orig_sentence.split()
-    tok_to_orig_indices = {}
-    orig_idx = 0
-    tok_idx = 0
-
-    # For 'Hello, world!'
-    # Map ['Hello', ',', 'world', '!'] [0, 1, 2, 3]
-    # To ['Hello,', 'world!'] [0, 1]
-    # tok -> orig: {0: 0, 1: 0, 2: 1, 3: 1}
-
-    while orig_idx < len(orig_words):
-        orig_word = orig_words[orig_idx]
-        word = ""
-        while tok_idx < len(tok_words) and word != orig_word:
-            word += tok_words[tok_idx]
-            tok_to_orig_indices[tok_idx] = orig_idx
-            tok_idx += 1
-
-        orig_idx += 1
-
-    return tok_to_orig_indices
-
-
-def remap_line(params):
-    src, trg, tok_src, tok_trg, aln = params
-    src_map = map_indices(tok_src, src)
-    trg_map = map_indices(tok_trg, trg)
-
-    remapped_aln = []
-    for pair in aln.split():
-        src_idx, trg_idx = map(int, pair.split("-"))
-        new_pair = (src_map[src_idx], trg_map[trg_idx])
-        if new_pair not in remapped_aln:
-            remapped_aln.append(new_pair)
-
-    return " ".join([f"{idx1}-{idx2}" for idx1, idx2 in remapped_aln]) + "\n"
-
-
 def remap(
     src_path: str,
     trg_path: str,
@@ -285,6 +238,52 @@ def remap(
 
         for aln in tqdm(pool.imap(remap_line, lines, chunksize=10000), mininterval=10):
             output.write(aln)
+
+
+def remap_line(params):
+    src, trg, tok_src, tok_trg, aln = params
+    src_map = map_indices(tok_src, src)
+    trg_map = map_indices(tok_trg, trg)
+
+    remapped_aln = []
+    for pair in aln.split():
+        src_idx, trg_idx = map(int, pair.split("-"))
+        new_pair = (src_map[src_idx], trg_map[trg_idx])
+        if new_pair not in remapped_aln:
+            remapped_aln.append(new_pair)
+
+    return " ".join([f"{idx1}-{idx2}" for idx1, idx2 in remapped_aln]) + "\n"
+
+
+def map_indices(tok_sentence: str, orig_sentence: str) -> Dict[int, int]:
+    """
+    Map token indices from tokenized sentence to original sentence.
+    :param tok_sentence: tokenized sentence
+    :param orig_sentence: original sentence
+    :return: Dictionary of indices that maps tokenized words to original words
+    """
+    tok_words = tok_sentence.split()
+    orig_words = orig_sentence.split()
+    tok_to_orig_indices = {}
+    orig_idx = 0
+    tok_idx = 0
+
+    # For 'Hello, world!'
+    # Map ['Hello', ',', 'world', '!'] [0, 1, 2, 3]
+    # To ['Hello,', 'world!'] [0, 1]
+    # tok -> orig: {0: 0, 1: 0, 2: 1, 3: 1}
+
+    while orig_idx < len(orig_words):
+        orig_word = orig_words[orig_idx]
+        word = ""
+        while tok_idx < len(tok_words) and word != orig_word:
+            word += tok_words[tok_idx]
+            tok_to_orig_indices[tok_idx] = orig_idx
+            tok_idx += 1
+
+        orig_idx += 1
+
+    return tok_to_orig_indices
 
 
 def main() -> None:

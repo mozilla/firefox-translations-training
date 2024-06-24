@@ -19,7 +19,7 @@ from pipeline.common.logging import get_logger
 logger = get_logger("tokenizer")
 
 
-def read_file_in_chunks(file_path, chunk_size):
+def _read_file_in_chunks(file_path, chunk_size):
     with open(file_path, "r", encoding="utf-8") as file:
         while True:
             lines = file.readlines(chunk_size)
@@ -28,7 +28,7 @@ def read_file_in_chunks(file_path, chunk_size):
             yield lines
 
 
-def tokenize_lines(params) -> List[str]:
+def _tokenize_lines(params) -> List[str]:
     lines, lang = params
     from mosestokenizer import MosesTokenizer
 
@@ -64,11 +64,11 @@ def tokenize(input_path: str, output_path: str, lang: str, chunk_size: int = 100
 
     with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
         with open(output_path, "w") as output_file:
-            chunks = read_file_in_chunks(input_path, chunk_size=chunk_size)
+            chunks = _read_file_in_chunks(input_path, chunk_size=chunk_size)
 
             pbar = tqdm(mininterval=10)
             for tokenized_chunk in pool.imap(
-                tokenize_lines,
+                _tokenize_lines,
                 ((ch, lang) for ch in chunks),
             ):
                 output_file.write("\n".join(tokenized_chunk) + "\n")
