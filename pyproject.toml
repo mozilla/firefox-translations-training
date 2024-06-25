@@ -48,7 +48,7 @@ opustrainer = {git = "https://github.com/hplt-project/OpusTrainer.git", rev="c96
 requests-mock = "^1.11.0"
 sh = "^2.0.6"
 zstandard = "^0.22.0"
-#translations_parser = {path="./tracking/", develop=true}
+translations_parser = {path="./tracking/", develop=true}
 taskcluster-taskgraph = "^7.0.3"
 sacremoses = "0.1.1"
 
