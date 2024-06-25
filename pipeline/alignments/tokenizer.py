@@ -6,10 +6,13 @@ Example:
   python pipeline/alignments/tokenizer.py --input_path=data/datasets/news.2023.en.shuffled.deduped \
     --output_path=data/datasets/news.2023.en.shuffled.deduped.moses --lang=en --chunk_size=500000
 
+Using C++ opus-fast-mosestokenizer sometimes requires specifying LD_LIBRARY_PATH before starting the Python process
+see https://github.com/Helsinki-NLP/opus-fast-mosestokenizer/issues/6
+export LD_LIBRARY_PATH=.../<you-python-env>/lib/python3.10/site-packages/mosestokenizer/lib
+
 """
 import argparse
 import multiprocessing
-import os
 from typing import List
 
 from tqdm import tqdm
@@ -50,17 +53,6 @@ def _tokenize_lines(params) -> List[str]:
 
 def tokenize(input_path: str, output_path: str, lang: str, chunk_size: int = 100000) -> None:
     logger.info(f"Tokenizing {input_path} with Moses tokenizer")
-
-    try:
-        pass
-    except RuntimeError:
-        # https://github.com/Helsinki-NLP/opus-fast-mosestokenizer/issues/6
-        import pkgutil
-
-        module_path = pkgutil.find_loader("mosestokenizer").get_filename()
-        lib_path = os.path.abspath(os.path.join(os.path.dirname(module_path), "lib"))
-        logger.warning(f"Setting LD_LIBRARY_PATH to {lib_path}")
-        os.environ["LD_LIBRARY_PATH"] = lib_path
 
     with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
         with open(output_path, "w") as output_file:
