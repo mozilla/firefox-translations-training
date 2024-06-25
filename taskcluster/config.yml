@@ -94,32 +94,32 @@ workers:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: '{alias}'
+            worker-type: 'b-linux-v100-gpu-4-bug1904569'
         b-linux-v100-gpu-4:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: '{alias}'
+            worker-type: 'b-linux-v100-gpu-4-bug1904569'
         b-linux-v100-gpu-4-300gb:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: '{alias}'
+            worker-type: 'b-linux-v100-gpu-4-bug1904569'
         b-linux-v100-gpu-4-300gb-standard:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: '{alias}'
+            worker-type: 'b-linux-v100-gpu-4-bug1904569'
         b-linux-v100-gpu-4-1tb:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: '{alias}'
+            worker-type: 'b-linux-v100-gpu-4-bug1904569'
         b-linux-v100-gpu-4-1tb-standard:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
-            worker-type: '{alias}'
+            worker-type: 'b-linux-v100-gpu-4-bug1904569'
         images:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
