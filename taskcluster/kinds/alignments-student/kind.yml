@@ -78,6 +78,7 @@ tasks:
                     --corpus_trg=$MOZ_FETCHES_DIR/corpus.{trg_locale}.zst
                     --output_path=$TASK_WORKDIR/artifacts/corpus.aln.zst
                     --tokenization=moses
+                    --priors_input_path=$MOZ_FETCHES_DIR/corpus.priors
 
         dependencies:
             cefilter: cefilter-{src_locale}-{trg_locale}
