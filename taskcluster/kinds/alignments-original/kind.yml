@@ -23,7 +23,7 @@ tasks:
         description: alignments for teacher's original parallel training corpus {src_locale}-{trg_locale}
         attributes:
             dataset-category: train
-            stage: alignments-teacher
+            stage: alignments-original
             src_locale: "{src_locale}"
             trg_locale: "{trg_locale}"
             cache:
