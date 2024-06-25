@@ -64,6 +64,8 @@ def run(
     if tokenization == Tokenization.moses:
         tokenized_src, tokenized_trg = corpus_src + ".moses", corpus_trg + ".moses"
         output_aln = os.path.join(tmp_dir, "aln")
+        # C++ tokenizer can process 100k sentences per second on a single core,
+        # so the chunks to parallelize things should be large enough
         tokenize(corpus_src, tokenized_src, src, chunk_size=500000)
         tokenize(corpus_trg, tokenized_trg, trg, chunk_size=500000)
     else:
@@ -212,20 +214,21 @@ def remap(
     tok_trg_path: str,
     aln_path: str,
     output_aln_path: str,
-):
+) -> None:
     """
     Remaps alignments that were calculated for Moses-tokenized corpus to whitespace-tokenized ones.
     :param src_path: path to whitespace-tokenized sentences in source language
     :param trg_path: path to whitespace-tokenized sentences in target language
-    :param tok_src_path: path to Moses tokenization sentences in source language
-    :param tok_trg_path: path to Moses tokenization sentences in target language
-    :param aln_path: path to the alignments calculate for Moses-tokenized corpus
+    :param tok_src_path: path to Moses-tokenized sentences in source language
+    :param tok_trg_path: path to Moses-tokenized sentences in target language
+    :param aln_path: path to the alignments calculated for Moses-tokenized corpus
     :param output_aln_path: path to output alignments file remapped to whitespace-tokenized corpus
     """
     logger.info("Remapping alignments to whitespace tokenization")
 
     with ExitStack() as stack:
         pool = stack.enter_context(multiprocessing.Pool(processes=multiprocessing.cpu_count()))
+        # Buffering helps to minimize IO operations which speeds thing up significantly
         output = stack.enter_context(open(output_aln_path, "w", buffering=500000))
 
         lines = zip(
@@ -236,11 +239,15 @@ def remap(
             stack.enter_context(open(aln_path)),
         )
 
+        # send lines to worker processes in chunks
         for aln in tqdm(pool.imap(remap_line, lines, chunksize=10000), mininterval=10):
             output.write(aln)
 
 
 def remap_line(params):
+    """
+    Remaps alignments for a single line in a corpus
+    """
     src, trg, tok_src, tok_trg, aln = params
     src_map = map_indices(tok_src, src)
     trg_map = map_indices(tok_trg, trg)
