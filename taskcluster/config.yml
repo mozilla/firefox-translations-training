@@ -43,8 +43,7 @@ valid-stages:
     - merge-translated
     - score
     - cefilter
-    - alignments-original
-    - alignments-backtranslated
+    - alignments-teacher
     - alignments-student
     - shortlist
     - train-student
