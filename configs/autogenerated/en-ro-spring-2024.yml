@@ -2,7 +2,7 @@
 # task config-generator -- en ro --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/6745aba3f298ba328d01125a09001a5cdc89ef61/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/50d5507202f316d24097fe0efd1b3dfbadb6906f/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -49,6 +49,7 @@ datasets:
   #  - opus_ELRC-417-Swedish_Work_Environ/v1 - not enough data  (8 sentences)
   #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
   #  - mtdata_ELRC-rights_arrested-1-eng-ron - duplicate with opus
+  #  - swedish_work_environment - ignored datasets
   #  - mtdata_ELRC-romanian_literature-1-eng-ron - duplicate with opus
   #  - mtdata_ELRC-romanian_wikipedia-1-eng-ron - duplicate with opus
   #  - mtdata_ELRC-romanian_news-1-eng-ron - duplicate with opus
@@ -145,7 +146,6 @@ datasets:
   - opus_ELRC-2750-vaccination/v1 #                             496 sentences
   - opus_ELRC-vaccination/v1 #                                  496 sentences
   - opus_ELRC_2923/v1 #                                         319 sentences
-  - mtdata_ELRC-swedish_work_environment-1-eng-ron #       ~13,557 sentences (1.5 MB)
   - mtdata_ELRC-romanian_new_criminal_procedure_code-1-eng-ron # ~23,368 sentences (2.6 MB)
   - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-eng-ron # ~2,078 sentences (234.8 kB)
   - mtdata_ELRC-romanian_ombudsman_archive-1-eng-ron #      ~4,888 sentences (552.4 kB)

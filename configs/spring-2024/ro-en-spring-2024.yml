@@ -145,7 +145,8 @@ datasets:
   - opus_ELRC-2750-vaccination/v1 #                             496 sentences
   - opus_ELRC-vaccination/v1 #                                  496 sentences
   - opus_ELRC_2923/v1 #                                         319 sentences
-  - mtdata_ELRC-swedish_work_environment-1-eng-ron #       ~13,557 sentences (1.5 MB)
+  # Fails in the task
+  # - mtdata_ELRC-swedish_work_environment-1-eng-ron #       ~13,557 sentences (1.5 MB)
   - mtdata_ELRC-romanian_new_criminal_procedure_code-1-eng-ron # ~23,368 sentences (2.6 MB)
 # maybe too long
 #  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-eng-ron # ~2,078 sentences (234.8 kB)

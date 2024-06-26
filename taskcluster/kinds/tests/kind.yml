@@ -111,6 +111,7 @@ tasks:
         - pipeline/**
         - tests/**
         - tracking/**
+        - taskcluster/**
         - poetry.*
         - Taskfile.yml
     fetches:
