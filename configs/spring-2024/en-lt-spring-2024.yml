@@ -194,10 +194,14 @@ marian-args:
   training-student-finetuned:
     early-stopping: '20'
 target-stage: all
-start-stage: score
-previous_group_ids: ["WDNdtYFhTG6gh7c1wnAEyw"]
+start-stage: alignments-student
+previous_group_ids: ["X4XNYHCnRdm6KR_ByqPxUQ"]
 wandb-publication: true
 taskcluster:
   split-chunks: 20
   worker-classes:
     default: gcp-spot
+    alignments-original: gcp-standard
+    alignments-backtranslated: gcp-standard
+    alignments-student: gcp-standard
+    shortlist: gcp-standard
