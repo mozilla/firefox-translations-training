@@ -31,7 +31,7 @@ from typing import Dict, Optional
 import zstandard
 from tqdm import tqdm
 
-from pipeline.alignments.tokenizer import tokenize
+from pipeline.alignments.tokenizer import tokenize_moses
 from pipeline.common.logging import get_logger
 
 logger = get_logger("alignments")
@@ -66,8 +66,8 @@ def run(
         output_aln = os.path.join(tmp_dir, "aln")
         # C++ tokenizer can process 100k sentences per second on a single core,
         # so the chunks to parallelize things should be large enough
-        tokenize(corpus_src, tokenized_src, src, chunk_size=500000)
-        tokenize(corpus_trg, tokenized_trg, trg, chunk_size=500000)
+        tokenize_moses(corpus_src, tokenized_src, src, chunk_size=500000)
+        tokenize_moses(corpus_trg, tokenized_trg, trg, chunk_size=500000)
     else:
         tokenized_src, tokenized_trg = corpus_src, corpus_trg
         output_aln = output_path

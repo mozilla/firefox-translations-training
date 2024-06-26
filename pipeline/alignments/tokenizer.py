@@ -53,7 +53,7 @@ def _tokenize_lines(params) -> List[str]:
     return tokenized
 
 
-def tokenize(input_path: str, output_path: str, lang: str, chunk_size: int = 100000) -> None:
+def tokenize_moses(input_path: str, output_path: str, lang: str, chunk_size: int = 100000) -> None:
     logger.info(f"Tokenizing {input_path} with Moses tokenizer")
 
     with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
@@ -104,4 +104,4 @@ if __name__ == "__main__":
         help="Number of lines to process per chunk",
     )
     args = parser.parse_args()
-    tokenize(args.input_path, args.output_path, args.lang, args.chunk_size)
+    tokenize_moses(args.input_path, args.output_path, args.lang, args.chunk_size)
