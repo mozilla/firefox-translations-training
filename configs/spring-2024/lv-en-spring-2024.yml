@@ -203,7 +203,3 @@ taskcluster:
     alignments-backtranslated: gcp-standard
     alignments-student: gcp-standard
     shortlist: gcp-standard
-    alignments-original: gcp-standard
-    alignments-backtranslated: gcp-standard
-    alignments-student: gcp-standard
-    shortlist: gcp-standard
