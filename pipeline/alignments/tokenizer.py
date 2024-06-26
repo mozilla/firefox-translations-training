@@ -53,12 +53,12 @@ def _tokenize_lines(params) -> List[str]:
     return tokenized
 
 
-def tokenize_moses(input_path: str, output_path: str, lang: str, chunk_size: int = 100000) -> None:
+def tokenize_moses(input_path: str, output_path: str, lang: str, sentences_per_chunk: int = 100000) -> None:
     logger.info(f"Tokenizing {input_path} with Moses tokenizer")
 
     with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
         with open(output_path, "w") as output_file:
-            chunks = _read_file_in_chunks(input_path, chunk_size=chunk_size)
+            chunks = _read_file_in_chunks(input_path, chunk_size=sentences_per_chunk)
 
             pbar = tqdm(mininterval=10)
             # ~100K sentences per second on a single core

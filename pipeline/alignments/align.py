@@ -65,9 +65,9 @@ def run(
         tokenized_src, tokenized_trg = corpus_src + ".moses", corpus_trg + ".moses"
         output_aln = os.path.join(tmp_dir, "aln")
         # C++ tokenizer can process 100k sentences per second on a single core,
-        # so the chunks to parallelize things should be large enough
-        tokenize_moses(corpus_src, tokenized_src, src, chunk_size=500000)
-        tokenize_moses(corpus_trg, tokenized_trg, trg, chunk_size=500000)
+        # so the chunks to parallelize things should be large enough to increase throughput
+        tokenize_moses(corpus_src, tokenized_src, src, sentences_per_chunk=500000)
+        tokenize_moses(corpus_trg, tokenized_trg, trg, sentences_per_chunk=500000)
     else:
         tokenized_src, tokenized_trg = corpus_src, corpus_trg
         output_aln = output_path
