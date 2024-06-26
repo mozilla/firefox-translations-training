@@ -48,6 +48,7 @@ task-defaults:
             trg_locale: training_config.experiment.trg
             split_chunks: training_config.experiment.teacher-ensemble
             wandb_publication: training_config.wandb-publication
+            owner: owner
     worker-type: b-gpu
     worker:
         artifacts:
@@ -61,6 +62,7 @@ task-defaults:
 
             # Weight & Biases trigger
             WANDB_PUBLICATION: "{wandb_publication}"
+            WANDB_AUTHOR: "{owner}"
 
             # Weight & Biases publication token is stored in that secret
             TASKCLUSTER_SECRET: project/translations/level-1/weights-and-biases
