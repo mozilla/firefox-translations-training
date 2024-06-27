@@ -7,7 +7,11 @@ name = "translations_parser"
 version = "0.1.0"
 description = "A training log parser for the Mozilla translation ML tool"
 requires-python = ">=3.10"
-dynamic = ["dependencies"]
+dependencies = [
+  "PyYAML==6.0.1",
+  "wandb==0.16.1",
+  "taskcluster>=56.0.3,<57.0.0",
+]
 
 [project.scripts]
 parse_tc_logs = "translations_parser.cli.taskcluster:main"
@@ -19,6 +23,3 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 namespaces = false
-
-[tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt"]}
