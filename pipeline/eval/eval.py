@@ -385,8 +385,8 @@ def main(args_list: Optional[list[str]] = None) -> None:
             data = list_existing_group_logs_metrics(group_logs_client.wandb)
             data.append(
                 [
-                    args.wandb_group,
-                    args.wandb_run_name,
+                    run_client.wandb.group,
+                    run_client.wandb.name,
                     metric.importer,
                     metric.dataset,
                     metric.augmentation,
