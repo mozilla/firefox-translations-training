@@ -9,7 +9,7 @@ import subprocess
 import time
 from pathlib import Path
 from subprocess import CompletedProcess
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 import zstandard as zstd
 
@@ -198,12 +198,21 @@ class DataDir:
             command_parts[index] = part
 
         # If using a venv, prepend the binary directory to the path so it is used.
-        python_bin_dir = get_python_bin_dir(requirements)
+        python_bin_dir, venv_dir = get_python_dirs(requirements)
         if python_bin_dir:
             final_env = {**final_env, "PATH": f'{python_bin_dir}:{os.environ.get("PATH", "")}'}
             if command_parts[0].endswith(".py"):
                 # This script is relying on a shebang, add the python3 from the executable instead.
                 command_parts.insert(0, os.path.join(python_bin_dir, "python3"))
+
+        # We have to set the path to the C++ lib before the process is started
+        # https://github.com/Helsinki-NLP/opus-fast-mosestokenizer/issues/6
+        with open(requirements) as f:
+            reqs_txt = f.read()
+        if "opus-fast-mosestokenizer" in reqs_txt:
+            lib_path = os.path.join(venv_dir, "lib/python3.10/site-packages/mosestokenizer/lib")
+            print(f"Setting LD_LIBRARY_PATH to {lib_path}")
+            final_env["LD_LIBRARY_PATH"] = lib_path
 
         print("┌──────────────────────────────────────────────────────────")
         print("│ run_task:", " ".join(command_parts))
@@ -455,7 +464,7 @@ def get_mocked_downloads() -> str:
     )  # fmt: skip
 
 
-def get_python_bin_dir(requirements: Optional[str]) -> Optional[str]:
+def get_python_dirs(requirements: Optional[str]) -> Optional[Tuple[str, str]]:
     """
     Creates a virtual environment for each requirements file that a task needs. The virtual
     environment is hashed based on the requirements file contents, and the system details. This
@@ -511,8 +520,9 @@ def get_python_bin_dir(requirements: Optional[str]) -> Optional[str]:
             print("Removing the venv due to an error in its creation.")
             shutil.rmtree(venv_dir)
             raise exception
+    print(f"Using virtual environment {venv_dir}")
 
-    return python_bin_dir
+    return python_bin_dir, venv_dir
 
 
 def hash_file(hash: any, path: str):

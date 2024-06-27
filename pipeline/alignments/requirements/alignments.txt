@@ -10,3 +10,7 @@ eflomal==1.0.0b1
     # via -r pipeline/alignments/requirements/alignments.in
 numpy==1.26.4
     # via eflomal
+opus-fast-mosestokenizer==0.0.8.5
+    # via -r pipeline/alignments/requirements/alignments.in
+tqdm==4.66.4
+    # via -r pipeline/alignments/requirements/alignments.in
