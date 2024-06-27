@@ -57,7 +57,11 @@ logger = get_logger("eval")
 try:
     from translations_parser.publishers import METRIC_KEYS
     from translations_parser.utils import metric_from_tc_context
-    from translations_parser.wandb import add_wandb_arguments, get_wandb_publisher
+    from translations_parser.wandb import (
+        add_wandb_arguments,
+        get_wandb_publisher,
+        list_existing_group_logs_metrics,
+    )
 
     import wandb
 
@@ -346,6 +350,10 @@ def main(args_list: Optional[list[str]] = None) -> None:
         file.write(f"{bleu_details['score']}\n" f"{chrf_details['score']}\n" f"{comet_score}\n")
 
     if WANDB_AVAILABLE:
+        metric = metric_from_tc_context(
+            chrf=chrf_details["score"], bleu=bleu_details["score"], comet=comet_score
+        )
+
         run_client = get_wandb_publisher(  # noqa
             project_name=args.wandb_project,
             group_name=args.wandb_group,
@@ -355,11 +363,8 @@ def main(args_list: Optional[list[str]] = None) -> None:
             publication=args.wandb_publication,
         )
         if run_client:
-            run_client.open(resume=True)
             logger.info(f"Publishing metrics to Weight & Biases ({wandb.extra_kwargs})")
-            metric = metric_from_tc_context(
-                chrf=chrf_details["score"], bleu=bleu_details["score"], comet=comet_score
-            )
+            run_client.open(resume=True)
             run_client.handle_metrics(metrics=[metric])
             run_client.close()
 
@@ -373,19 +378,36 @@ def main(args_list: Optional[list[str]] = None) -> None:
             publication=args.wandb_publication,
         )
         if group_logs_client:
-            group_logs_client.open(resume=True)
             logger.info("Adding metric row to the 'group_logs' run")
-            group_logs_client.wandb.log({
-                "metrics": wandb.Table(
-                    columns=["Group", "Model", "Importer", "Dataset", "Augmenation", *METRIC_KEYS],
-                    data=[
-                        [args.wandb_group, args.wandb_run_name, metric.importer, metric.dataset, metric.augmentation]
-                        + [getattr(metric, attr) for attr in METRIC_KEYS]
-                        for run_name, run_metrics in metrics.items()
-                        for metric in run_metrics
-                    ],
-                )
-            })
+            group_logs_client.open(resume=True)
+
+            # Restore existing metrics data
+            data = list_existing_group_logs_metrics(group_logs_client.wandb)
+            data.append(
+                [
+                    args.wandb_group,
+                    args.wandb_run_name,
+                    metric.importer,
+                    metric.dataset,
+                    metric.augmentation,
+                ]
+                + [getattr(metric, attr) for attr in METRIC_KEYS]
+            )
+            group_logs_client.wandb.log(
+                {
+                    "metrics": wandb.Table(
+                        columns=[
+                            "Group",
+                            "Model",
+                            "Importer",
+                            "Dataset",
+                            "Augmenation",
+                            *METRIC_KEYS,
+                        ],
+                        data=data,
+                    )
+                }
+            )
             group_logs_client.close()
 
 
