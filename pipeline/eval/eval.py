@@ -55,8 +55,11 @@ from pipeline.common.logging import get_logger
 
 logger = get_logger("eval")
 try:
+    from translations_parser.publishers import METRIC_KEYS
     from translations_parser.utils import metric_from_tc_context
     from translations_parser.wandb import add_wandb_arguments, get_wandb_publisher
+
+    import wandb
 
     WANDB_AVAILABLE = True
 except ImportError as e:
@@ -343,7 +346,7 @@ def main(args_list: Optional[list[str]] = None) -> None:
         file.write(f"{bleu_details['score']}\n" f"{chrf_details['score']}\n" f"{comet_score}\n")
 
     if WANDB_AVAILABLE:
-        wandb = get_wandb_publisher(  # noqa
+        run_client = get_wandb_publisher(  # noqa
             project_name=args.wandb_project,
             group_name=args.wandb_group,
             run_name=args.wandb_run_name,
@@ -351,16 +354,39 @@ def main(args_list: Optional[list[str]] = None) -> None:
             artifacts=args.wandb_artifacts,
             publication=args.wandb_publication,
         )
-        if wandb:
-            logger.info("Initializing Weight & Biases client")
-            # Allow publishing metrics as a table on existing runs (i.e. previous trainings)
-            wandb.open(resume=True)
+        if run_client:
+            run_client.open(resume=True)
             logger.info(f"Publishing metrics to Weight & Biases ({wandb.extra_kwargs})")
             metric = metric_from_tc_context(
                 chrf=chrf_details["score"], bleu=bleu_details["score"], comet=comet_score
             )
-            wandb.handle_metrics(metrics=[metric])
-            wandb.close()
+            run_client.handle_metrics(metrics=[metric])
+            run_client.close()
+
+        # Publish an extra row on the group_logs summary run
+        group_logs_client = get_wandb_publisher(  # noqa
+            project_name=args.wandb_project,
+            group_name=args.wandb_group,
+            run_name="group_logs",
+            taskcluster_secret=args.taskcluster_secret,
+            artifacts=args.wandb_artifacts,
+            publication=args.wandb_publication,
+        )
+        if group_logs_client:
+            group_logs_client.open(resume=True)
+            logger.info("Adding metric row to the 'group_logs' run")
+            group_logs_client.wandb.log({
+                "metrics": wandb.Table(
+                    columns=["Group", "Model", "Importer", "Dataset", "Augmenation", *METRIC_KEYS],
+                    data=[
+                        [args.wandb_group, args.wandb_run_name, metric.importer, metric.dataset, metric.augmentation]
+                        + [getattr(metric, attr) for attr in METRIC_KEYS]
+                        for run_name, run_metrics in metrics.items()
+                        for metric in run_metrics
+                    ],
+                )
+            })
+            group_logs_client.close()
 
 
 if __name__ == "__main__":
