@@ -230,7 +230,10 @@ marian-args:
     early-stopping: '20'
   training-student-finetuned:
     early-stopping: '20'
-target-stage: evaluate-teacher
+target-stage: evaluate-teacher-ensemble
+start-stage: alignments-teacher
+previous_group_ids: ["Rpc6XGDIRUmh91t_9JHKlg"]
+existing_tasks: { "train-vocab-cs-en": "SgJB5LMMRyuQoYxjwueZQA" }
 wandb-publication: true
 taskcluster:
   split-chunks: 20
