@@ -55,6 +55,7 @@ from pipeline.common.logging import get_logger
 
 logger = get_logger("eval")
 try:
+    import wandb
     from translations_parser.publishers import METRIC_KEYS, WandB
     from translations_parser.utils import metric_from_tc_context
     from translations_parser.wandb import (
@@ -62,8 +63,6 @@ try:
         get_wandb_publisher,
         list_existing_group_logs_metrics,
     )
-
-    import wandb
 
     WANDB_AVAILABLE = True
 except ImportError as e:
@@ -362,7 +361,7 @@ def main(args_list: Optional[list[str]] = None) -> None:
             artifacts=args.wandb_artifacts,
             publication=args.wandb_publication,
         )
-        logger.info(f"Publishing metrics to Weight & Biases ({wandb.extra_kwargs})")
+        logger.info(f"Publishing metrics to Weight & Biases ({run_client.extra_kwargs})")
         run_client.open(resume=True)
         run_client.handle_metrics(metrics=[metric])
         run_client.close()
