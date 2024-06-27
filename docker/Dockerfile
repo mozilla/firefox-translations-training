@@ -27,6 +27,10 @@ RUN apt-get update -qq \
                           libopenblas-dev \
                           openssl \
                           libssl-dev  \
+                          pkg-config \
+                          libre2-dev \
+                          libglib2.0-dev \
+                          python3-pybind11  \
          && apt-get clean
 
 RUN mkdir /builds/worker/tools && \
