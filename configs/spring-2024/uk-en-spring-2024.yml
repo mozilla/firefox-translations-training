@@ -130,10 +130,9 @@ marian-args:
     early-stopping: '20'
   training-student-finetuned:
     early-stopping: '20'
-target-stage: evaluate-teacher-ensemble
-start-stage: train-teacher
-# The group with the proper first teacher that depends on the correct merge-mono-trg
-previous_group_ids: ["YKY97vZVTdODzmzG0q6rAA"]
+target-stage: all
+start-stage: evaluate-teacher-ensemble
+previous_group_ids: ["Gy029KR8RSiVt4OxvuSP7A"]
 existing_tasks: { "train-teacher-uk-en-1": "fENJrS54TlO8d1A8FXZKyQ" } # the good teacher
 wandb-publication: true
 taskcluster:

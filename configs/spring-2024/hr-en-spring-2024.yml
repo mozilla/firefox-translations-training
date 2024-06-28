@@ -220,9 +220,9 @@ marian-args:
     early-stopping: '20'
   training-student-finetuned:
     early-stopping: '20'
-target-stage: evaluate-teacher-ensemble
-start-stage: train-teacher
-previous_group_ids: ["Dp4pGjK1RyOyBGRaUZNazw"]
+target-stage: all
+start-stage: evaluate-teacher-ensemble
+previous_group_ids: ["TLYEKZVPSa2iP8X1k_pB3g"]
 wandb-publication: true
 taskcluster:
   split-chunks: 20
