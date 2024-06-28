@@ -400,7 +400,13 @@ def train_action(parameters, graph_config, input, task_group_id, task_id):
         # as `existing_tasks`. These map task labels (eg: train-backwards-ru-en) to
         # task ids, and will be used instead of scheduling new tasks for any tasks with
         # an identical name.
-        parameters["existing_tasks"] = get_ancestors(start_task_ids)
+        # Make sure not to include the tasks with the start_stage in existing_tasks
+        existing_tasks = {
+            label: task_id
+            for label, task_id in get_ancestors(start_task_ids).items()
+            if task_id not in start_task_ids
+        }
+        parameters["existing_tasks"] = existing_tasks
 
     # Override the `existing_tasks` explicitly provided in the action's input
     existing_tasks = input.pop("existing_tasks", {})
