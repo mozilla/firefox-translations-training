@@ -3,8 +3,9 @@ import os
 from pathlib import Path
 from typing import List
 
-import taskcluster
 import wandb
+
+import taskcluster
 from translations_parser.parser import logger
 from translations_parser.publishers import WandB
 from translations_parser.utils import build_task_name
