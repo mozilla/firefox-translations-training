@@ -361,6 +361,10 @@ def main(args_list: Optional[list[str]] = None) -> None:
             artifacts=args.wandb_artifacts,
             publication=args.wandb_publication,
         )
+        if run_client is None:
+            # W&B publication may be direclty disabled through WANDB_PUBLICATION
+            return
+
         logger.info(f"Publishing metrics to Weight & Biases ({run_client.extra_kwargs})")
         run_client.open(resume=True)
         run_client.handle_metrics(metrics=[metric])
