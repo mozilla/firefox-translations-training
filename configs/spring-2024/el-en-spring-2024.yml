@@ -17,7 +17,7 @@ experiment:
   mono-max-sentences-trg: 200_000_000
   spm-sample-size: 10_000_000
   spm-vocab-size: 32000
-  teacher-ensemble: 1
+  teacher-ensemble: 2
   teacher-mode: two-stage
   pretrained-models:
      train-backwards:
@@ -267,7 +267,10 @@ marian-args:
     early-stopping: '20'
   training-student-finetuned:
     early-stopping: '20'
-target-stage: evaluate-teacher
+target-stage: evaluate-teacher-ensemble
+start-stage: alignments-teacher
+previous_group_ids: ["ThqYHBSvS7-OGsZhlwUw-Q"]
+existing_tasks: { "train-vocab-el-en": "W60nDU12TWi7gVMtL30ZXQ" }
 wandb-publication: true
 taskcluster:
   split-chunks: 20
