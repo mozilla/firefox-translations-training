@@ -26,6 +26,7 @@ import subprocess
 import sys
 from contextlib import ExitStack
 from enum import Enum
+from glob import glob
 from typing import Dict, Optional
 
 import zstandard
@@ -115,6 +116,15 @@ def align(
 ):
     import eflomal
 
+    logger.info("Splitting corpus into parts")
+    # align in chunks to prevent OOM
+    chunk_lines = 100000000
+    subprocess.check_call(["split", "--lines", str(chunk_lines), corpus_src, corpus_src + "."])
+    subprocess.check_call(["split", "--lines", str(chunk_lines), corpus_trg, corpus_trg + "."])
+
+    fwd_path = os.path.join(tmp_dir, "aln.fwd")
+    rev_path = os.path.join(tmp_dir, "aln.rev")
+
     with ExitStack() as stack:
         if priors_input_path:
             logger.info(f"Using provided priors: {priors_input_path}")
@@ -122,26 +132,36 @@ def align(
         else:
             priors_input = None
 
-        # We use eflomal aligner.
-        # It is less memory intensive than fast_align.
-        # fast_align failed with OOM in a large white-space tokenized corpus
-        aligner = eflomal.Aligner()
+        for src_part in glob(f"{corpus_src}.*"):
+            suffix = src_part.split(".")[-1]
+            logger.info(f"Processing part {suffix}")
 
-        src_input = stack.enter_context(open(corpus_src, "r", encoding="utf-8"))
-        trg_input = stack.enter_context(open(corpus_trg, "r", encoding="utf-8"))
-        fwd_path = os.path.join(tmp_dir, "aln.fwd")
-        rev_path = os.path.join(tmp_dir, "aln.rev")
-        logger.info("Calculating alignments...")
-        aligner.align(
-            src_input,
-            trg_input,
-            links_filename_fwd=fwd_path,
-            links_filename_rev=rev_path,
-            priors_input=priors_input,
-            quiet=False,
-            use_gdb=False,
-        )
-        return fwd_path, rev_path
+            # We use eflomal aligner.
+            # It is less memory intensive than fast_align.
+            # fast_align failed with OOM in a large white-space tokenized corpus
+            aligner = eflomal.Aligner()
+
+            src_input = stack.enter_context(open(f"{corpus_src}.{suffix}", "r", encoding="utf-8"))
+            trg_input = stack.enter_context(open(f"{corpus_trg}.{suffix}", "r", encoding="utf-8"))
+
+            logger.info("Calculating alignments...")
+            aligner.align(
+                src_input,
+                trg_input,
+                links_filename_fwd=f"{fwd_path}.{suffix}",
+                links_filename_rev=f"{rev_path}.{suffix}",
+                priors_input=priors_input,
+                quiet=False,
+                use_gdb=False,
+            )
+
+    # Merge alignments parts into one file
+    with open(fwd_path, "w") as fwd_out:
+        subprocess.check_call(["cat"] + glob(f"{fwd_path}.*"), stdout=fwd_out)
+    with open(rev_path, "w") as rev_out:
+        subprocess.check_call(["cat"] + glob(f"{rev_path}.*"), stdout=rev_out)
+
+    return fwd_path, rev_path
 
 
 def symmetrize(bin: str, fwd_path: str, rev_path: str, output_path: str):
