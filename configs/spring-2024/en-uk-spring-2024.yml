@@ -134,9 +134,10 @@ marian-args:
     early-stopping: '20'
   training-student-finetuned:
     early-stopping: '20'
-target-stage: all
+target-stage: evaluate-quantized
 start-stage: alignments-student
-previous_group_ids: ["a5F1swqWQhKp88A4aiJ3wg"]
+previous_group_ids: ["evuAvqqWQ3WBUQ94Yi31uw"]
+existing_tasks: { "alignments-priors-en-uk": "f_Bi1vuDSrCPfEd80D6foA" }
 wandb-publication: true
 taskcluster:
   split-chunks: 20
