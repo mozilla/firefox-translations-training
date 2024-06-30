@@ -132,7 +132,7 @@ def align(
         else:
             priors_input = None
 
-        for src_part in glob(f"{corpus_src}.*"):
+        for src_part in sorted(glob(f"{corpus_src}.*")):
             suffix = src_part.split(".")[-1]
             logger.info(f"Processing part {suffix}")
 
@@ -157,9 +157,13 @@ def align(
 
     # Merge alignments parts into one file
     with open(fwd_path, "w") as fwd_out:
-        subprocess.check_call(["cat"] + glob(f"{fwd_path}.*"), stdout=fwd_out)
+        fwd_parts = sorted(glob(f"{fwd_path}.*"))
+        logger.info(f"Merging alignments: {fwd_parts}")
+        subprocess.check_call(["cat"] + fwd_parts, stdout=fwd_out)
     with open(rev_path, "w") as rev_out:
-        subprocess.check_call(["cat"] + glob(f"{rev_path}.*"), stdout=rev_out)
+        rev_parts = sorted(glob(f"{rev_path}.*"))
+        logger.info(f"Merging alignments: {rev_parts}")
+        subprocess.check_call(["cat"] + rev_parts, stdout=rev_out)
 
     return fwd_path, rev_path
 
