@@ -140,6 +140,10 @@ def get_wandb_publisher(
     if logs_file:
         config["logs_file"] = logs_file
 
+    # Automatically adds experiment owner to the tags
+    if author := os.environ.get("WANDB_AUTHOR"):
+        tags.append(f"author:{author}")
+
     return WandB(
         project=project_name,
         group=group_name,
