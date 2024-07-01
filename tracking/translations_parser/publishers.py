@@ -14,6 +14,8 @@ from translations_parser.utils import parse_task_label
 
 logger = logging.getLogger(__name__)
 
+METRIC_KEYS = sorted(set(Metric.__annotations__.keys()) - {"importer", "dataset", "augmentation"})
+
 
 class Publisher(ABC):
     """
@@ -178,7 +180,7 @@ class WandB(Publisher):
                             columns=["Metric", "Value"],
                             data=[
                                 [key, getattr(metric, key)]
-                                for key in ("bleu_detok", "chrf", "comet")
+                                for key in METRIC_KEYS
                                 if getattr(metric, key) is not None
                             ],
                         ),
@@ -329,9 +331,10 @@ class WandB(Publisher):
         if metrics:
             # Publish all evaluation metrics to a table
             table = wandb.Table(
-                columns=["Group", "Model", "Dataset", "BLEU", "chrF"],
+                columns=["Group", "Model", "Importer", "Dataset", "Augmenation", *METRIC_KEYS],
                 data=[
-                    [group, run_name, metric.dataset, metric.bleu_detok, metric.chrf]
+                    [group, run_name, metric.importer, metric.dataset, metric.augmentation]
+                    + [getattr(metric, attr) for attr in METRIC_KEYS]
                     for run_name, run_metrics in metrics.items()
                     for metric in run_metrics
                 ],
