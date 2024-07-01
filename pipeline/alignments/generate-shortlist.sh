@@ -49,7 +49,8 @@ ${COMPRESSION_CMD} -dc "${corpus_trg}" |
 python3 align.py \
   --corpus_src="${dir}/corpus.spm.${SRC}" \
   --corpus_trg="${dir}/corpus.spm.${TRG}" \
-  --output_path="${output_dir}/corpus.aln"
+  --output_path="${output_dir}/corpus.aln" \
+  --aligner=fast_align
 
 echo "### Creating shortlist"
 "${BIN}/extract_lex" \
