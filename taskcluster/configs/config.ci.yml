@@ -8,8 +8,6 @@ experiment:
   trg: en
 
   teacher-ensemble: 1
-  backward-model: ""
-  vocab: ""
 
   mono-max-sentences-src: 10000
   mono-max-sentences-trg: 10000
@@ -19,6 +17,10 @@ experiment:
   best-model: chrf
 
   use-opuscleaner: "true"
+  opuscleaner-mode: "custom"
+  teacher-mode: "two-stage"
+
+
   bicleaner:
     default-threshold: 0.5
     dataset-thresholds:
@@ -64,17 +66,15 @@ datasets:
     - url_https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.[LANG].zst
   devtest:
     - flores_dev
-    - sacrebleu_wmt19
-    - sacrebleu_aug-mix_wmt19
+    - sacrebleu_aug-upper_wmt19
   test:
     - flores_devtest
   mono-src:
     - news-crawl_news.2008
-    - url_https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.en.zst
   mono-trg:
     - news-crawl_news.2007
-    - url_https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.ru.zst
 
+wandb-publication: false
 target-stage: all
 taskcluster:
   split-chunks: 2
