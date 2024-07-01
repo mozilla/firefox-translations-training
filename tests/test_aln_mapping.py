@@ -12,6 +12,7 @@ tokenizer = MosesTokenizer("en")
         ("Hi", {0: 0}),
         ("Hello, world!", {0: 0, 1: 0, 2: 1, 3: 1}),
         ("Hello,  world!", {0: 0, 1: 0, 2: 1, 3: 1}),
+        ("Hello,  half-world!", {0: 0, 1: 0, 2: 1, 3: 1}),
         (
             "“I will not,” retorted the Witch, “for it is now my shoe, and not yours.”",
             {
