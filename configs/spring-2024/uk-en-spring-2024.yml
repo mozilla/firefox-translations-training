@@ -131,7 +131,7 @@ marian-args:
   training-student-finetuned:
     early-stopping: '20'
 target-stage: all
-start-stage: alignments-student
+start-stage: evaluate-quantized
 previous_group_ids: ["GuAq1ygsQB6sJl-o9epZWQ"]
 wandb-publication: true
 taskcluster:

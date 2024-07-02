@@ -190,7 +190,7 @@ marian-args:
   training-student-finetuned:
     early-stopping: '20'
 target-stage: all
-start-stage: alignments-student
+start-stage: evaluate-quantized
 # The group with the proper first teacher that depends on the correct merge-mono-trg
 previous_group_ids: ["ErGnoEDHTN6igncXfulY6g"]
 wandb-publication: true
