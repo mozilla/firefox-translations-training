@@ -29,7 +29,7 @@ def get_defaults(_):
                 "use-opuscleaner": "true",
                 "opuscleaner-mode": "custom",
                 "bicleaner": {
-                    "default-threshold": 0.5,
+                    "default-threshold": 0.1,
                     "dataset-thresholds": {
                         "opus_ada83/v1": 0.0,
                         "opus_ELRC-3075-wikipedia_health/v1": 0.6,
