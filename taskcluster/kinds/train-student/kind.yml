@@ -30,6 +30,7 @@ tasks:
                 src_locale: training_config.experiment.src
                 trg_locale: training_config.experiment.trg
                 wandb_publication: training_config.wandb-publication
+                owner: owner
             substitution-fields:
                 - description
                 - name
@@ -68,6 +69,7 @@ tasks:
 
                 # Weight & Biases trigger
                 WANDB_PUBLICATION: "{wandb_publication}"
+                WANDB_AUTHOR: "{owner}"
 
                 # Weight & Biases publication token is stored in that secret
                 TASKCLUSTER_SECRET: project/translations/level-1/weights-and-biases
