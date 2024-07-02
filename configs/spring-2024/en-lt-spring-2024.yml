@@ -195,7 +195,7 @@ marian-args:
     early-stopping: '20'
 target-stage: all
 start-stage: alignments-student
-previous_group_ids: ["X4XNYHCnRdm6KR_ByqPxUQ"]
+previous_group_ids: ["JJsRhS8vSRevcdAfX6bj7Q"]
 wandb-publication: true
 taskcluster:
   split-chunks: 20

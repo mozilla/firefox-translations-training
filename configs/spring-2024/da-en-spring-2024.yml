@@ -232,9 +232,8 @@ marian-args:
   training-student-finetuned:
     early-stopping: '20'
 target-stage: all
-start-stage: evaluate-teacher-ensemble
-previous_group_ids: ["N1O85rIASLmCwKfUpCvTlw"]
-existing_tasks: { "train-teacher-da-en-1": "fVdKk0o2QJ2JatKIibLnCw" } # the good teacher
+start-stage: alignments-student
+previous_group_ids: ["PhV7dVs-TD2zBUsY0YErwA"]
 wandb-publication: true
 taskcluster:
   split-chunks: 20
