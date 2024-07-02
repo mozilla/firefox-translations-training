@@ -44,7 +44,7 @@ valid-stages:
     - score
     - cefilter
     - alignments-teacher
-    - alignments-priors
+    - alignments-priors2
     - alignments-student
     - shortlist
     - train-student
