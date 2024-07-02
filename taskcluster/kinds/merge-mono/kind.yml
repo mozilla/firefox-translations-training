@@ -6,8 +6,8 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.worker_selection
+    - taskgraph.transforms.from_deps
     - taskgraph.transforms.task_context
-    - translations_taskgraph.transforms.find_upstreams:mono
     - taskgraph.transforms.run:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
@@ -17,7 +17,6 @@ kind-dependencies:
     - toolchain
 
 task-defaults:
-    description: merge mono for {locale}
     attributes:
         stage: merge-mono
         src_locale: "{src_locale}"
@@ -36,16 +35,16 @@ task-defaults:
             - description
             - name
             - worker.env
-            - upstreams-config.locale
             - attributes
             - run.command
 
-    upstreams-config:
-        locale: "{locale}"
-        upstream-task-attributes:
+    from-deps:
+        unique-kinds: false
+        kinds:
+            - clean-mono
+        with-attributes:
             cleaning-type: clean-mono
-        upstream-artifacts:
-            - "{dataset_sanitized}.{locale}.zst"
+        group-by: all
 
     worker-type: b-cpu-largedisk
     worker:
@@ -56,7 +55,6 @@ task-defaults:
               path: /builds/worker/artifacts
               type: directory
         env:
-            LOCALE: "{locale}"
             COMPRESSION_CMD: zstdmt
         # 128 happens when cloning this repository fails
         retry-exit-status: [128]
@@ -86,6 +84,7 @@ task-defaults:
 
 tasks:
     src:
+        description: merge mono for {src_locale}
         label: merge-mono-src-{src_locale}
         attributes:
             dataset-category: mono-src
@@ -98,11 +97,20 @@ tasks:
                 locale: training_config.experiment.src
                 max_sent: training_config.experiment.mono-max-sentences-src
 
-        upstreams-config:
-            upstream-task-attributes:
+        worker:
+            env:
+                LOCALE: "{src_locale}"
+
+        from-deps:
+            with-attributes:
                 dataset-category: mono-src
+            fetches:
+                clean-mono:
+                    - artifact: "{dataset_sanitized}.{src_locale}.zst"
+                      extract: false
 
     trg:
+        description: merge mono for {trg_locale}
         label: merge-mono-trg-{trg_locale}
         attributes:
             dataset-category: mono-trg
@@ -115,6 +123,14 @@ tasks:
                 locale: training_config.experiment.trg
                 max_sent: training_config.experiment.mono-max-sentences-trg
 
-        upstreams-config:
-            upstream-task-attributes:
+        worker:
+            env:
+                LOCALE: "{trg_locale}"
+
+        from-deps:
+            with-attributes:
                 dataset-category: mono-trg
+            fetches:
+                clean-mono:
+                    - artifact: "{dataset_sanitized}.{trg_locale}.zst"
+                      extract: false

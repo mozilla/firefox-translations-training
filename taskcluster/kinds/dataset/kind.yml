@@ -10,6 +10,7 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.from_datasets:per_dataset
+    - translations_taskgraph.transforms.set_dataset_category
     - translations_taskgraph.transforms.worker_selection
     - taskgraph.transforms.task_context
     - taskgraph.transforms.run:transforms
@@ -157,6 +158,7 @@ tasks:
             provider: url
             category: mono-src
         attributes:
+            dataset-category: mono-src
             cache:
                 resources:
                     - pipeline/data/download-mono.py
@@ -190,6 +192,7 @@ tasks:
             provider: url
             category: mono-trg
         attributes:
+            dataset-category: mono-trg
             cache:
                 resources:
                     - pipeline/data/download-mono.py
@@ -248,6 +251,7 @@ tasks:
             provider: news-crawl
             category: mono-src
         attributes:
+            dataset-category: mono-src
             cache:
                 resources:
                     - pipeline/data/download-mono.py
@@ -281,6 +285,7 @@ tasks:
             provider: news-crawl
             category: mono-trg
         attributes:
+            dataset-category: mono-trg
             cache:
                 resources:
                     - pipeline/data/download-mono.py
