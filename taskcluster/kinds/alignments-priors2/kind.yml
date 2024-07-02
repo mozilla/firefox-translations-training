@@ -21,11 +21,11 @@ tasks:
         description: temporary workaround to calculate new alignments priors {src_locale}-{trg_locale}
         attributes:
             dataset-category: train
-            stage: alignments-priors
+            stage: alignments-priors2
             src_locale: "{src_locale}"
             trg_locale: "{trg_locale}"
             cache:
-                type: alignment-priors
+                type: alignments-priors2
                 resources:
                     - pipeline/alignments/align.py
                     - pipeline/alignments/tokenizer.py
