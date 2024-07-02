@@ -125,26 +125,25 @@ def align(
     fwd_path = os.path.join(tmp_dir, "aln.fwd")
     rev_path = os.path.join(tmp_dir, "aln.rev")
 
-    with ExitStack() as stack:
-        if priors_input_path:
-            logger.info(f"Using provided priors: {priors_input_path}")
-            priors_input = stack.enter_context(open(priors_input_path, "r", encoding="utf-8"))
-        else:
-            priors_input = None
+    for src_part in sorted(glob(f"{corpus_src}.*")):
+        suffix = src_part.split(".")[-1]
+        logger.info(f"Processing part {suffix}")
 
-        for src_part in sorted(glob(f"{corpus_src}.*")):
-            suffix = src_part.split(".")[-1]
-            logger.info(f"Processing part {suffix}")
-
-            # We use eflomal aligner.
-            # It is less memory intensive than fast_align.
-            # fast_align failed with OOM in a large white-space tokenized corpus
-            aligner = eflomal.Aligner()
+        with ExitStack() as stack:
+            if priors_input_path:
+                logger.info(f"Using provided priors: {priors_input_path}")
+                priors_input = stack.enter_context(open(priors_input_path, "r", encoding="utf-8"))
+            else:
+                priors_input = None
 
             src_input = stack.enter_context(open(f"{corpus_src}.{suffix}", "r", encoding="utf-8"))
             trg_input = stack.enter_context(open(f"{corpus_trg}.{suffix}", "r", encoding="utf-8"))
 
             logger.info("Calculating alignments...")
+            # We use eflomal aligner.
+            # It is less memory intensive than fast_align.
+            # fast_align failed with OOM in a large white-space tokenized corpus
+            aligner = eflomal.Aligner()
             aligner.align(
                 src_input,
                 trg_input,
