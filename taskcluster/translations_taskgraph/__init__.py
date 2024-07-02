@@ -7,6 +7,7 @@ def register(graph_config):
             "actions.train",
             "parameters",
             "target_tasks",
+            "workertypes",
         ]
     )
 

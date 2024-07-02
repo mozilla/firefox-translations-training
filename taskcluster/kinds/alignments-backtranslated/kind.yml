@@ -47,6 +47,7 @@ tasks:
         worker-type: b-cpu-xlargedisk-64-512
         expires-after: "90 days"
         worker:
+            chain-of-trust: true
             docker-image: {"in-tree": "train"}
             # 7 days
             max-run-time: 604800

@@ -1,3 +1,4 @@
+# bust cache 2024-06-12
 FROM ubuntu:22.04
 LABEL maintainer="Mozilla Release Engineering <release+docker@mozilla.com>"
 

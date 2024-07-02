@@ -44,6 +44,7 @@ task-defaults:
 
     worker-type: b-largegpu
     worker:
+        chain-of-trust: true
         max-run-time: 2592000
         artifacts:
             - name: public/build
