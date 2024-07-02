@@ -5,7 +5,7 @@ from collections import defaultdict
 from collections.abc import Iterable, Iterator, Sequence
 from datetime import datetime
 from itertools import tee
-from typing import Callable, DefaultDict
+from typing import Callable, DefaultDict, List
 
 import yaml
 
@@ -53,7 +53,7 @@ class TrainingParser:
         self._current_index = 0
         self.parsed = False
         self.config: dict = {}
-        self.indexed_logs: DefaultDict[str, list] = defaultdict(list)
+        self.parsed_logs: List[str] = []
         # Optional list of Metric published earlier to the parsing
         self.metrics = metrics
         self.training: list[TrainingEpoch] = []
@@ -195,19 +195,23 @@ class TrainingParser:
                 self.run_date = self.get_timestamp(headers)
             text = line[position:]
 
-            def _join(iterable):
-                if not iterable:
-                    return "_"
-                if isinstance(iterable[0], str):
-                    return "_".join(iterable)
-                return _join([_join(item) for item in iterable])
+            def _join(seq):
+                if not seq:
+                    return None
+                if isinstance(seq[0], str):
+                    return "_".join(seq)
+                return _join([_join(item) for item in seq])
 
             # Record logs depending on Marian headers
+            tag = None
             if len(headers) >= 2:
-                # First is task timestamp, second is marian timestamp
+                # The 2 first headers are ignored (task timestamp, then marian timestamp)
                 _, _, *marian_tags = headers
                 tag = _join(marian_tags)
-                self.indexed_logs[tag].append(text)
+            if tag:
+                self.parsed_logs.append(f"[tag] {text}")
+            else:
+                self.parsed_logs.append(text)
 
             yield headers, text
 
@@ -317,13 +321,6 @@ class TrainingParser:
             publisher.close()
 
     @property
-    def logs_str(self) -> str:
-        return "\n".join(
-            "".join(f"[{key}] {val}\n" for val in values)
-            for key, values in self.indexed_logs.items()
-        )
-
-    @property
     def output(self) -> TrainingLog:
         if not self.parsed:
             raise Exception("Please run the parser before reading the output")
@@ -332,7 +329,7 @@ class TrainingParser:
             configuration=self.config,
             training=self.training,
             validation=list(self.validation),
-            logs=self.indexed_logs,
+            logs=self.parsed_logs,
         )
 
     def run(self) -> None:
@@ -343,7 +340,7 @@ class TrainingParser:
             # A StopIteration can be raised if some required lines are never found.
             raise ValueError("Logs file ended up unexpectedly")
 
-        count = sum(len(vals) for vals in self.indexed_logs.values())
+        count = len(self.parsed_logs)
         logger.info(f"Successfully parsed {count} lines")
         logger.info(f"Found {len(self.training)} training entries")
         logger.info(f"Found {len(self.validation)} validation entries")
