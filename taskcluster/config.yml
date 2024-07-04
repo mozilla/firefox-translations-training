@@ -60,12 +60,12 @@ valid-stages:
 
 workers:
     aliases:
-        b-linux-large-gcp:
+        b-linux-large-gcp-d2g:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
             worker-type: '{alias}'
-        b-linux-large-gcp-300gb:
+        b-linux-large-gcp-d2g-300gb:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
             os: linux
@@ -134,11 +134,11 @@ local-worker-aliases:
     b-cpu:
         by-worker-class:
             gcp-standard: 'b-linux-large-gcp'
-            default: 'b-linux-large-gcp'
+            default: 'b-linux-large-gcp-d2g'
     b-cpu-largedisk:
         by-worker-class:
             gcp-standard: 'b-linux-large-gcp-300gb'
-            default: 'b-linux-large-gcp-300gb'
+            default: 'b-linux-large-gcp-d2g-300gb'
     # VM workers with 1 TB of disk space, 32 vCPUs, and 256 GiB of memory
     # Use for tasks that don't require GPUs, but need immense amounts of disk space
     # eg: alignments
