@@ -1,7 +1,10 @@
 import csv
 import logging
 import os
+import re
+import shlex
 import sys
+import tempfile
 from abc import ABC
 from collections import defaultdict
 from pathlib import Path
@@ -10,12 +13,17 @@ from typing import Sequence
 import wandb
 import yaml
 
-from translations_parser.data import Metric, TrainingEpoch, TrainingLog, ValidationEpoch
-from translations_parser.utils import parse_task_label
+from translations_parser.data import Metric, TrainingEpoch, ValidationEpoch
+from translations_parser.utils import get_lines_count, parse_task_label
 
 logger = logging.getLogger(__name__)
 
 METRIC_KEYS = sorted(set(Metric.__annotations__.keys()) - {"importer", "dataset", "augmentation"})
+
+MARIAN_ARGS_REGEX = re.compile(r"^.+command line: [\w\/]+marian +(.*)$")
+
+# Last Marian command line argument (not being part of training extra arguments)
+LAST_MARIAN_DECLARED_ARGUMENT = "seed"
 
 
 class Publisher(ABC):
@@ -39,7 +47,7 @@ class Publisher(ABC):
     def handle_metrics(self, metrics: Sequence[Metric]) -> None:
         ...
 
-    def publish(self, log: TrainingLog) -> None:
+    def publish(self) -> None:
         ...
 
     def close(self) -> None:
@@ -48,9 +56,15 @@ class Publisher(ABC):
 
 class CSVExport(Publisher):
     def __init__(self, output_dir: Path) -> None:
+        from translations_parser.parser import TrainingParser
+
         if not output_dir.is_dir():
             raise ValueError("Output must be a valid directory for the CSV export")
         self.output_dir = output_dir
+        self.parser: TrainingParser | None = None
+
+    def open(self, parser=None) -> None:
+        self.parser = parser
 
     def write_data(
         self, output: Path, entries: Sequence[TrainingEpoch | ValidationEpoch], dataclass: type
@@ -63,7 +77,9 @@ class CSVExport(Publisher):
             for entry in entries:
                 writer.writerow(vars(entry))
 
-    def publish(self, training_log: TrainingLog) -> None:
+    def publish(self) -> None:
+        assert self.parser is not None, "Parser must be set to run CSV publication."
+        training_log = self.parser.output
         training_output = self.output_dir / "training.csv"
         if training_output.exists():
             logger.warning(f"Training output file {training_output} exists, skipping.")
@@ -179,6 +195,101 @@ class WandB(Publisher):
                     )
                 }
             )
+
+    def publish(self) -> None:
+        """
+        Publish extra configuration files (Marian, OpusTrainer, extra CLI arguments)
+        """
+        if self.wandb is None:
+            return
+        if os.environ.get("TASK_ID") is None:
+            logger.info(
+                "Extra configuration files can only be published from a Taskcluster task context, skipping."
+            )
+            return
+        if self.parser is None or self.parser.description is None:
+            logger.warning(
+                "Marian description not found, skipping Marian and OpusTrainer configuration publication."
+            )
+            return
+        if (match := MARIAN_ARGS_REGEX.match(self.parser.description)) is None:
+            logger.warning(
+                "Invalid Marian description, skipping Marian and OpusTrainer configuration publication."
+            )
+            return
+
+        logger.info("Publishing Marian and OpusTrainer extra configuration files to W&B.")
+        (arguments_str,) = match.group()
+        # Build args from the command line input text
+        args = defaultdict(list)
+        key = None
+        for i in iter(shlex.split(arguments_str)):
+            if i.startswith("-"):
+                key = i.strip("-")
+                continue
+            args[key].append(i)
+
+        # Publish Marian configuration YML files
+        marian_files = args["c"]
+        for path_str in marian_files:
+            path = Path(path_str).resolve()
+            if not path.exists():
+                logger.warning(f"Marian configuration file does not exists at {path}.")
+                continue
+            artifact = wandb.Artifact(name=path.name, type="Marian configuration")
+            artifact.add_file(local_path=path)
+            self.wandb.log_artifact(artifact)
+
+        # Publish extra_args used to run Marian, as an extra YML file
+        extra_args = {}
+        for arg, values in list(args.items())[::-1]:
+            if arg == LAST_MARIAN_DECLARED_ARGUMENT:
+                break
+            # Do not use lists for single values
+            if len(values) == 1:
+                extra_args.update({arg: values[0]})
+            else:
+                extra_args.update({arg: values})
+        with tempfile.TemporaryDirectory() as temp_dir:
+            file = Path(temp_dir) / "extra_args.yml"
+            with file.open("w") as f:
+                yaml.dump(extra_args, f)
+            artifact = wandb.Artifact(name=file.name, type="Marian extra arguments")
+            artifact.add_file(local_path=file)
+            self.wandb.log_artifact(artifact)
+
+        # Publish OpusTrainer configuration
+        model_dir = Path(args.get("model", "./model.npz")).parent()
+        train_conf_path = (model_dir / "config.opustrainer.yml").resolve()
+        if not train_conf_path.exists():
+            logger.warning(f"OpusTrainer configuration file does not exists at {train_conf_path}.")
+            return
+        artifact = wandb.Artifact(name=train_conf_path.name, type="OpusTrainer configuration")
+        artifact.add_file(local_path=train_conf_path)
+        self.wandb.log_artifact(artifact)
+
+        # Publish final corpus size
+        try:
+            with train_conf_path.open("r") as f:
+                train_config = yaml.safe_load(f.read())
+            assert isinstance(train_config, dict)
+            datasets = train_config.get("datasets", {})
+            assert isinstance(datasets, dict)
+        except Exception:
+            logger.warning(f"OpusTrainer configuration could not be read at {train_conf_path}.")
+            return
+
+        try:
+            stats = {key: get_lines_count(path) for key, path in datasets.items()}
+        except FileNotFoundError as e:
+            logger.warning(f"Error reading datasets: {e}")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            file = Path(temp_dir) / "datasets_stats.yml"
+            with file.open("w") as f:
+                yaml.dump(stats, f)
+            artifact = wandb.Artifact(name=file.name, type="OpusTrainer datasets")
+            artifact.add_file(local_path=file)
+            self.wandb.log_artifact(artifact)
 
     def close(self) -> None:
         if self.wandb is None:

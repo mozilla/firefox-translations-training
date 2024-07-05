@@ -310,7 +310,7 @@ class TrainingParser:
         # Once all data has been parsed, call the final publication API
         for publisher in self.publishers:
             try:
-                publisher.publish(self.output)
+                publisher.publish()
                 # Publish optional metrics
                 if self.metrics:
                     publisher.handle_metrics(self.metrics)

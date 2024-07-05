@@ -275,3 +275,8 @@ def suffix_from_group(task_group_id: str) -> str:
         len(task_group_id) >= 5
     ), f"Taskcluster group ID should contain more than 5 characters: {task_group_id}"
     return f"_{task_group_id[:5]}"
+
+
+def get_lines_count(file_path: str) -> int:
+    with open(file_path, "r") as f:
+        return sum(1 for _ in f)
