@@ -143,6 +143,5 @@ class TrainingLog:
     configuration: dict
     training: List[TrainingEpoch]
     validation: List[ValidationEpoch]
-    # Dict of log lines indexed by their header (e.g. marian, data, memory)
-    logs: dict
+    logs: List[str]
     run_date: datetime | None

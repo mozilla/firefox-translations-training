@@ -8,6 +8,10 @@ from random import Random
 from typing import Iterable, Iterator, Optional
 from urllib.parse import urlparse
 
+# We keep this relatively short because these datasets end up in task labels,
+# which end up in task cache routes, which need to be <= 256 characters.
+DATASET_NAME_MAX_LENGTH = 50
+
 
 class Dataset:
     """
@@ -56,6 +60,16 @@ class Dataset:
             hash = md5.hexdigest()[:6]
 
             dataset = f"{hostname}_{file}_{hash}"
+        # Even non-URL datasets can be too long, for example:
+        # mtdata_ELRC-convention_against_torture_other_cruel_inhuman_or_degrading_treatment_or_punishment_united_nations-1-ell-eng
+        # We need to truncate and hash any that are over a certain length
+        elif len(dataset) > DATASET_NAME_MAX_LENGTH:
+            md5 = hashlib.md5()
+            md5.update(dataset.encode("utf-8"))
+            hash = md5.hexdigest()[:6]
+
+            truncated = dataset[:DATASET_NAME_MAX_LENGTH]
+            dataset = f"{truncated}_{hash}"
 
         return (
             dataset.replace("://", "_")
