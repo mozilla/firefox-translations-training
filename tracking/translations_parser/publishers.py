@@ -1,6 +1,7 @@
 import csv
 import logging
 import os
+import sys
 from abc import ABC
 from collections import defaultdict
 from pathlib import Path
@@ -13,6 +14,8 @@ from translations_parser.data import Metric, TrainingEpoch, TrainingLog, Validat
 from translations_parser.utils import parse_task_label
 
 logger = logging.getLogger(__name__)
+
+METRIC_KEYS = sorted(set(Metric.__annotations__.keys()) - {"importer", "dataset", "augmentation"})
 
 
 class Publisher(ABC):
@@ -84,6 +87,10 @@ class WandB(Publisher):
         **extra_kwargs,
     ):
         from translations_parser.parser import TrainingParser
+
+        # Set logging of wandb module to WARNING, so we output training logs instead
+        self.wandb_logger = logging.getLogger("wandb")
+        self.wandb_logger.setLevel(logging.ERROR)
 
         self.project = project
         self.artifacts = artifacts
@@ -178,7 +185,7 @@ class WandB(Publisher):
                             columns=["Metric", "Value"],
                             data=[
                                 [key, getattr(metric, key)]
-                                for key in ("bleu_detok", "chrf", "comet")
+                                for key in METRIC_KEYS
                                 if getattr(metric, key) is not None
                             ],
                         ),
@@ -192,17 +199,18 @@ class WandB(Publisher):
     def close(self) -> None:
         if self.wandb is None:
             return
-        if self.parser is not None:
-            # Store runtime logs as the main log artifact
-            # This will be overwritten in case an unhandled exception occurs
-            with (Path(self.wandb.dir) / "output.log").open("w") as f:
-                f.write(self.parser.logs_str)
 
         # Publish artifacts
         if self.artifacts:
             artifact = wandb.Artifact(name=self.artifacts_name, type=self.artifacts_name)
             artifact.add_dir(local_path=str(self.artifacts.resolve()))
             self.wandb.log_artifact(artifact)
+
+        if self.parser is not None:
+            # Store Marian logs as the main log artifact, instead of W&B client runtime.
+            # This will be overwritten in case an unhandled exception occurs.
+            for line in self.parser.parsed_logs:
+                sys.stdout.write(f"{line}\n")
 
         self.wandb.finish()
 
@@ -329,9 +337,10 @@ class WandB(Publisher):
         if metrics:
             # Publish all evaluation metrics to a table
             table = wandb.Table(
-                columns=["Group", "Model", "Dataset", "BLEU", "chrF"],
+                columns=["Group", "Model", "Importer", "Dataset", "Augmenation", *METRIC_KEYS],
                 data=[
-                    [group, run_name, metric.dataset, metric.bleu_detok, metric.chrf]
+                    [group, run_name, metric.importer, metric.dataset, metric.augmentation]
+                    + [getattr(metric, attr) for attr in METRIC_KEYS]
                     for run_name, run_metrics in metrics.items()
                     for metric in run_metrics
                 ],
