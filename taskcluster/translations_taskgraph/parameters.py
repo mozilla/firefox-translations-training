@@ -82,6 +82,7 @@ def get_defaults(_):
                     "opus_ada83/v1",
                     "opus_ELRC-3075-wikipedia_health/v1",
                     "url_https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.[LANG].zst",
+                    "mtdata_ELRC-web_acquired_data_related_to_scientific_research-1-eng-rus",
                 ],
                 "devtest": [
                     "flores_dev",
