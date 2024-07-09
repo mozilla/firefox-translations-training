@@ -241,9 +241,9 @@ marian-args:
     early-stopping: '20'
   training-student-finetuned:
     early-stopping: '20'
-target-stage: evaluate-teacher-ensemble
-start-stage: merge-corpus
-previous_group_ids: ["c3uDQYs-Rj2-ECGePZ013g"]
+target-stage: all
+start-stage: evaluate-teacher-ensemble
+previous_group_ids: ["ZNsC19vBRNiArhQmaIZxaA"]
 existing_tasks: { "train-vocab-sv-en": "Et8bOKpTQYywudvgDhX7mA" }
 wandb-publication: true
 taskcluster:
@@ -253,4 +253,5 @@ taskcluster:
     alignments-original: gcp-standard
     alignments-backtranslated: gcp-standard
     alignments-student: gcp-standard
+    alignments-priors2: gcp-standard
     shortlist: gcp-standard

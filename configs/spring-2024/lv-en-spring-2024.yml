@@ -192,7 +192,7 @@ marian-args:
 target-stage: all
 start-stage: evaluate-quantized
 # The group with the proper first teacher that depends on the correct merge-mono-trg
-previous_group_ids: ["ErGnoEDHTN6igncXfulY6g"]
+previous_group_ids: ["VadxViXgQxiIEQ_crRpF5g"]
 wandb-publication: true
 taskcluster:
   split-chunks: 20

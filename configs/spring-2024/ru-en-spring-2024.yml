@@ -169,9 +169,9 @@ marian-args:
     early-stopping: '20'
   training-student-finetuned:
     early-stopping: '20'
-target-stage: evaluate-teacher-ensemble
-start-stage: alignments-teacher
-previous_group_ids: ["bwcG-e5ATguwTmNMbybBUg"]
+target-stage: all
+start-stage: evaluate-teacher-ensemble
+previous_group_ids: ["HI1HH_s1ROKqbIk4XPZkFg"]
 existing_tasks: { "train-vocab-ru-en": "Qx2YkFsDSq2hfheho5GAyA" }
 wandb-publication: true
 taskcluster:
