@@ -1,3 +1,4 @@
+import hashlib
 import logging
 import os
 import re
@@ -219,9 +220,11 @@ def publish_group_logs_from_tasks(
         message += f" with {len(metrics_tasks)} extra evaluation tasks"
     logger.info(message)
 
+    suffix = None
     if project is None or group is None:
         logger.info("Retrieving W&B names from taskcluster attributes")
-        project, group, _ = get_wandb_names()
+        project, group, _, task_group_id = get_wandb_names()
+        suffix = f"_{task_group_id[:5]}"
 
     with tempfile.TemporaryDirectory() as temp_dir:
         logs_folder = Path(temp_dir) / "logs"
@@ -263,4 +266,15 @@ def publish_group_logs_from_tasks(
             yaml.dump(config, config_file)
 
         parents = str(logs_folder.resolve()).strip().split("/")
-        WandB.publish_group_logs(parents, project, group, existing_runs=[])
+        WandB.publish_group_logs(
+            logs_parent_folder=parents,
+            project=project,
+            group=group,
+            existing_runs=[],
+        )
+
+
+def suffix_from_group(group: str) -> str:
+    # Generate a unique hash of 5 characters from the group name, no matter the algorithm here
+    hash_val = hashlib.md5(group.encode()).hexdigest()[:5]
+    return f"_{hash_val}"

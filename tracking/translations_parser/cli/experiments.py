@@ -57,8 +57,8 @@ def parse_experiment(
         publishers=[
             WandB(
                 project=project,
-                name=name,
                 group=group,
+                name=name,
             )
         ],
     )
@@ -121,6 +121,11 @@ def main() -> None:
             logger.info(
                 f"Publishing '{last_project}/{last_group}' evaluation metrics and files (fake run 'group_logs')"
             )
-            WandB.publish_group_logs(prefix, last_project, last_group, existing_runs=existing_runs)
+            WandB.publish_group_logs(
+                logs_parent_folder=prefix,
+                project=last_project,
+                group=last_group,
+                existing_runs=existing_runs,
+            )
             existing_runs = []
         last_index = (project, group)
