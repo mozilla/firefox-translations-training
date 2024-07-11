@@ -126,7 +126,12 @@ def boot() -> None:
         queue.getTaskGroup(group_id)
         task_group = queue.task(group_id)
         config = task_group.get("extra", {}).get("action", {}).get("context", {}).get("input")
-        publish_group_logs_from_tasks(config=config)
+        publish_group_logs_from_tasks(
+            project=wandb_publisher.project,
+            group=wandb_publisher.group,
+            config=config,
+            suffix=f"_{group_id[:5]}",
+        )
 
     # Use log filtering when using non-stream (for uploading past experiments)
     log_filter = taskcluster_log_filter if not args.from_stream else None

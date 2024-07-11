@@ -202,8 +202,10 @@ def metric_from_tc_context(chrf: float, bleu: float, comet: float):
 
 
 def publish_group_logs_from_tasks(
-    project: str | None = None,
-    group: str | None = None,
+    *,
+    project: str,
+    group: str,
+    suffix: str | None = None,
     metrics_tasks: dict[str, dict] = {},
     config: dict = {},
 ):
@@ -213,18 +215,11 @@ def publish_group_logs_from_tasks(
     `metrics_tasks` optionally contains finished evaluation tasks that will be published as new runs.
     """
     from translations_parser.publishers import WandB
-    from translations_parser.wandb import get_wandb_names
 
     message = "Handling group_logs publication"
     if metrics_tasks:
         message += f" with {len(metrics_tasks)} extra evaluation tasks"
     logger.info(message)
-
-    suffix = None
-    if project is None or group is None:
-        logger.info("Retrieving W&B names from taskcluster attributes")
-        project, group, _, task_group_id = get_wandb_names()
-        suffix = f"_{task_group_id[:5]}"
 
     with tempfile.TemporaryDirectory() as temp_dir:
         logs_folder = Path(temp_dir) / "logs"
@@ -270,6 +265,7 @@ def publish_group_logs_from_tasks(
             logs_parent_folder=parents,
             project=project,
             group=group,
+            suffix=suffix,
             existing_runs=[],
         )
 
