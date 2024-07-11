@@ -4,7 +4,7 @@ from pathlib import Path
 import taskcluster
 from translations_parser.parser import logger
 from translations_parser.publishers import WandB
-from translations_parser.utils import build_task_name
+from translations_parser.utils import build_task_name, suffix_from_group
 
 
 def add_wandb_arguments(parser):
@@ -121,7 +121,7 @@ def get_wandb_publisher(
         return
 
     # Load secret from Taskcluster and auto-configure naming
-    suffix = None
+    suffix = ""
     if taskcluster_secret:
         assert os.environ.get(
             "TASKCLUSTER_PROXY_URL"
@@ -131,7 +131,7 @@ def get_wandb_publisher(
         os.environ.setdefault("WANDB_API_KEY", get_wandb_token(taskcluster_secret))
 
         project_name, group_name, run_name, task_group_id = get_wandb_names()
-        suffix = f"_{task_group_id[:5]}"
+        suffix = suffix_from_group(task_group_id)
 
     # Enable publication on weight and biases when project is set
     # But prevent running when explicitly disabled by operator

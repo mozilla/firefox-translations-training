@@ -11,7 +11,7 @@ import wandb
 import yaml
 
 from translations_parser.data import Metric, TrainingEpoch, TrainingLog, ValidationEpoch
-from translations_parser.utils import parse_task_label, suffix_from_group
+from translations_parser.utils import parse_task_label
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +84,7 @@ class WandB(Publisher):
         project: str,
         group: str,
         name: str,
-        suffix: str | None = None,
+        suffix: str = "",
         # Optional path to a directory containing training artifacts
         artifacts: Path | None = None,
         artifacts_name: str = "logs",
@@ -98,10 +98,8 @@ class WandB(Publisher):
 
         self.project = project
         self.group = group
-        # Build a run identifier by using or creating a unique suffix
-        # The run ID is also used as display name on W&B, as the interface expect unique display names
-        if suffix is None:
-            suffix = suffix_from_group(self.group)
+        # Build a unique run identifier based on the passed suffix
+        # This ID is also used as display name on W&B, as the interface expects unique display names among runs
         self.run = f"{name}{suffix}"
 
         self.artifacts = artifacts
@@ -207,7 +205,7 @@ class WandB(Publisher):
         logs_parent_folder: list[str],
         project: str,
         group: str,
-        suffix: str | None = None,
+        suffix: str,
         existing_runs: list[str] | None = None,
     ) -> None:
         """

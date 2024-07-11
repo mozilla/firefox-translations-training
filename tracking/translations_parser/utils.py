@@ -1,4 +1,3 @@
-import hashlib
 import logging
 import os
 import re
@@ -270,7 +269,9 @@ def publish_group_logs_from_tasks(
         )
 
 
-def suffix_from_group(group: str) -> str:
-    # Generate a unique hash of 5 characters from the group name, no matter the algorithm here
-    hash_val = hashlib.md5(group.encode()).hexdigest()[:5]
-    return f"_{hash_val}"
+def suffix_from_group(task_group_id: str) -> str:
+    # Simply return the first 5 characters of the Taskcluster group ID as unique runs suffix
+    assert (
+        len(task_group_id) < 5
+    ), f"Taskcluster group ID should contain more than 5 characters: {task_group_id}"
+    return f"_{task_group_id[:5]}"
