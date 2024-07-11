@@ -20,12 +20,17 @@ def tmp_dir():
     return Path(DataDir("test_tracking").path)
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def disable_wandb(tmp_dir):
     """Prevent publication on W&B"""
+    environ = os.environ.copy()
     os.environ["WANDB_API_KEY"] = "fake"
     os.environ["WANDB_MODE"] = "offline"
     os.environ["WANDB_DIR"] = str(tmp_dir / "wandb")
+    # Remove task ID to prevent publishing context data (training configuration, dataset)
+    os.environ.pop("TASK_ID", None)
+    yield
+    os.environ.update(environ)
 
 
 @pytest.fixture
@@ -53,7 +58,7 @@ def samples_dir():
     ),
 )
 @patch("translations_parser.publishers.wandb")
-def test_taskcluster(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
+def test_taskcluster(wandb_mock, getargs_mock, disable_wandb, caplog, samples_dir, tmp_dir):
     caplog.set_level(logging.INFO)
     wandb_dir = tmp_dir / "wandb"
     wandb_dir.mkdir(parents=True)
@@ -96,7 +101,9 @@ def test_taskcluster(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
     return_value=argparse.Namespace(directory=Path(__file__).parent / "data" / "experiments_1_10"),
 )
 @patch("translations_parser.publishers.wandb")
-def test_experiments_marian_1_10(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
+def test_experiments_marian_1_10(
+    wandb_mock, getargs_mock, disable_wandb, caplog, samples_dir, tmp_dir
+):
     caplog.set_level(logging.INFO)
     wandb_dir = tmp_dir / "wandb"
     wandb_dir.mkdir(parents=True)
@@ -219,7 +226,9 @@ def test_experiments_marian_1_10(wandb_mock, getargs_mock, caplog, samples_dir, 
     return_value=argparse.Namespace(directory=Path(__file__).parent / "data" / "experiments_1_12"),
 )
 @patch("translations_parser.publishers.wandb")
-def test_experiments_marian_1_12(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
+def test_experiments_marian_1_12(
+    wandb_mock, getargs_mock, disable_wandb, caplog, samples_dir, tmp_dir
+):
     caplog.set_level(logging.INFO)
     wandb_dir = tmp_dir / "wandb"
     wandb_dir.mkdir(parents=True)
@@ -329,7 +338,7 @@ def test_experiments_marian_1_12(wandb_mock, getargs_mock, caplog, samples_dir, 
 )
 @patch("translations_parser.publishers.wandb")
 def test_taskcluster_wandb_initialization_failure(
-    wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir
+    wandb_mock, getargs_mock, disable_wandb, caplog, samples_dir, tmp_dir
 ):
     """
     Ensures tracking continues despite W&B initialization failure
@@ -370,7 +379,9 @@ def test_taskcluster_wandb_initialization_failure(
     ),
 )
 @patch("translations_parser.publishers.wandb")
-def test_taskcluster_wandb_log_failures(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
+def test_taskcluster_wandb_log_failures(
+    wandb_mock, getargs_mock, disable_wandb, caplog, samples_dir, tmp_dir
+):
     """
     Ensures tracking continues despite potential W&B data log failures
     """
@@ -420,7 +431,9 @@ def test_taskcluster_wandb_log_failures(wandb_mock, getargs_mock, caplog, sample
     ),
 )
 @patch("translations_parser.publishers.wandb")
-def test_taskcluster_wandb_disabled(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
+def test_taskcluster_wandb_disabled(
+    wandb_mock, getargs_mock, disable_wandb, caplog, samples_dir, tmp_dir
+):
     """
     Ensures tracking continues without Weight & Biases publication
     """
