@@ -44,7 +44,7 @@ def samples_dir():
         wandb_artifacts=None,
         wandb_group="group",
         wandb_publication=True,
-        wandb_run_name="run",
+        wandb_run_name="run_id",
         tags=[
             "unittest",
         ],
@@ -78,7 +78,7 @@ def test_taskcluster(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
         )
         for c in wandb_mock.init.call_args_list
     ] == [
-        ("test", "group", "run_db0f6", "run_db0f6", "2e"),
+        ("test", "group", "run_id", "run_id", "2e"),
     ]
 
     with (samples_dir / "taskcluster_wandb_calls.json").open("r") as f:
@@ -159,16 +159,16 @@ def test_experiments_marian_1_10(wandb_mock, getargs_mock, caplog, samples_dir, 
         )
         for c in wandb_mock.init.call_args_list
     ] == [
-        ("en-nl", "prod", "student_d6e4a", "student_d6e4a", "0e"),
-        ("en-nl", "prod", "teacher-finetune-0_d6e4a", "teacher-finetune-0_d6e4a", "0e"),
-        ("en-nl", "prod", "teacher-finetune-1_d6e4a", "teacher-finetune-1_d6e4a", "0e"),
-        ("en-nl", "prod", "quantized_d6e4a", "quantized_d6e4a", None),
-        ("en-nl", "prod", "backwards_d6e4a", "backwards_d6e4a", None),
-        ("en-nl", "prod", "student-finetune_d6e4a", "student-finetune_d6e4a", None),
-        ("en-nl", "prod", "teacher-base-0_d6e4a", "teacher-base-0_d6e4a", None),
-        ("en-nl", "prod", "teacher-base-1_d6e4a", "teacher-base-1_d6e4a", None),
-        ("en-nl", "prod", "teacher-ensemble_d6e4a", "teacher-ensemble_d6e4a", None),
-        ("en-nl", "prod", "group_logs_d6e4a", "group_logs_d6e4a", None),
+        ("en-nl", "prod", "student_prod", "student_prod", "0e"),
+        ("en-nl", "prod", "teacher-finetune-0_prod", "teacher-finetune-0_prod", "0e"),
+        ("en-nl", "prod", "teacher-finetune-1_prod", "teacher-finetune-1_prod", "0e"),
+        ("en-nl", "prod", "quantized_prod", "quantized_prod", None),
+        ("en-nl", "prod", "backwards_prod", "backwards_prod", None),
+        ("en-nl", "prod", "student-finetune_prod", "student-finetune_prod", None),
+        ("en-nl", "prod", "teacher-base-0_prod", "teacher-base-0_prod", None),
+        ("en-nl", "prod", "teacher-base-1_prod", "teacher-base-1_prod", None),
+        ("en-nl", "prod", "teacher-ensemble_prod", "teacher-ensemble_prod", None),
+        ("en-nl", "prod", "group_logs_prod", "group_logs_prod", None),
     ]
 
     log_calls, metrics_calls = [], []
@@ -261,10 +261,10 @@ def test_experiments_marian_1_12(wandb_mock, getargs_mock, caplog, samples_dir, 
         )
         for c in wandb_mock.init.call_args_list
     ] == [
-        ("fi-en", "opusprod", "student_d4bfb", "student_d4bfb", "0e"),
-        ("fi-en", "opusprod", "student-finetune_d4bfb", "student-finetune_d4bfb", "0e"),
-        ("fi-en", "opusprod", "quantized_d4bfb", "quantized_d4bfb", None),
-        ("fi-en", "opusprod", "group_logs_d4bfb", "group_logs_d4bfb", None),
+        ("fi-en", "opusprod", "student_opusprod", "student_opusprod", "0e"),
+        ("fi-en", "opusprod", "student-finetune_opusprod", "student-finetune_opusprod", "0e"),
+        ("fi-en", "opusprod", "quantized_opusprod", "quantized_opusprod", None),
+        ("fi-en", "opusprod", "group_logs_opusprod", "group_logs_opusprod", None),
     ]
 
     log_calls, metrics_calls = [], []
