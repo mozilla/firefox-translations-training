@@ -272,6 +272,6 @@ def publish_group_logs_from_tasks(
 def suffix_from_group(task_group_id: str) -> str:
     # Simply return the first 5 characters of the Taskcluster group ID as unique runs suffix
     assert (
-        len(task_group_id) < 5
+        len(task_group_id) >= 5
     ), f"Taskcluster group ID should contain more than 5 characters: {task_group_id}"
     return f"_{task_group_id[:5]}"
