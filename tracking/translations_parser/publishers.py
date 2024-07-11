@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 METRIC_KEYS = sorted(set(Metric.__annotations__.keys()) - {"importer", "dataset", "augmentation"})
 
-MARIAN_ARGS_REGEX = re.compile(r"^.+command line: [\w\/]+marian +(.*)$")
+MARIAN_ARGS_REGEX = re.compile(r"command line:[\n ]+[\w\/]+\/marian +(.*)")
 
 # Last Marian command line argument (not being part of training extra arguments)
 LAST_MARIAN_DECLARED_ARGUMENT = "seed"
@@ -212,14 +212,16 @@ class WandB(Publisher):
                 "Marian description not found, skipping Marian and OpusTrainer configuration publication."
             )
             return
-        if (match := MARIAN_ARGS_REGEX.match(self.parser.description)) is None:
+        if (match := MARIAN_ARGS_REGEX.search(self.parser.description)) is None:
             logger.warning(
                 "Invalid Marian description, skipping Marian and OpusTrainer configuration publication."
             )
             return
 
-        logger.info("Publishing Marian and OpusTrainer extra configuration files to W&B.")
-        (arguments_str,) = match.group()
+        logger.info(
+            "Publishing Marian/OpusTrainer configuration files and extra parameters as W&B artifacts."
+        )
+        (arguments_str,) = match.groups()
         # Build args from the command line input text
         args = defaultdict(list)
         key = None
@@ -259,7 +261,8 @@ class WandB(Publisher):
             self.wandb.log_artifact(artifact)
 
         # Publish OpusTrainer configuration
-        model_dir = Path(args.get("model", "./model.npz")).parent()
+        (model_path,) = args.get("model", ("./model.npz",))
+        model_dir = Path(model_path).parent
         train_conf_path = (model_dir / "config.opustrainer.yml").resolve()
         if not train_conf_path.exists():
             logger.warning(f"OpusTrainer configuration file does not exists at {train_conf_path}.")
@@ -269,6 +272,7 @@ class WandB(Publisher):
         self.wandb.log_artifact(artifact)
 
         # Publish final corpus size
+        logger.info("Publishing datasets statistics as W&B artifacts.")
         try:
             with train_conf_path.open("r") as f:
                 train_config = yaml.safe_load(f.read())

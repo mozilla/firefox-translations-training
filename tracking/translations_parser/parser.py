@@ -241,7 +241,8 @@ class TrainingParser:
         logger.debug("Reading Marian run description.")
         desc = []
         for headers, text in logs_iter:
-            if ("marian",) not in headers:
+            # Marian headers stops when dumping the configuration
+            if ("config",) in headers:
                 break
             desc.append(text)
         self.description = " ".join(desc)
