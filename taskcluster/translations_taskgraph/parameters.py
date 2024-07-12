@@ -38,14 +38,14 @@ def get_defaults(_):
             },
             "marian-args": {
                 "training-backward": {
-                    "disp-freq": "6",
+                    "disp-freq": "2",
                     "save-freq": "25",
                     "valid-freq": "50",
                     "after": "50u",
                     "dim-vocabs": "1000 1000",
                 },
                 "training-teacher": {
-                    "disp-freq": "6",
+                    "disp-freq": "1",
                     "save-freq": "25",
                     "valid-freq": "50",
                     "after": "50u",
@@ -53,14 +53,14 @@ def get_defaults(_):
                     "task": "transformer-base",
                 },
                 "training-student": {
-                    "disp-freq": "6",
+                    "disp-freq": "1",
                     "save-freq": "25",
                     "valid-freq": "50",
                     "after": "50u",
                     "dim-vocabs": "1000 1000",
                 },
                 "training-student-finetuned": {
-                    "disp-freq": "6",
+                    "disp-freq": "1",
                     "save-freq": "25",
                     "valid-freq": "50",
                     "after": "50u",
@@ -106,7 +106,7 @@ def get_defaults(_):
                 },
             },
             # Disable Weight & Biases publication on CI
-            "wandb-publication": True,
+            "wandb-publication": False,
         },
     }
 
