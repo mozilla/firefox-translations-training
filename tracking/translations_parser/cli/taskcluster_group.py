@@ -24,6 +24,7 @@ from translations_parser.utils import (
     build_task_name,
     parse_task_label,
     publish_group_logs_from_tasks,
+    suffix_from_group,
 )
 
 KIND_TAG_TARGET = ("train", "finetune")
@@ -76,7 +77,9 @@ def get_logs(task: dict) -> list[str]:
     return log.tobytes().decode().split("\n")
 
 
-def publish_task(project: str, group: str, name: str, task: dict, metrics: list[Metric]) -> None:
+def publish_task(
+    *, project: str, group: str, name: str, suffix: str, task: dict, metrics: list[Metric]
+) -> None:
     logs = get_logs(task)
     if not logs:
         logger.warning(f"Skipping publication of training task {name}")
@@ -88,6 +91,7 @@ def publish_task(project: str, group: str, name: str, task: dict, metrics: list[
                 project=project,
                 group=group,
                 name=name,
+                suffix=suffix,
                 tags=["taskcluster-offline"],
             )
         ],
@@ -256,6 +260,7 @@ def publish_task_group(group_id: str, override: bool = False) -> None:
         publish_task(
             project=project_name,
             group=group_name,
+            suffix=suffix_from_group(group_id),
             name=training_task["name"],
             task=training_task,
             metrics=metrics,

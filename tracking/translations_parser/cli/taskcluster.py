@@ -23,7 +23,11 @@ from pathlib import Path
 import taskcluster
 from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import CSVExport, Publisher
-from translations_parser.utils import publish_group_logs_from_tasks, taskcluster_log_filter
+from translations_parser.utils import (
+    publish_group_logs_from_tasks,
+    suffix_from_group,
+    taskcluster_log_filter,
+)
 from translations_parser.wandb import add_wandb_arguments, get_wandb_publisher
 
 queue = taskcluster.Queue({"rootUrl": "https://firefox-ci-tc.services.mozilla.com"})
@@ -126,7 +130,12 @@ def boot() -> None:
         queue.getTaskGroup(group_id)
         task_group = queue.task(group_id)
         config = task_group.get("extra", {}).get("action", {}).get("context", {}).get("input")
-        publish_group_logs_from_tasks(config=config)
+        publish_group_logs_from_tasks(
+            project=wandb_publisher.project,
+            group=wandb_publisher.group,
+            config=config,
+            suffix=suffix_from_group(group_id),
+        )
 
     # Use log filtering when using non-stream (for uploading past experiments)
     log_filter = taskcluster_log_filter if not args.from_stream else None

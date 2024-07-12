@@ -201,8 +201,10 @@ def metric_from_tc_context(chrf: float, bleu: float, comet: float):
 
 
 def publish_group_logs_from_tasks(
-    project: str | None = None,
-    group: str | None = None,
+    *,
+    project: str,
+    group: str,
+    suffix: str | None = None,
     metrics_tasks: dict[str, dict] = {},
     config: dict = {},
 ):
@@ -212,16 +214,11 @@ def publish_group_logs_from_tasks(
     `metrics_tasks` optionally contains finished evaluation tasks that will be published as new runs.
     """
     from translations_parser.publishers import WandB
-    from translations_parser.wandb import get_wandb_names
 
     message = "Handling group_logs publication"
     if metrics_tasks:
         message += f" with {len(metrics_tasks)} extra evaluation tasks"
     logger.info(message)
-
-    if project is None or group is None:
-        logger.info("Retrieving W&B names from taskcluster attributes")
-        project, group, _ = get_wandb_names()
 
     with tempfile.TemporaryDirectory() as temp_dir:
         logs_folder = Path(temp_dir) / "logs"
@@ -263,4 +260,18 @@ def publish_group_logs_from_tasks(
             yaml.dump(config, config_file)
 
         parents = str(logs_folder.resolve()).strip().split("/")
-        WandB.publish_group_logs(parents, project, group, existing_runs=[])
+        WandB.publish_group_logs(
+            logs_parent_folder=parents,
+            project=project,
+            group=group,
+            suffix=suffix,
+            existing_runs=[],
+        )
+
+
+def suffix_from_group(task_group_id: str) -> str:
+    # Simply return the first 5 characters of the Taskcluster group ID as unique runs suffix
+    assert (
+        len(task_group_id) >= 5
+    ), f"Taskcluster group ID should contain more than 5 characters: {task_group_id}"
+    return f"_{task_group_id[:5]}"

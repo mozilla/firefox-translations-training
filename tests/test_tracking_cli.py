@@ -44,7 +44,7 @@ def samples_dir():
         wandb_artifacts=None,
         wandb_group="group",
         wandb_publication=True,
-        wandb_run_name="run",
+        wandb_run_name="run_id",
         tags=[
             "unittest",
         ],
@@ -58,6 +58,7 @@ def test_taskcluster(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
     wandb_dir = tmp_dir / "wandb"
     wandb_dir.mkdir(parents=True)
     wandb_mock.init.return_value.dir = wandb_dir
+    wandb_mock.init.return_value.resumed = False
     tc_publish.main()
     assert [(level, message) for _module, level, message in caplog.record_tuples] == [
         (logging.INFO, "Reading logs stream."),
@@ -66,6 +67,20 @@ def test_taskcluster(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
         (logging.INFO, "Found 102 training entries"),
         (logging.INFO, "Found 34 validation entries"),
     ]
+
+    assert [
+        (
+            c.kwargs["project"],
+            c.kwargs["group"],
+            c.kwargs["name"],
+            c.kwargs["id"],
+            c.kwargs["config"].get("after"),
+        )
+        for c in wandb_mock.init.call_args_list
+    ] == [
+        ("test", "group", "run_id", "run_id", "2e"),
+    ]
+
     with (samples_dir / "taskcluster_wandb_calls.json").open("r") as f:
         assert list(wandb_mock.init.return_value.log.call_args_list) == [
             call(**entry) for entry in json.load(f)
@@ -82,6 +97,7 @@ def test_experiments_marian_1_10(wandb_mock, getargs_mock, caplog, samples_dir, 
     wandb_dir = tmp_dir / "wandb"
     wandb_dir.mkdir(parents=True)
     wandb_mock.init.return_value.dir = wandb_dir
+    wandb_mock.init.return_value.resumed = False
     wandb_mock.plot.bar = lambda *args, **kwargs: (args, kwargs)
     wandb_mock.Table = lambda *args, **kwargs: (args, kwargs)
     experiments_publish.main()
@@ -132,6 +148,29 @@ def test_experiments_marian_1_10(wandb_mock, getargs_mock, caplog, samples_dir, 
             (logging.INFO, "Creating missing run teacher-ensemble with associated metrics"),
         ]
     )
+
+    assert [
+        (
+            c.kwargs["project"],
+            c.kwargs["group"],
+            c.kwargs["name"],
+            c.kwargs["id"],
+            c.kwargs["config"].get("after"),
+        )
+        for c in wandb_mock.init.call_args_list
+    ] == [
+        ("en-nl", "prod", "student_prod", "student_prod", "0e"),
+        ("en-nl", "prod", "teacher-finetune-0_prod", "teacher-finetune-0_prod", "0e"),
+        ("en-nl", "prod", "teacher-finetune-1_prod", "teacher-finetune-1_prod", "0e"),
+        ("en-nl", "prod", "quantized_prod", "quantized_prod", None),
+        ("en-nl", "prod", "backwards_prod", "backwards_prod", None),
+        ("en-nl", "prod", "student-finetune_prod", "student-finetune_prod", None),
+        ("en-nl", "prod", "teacher-base-0_prod", "teacher-base-0_prod", None),
+        ("en-nl", "prod", "teacher-base-1_prod", "teacher-base-1_prod", None),
+        ("en-nl", "prod", "teacher-ensemble_prod", "teacher-ensemble_prod", None),
+        ("en-nl", "prod", "group_logs_prod", "group_logs_prod", None),
+    ]
+
     log_calls, metrics_calls = [], []
     for log in wandb_mock.init.return_value.log.call_args_list:
         if log.args:
@@ -177,6 +216,7 @@ def test_experiments_marian_1_12(wandb_mock, getargs_mock, caplog, samples_dir, 
     wandb_dir = tmp_dir / "wandb"
     wandb_dir.mkdir(parents=True)
     wandb_mock.init.return_value.dir = wandb_dir
+    wandb_mock.init.return_value.resumed = False
     wandb_mock.plot.bar = lambda *args, **kwargs: (args, kwargs)
     wandb_mock.Table = lambda *args, **kwargs: (args, kwargs)
     experiments_publish.main()
@@ -210,6 +250,23 @@ def test_experiments_marian_1_12(wandb_mock, getargs_mock, caplog, samples_dir, 
             (logging.INFO, "Detected Marian version 1.12"),
         ]
     )
+
+    assert [
+        (
+            c.kwargs["project"],
+            c.kwargs["group"],
+            c.kwargs["name"],
+            c.kwargs["id"],
+            c.kwargs["config"].get("after"),
+        )
+        for c in wandb_mock.init.call_args_list
+    ] == [
+        ("fi-en", "opusprod", "student_opusprod", "student_opusprod", "0e"),
+        ("fi-en", "opusprod", "student-finetune_opusprod", "student-finetune_opusprod", "0e"),
+        ("fi-en", "opusprod", "quantized_opusprod", "quantized_opusprod", None),
+        ("fi-en", "opusprod", "group_logs_opusprod", "group_logs_opusprod", None),
+    ]
+
     log_calls, metrics_calls = [], []
     for log in wandb_mock.init.return_value.log.call_args_list:
         if log.args:
@@ -309,6 +366,7 @@ def test_taskcluster_wandb_log_failures(wandb_mock, getargs_mock, caplog, sample
     wandb_dir = tmp_dir / "wandb"
     wandb_dir.mkdir(parents=True)
     wandb_mock.init.return_value.dir = wandb_dir
+    wandb_mock.init.return_value.resumed = False
     wandb_mock.init.return_value.log.side_effect = Exception("Unexpected failure")
     tc_publish.main()
     assert [(level, message) for _module, level, message in caplog.record_tuples] == [

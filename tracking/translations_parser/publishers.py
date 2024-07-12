@@ -80,7 +80,11 @@ class CSVExport(Publisher):
 class WandB(Publisher):
     def __init__(
         self,
+        *,
         project: str,
+        group: str,
+        name: str,
+        suffix: str = "",
         # Optional path to a directory containing training artifacts
         artifacts: Path | None = None,
         artifacts_name: str = "logs",
@@ -93,6 +97,11 @@ class WandB(Publisher):
         self.wandb_logger.setLevel(logging.ERROR)
 
         self.project = project
+        self.group = group
+        # Build a unique run identifier based on the passed suffix
+        # This ID is also used as display name on W&B, as the interface expects unique display names among runs
+        self.run = f"{name}{suffix}"
+
         self.artifacts = artifacts
         self.artifacts_name = artifacts_name
         self.extra_kwargs = extra_kwargs
@@ -104,50 +113,25 @@ class WandB(Publisher):
         config = getattr(parser, "config", {})
         config.update(self.extra_kwargs.pop("config", {}))
 
+        # Avoid overriding an existing run on a first training, this should not happen
+        if resume is False and int(os.environ.get("RUN_ID", 0)) > 0:
+            logger.warning(
+                "Training has been resumed but resume option has been set to False, skipping publication."
+            )
+            return
+
         try:
-            project = next(filter(lambda p: p.name == self.project, wandb.Api().projects()), None)
-            # Check if a W&B run already exists with this name
-            existing_runs = []
-            if project and (name := self.extra_kwargs.get("name")):
-                existing_runs = list(
-                    wandb.Api().runs(
-                        self.project,
-                        filters={"display_name": name, "group": self.extra_kwargs.get("group")},
-                    )
-                )
-            if len(existing_runs) == 0:
-                # Start a new W&B run
-                self.wandb = wandb.init(
-                    project=self.project,
-                    config=config,
-                    **self.extra_kwargs,
-                )
-                return
-            elif len(existing_runs) == 1:
-                run = existing_runs[0]
-                # Avoid overriding an existing run on a first training, this should not happen
-                if resume is False and int(os.environ.get("RUN_ID", 0)) < 1:
-                    logger.warning(
-                        f"A W&B run already exists with name '{name}': {run}. No data will be published."
-                    )
-                    return
-                # Resume an existing run
-                logger.info(
-                    f"Training has been resumed from an earlier run wit name '{name}', "
-                    f"continue W&B publication with run {run}."
-                )
-                self.wandb = wandb.init(
-                    project=self.project,
-                    config=config,
-                    id=run.id,
-                    resume="must",
-                    **self.extra_kwargs,
-                )
-            else:
-                logger.warning(
-                    f"Multiple W&B runs already exist with name '{name}': {existing_runs}. No data will be published."
-                )
-                return
+            self.wandb = wandb.init(
+                project=self.project,
+                group=self.group,
+                name=self.run,
+                id=self.run,
+                config=config,
+                resume=resume,
+                **self.extra_kwargs,
+            )
+            if self.wandb.resumed:
+                logger.info(f"W&B run is being resumed from existing run '{self.run}'.")
         except Exception as e:
             logger.error(f"WandB client could not be initialized: {e}. No data will be published.")
 
@@ -217,9 +201,11 @@ class WandB(Publisher):
     @classmethod
     def publish_group_logs(
         cls,
+        *,
         logs_parent_folder: list[str],
         project: str,
         group: str,
+        suffix: str,
         existing_runs: list[str] | None = None,
     ) -> None:
         """
@@ -301,7 +287,12 @@ class WandB(Publisher):
 
         for model_name, model_metrics in missing_run_metrics.items():
             logger.info(f"Creating missing run {model_name} with associated metrics")
-            publisher = cls(project=project, name=model_name, group=group)
+            publisher = cls(
+                project=project,
+                group=group,
+                name=model_name,
+                suffix=suffix,
+            )
             publisher.open(TrainingParser(logs_iter=iter([]), publishers=[]))
             publisher.handle_metrics(model_metrics)
             publisher.close()
@@ -326,11 +317,13 @@ class WandB(Publisher):
             project=project,
             group=group,
             name="group_logs",
+            suffix=suffix,
         )
         publisher.wandb = wandb.init(
             project=project,
             group=group,
-            name="group_logs",
+            name=publisher.run,
+            id=publisher.run,
             config=config,
         )
 
