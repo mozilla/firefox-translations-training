@@ -1,0 +1,82 @@
+# The initial configuration was generated using:
+# task config-generator -- sc en --name sardinian
+#
+# The documentation for this config can be found here:
+# https://github.com/mozilla/firefox-translations-training/blob/2027f4e99b78d45ce73e44ed454c8527e03718f7/taskcluster/configs/config.prod.yml
+experiment:
+  name: sardinian
+  src: sc
+  trg: en
+  best-model: chrf
+  use-opuscleaner: 'true'
+  opuscleaner-mode: defaults
+  bicleaner:
+    default-threshold: 0.5
+    dataset-thresholds: {}
+  mono-max-sentences-src: 500_000_000
+  mono-max-sentences-trg: 200_000_000
+  spm-sample-size: 10_000_000
+  spm-vocab-size: 32000
+  teacher-ensemble: 2
+  teacher-mode: two-stage
+  pretrained-models: {}
+datasets:
+  devtest: []
+  test: []
+
+  # The training data contains:
+  #   1,316,500 sentences
+  # 
+  # Skipped datasets:
+  #  - opus_QED/v2.0a - not enough data  (20 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  train:
+  - opus_NLLB/v1  #                                        1,309,171 sentences
+  - opus_sardware/v1 #                                        6,150 sentences
+  - opus_wikimedia/v20230407 #                                1,179 sentences
+
+  # The monolingual data contains:
+  #   ~0 sentences
+  mono-src: []
+
+  # The monolingual data contains:
+  #   ~195,823,002 sentences
+  mono-trg:
+  - news-crawl_news.2007  #           ~1,557,522 sentences (176M)
+  - news-crawl_news.2008 #           ~5,389,380 sentences (609M)
+  - news-crawl_news.2009 #           ~6,557,522 sentences (741M)
+  - news-crawl_news.2010 #           ~3,247,787 sentences (367M)
+  - news-crawl_news.2011 #           ~6,318,584 sentences (714M)
+  - news-crawl_news.2012 #           ~6,407,079 sentences (724M)
+  - news-crawl_news.2013 #          ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2014 #          ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2015 #          ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2016 #           ~7,982,300 sentences (902M)
+  - news-crawl_news.2017 #          ~11,504,424 sentences (1.3G)
+  - news-crawl_news.2018 #           ~7,920,353 sentences (895M)
+  - news-crawl_news.2019 #          ~17,699,115 sentences (2.0G)
+  - news-crawl_news.2020 #          ~22,123,893 sentences (2.5G)
+  - news-crawl_news.2021 #          ~21,238,938 sentences (2.4G)
+  - news-crawl_news.2022 #          ~23,008,849 sentences (2.6G)
+  - news-crawl_news.2023 #          ~23,008,849 sentences (2.6G)
+marian-args:
+  decoding-backward:
+    beam-size: '12'
+    mini-batch-words: '2000'
+  decoding-teacher:
+    mini-batch-words: '4000'
+    precision: float16
+  training-backward:
+    early-stopping: '5'
+  training-teacher:
+    early-stopping: '20'
+  training-student:
+    early-stopping: '20'
+  training-student-finetuned:
+    early-stopping: '20'
+target-stage: all
+wandb-publication: true
+taskcluster:
+  split-chunks: 20
+  worker-classes:
+    default: gcp-spot
