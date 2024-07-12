@@ -229,8 +229,8 @@ def publish_group_logs_from_tasks(
         for metric_task_id, metrics_task in metrics_tasks.items():
             filename = metrics_task["task"]["tags"]["label"]
             if re_match := MULTIPLE_TRAIN_SUFFIX.search(filename):
-                (suffix,) = re_match.groups()
-                filename = MULTIPLE_TRAIN_SUFFIX.sub(suffix, filename)
+                (train_suffix,) = re_match.groups()
+                filename = MULTIPLE_TRAIN_SUFFIX.sub(train_suffix, filename)
 
             metric_artifact = next(
                 (
