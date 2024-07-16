@@ -17,9 +17,14 @@ experiment:
   mono-max-sentences-trg: 200_000_000
   spm-sample-size: 10_000_000
   spm-vocab-size: 32000
-  teacher-ensemble: 1
+  teacher-ensemble: 2
   teacher-mode: two-stage
-  pretrained-models: {}
+  pretrained-models:
+    train-backwards:
+      urls:
+        - "https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/c0KjD_dCRYmEFvZ45SQQCQ/artifacts/public/build"
+      mode: use
+      type: default
 datasets:
   devtest:
   - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-dan
@@ -159,16 +164,17 @@ datasets:
   - opus_ELRC-901-Denmark_Prosecution_/v1 #                   1,163 sentences
   - opus_ELRC-900-Danish_Working_Envir/v1 #                   1,138 sentences
   - opus_ELRC-890-Holstebro_Kunstmuseu/v1 #                   1,023 sentences
-  - opus_ELRC-3204-antibiotic/v1 #                              801 sentences
-  - opus_ELRC-894-Gallery_Denmark/v1 #                          769 sentences
-  - opus_ELRC-3295-EUROPARL_covid/v1 #                          634 sentences
-  - opus_ELRC-3066-wikipedia_health/v1 #                        523 sentences
-  - opus_ELRC-wikipedia_health/v1 #                             523 sentences
-  - opus_ELRC_2922/v1 #                                         522 sentences
-  - opus_tldr-pages/v2023-08-29 #                               495 sentences
-  - opus_ELRC-2754-vaccination/v1 #                             462 sentences
-  - opus_ELRC-vaccination/v1 #                                  462 sentences
-  - opus_ELRC_2923/v1 #                                         389 sentences
+# remove to work around https://github.com/mozilla/firefox-translations-training/issues/653
+#  - opus_ELRC-3204-antibiotic/v1 #                              801 sentences
+#  - opus_ELRC-894-Gallery_Denmark/v1 #                          769 sentences
+#  - opus_ELRC-3295-EUROPARL_covid/v1 #                          634 sentences
+#  - opus_ELRC-3066-wikipedia_health/v1 #                        523 sentences
+#  - opus_ELRC-wikipedia_health/v1 #                             523 sentences
+#  - opus_ELRC_2922/v1 #                                         522 sentences
+#  - opus_tldr-pages/v2023-08-29 #                               495 sentences
+#  - opus_ELRC-2754-vaccination/v1 #                             462 sentences
+#  - opus_ELRC-vaccination/v1 #                                  462 sentences
+#  - opus_ELRC_2923/v1 #                                         389 sentences
   - mtdata_ELRC-danish_higher_education_science_3-1-dan-eng # ~12,611 sentences (1.4 MB)
   - mtdata_ELRC-danish_higher_education_science_2-1-dan-eng # ~13,011 sentences (1.5 MB)
   - mtdata_ELRC-danish_higher_education_science-1-dan-eng # ~6,646 sentences (751.0 kB)
@@ -187,7 +193,6 @@ datasets:
   - mtdata_Tilde-eesc-2017-dan-eng #                    ~1,936,973 sentences (218.9 MB)
   - mtdata_Tilde-ema-2016-dan-eng #                       ~215,232 sentences (24.3 MB)
   - mtdata_Tilde-rapid-2016-dan-eng #                     ~451,067 sentences (51.0 MB)
-
   # The monolingual data contains:
   #   ~195,823,002 sentences
   mono-src:
@@ -231,7 +236,7 @@ marian-args:
     early-stopping: '20'
   training-student-finetuned:
     early-stopping: '20'
-target-stage: evaluate-teacher
+target-stage: all
 wandb-publication: true
 taskcluster:
   split-chunks: 20

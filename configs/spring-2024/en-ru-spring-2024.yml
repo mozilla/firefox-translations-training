@@ -180,7 +180,7 @@ marian-args:
 target-stage: all
 start-stage: train-teacher
 previous_group_ids: ["HYmh3hsdTpuv5s0YWa95yw"]
-existing_tasks: { "train-teacher-en-ru-1": "MH3_5l1jS3-eJ4lSxydNQQ" }
+existing_tasks: { "train-teacher-en-ru-1": "MH3_5l1jS3-eJ4lSxydNQQ", "alignments-original-en-ru": "K6XCM0LhQGWHvFNvOc7f8Q", "alignments-backtranslated-en-ru": "Ltb8WO3dRFqHsLNywFg8zQ" }
 wandb-publication: true
 taskcluster:
   split-chunks: 20
@@ -190,3 +190,4 @@ taskcluster:
     alignments-backtranslated: gcp-standard
     alignments-student: gcp-standard
     shortlist: gcp-standard
+    alignments-priors2: gcp-standard
