@@ -22,7 +22,7 @@ experiment:
   pretrained-models:
     train-backwards:
       urls:
-        - "https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/c0KjD_dCRYmEFvZ45SQQCQ/artifacts/public/build"
+        - "https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/Ft4VB6mVRz-iD4v4mQGyNQ/artifacts/public/build"
       mode: use
       type: default
 datasets:

@@ -29,7 +29,8 @@ datasets:
   devtest:
   - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-hun
   - flores_aug-mix_dev
-  - sacrebleu_aug-mix_wmt08
+  # it has an empty line instead of source sentence and break alignments procedure
+#  - sacrebleu_aug-mix_wmt08
   test:
   - mtdata_Neulab-tedtalks_test-1-eng-hun
   - flores_devtest
