@@ -13,6 +13,7 @@ Example:
 
 import argparse
 import os
+import shutil
 import subprocess
 import sys
 from contextlib import ExitStack
@@ -70,6 +71,9 @@ def run(
                 priors_output_path=priors_output_path,
                 stack=stack,
             )
+
+    # Temporary files no longer needed if we completed successfully.
+    shutil.rmtree(tmp_dir)
 
 
 def align(
