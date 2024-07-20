@@ -136,8 +136,7 @@ marian-args:
     early-stopping: '20'
 target-stage: evaluate-quantized
 start-stage: alignments-student
-previous_group_ids: ["evuAvqqWQ3WBUQ94Yi31uw"]
-existing_tasks: { "alignments-priors-en-uk": "f_Bi1vuDSrCPfEd80D6foA" }
+previous_group_ids: ["OLD3_NcGRm-4RpQmXe0ngg"]
 wandb-publication: true
 taskcluster:
   split-chunks: 20
@@ -147,3 +146,4 @@ taskcluster:
     alignments-backtranslated: gcp-standard
     alignments-student: gcp-standard
     shortlist: gcp-standard
+    alignments-priors2: gcp-standard
