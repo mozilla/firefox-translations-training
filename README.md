@@ -31,6 +31,8 @@ An orchestrator is responsible for workflow management and parallelization.
 
 ## Experiment tracking
 
+[Public training dashboard in Weights & Biases](https://wandb.ai/moz-translations/projects)
+
 Marian training metrics are parsed from logs and published using a custom module within the `tracking` directory.
 More information is available [here](docs/tracking.md).
 
