@@ -2,7 +2,8 @@ FROM ubuntu:22.04
 LABEL maintainer="Mozilla Release Engineering <release+docker@mozilla.com>"
 
 # Add worker user
-RUN mkdir /builds && \
+# `/builds` may already exist, `-p` will ensure `mkdir` succeeds regardless
+RUN mkdir -p /builds && \
     useradd -d /builds/worker -s /bin/bash -m worker && \
     chown worker:worker /builds/worker && \
     mkdir /builds/worker/artifacts && \
