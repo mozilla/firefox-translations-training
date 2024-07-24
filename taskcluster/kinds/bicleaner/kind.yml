@@ -113,9 +113,12 @@ tasks:
             bicleaner-model: bicleaner-model-{src_locale}-{trg_locale}
         fetches:
             toolchain:
-                - hunspell
-                - cyhunspell
-                - kenlm
+                - artifact: hunspell
+                  extract: false
+                - artifact: cyhunspell
+                  extract: false
+                - artifact: kenlm
+                  extract: false
                 - cuda-toolkit-11
             "{provider}":
                 - artifact: "{dataset_sanitized}.{src_locale}.zst"
