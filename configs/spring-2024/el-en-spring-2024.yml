@@ -270,8 +270,8 @@ marian-args:
   training-student-finetuned:
     early-stopping: '20'
 target-stage: all
-start-stage: evaluate-teacher-ensemble
-previous_group_ids: ["KnerF4GoRsG6nKc-8FvtGw"]
+start-stage: merge-translated
+previous_group_ids: ["EE6ytMIqTOGUpjNr4rUtUA"]
 existing_tasks: { "train-vocab-el-en": "W60nDU12TWi7gVMtL30ZXQ", "train-teacher-el-en-2": "SO6jIGfVQpmBbfMmevxjnw" }
 wandb-publication: true
 taskcluster:
