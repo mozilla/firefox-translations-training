@@ -61,6 +61,7 @@ tasks:
 
         worker-type: b-largegpu-xlargedisk
         worker:
+            chain-of-trust: true
             max-run-time: 2592000
             # train_taskcluster.py exits with 17 if a request to Taskcluster fails
             # 128 happens when cloning this repository fails
