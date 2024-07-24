@@ -26,6 +26,7 @@ import subprocess
 import sys
 from contextlib import ExitStack
 from enum import Enum
+from glob import glob
 from typing import Dict, Optional
 
 import zstandard
@@ -47,9 +48,10 @@ def run(
     corpus_src: str,
     corpus_trg: str,
     output_path: str,
+    tokenization: Tokenization,
+    chunk_lines: int,
     priors_input_path: Optional[str],
     priors_output_path: Optional[str],
-    tokenization: Tokenization,
 ):
     bin = os.environ["BIN"]
     src = os.environ["SRC"]
@@ -77,6 +79,7 @@ def run(
         corpus_trg=tokenized_trg,
         priors_input_path=priors_input_path,
         tmp_dir=tmp_dir,
+        chunk_lines=chunk_lines,
     )
     symmetrize(bin=bin, fwd_path=fwd_path, rev_path=rev_path, output_path=output_aln)
 
@@ -110,38 +113,60 @@ def decompress(file_path: str):
 def align(
     corpus_src: str,
     corpus_trg: str,
-    priors_input_path: Optional[str],
     tmp_dir: str,
+    chunk_lines: int,
+    priors_input_path: Optional[str],
 ):
     import eflomal
 
-    with ExitStack() as stack:
-        if priors_input_path:
-            logger.info(f"Using provided priors: {priors_input_path}")
-            priors_input = stack.enter_context(open(priors_input_path, "r", encoding="utf-8"))
-        else:
-            priors_input = None
+    logger.info("Splitting corpus into parts")
+    # align in chunks to prevent OOM
+    subprocess.check_call(["split", "--lines", str(chunk_lines), corpus_src, corpus_src + "."])
+    subprocess.check_call(["split", "--lines", str(chunk_lines), corpus_trg, corpus_trg + "."])
 
-        # We use eflomal aligner.
-        # It is less memory intensive than fast_align.
-        # fast_align failed with OOM in a large white-space tokenized corpus
-        aligner = eflomal.Aligner()
+    fwd_path = os.path.join(tmp_dir, "aln.fwd")
+    rev_path = os.path.join(tmp_dir, "aln.rev")
 
-        src_input = stack.enter_context(open(corpus_src, "r", encoding="utf-8"))
-        trg_input = stack.enter_context(open(corpus_trg, "r", encoding="utf-8"))
-        fwd_path = os.path.join(tmp_dir, "aln.fwd")
-        rev_path = os.path.join(tmp_dir, "aln.rev")
-        logger.info("Calculating alignments...")
-        aligner.align(
-            src_input,
-            trg_input,
-            links_filename_fwd=fwd_path,
-            links_filename_rev=rev_path,
-            priors_input=priors_input,
-            quiet=False,
-            use_gdb=False,
-        )
-        return fwd_path, rev_path
+    for src_part in sorted(glob(f"{corpus_src}.*")):
+        suffix = src_part.split(".")[-1]
+        logger.info(f"Processing part {suffix}")
+
+        with ExitStack() as stack:
+            if priors_input_path:
+                logger.info(f"Using provided priors: {priors_input_path}")
+                priors_input = stack.enter_context(open(priors_input_path, "r", encoding="utf-8"))
+            else:
+                priors_input = None
+
+            src_input = stack.enter_context(open(f"{corpus_src}.{suffix}", "r", encoding="utf-8"))
+            trg_input = stack.enter_context(open(f"{corpus_trg}.{suffix}", "r", encoding="utf-8"))
+
+            logger.info("Calculating alignments...")
+            # We use eflomal aligner.
+            # It is less memory intensive than fast_align.
+            # fast_align failed with OOM in a large white-space tokenized corpus
+            aligner = eflomal.Aligner()
+            aligner.align(
+                src_input,
+                trg_input,
+                links_filename_fwd=f"{fwd_path}.{suffix}",
+                links_filename_rev=f"{rev_path}.{suffix}",
+                priors_input=priors_input,
+                quiet=False,
+                use_gdb=False,
+            )
+
+    # Merge alignments parts into one file
+    with open(fwd_path, "w") as fwd_out:
+        fwd_parts = sorted(glob(f"{fwd_path}.*"))
+        logger.info(f"Merging alignments: {fwd_parts}")
+        subprocess.check_call(["cat"] + fwd_parts, stdout=fwd_out)
+    with open(rev_path, "w") as rev_out:
+        rev_parts = sorted(glob(f"{rev_path}.*"))
+        logger.info(f"Merging alignments: {rev_parts}")
+        subprocess.check_call(["cat"] + rev_parts, stdout=rev_out)
+
+    return fwd_path, rev_path
 
 
 def symmetrize(bin: str, fwd_path: str, rev_path: str, output_path: str):
@@ -347,15 +372,25 @@ def main() -> None:
         help="Use the specified tokenization method. Default is `spaces` which means no tokenization will be applied. "
         "It remaps the alignments back to whitespace tokenized ones if the `moses` tokenization is used.",
     )
+    parser.add_argument(
+        "--chunk_lines",
+        metavar="CHUNK_LINES",
+        type=int,
+        # use env to override from tests
+        default=int(os.getenv("ALN_CHUNK_LINES", "100000000")),
+        help="Split corpus to chunks of N lines to calculate alignments on them separately. "
+        "This helps with reducing the memory footprint. 100M by default.",
+    )
     args = parser.parse_args()
     logger.info("Starting generating alignments.")
     run(
-        args.corpus_src,
-        args.corpus_trg,
-        args.output_path,
-        args.priors_input_path,
-        args.priors_output_path,
-        args.tokenization,
+        corpus_src=args.corpus_src,
+        corpus_trg=args.corpus_trg,
+        output_path=args.output_path,
+        tokenization=args.tokenization,
+        chunk_lines=args.chunk_lines,
+        priors_input_path=args.priors_input_path,
+        priors_output_path=args.priors_output_path,
     )
     logger.info("Finished generating alignments.")
 
