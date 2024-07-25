@@ -6,12 +6,6 @@
 # It exists because there are two features that we need that are missing upstream:
 # - The ability to influence the cache digest from parameters.
 #   (https://github.com/taskcluster/taskgraph/issues/391)
-# - The ability to avoid adding some upstream tasks to the cache digest (which
-#   allows us to avoid rebuilding the world when, eg: we upgrade a Docker base
-#   image version). No upstream issue is filed for this, because for the vast
-#   majority of use cases it is better to take the rebuilds. Our use case is
-#   an exception, because of the truly massive amount of time it takes to
-#   train a model.
 
 
 import itertools
@@ -28,8 +22,6 @@ from translations_taskgraph.util.dict_helpers import deep_get
 
 transforms = TransformSequence()
 
-
-DONT_INVALIDATE_KINDS = ["docker-image", "fetch", "toolchain"]
 
 SCHEMA = Schema(
     {
@@ -122,10 +114,6 @@ def cache_task(config, tasks):
 
         dependency_digests = []
         for p in task.get("dependencies", {}).values():
-            # Here in Translations, we explicit do _not_ invalidate cached
-            # training jobs when non-training jobs are invalidated.
-            if any([kind in p for kind in DONT_INVALIDATE_KINDS]):
-                continue
             if p in digests:
                 dependency_digests.append(digests[p])
             else:
