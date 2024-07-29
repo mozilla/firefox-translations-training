@@ -17,9 +17,14 @@ experiment:
   mono-max-sentences-trg: 200_000_000
   spm-sample-size: 10_000_000
   spm-vocab-size: 32000
-  teacher-ensemble: 1
+  teacher-ensemble: 2
   teacher-mode: two-stage
-  pretrained-models: {}
+  pretrained-models:
+     train-backwards:
+      urls:
+        - "https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/fOQsIonXQki5adS3LAQjRQ/artifacts/public/build"
+      mode: use
+      type: default
 datasets:
   devtest:
   - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-ron
@@ -145,17 +150,19 @@ datasets:
   - opus_ELRC-2750-vaccination/v1 #                             496 sentences
   - opus_ELRC-vaccination/v1 #                                  496 sentences
   - opus_ELRC_2923/v1 #                                         319 sentences
-  # Fails in the task.
+  # Fails in the task
   # - mtdata_ELRC-swedish_work_environment-1-eng-ron #       ~13,557 sentences (1.5 MB)
   - mtdata_ELRC-romanian_new_criminal_procedure_code-1-eng-ron # ~23,368 sentences (2.6 MB)
-  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-eng-ron # ~2,078 sentences (234.8 kB)
+# maybe too long
+#  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-eng-ron # ~2,078 sentences (234.8 kB)
   - mtdata_ELRC-romanian_ombudsman_archive-1-eng-ron #      ~4,888 sentences (552.4 kB)
-  - mtdata_ELRC-studies_reports_statistical_culture_institute_cultural_research_training-1-eng-ron # ~11,961 sentences (1.4 MB)
-  - mtdata_ELRC-rural_development_programme_romania-1-eng-ron # ~4,635 sentences (523.8 kB)
+#  - mtdata_ELRC-studies_reports_statistical_culture_institute_cultural_research_training-1-eng-ron # ~11,961 sentences (1.4 MB)
+#  - mtdata_ELRC-rural_development_programme_romania-1-eng-ron # ~4,635 sentences (523.8 kB)
   - mtdata_ELRC-eu_publications_medical_v2-1-eng-ron #     ~14,807 sentences (1.7 MB)
   - mtdata_EU-eac_forms-1-eng-ron #                        ~31,162 sentences (3.5 MB)
   - mtdata_EU-eac_reference-1-eng-ron #                    ~31,162 sentences (3.5 MB)
   - mtdata_EU-dcep-1-eng-ron #                            ~389,297 sentences (44.0 MB)
+  - mtdata_Statmt-newsdev_enro-2016-eng-ron #             ~402,756 sentences (45.5 MB)
   - mtdata_Statmt-newsdev_roen-2016-ron-eng #             ~402,756 sentences (45.5 MB)
   - mtdata_Tilde-eesc-2017-eng-ron #                    ~1,026,056 sentences (115.9 MB)
   - mtdata_Tilde-ema-2016-eng-ron #                       ~229,130 sentences (25.9 MB)
@@ -215,7 +222,7 @@ marian-args:
     early-stopping: '20'
   training-student-finetuned:
     early-stopping: '20'
-target-stage: evaluate-teacher
+target-stage: all
 wandb-publication: true
 taskcluster:
   split-chunks: 20

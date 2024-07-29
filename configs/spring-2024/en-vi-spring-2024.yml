@@ -110,12 +110,15 @@ marian-args:
     early-stopping: '5'
   training-teacher:
     early-stopping: '20'
+    # teacher-2 diverged, reduce learning rate
+    learn-rate: '0.0002'
   training-student:
     early-stopping: '20'
   training-student-finetuned:
     early-stopping: '20'
 target-stage: all
 wandb-publication: true
+existing_tasks: { "train-teacher-en-vi-2": "NJKF4w5NRIuHqql9-PkWwA" }
 taskcluster:
   split-chunks: 20
   worker-classes:
