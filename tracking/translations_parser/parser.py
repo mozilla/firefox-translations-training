@@ -1,16 +1,20 @@
 import logging
+import os
 import re
+import shlex
 import sys
 from collections import defaultdict
 from collections.abc import Iterable, Iterator, Sequence
 from datetime import datetime
 from itertools import tee
+from pathlib import Path
 from typing import Callable, DefaultDict, List
 
 import yaml
 
 from translations_parser.data import Metric, TrainingEpoch, TrainingLog, ValidationEpoch
 from translations_parser.publishers import Publisher
+from translations_parser.utils import get_lines_count
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +39,10 @@ TRAINING_RE = re.compile(
 
 # Expected version of Marian for a clean parsing
 SUPPORTED_MARIAN_VERSIONS = [(1, 10), (1, 12)]
+
+MARIAN_ARGS_REGEX = re.compile(r"command line:[\n ]+[\w\/]+\/marian +(.*)")
+# Last Marian command line argument (not being part of training extra arguments)
+LAST_MARIAN_DECLARED_ARGUMENT = "seed"
 
 
 class TrainingParser:
@@ -215,6 +223,94 @@ class TrainingParser:
 
             yield headers, text
 
+    def get_extra_marian_config(self) -> dict:
+        """
+        Read extra configuration files (Marian, OpusTrainer, extra CLI arguments).
+        This function is only available with online publication from Taskcluster.
+        """
+        if os.environ.get("TASK_ID") is None:
+            logger.info(
+                "Extra configuration files can only be retrieved in Taskcluster context, skipping."
+            )
+            return {}
+        if self.description is None:
+            logger.warning(
+                "Marian description not found, skipping Marian and OpusTrainer configuration detection."
+            )
+            return {}
+        if (match := MARIAN_ARGS_REGEX.search(self.parser.description)) is None:
+            logger.warning(
+                "Invalid Marian description, skipping Marian and OpusTrainer configuration detection."
+            )
+            return {}
+        logger.info("Reading Marian/OpusTrainer configuration files and extra parameters.")
+        (arguments_str,) = match.groups()
+        # Build args from the command line input text
+        args = defaultdict(list)
+        key = None
+        for i in iter(shlex.split(arguments_str)):
+            if i.startswith("-"):
+                key = i.strip("-")
+                continue
+            args[key].append(i)
+
+        # Handle Marian model and training YAML configuration files
+        model, training = None, None
+        if len(args["c"]) != 2:
+            logger.warning("Invalid")
+        else:
+            model_path, training_path = args["c"]
+            try:
+                model = yaml.safe_load(model_path)
+            except Exception as e:
+                logger.warning(f"Impossible to parse Marian model config at {model_path}: {e}")
+            try:
+                training = yaml.safe_load(training_path)
+            except Exception as e:
+                logger.warning(f"Impossible to parse Marian model config at {model_path}: {e}")
+
+        # Handle extra arguments used to run Marian
+        extra_args = {}
+        for arg, values in list(args.items())[::-1]:
+            if arg == LAST_MARIAN_DECLARED_ARGUMENT:
+                break
+            # Do not use lists for single values
+            if len(values) == 1:
+                extra_args.update({arg: values[0]})
+            else:
+                extra_args.update({arg: values})
+
+        # Handle OpusTrainer configuration
+        opustrainer, datasets = None, None
+        (model_path,) = args.get("model", ("./model.npz",))
+        model_dir = Path(model_path).parent
+        train_conf_path = (model_dir / "config.opustrainer.yml").resolve()
+        if not train_conf_path.exists():
+            logger.warning(f"OpusTrainer configuration file does not exists at {train_conf_path}.")
+        else:
+            try:
+                opustrainer = yaml.safe_load(train_conf_path)
+            except Exception as e:
+                logger.warning(f"Impossible to parse OpusTrainer config at {train_conf_path}: {e}")
+            else:
+                logger.info("Read datasets statistics from OpusTrainer configuration.")
+                try:
+                    dataset_conf = opustrainer.get("datasets", {})
+                    datasets = {key: get_lines_count(path) for key, path in dataset_conf.items()}
+                except Exception:
+                    logger.warning(
+                        f"OpusTrainer configuration could not be read at {train_conf_path}."
+                    )
+                    return
+
+        return {
+            "model": model,
+            "training": training,
+            "datasets": datasets,
+            "opustrainer": opustrainer,
+            "extra-args": extra_args,
+        }
+
     def parse_marian_context(self, logs_iter: Iterator[tuple[list[tuple[str]], str]]) -> None:
         """
         Looks for Marian context in the first logs lines.
@@ -231,6 +327,7 @@ class TrainingParser:
         version = version.rstrip(";")
         major, minor = map(int, version.lstrip("v").split(".")[:2])
         self.version = f"{major}.{minor}"
+        logger.info(f"Detected Marian version {self.version}")
         if (major, minor) not in SUPPORTED_MARIAN_VERSIONS:
             versions = ", ".join(f"{major}.{minor}" for major, minor in SUPPORTED_MARIAN_VERSIONS)
             logger.warning(
@@ -258,11 +355,12 @@ class TrainingParser:
             config_yaml += f"{text}\n"
             headers, text = next(logs_iter)
         try:
-            self.config = yaml.safe_load(config_yaml)
+            self.config["marian"] = yaml.safe_load(config_yaml)
         except Exception as e:
-            raise Exception(f"Invalid config section: {e}")
+            logger.error(f"Impossible to parse Marian config YAML: {e}")
 
-        logger.info(f"Detected Marian version {self.version}")
+        # Try to read required extra configuration files when running online from Taskcluster
+        self.config.update(self.get_extra_marian_config())
 
     def parse_data(self, logs_iter: Iterator[tuple[list[tuple[str]], str]]) -> None:
         """
