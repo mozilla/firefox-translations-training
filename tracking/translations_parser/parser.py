@@ -238,7 +238,7 @@ class TrainingParser:
                 "Marian description not found, skipping Marian and OpusTrainer configuration detection."
             )
             return {}
-        if (match := MARIAN_ARGS_REGEX.search(self.parser.description)) is None:
+        if (match := MARIAN_ARGS_REGEX.search(self.description)) is None:
             logger.warning(
                 "Invalid Marian description, skipping Marian and OpusTrainer configuration detection."
             )
@@ -261,11 +261,13 @@ class TrainingParser:
         else:
             model_path, training_path = args["c"]
             try:
-                model = yaml.safe_load(model_path)
+                with open(model_path, "r") as f:
+                    model = yaml.safe_load(f.read())
             except Exception as e:
                 logger.warning(f"Impossible to parse Marian model config at {model_path}: {e}")
             try:
-                training = yaml.safe_load(training_path)
+                with open(training_path, "r") as f:
+                    training = yaml.safe_load(f.read())
             except Exception as e:
                 logger.warning(f"Impossible to parse Marian model config at {model_path}: {e}")
 
@@ -289,19 +291,19 @@ class TrainingParser:
             logger.warning(f"OpusTrainer configuration file does not exists at {train_conf_path}.")
         else:
             try:
-                opustrainer = yaml.safe_load(train_conf_path)
+                with open(train_conf_path, "r") as f:
+                    opustrainer = yaml.safe_load(f.read())
             except Exception as e:
                 logger.warning(f"Impossible to parse OpusTrainer config at {train_conf_path}: {e}")
             else:
-                logger.info("Read datasets statistics from OpusTrainer configuration.")
+                logger.info("Reading datasets statistics from OpusTrainer configuration.")
                 try:
                     dataset_conf = opustrainer.get("datasets", {})
                     datasets = {key: get_lines_count(path) for key, path in dataset_conf.items()}
-                except Exception:
+                except Exception as e:
                     logger.warning(
-                        f"OpusTrainer configuration could not be read at {train_conf_path}."
+                        f"OpusTrainer configuration could not be read at {train_conf_path}: {e}."
                     )
-                    return
 
         return {
             "model": model,
