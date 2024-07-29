@@ -190,6 +190,13 @@ tasks:
         --output-file "{{.OUTPUT_FILE}}"
         --diff "{{.BASE_REV}}"
 
+  taskgraph-test:
+    desc: Run tests and validations against task generation
+    cmds:
+      - >-
+        poetry run --directory taskgraph --
+        pytest taskcluster/test
+
   docs:
     desc: Run the GitHub pages Jekyll theme locally.
     cmds:
