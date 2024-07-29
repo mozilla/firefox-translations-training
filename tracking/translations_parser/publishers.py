@@ -134,11 +134,12 @@ class WandB(Publisher):
 
         self.wandb.finish()
 
-
     def open(self, parser=None, resume: bool = False) -> None:
         self.parser = parser
-        config = getattr(parser, "config", {})
+        config = getattr(parser, "config", {}).copy()
         config.update(self.extra_kwargs.pop("config", {}))
+        # Publish datasets stats directly in the dashboard
+        datasets = config.pop("datasets", None)
 
         # Avoid overriding an existing run on a first training, this should not happen
         if resume is False and int(os.environ.get("RUN_ID", 0)) > 0:
@@ -161,6 +162,22 @@ class WandB(Publisher):
                 logger.info(f"W&B run is being resumed from existing run '{self.run}'.")
         except Exception as e:
             logger.error(f"WandB client could not be initialized: {e}. No data will be published.")
+
+        if datasets is not None:
+            # Log dataset sizes as a custom bar chart
+            self.wandb.log(
+                {
+                    "Datasets": wandb.plot.bar(
+                        wandb.Table(
+                            columns=["Name", "Count"],
+                            data=[[key, value] for key, value in datasets.items()],
+                        ),
+                        "Name",
+                        "Count",
+                        title="Datasets",
+                    )
+                }
+            )
 
     def generic_log(self, data: TrainingEpoch | ValidationEpoch) -> None:
         if self.wandb is None:
