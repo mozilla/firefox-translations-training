@@ -121,6 +121,7 @@ def align(
 
     logger.info("Splitting corpus into parts")
     # align in chunks to prevent OOM
+    # produces chunks of files, like "corpus.en.aa", "corpus.en.ab", "corpus.en.ac" etc.
     subprocess.check_call(["split", "--lines", str(chunk_lines), corpus_src, corpus_src + "."])
     subprocess.check_call(["split", "--lines", str(chunk_lines), corpus_trg, corpus_trg + "."])
 
