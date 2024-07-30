@@ -75,6 +75,7 @@ def test_teacher_original_alignments():
         "ARTIFACT_EXT": "zst",
         "SRC": "en",
         "TRG": "ru",
+        "ALN_CHUNK_LINES": "3",
     }
 
     data_dir.run_task("alignments-original-en-ru", env=env)
@@ -95,6 +96,7 @@ def test_teacher_backtranslated_alignments():
         "ARTIFACT_EXT": "zst",
         "SRC": "en",
         "TRG": "ru",
+        "ALN_CHUNK_LINES": "3",
     }
     # get priors using the "original" task
     data_dir.run_task("alignments-original-en-ru", env=env)
@@ -119,6 +121,7 @@ def test_student_alignments():
         "ARTIFACT_EXT": "zst",
         "SRC": "en",
         "TRG": "ru",
+        "ALN_CHUNK_LINES": "3",
     }
     # get priors using the "original" task
     data_dir.run_task("alignments-original-en-ru", env=env)
@@ -147,6 +150,7 @@ def test_shortlist():
         "ARTIFACT_EXT": "zst",
         "SRC": "en",
         "TRG": "ru",
+        "ALN_CHUNK_LINES": "3",
     }
     shutil.copyfile("tests/data/vocab.spm", os.path.join(data_dir.path, "vocab.spm"))
 
