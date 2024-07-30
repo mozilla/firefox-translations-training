@@ -68,9 +68,10 @@ def test_taskcluster(wandb_mock, getargs_mock, disable_wandb, caplog, samples_di
     assert [(level, message) for _module, level, message in caplog.record_tuples] == [
         (logging.INFO, "Reading logs stream."),
         (logging.INFO, "Detected Marian version 1.10"),
+        (logging.INFO, "Reading Marian command line arguments."),
         (
             logging.INFO,
-            "Extra configuration files can only be published from a Taskcluster task context, skipping.",
+            "Extra configuration files can only be retrieved in Taskcluster context, skipping.",
         ),
         (logging.INFO, "Successfully parsed 1528 lines"),
         (logging.INFO, "Found 102 training entries"),
@@ -83,7 +84,7 @@ def test_taskcluster(wandb_mock, getargs_mock, disable_wandb, caplog, samples_di
             c.kwargs["group"],
             c.kwargs["name"],
             c.kwargs["id"],
-            c.kwargs["config"].get("after"),
+            c.kwargs["config"].get("marian", {}).get("after"),
         )
         for c in wandb_mock.init.call_args_list
     ] == [
@@ -123,9 +124,10 @@ def test_experiments_marian_1_10(
             ),
             (logging.INFO, "Reading logs stream."),
             (logging.INFO, "Detected Marian version 1.10"),
+            (logging.INFO, "Reading Marian command line arguments."),
             (
                 logging.INFO,
-                "Extra configuration files can only be published from a Taskcluster task context, skipping.",
+                "Extra configuration files can only be retrieved in Taskcluster context, skipping.",
             ),
             (logging.INFO, "Successfully parsed 1878 lines"),
             (logging.INFO, "Found 550 training entries"),
@@ -170,7 +172,7 @@ def test_experiments_marian_1_10(
             c.kwargs["group"],
             c.kwargs["name"],
             c.kwargs["id"],
-            c.kwargs["config"].get("after"),
+            c.kwargs["config"].get("marian", {}).get("after"),
         )
         for c in wandb_mock.init.call_args_list
     ] == [
@@ -242,9 +244,10 @@ def test_experiments_marian_1_12(
         [
             (logging.INFO, "Reading 2 train.log data"),
             (logging.INFO, "Detected Marian version 1.12"),
+            (logging.INFO, "Reading Marian command line arguments."),
             (
                 logging.INFO,
-                "Extra configuration files can only be published from a Taskcluster task context, skipping.",
+                "Extra configuration files can only be retrieved in Taskcluster context, skipping.",
             ),
             (
                 logging.INFO,
@@ -278,7 +281,7 @@ def test_experiments_marian_1_12(
             c.kwargs["group"],
             c.kwargs["name"],
             c.kwargs["id"],
-            c.kwargs["config"].get("after"),
+            c.kwargs["config"].get("marian", {}).get("after"),
         )
         for c in wandb_mock.init.call_args_list
     ] == [
@@ -349,6 +352,11 @@ def test_taskcluster_wandb_initialization_failure(
     assert [(level, message) for _module, level, message in caplog.record_tuples] == [
         (logging.INFO, "Reading logs stream."),
         (logging.INFO, "Detected Marian version 1.10"),
+        (logging.INFO, "Reading Marian command line arguments."),
+        (
+            logging.INFO,
+            "Extra configuration files can only be retrieved in Taskcluster context, skipping.",
+        ),
         (
             logging.ERROR,
             "WandB client could not be initialized: Invalid credentials. No data will be published.",
@@ -395,16 +403,17 @@ def test_taskcluster_wandb_log_failures(
     assert [(level, message) for _module, level, message in caplog.record_tuples] == [
         (logging.INFO, "Reading logs stream."),
         (logging.INFO, "Detected Marian version 1.10"),
+        (logging.INFO, "Reading Marian command line arguments."),
+        (
+            logging.INFO,
+            "Extra configuration files can only be retrieved in Taskcluster context, skipping.",
+        ),
     ] + [
         (logging.ERROR, "Error publishing training epoch using WandB: Unexpected failure"),
         (logging.ERROR, "Error publishing training epoch using WandB: Unexpected failure"),
         (logging.ERROR, "Error publishing training epoch using WandB: Unexpected failure"),
         (logging.ERROR, "Error publishing validation epoch using WandB: Unexpected failure"),
     ] * 34 + [
-        (
-            logging.INFO,
-            "Extra configuration files can only be published from a Taskcluster task context, skipping.",
-        ),
         (logging.INFO, "Successfully parsed 1528 lines"),
         (logging.INFO, "Found 102 training entries"),
         (logging.INFO, "Found 34 validation entries"),
@@ -446,6 +455,11 @@ def test_taskcluster_wandb_disabled(
         ),
         (logging.INFO, "Reading logs stream."),
         (logging.INFO, "Detected Marian version 1.10"),
+        (logging.INFO, "Reading Marian command line arguments."),
+        (
+            logging.INFO,
+            "Extra configuration files can only be retrieved in Taskcluster context, skipping.",
+        ),
         (logging.INFO, "Successfully parsed 1528 lines"),
         (logging.INFO, "Found 102 training entries"),
         (logging.INFO, "Found 34 validation entries"),
