@@ -40,7 +40,7 @@ TRAINING_RE = re.compile(
 # Expected version of Marian for a clean parsing
 SUPPORTED_MARIAN_VERSIONS = [(1, 10), (1, 12)]
 
-MARIAN_ARGS_REGEX = re.compile(r"command line:[\n ]+[\w\/]+\/marian +(.*)")
+MARIAN_ARGS_REGEX = re.compile(r"command line:[\n ]+[\w\/-]+\/marian +(.*)")
 # Last Marian command line argument (not being part of training extra arguments)
 LAST_MARIAN_DECLARED_ARGUMENT = "seed"
 
@@ -226,24 +226,28 @@ class TrainingParser:
     def get_extra_marian_config(self) -> dict:
         """
         Read extra configuration files (Marian, OpusTrainer, extra CLI arguments).
-        This function is only available with online publication from Taskcluster.
+        Publication outside of a Taskcluster context (offline mode) cannot access
+        the configuration files, only extra-args will be set in this case.
         """
-        if os.environ.get("TASK_ID") is None:
-            logger.info(
-                "Extra configuration files can only be retrieved in Taskcluster context, skipping."
-            )
-            return {}
-        if self.description is None:
-            logger.warning(
-                "Marian description not found, skipping Marian and OpusTrainer configuration detection."
-            )
-            return {}
-        if (match := MARIAN_ARGS_REGEX.search(self.description)) is None:
+        extra_config = {
+            "extra-args": None,
+            "model": None,
+            "training": None,
+            "datasets": None,
+            "opustrainer": None,
+        }
+
+        if (
+            self.description is None
+            or (match := MARIAN_ARGS_REGEX.search(self.description)) is None
+        ):
+            logger.error(self.description)
             logger.warning(
                 "Invalid Marian description, skipping Marian and OpusTrainer configuration detection."
             )
-            return {}
-        logger.info("Reading Marian/OpusTrainer configuration files and extra parameters.")
+            return extra_config
+
+        logger.info("Reading Marian command line arguments.")
         (arguments_str,) = match.groups()
         # Build args from the command line input text
         args = defaultdict(list)
@@ -254,36 +258,40 @@ class TrainingParser:
                 continue
             args[key].append(i)
 
+        # Handle extra arguments used to run Marian
+        extra_config["extra-args"] = {}
+        for arg, values in list(args.items())[::-1]:
+            if arg == LAST_MARIAN_DECLARED_ARGUMENT:
+                break
+            # Do not use lists for single values
+            if len(values) == 1:
+                extra_config["extra-args"].update({arg: values[0]})
+            else:
+                extra_config["extra-args"].update({arg: values})
+
+        if os.environ.get("TASK_ID") is None:
+            logger.info(
+                "Extra configuration files can only be retrieved in Taskcluster context, skipping."
+            )
+            return extra_config
+
         # Handle Marian model and training YAML configuration files
-        model, training = None, None
         if len(args["c"]) != 2:
             logger.warning("Invalid")
         else:
             model_path, training_path = args["c"]
             try:
                 with open(model_path, "r") as f:
-                    model = yaml.safe_load(f.read())
+                    extra_config["model"] = yaml.safe_load(f.read())
             except Exception as e:
                 logger.warning(f"Impossible to parse Marian model config at {model_path}: {e}")
             try:
                 with open(training_path, "r") as f:
-                    training = yaml.safe_load(f.read())
+                    extra_config["training"] = yaml.safe_load(f.read())
             except Exception as e:
                 logger.warning(f"Impossible to parse Marian model config at {model_path}: {e}")
 
-        # Handle extra arguments used to run Marian
-        extra_args = {}
-        for arg, values in list(args.items())[::-1]:
-            if arg == LAST_MARIAN_DECLARED_ARGUMENT:
-                break
-            # Do not use lists for single values
-            if len(values) == 1:
-                extra_args.update({arg: values[0]})
-            else:
-                extra_args.update({arg: values})
-
         # Handle OpusTrainer configuration
-        opustrainer, datasets = None, None
         (model_path,) = args.get("model", ("./model.npz",))
         model_dir = Path(model_path).parent
         train_conf_path = (model_dir / "config.opustrainer.yml").resolve()
@@ -292,26 +300,22 @@ class TrainingParser:
         else:
             try:
                 with open(train_conf_path, "r") as f:
-                    opustrainer = yaml.safe_load(f.read())
+                    extra_config["opustrainer"] = yaml.safe_load(f.read())
             except Exception as e:
                 logger.warning(f"Impossible to parse OpusTrainer config at {train_conf_path}: {e}")
             else:
                 logger.info("Reading datasets statistics from OpusTrainer configuration.")
                 try:
-                    dataset_conf = opustrainer.get("datasets", {})
-                    datasets = {key: get_lines_count(path) for key, path in dataset_conf.items()}
+                    dataset_conf = extra_config.get("opustrainer", {}).get("datasets", {})
+                    extra_config["datasets"] = {
+                        key: get_lines_count(path) for key, path in dataset_conf.items()
+                    }
                 except Exception as e:
                     logger.warning(
                         f"OpusTrainer configuration could not be read at {train_conf_path}: {e}."
                     )
 
-        return {
-            "model": model,
-            "training": training,
-            "datasets": datasets,
-            "opustrainer": opustrainer,
-            "extra-args": extra_args,
-        }
+        return extra_config
 
     def parse_marian_context(self, logs_iter: Iterator[tuple[list[tuple[str]], str]]) -> None:
         """
