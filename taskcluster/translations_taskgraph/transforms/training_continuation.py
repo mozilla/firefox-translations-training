@@ -92,3 +92,24 @@ def add_pretrained_model_mounts(config, jobs):
                 }
 
         yield job
+
+
+evaluate_stage = TransformSequence()
+
+
+@evaluate_stage.add
+def skip_for_pretrained_models(config, jobs):
+    # Find the types of pretrained models that are being used. This makes
+    # it easier to filter them out in the loop below.
+    pretrained_models = [
+        pretrained.split("-")[-1].replace("backwards", "backward")
+        for pretrained in config.params["training_config"]["experiment"]
+        .get("pretrained-models", {})
+        .keys()
+    ]
+
+    for job in jobs:
+        if any([pretrained in job["attributes"]["stage"] for pretrained in pretrained_models]):
+            continue
+
+        yield job
