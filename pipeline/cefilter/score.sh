@@ -33,17 +33,17 @@ dir=$(dirname "${output}")
 mkdir -p "${dir}"
 
 "${MARIAN}/marian-scorer" \
-  -m "${model}" \
-  -v "${vocab}" "${vocab}" \
-  -t "${corpus_prefix}.${TRG}${ARTIFACT_EXT}" "${corpus_prefix}.${SRC}${ARTIFACT_EXT}" \
+  --model "${model}" \
+  --vocabs "${vocab}" "${vocab}" \
+  --train-sets "${corpus_prefix}.${TRG}${ARTIFACT_EXT}" "${corpus_prefix}.${SRC}${ARTIFACT_EXT}" \
   --mini-batch 32 \
   --mini-batch-words 1500 \
   --maxi-batch 1000 \
   --max-length 250 \
   --max-length-crop \
   --normalize \
-  -d ${GPUS} \
-  -w "${WORKSPACE}" \
+  --devices ${GPUS} \
+  --wworkspace "${WORKSPACE}" \
   --log "${dir}/scores.txt.log" \
   >"${output}"
 
