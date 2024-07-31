@@ -185,6 +185,7 @@ local-worker-aliases:
     # Use for student training, see https://github.com/mozilla/firefox-translations-training/issues/774
     b-largegpu-xxlargedisk:
         by-worker-class:
+            gcp-standard: 'b-linux-v100-gpu-4-2tb'
             default: 'b-linux-v100-gpu-4-2tb'
 
 
