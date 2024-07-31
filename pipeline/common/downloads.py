@@ -3,11 +3,14 @@ import io
 import json
 import os
 import time
+from contextlib import ExitStack, contextmanager
 from io import BufferedReader
-from typing import Generator, Optional
+from pathlib import Path
+from typing import Generator, Optional, Union
+from zipfile import ZipFile
 
 import requests
-import zstandard
+from zstandard import ZstdCompressor, ZstdDecompressor
 
 from pipeline.common.logging import get_logger
 
@@ -140,7 +143,7 @@ class RemoteZstdLineStreamer(RemoteDecodingLineStreamer):
     """
 
     def decode(self, byte_stream):
-        return zstandard.ZstdDecompressor().stream_reader(byte_stream)
+        return ZstdDecompressor().stream_reader(byte_stream)
 
 
 class DownloadChunkStreamer(io.IOBase):
@@ -267,7 +270,7 @@ class DownloadChunkStreamer(io.IOBase):
                 # Report the download size.
                 if not total_bytes and "content-length" in self.response.headers:
                     total_bytes = int(self.response.headers["content-length"])
-                    logger.info(f"Download size: {total_bytes} bytes")
+                    logger.info(f"Download size: {total_bytes:,} bytes")
 
                 for chunk in self.response.iter_content(chunk_size=self.chunk_bytes):
                     if not chunk:
@@ -313,3 +316,154 @@ class DownloadChunkStreamer(io.IOBase):
     def decode(self, byte_stream) -> Generator[bytes, None, None]:
         """Pass through the byte stream. This method can be specialized by child classes."""
         return byte_stream
+
+
+@contextmanager
+def _read_lines_multiple_files(
+    files: list[Union[str, Path]], path_in_archive: Optional[str]
+) -> Generator[str, None, None]:
+    """
+    Iterates through each line in multiple files, combining it into a single stream.
+    """
+
+    def iter(stack: ExitStack):
+        for file_path in files:
+            logger.info(f"Reading lines from: {file_path}")
+            lines = stack.enter_context(read_lines(file_path, path_in_archive))
+            yield from lines
+            stack.close()
+
+    try:
+        stack = ExitStack()
+        yield iter(stack)
+    finally:
+        stack.close()
+
+
+@contextmanager
+def _read_lines_single_file(location: Union[Path, str], path_in_archive: Optional[str] = None):
+    """
+    A smart function to efficiently stream lines from a local or remote file.
+    The location can either be a URL or a local file system path.
+    It handles gzip, zst, and plain text files.
+
+    Args:
+        location - URL or file path
+        path_in_archive  - The path to a file in a zip archive
+    """
+    try:
+        location = str(location)
+        stack = ExitStack()
+
+        if location.startswith("http://") or location.startswith("https://"):
+            # This is a remote file.
+
+            response = requests.head(location, allow_redirects=True)
+            content_type = response.headers.get("Content-Type")
+            if content_type == "application/gzip":
+                yield stack.enter_context(RemoteGzipLineStreamer(location))
+
+            elif content_type == "application/zstd":
+                yield stack.enter_context(RemoteZstdLineStreamer(location))
+
+            elif content_type == "application/zip":
+                raise Exception("Streaming a zip from a remote location is supported.")
+
+            elif content_type == "text/plain":
+                yield stack.enter_context(RemoteDecodingLineStreamer(location))
+
+            elif location.endswith(".gz") or location.endswith(".gzip"):
+                yield stack.enter_context(RemoteGzipLineStreamer(location))
+
+            elif location.endswith(".zst"):
+                yield stack.enter_context(RemoteZstdLineStreamer(location))
+            else:
+                # Treat as plain text.
+                yield stack.enter_context(RemoteDecodingLineStreamer(location))
+
+        else:  # noqa: PLR5501
+            # This is a local file.
+
+            if location.endswith(".gz") or location.endswith(".gzip"):
+                yield stack.enter_context(gzip.open(location, "rt", encoding="utf-8"))
+
+            elif location.endswith(".zst"):
+                input_file = stack.enter_context(open(location, "rb"))
+                zst_reader = stack.enter_context(ZstdDecompressor().stream_reader(input_file))
+                yield stack.enter_context(io.TextIOWrapper(zst_reader, encoding="utf-8"))
+
+            elif location.endswith(".zip"):
+                if not path_in_archive:
+                    raise Exception("Expected a path into the zip file.")
+                zip = stack.enter_context(ZipFile(location, "r"))
+                if path_in_archive not in zip.namelist():
+                    raise Exception(f"Path did not exist in the zip file: {path_in_archive}")
+                file = stack.enter_context(zip.open(path_in_archive, "r"))
+                yield stack.enter_context(io.TextIOWrapper(file, encoding="utf-8"))
+            else:
+                # Treat as plain text.
+                yield stack.enter_context(open(location, "rt", encoding="utf-8"))
+    finally:
+        stack.close()
+
+
+def read_lines(
+    location_or_locations: Union[Path, str, list[Union[str, Path]]],
+    path_in_archive: Optional[str] = None,
+) -> Generator[str, None, None]:
+    """
+    A smart function to efficiently stream lines from a local or remote file.
+    The location can either be a URL or a local file system path.
+    It handles gzip, zst, and plain text files.
+    It can also handle a list of files.
+
+    Args:
+        location_or_locations - A single URL or file path, or a list
+        path_in_archive  - The path to a file in a zip archive
+
+    Usage:
+        with read_lines("output.txt.gz") as lines:
+            for line in lines:
+                print(line)
+
+        paths = [
+            "http://example.com/file.txt.gz",
+            "path/to/file.txt.zst",
+        ]
+        with read_lines(paths) as lines:
+            for line in lines:
+                print(line)
+    """
+
+    if isinstance(location_or_locations, list):
+        return _read_lines_multiple_files(location_or_locations, path_in_archive)
+
+    return _read_lines_single_file(location_or_locations, path_in_archive)
+
+
+@contextmanager
+def write_lines(path: Path | str):
+    """
+    A smart function to create a context to write lines to a file. It works on .zst, .gz, and
+    raw text files. It reads the extension to determine the file type.
+
+    with write_lines("output.txt.gz") as output:
+        output.write("writing a line\n")
+        output.write("writing a second lines\n")
+    """
+
+    try:
+        path = str(path)
+        stack = ExitStack()
+
+        if path.endswith(".zst"):
+            file = stack.enter_context(open(path, "wb"))
+            compressor = stack.enter_context(ZstdCompressor().stream_writer(file))
+            yield stack.enter_context(io.TextIOWrapper(compressor, encoding="utf-8"))
+        elif path.endswith(".gz"):
+            yield stack.enter_context(gzip.open(path, "wt", encoding="utf-8"))
+        else:
+            yield stack.enter_context(open(path, "wt", encoding="utf-8"))
+
+    finally:
+        stack.close()
