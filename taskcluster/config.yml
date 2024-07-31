@@ -116,6 +116,11 @@ workers:
             implementation: generic-worker
             os: linux
             worker-type: '{alias}'
+        b-linux-v100-gpu-4-2tb:
+            provisioner: '{trust-domain}-{level}'
+            implementation: generic-worker
+            os: linux
+            worker-type: '{alias}'
         b-linux-v100-gpu-4-1tb-standard:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
@@ -202,6 +207,11 @@ worker-configuration:
             WORKSPACE: "12000"
 
     b-linux-v100-gpu-4-1tb:
+        env:
+            GPUS: "0 1 2 3"
+            WORKSPACE: "12000"
+
+    b-linux-v100-gpu-4-2tb:
         env:
             GPUS: "0 1 2 3"
             WORKSPACE: "12000"
