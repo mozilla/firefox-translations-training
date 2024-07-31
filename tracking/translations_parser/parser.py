@@ -230,7 +230,7 @@ class TrainingParser:
         the configuration files, only extra-args will be set in this case.
         """
         extra_config = {
-            "extra-args": None,
+            "arguments": None,
             "model": None,
             "training": None,
             "datasets": None,
@@ -258,16 +258,15 @@ class TrainingParser:
                 continue
             args[key].append(i)
 
-        # Handle extra arguments used to run Marian
-        extra_config["extra-args"] = {}
-        for arg, values in list(args.items())[::-1]:
-            if arg == LAST_MARIAN_DECLARED_ARGUMENT:
-                break
-            # Do not use lists for single values
-            if len(values) == 1:
-                extra_config["extra-args"].update({arg: values[0]})
-            else:
-                extra_config["extra-args"].update({arg: values})
+        # Store arguments used to run Marian, flattening single values
+        def flatten(vals):
+            if not vals:
+                return ""
+            elif len(vals) == 1:
+                return vals[0]
+            return vals
+
+        extra_config["arguments"] = {k: flatten(v) for k, v in args.items()}
 
         if os.environ.get("TASK_ID") is None:
             logger.info(
@@ -276,20 +275,18 @@ class TrainingParser:
             return extra_config
 
         # Handle Marian model and training YAML configuration files
-        if len(args["c"]) != 2:
-            logger.warning("Invalid")
-        else:
-            model_path, training_path = args["c"]
+        for path in args["c"]:
+            if path.endswith("train.yml"):
+                key = "training"
+            elif path.endswith(".yml"):
+                key = "model"
+            else:
+                continue
             try:
-                with open(model_path, "r") as f:
-                    extra_config["model"] = yaml.safe_load(f.read())
+                with open(path, "r") as f:
+                    extra_config[key] = yaml.safe_load(f.read())
             except Exception as e:
-                logger.warning(f"Impossible to parse Marian model config at {model_path}: {e}")
-            try:
-                with open(training_path, "r") as f:
-                    extra_config["training"] = yaml.safe_load(f.read())
-            except Exception as e:
-                logger.warning(f"Impossible to parse Marian model config at {model_path}: {e}")
+                logger.warning(f"Impossible to parse Marian {key} config at {path}: {e}")
 
         # Handle OpusTrainer configuration
         (model_path,) = args.get("model", ("./model.npz",))
