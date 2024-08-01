@@ -19,81 +19,42 @@ kind-dependencies:
     - train-teacher
     - toolchain
 
-task-defaults:
-    description: translate mono for {locale}
-    attributes:
-        src_locale: "{src_locale}"
-        trg_locale: "{trg_locale}"
-        cache:
-            resources:
-                - pipeline/translate/translate.sh
-                - taskcluster/scripts/pipeline/translate-taskcluster.sh
-            from-parameters:
-                split_chunks: training_config.taskcluster.split-chunks
-
-    task-context:
-        from-parameters:
-            src_locale: training_config.experiment.src
-            trg_locale: training_config.experiment.trg
-            best_model: training_config.experiment.best-model
-        substitution-fields:
-            - description
-            - label
-            - worker.env
-            - attributes
-
-    worker-type: b-largegpu
-    worker:
-        max-run-time: 2592000
-        artifacts:
-            - name: public/build
-              path: artifacts
-              type: directory
-        env:
-            CUDA_DIR: fetches/cuda-toolkit
-            CUDNN_DIR: fetches/cuda-toolkit
-        # 128 happens when cloning this repository fails
-        retry-exit-status: [128]
-
-    # Don't run unless explicitly scheduled
-    run-on-tasks-for: []
-
-    run:
-        using: run-task
-        command:
-            - bash
-            - -xc
-            - >-
-                export MARIAN=$MOZ_FETCHES_DIR &&
-                $VCS_PATH/taskcluster/scripts/pipeline/translate-taskcluster.sh
-                $MOZ_FETCHES_DIR/file.{this_chunk}.zst
-                artifacts
-                plain
-                $MOZ_FETCHES_DIR/vocab.spm
-                $MOZ_FETCHES_DIR/model*/*.npz
-
-    fetches:
-        toolchain:
-            - marian
-            - cuda-toolkit
+# Translates monolingual data from source to target. This is used to synthesize
+# training data for distilling teacher models to student models.
 
 tasks:
     src:
+        description: translate mono for {locale}
         # double curly braces are used for the chunk substitutions because
         # this must first be formatted by task-context to get src and trg locale
         label: translate-mono-src-{src_locale}-{trg_locale}-{{this_chunk}}/{{total_chunks}}
+
         attributes:
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
             stage: translate-mono-src
             dataset-category: mono-src
             cache:
                 type: translate-mono-src
+                resources:
+                    - pipeline/translate/translate.sh
+                    - taskcluster/scripts/pipeline/translate-taskcluster.sh
+                from-parameters:
+                    split_chunks: training_config.taskcluster.split-chunks
 
         task-context:
             from-parameters:
+                src_locale: training_config.experiment.src
+                trg_locale: training_config.experiment.trg
+                best_model: training_config.experiment.best-model
                 locale: training_config.experiment.src
                 split_chunks: training_config.taskcluster.split-chunks
             substitution-fields:
                 - chunk.total-chunks
+                - description
+                - label
+                - worker.env
+                - attributes
 
         cast-to:
             int:
@@ -123,3 +84,38 @@ tasks:
                       extract: false
                     - artifact: vocab.spm
                       extract: false
+
+        worker-type: b-largegpu
+        worker:
+            max-run-time: 2592000
+            artifacts:
+                - name: public/build
+                  path: artifacts
+                  type: directory
+            env:
+                CUDA_DIR: fetches/cuda-toolkit
+                CUDNN_DIR: fetches/cuda-toolkit
+            # 128 happens when cloning this repository fails
+            retry-exit-status: [128]
+
+        # Don't run unless explicitly scheduled
+        run-on-tasks-for: []
+
+        run:
+            using: run-task
+            command:
+                - bash
+                - -xc
+                - >-
+                    export MARIAN=$MOZ_FETCHES_DIR &&
+                    $VCS_PATH/taskcluster/scripts/pipeline/translate-taskcluster.sh
+                    $MOZ_FETCHES_DIR/file.{this_chunk}.zst
+                    artifacts
+                    plain
+                    $MOZ_FETCHES_DIR/vocab.spm
+                    $MOZ_FETCHES_DIR/model*/*.npz
+
+        fetches:
+            toolchain:
+                - marian
+                - cuda-toolkit
