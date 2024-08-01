@@ -96,6 +96,11 @@ class Metric:
             bleu_detok, chrf, comet = values
         if importer is None:
             _, importer, dataset, augmentation = parse_task_label(metrics_file.stem)
+
+        # Multiply metric by 100 to match other metrics percentage style
+        if comet is not None:
+            comet *= 100
+
         return cls(
             importer=importer,
             dataset=dataset,
