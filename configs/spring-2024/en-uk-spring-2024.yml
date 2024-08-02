@@ -132,6 +132,7 @@ marian-args:
     early-stopping: '20'
   training-student:
     early-stopping: '20'
+    mini-batch: '2000'
   training-student-finetuned:
     early-stopping: '20'
 target-stage: all
