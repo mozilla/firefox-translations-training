@@ -77,7 +77,7 @@ task-defaults:
                 export BIN=$MOZ_FETCHES_DIR &&
                 $VCS_PATH/pipeline/clean/merge-mono.sh
                 /builds/worker/artifacts/mono.$LOCALE.zst
-                {max_sent}
+                {max_sentences}
                 $MOZ_FETCHES_DIR/*.zst
 
     fetches:
@@ -91,12 +91,12 @@ tasks:
             dataset-category: mono-src
             cache:
                 from-parameters:
-                    max_sent: training_config.experiment.mono-max-sentences-src
+                    max_sentences: training_config.experiment.mono-max-sentences-src.total
 
         task-context:
             from-parameters:
                 locale: training_config.experiment.src
-                max_sent: training_config.experiment.mono-max-sentences-src
+                max_sentences: training_config.experiment.mono-max-sentences-src.total
 
         upstreams-config:
             upstream-task-attributes:
@@ -108,12 +108,12 @@ tasks:
             dataset-category: mono-trg
             cache:
                 from-parameters:
-                    max_sent: training_config.experiment.mono-max-sentences-trg
+                    max_sentences: training_config.experiment.mono-max-sentences-trg.total
 
         task-context:
             from-parameters:
                 locale: training_config.experiment.trg
-                max_sent: training_config.experiment.mono-max-sentences-trg
+                max_sentences: training_config.experiment.mono-max-sentences-trg.total
 
         upstreams-config:
             upstream-task-attributes:
