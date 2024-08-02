@@ -5,7 +5,7 @@ from collections import deque
 from io import TextIOWrapper
 from pathlib import Path
 from random import Random
-from typing import Iterable, Iterator, Optional
+from typing import Iterator, Optional
 from urllib.parse import urlparse
 
 # We keep this relatively short because these datasets end up in task labels,
@@ -93,7 +93,7 @@ def shuffle_with_max_lines(
     max_lines: int,
     max_words_in_sentence,
     total_byte_size: int,
-) -> Iterable[str]:
+) -> list[str]:
     """
     Shuffle a line stream, but only retain up to a maximum number of lines in memory.
     Note that the final ordering is determined by the seed and the contents of the file. So
