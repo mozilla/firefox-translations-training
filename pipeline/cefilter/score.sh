@@ -43,7 +43,7 @@ mkdir -p "${dir}"
   --max-length-crop \
   --normalize \
   --devices ${GPUS} \
-  --wworkspace "${WORKSPACE}" \
+  --workspace "${WORKSPACE}" \
   --log "${dir}/scores.txt.log" \
   >"${output}"
 
