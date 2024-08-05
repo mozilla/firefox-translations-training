@@ -1,7 +1,6 @@
 import hashlib
 import os
 import tempfile
-from collections import deque
 from io import TextIOWrapper
 from pathlib import Path
 from random import Random
@@ -100,13 +99,14 @@ def shuffle_with_max_lines(
     running this multiple times on the same dataset will return the same result, but running
     it with the same seed and different content will create a different ordering.
 
-    Only run for monolingual data or where the parallel sentences are separated by a delimiter.
+    Only run for monolingual data or where the parallel sentences are in the same line and
+    separated by a delimiter.
 
     The distribution should be even unless the initial content is not representative of the
     general size of the sentences, in this case the distribution will be slightly biased. See
     the test cases for more in-depth examples.
     """
-    lines = deque()
+    lines: list[str] = []
 
     random = Random(seed)  # Make this deterministic based on dataset key.
 
@@ -127,40 +127,35 @@ def shuffle_with_max_lines(
         if len(lines) == max_lines:
             break
 
-    # random.shuffle requires random access via indexing
-    # deque supports fast adding/removing from its ends with O(1)
-    # but indexing is O(N) which is too slow for shuffling large arrays
-    lines_list = list(lines)
-    lines = None
-    random.shuffle(lines_list)
+    line_index = len(lines)
+    random.shuffle(lines)
 
     # Consume the rest of the line stream, but sample based on the probability that adding
     # something to the collection will be representative.
-    i = 0
-    for line in line_stream:
-        i = i + 1
-        if lines is None:
-            lines = deque(lines_list)
-            lines_list = None
+
+    for i, line in enumerate(line_stream):
         # Continuously adjust this estimation in case the first sampled data is not representative.
         total_bytes = total_bytes + len(line.encode("utf-8"))
-        average_bytes_per_line = total_bytes / (max_lines + i)
+        average_bytes_per_line = total_bytes / (max_lines + i + 1)
         estimated_lines = total_byte_size / average_bytes_per_line
         line_sampling_probability = max_lines / estimated_lines
 
         if random.random() < line_sampling_probability:
-            # Shift the deque so the oldest line is shifted out, and this new sample is shifted in.
-            lines.popleft()
-            lines.append(line)
+            if len(lines) == max_lines:
+                # Treat the `lines` list as a ring buffer since we've reached the max lines. As new
+                # lines are randomly sampled, old randomly sampled lines roll out of the buffer.
+                lines[line_index % max_lines] = line
+                line_index += 1
+            else:
+                # Python throws "IndexError: list assignment index out of range" if you attempt
+                # to assign outside the existing range, so use an append here.
+                lines.append(line)
 
-    if i != 0:
-        # Do a final shuffle to ensure that the newly sampled lines are shuffled with the original
-        # set of shuffled lines.
-        lines_list = list(lines)
-        del lines
-        random.shuffle(lines_list)
+    # Do a final shuffle to ensure that the newly sampled lines are shuffled with the original
+    # set of shuffled lines.
+    random.shuffle(lines)
 
-    return lines_list
+    return lines
 
 
 def shuffle_in_temp_files(
