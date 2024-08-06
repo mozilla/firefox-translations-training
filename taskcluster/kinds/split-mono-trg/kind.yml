@@ -64,7 +64,7 @@ task-defaults:
             - -c
             - >-
                 python3 $VCS_PATH/pipeline/translate/splitter.py
-                --output_dir=/builds/worker/artifacts
+                --output_dir=$TASK_WORKDIR/artifacts
                 --num_parts={split_chunks}
                 --compression_cmd=zstdmt
                 $MOZ_FETCHES_DIR/mono.$LOCALE.zst
