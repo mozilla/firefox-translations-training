@@ -23,11 +23,11 @@ from opustrainer.modifiers.surface import TitleCaseModifier, UpperCaseModifier
 from opustrainer.modifiers.typos import TypoModifier
 from opustrainer.types import Modifier
 
+from pipeline.common.downloads import compress_file, decompress_file
+
 # these envs are standard across the pipeline
 SRC = os.environ["SRC"]
 TRG = os.environ["TRG"]
-COMP_CMD = os.getenv("COMPRESSION_CMD", "pigz")
-COMP_EXT = os.getenv("ARTIFACT_EXT", "gz")
 
 random.seed(1111)
 
@@ -135,8 +135,8 @@ def augment(output_prefix: str, aug_modifer: str):
     # file paths for compressed and uncompressed corpus
     uncompressed_src = f"{output_prefix}.{SRC}"
     uncompressed_trg = f"{output_prefix}.{TRG}"
-    compressed_src = f"{output_prefix}.{SRC}.{COMP_EXT}"
-    compressed_trg = f"{output_prefix}.{TRG}.{COMP_EXT}"
+    compressed_src = f"{output_prefix}.{SRC}.zst"
+    compressed_trg = f"{output_prefix}.{TRG}.zst"
 
     corpus = read_corpus_tsv(compressed_src, compressed_trg, uncompressed_src, uncompressed_trg)
 
@@ -164,13 +164,9 @@ def read_corpus_tsv(
     if os.path.isfile(uncompressed_trg):
         os.remove(uncompressed_trg)
 
-    # decompress the original corpus
-    run_cmd([COMP_CMD, "-d", compressed_src])
-    run_cmd([COMP_CMD, "-d", compressed_trg])
-    if os.path.isfile(compressed_src):
-        os.remove(compressed_src)
-    if os.path.isfile(compressed_trg):
-        os.remove(compressed_trg)
+    # Decompress the original corpus.
+    decompress_file(compressed_src, keep_original=False)
+    decompress_file(compressed_trg, keep_original=False)
 
     # Since this is only used on small evaluation sets, it's fine to load the entire dataset
     # and augmentation into memory rather than streaming it.
@@ -196,12 +192,8 @@ def write_modified(modified: List[str], uncompressed_src: str, uncompressed_trg:
         f.writelines(modified_trg)
 
     # compress corpus back
-    run_cmd([COMP_CMD, uncompressed_src])
-    run_cmd([COMP_CMD, uncompressed_trg])
-    if os.path.isfile(uncompressed_src):
-        os.remove(uncompressed_src)
-    if os.path.isfile(uncompressed_trg):
-        os.remove(uncompressed_trg)
+    compress_file(uncompressed_src, keep_original=False)
+    compress_file(uncompressed_trg, keep_original=False)
 
 
 def run_import(type: str, dataset: str, output_prefix: str):

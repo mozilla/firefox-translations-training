@@ -6,7 +6,7 @@ import time
 from contextlib import ExitStack, contextmanager
 from io import BufferedReader
 from pathlib import Path
-from typing import Generator, Optional, Union
+from typing import Generator, Literal, Optional, Union
 from zipfile import ZipFile
 
 import requests
@@ -485,3 +485,81 @@ def get_human_readable_file_size(location: Union[Path, str]) -> tuple[int, str]:
     """Get the size of a file in a human-readable string, and the numeric bytes."""
     bytes = get_file_size(location)
     return format_bytes(bytes), bytes
+
+
+def compress_file(
+    path: Union[str, Path], keep_original: bool = True, compression: Literal["zst", "gz"] = "zst"
+) -> Path:
+    """
+    Compresses a file to .zst or .gz format. It returns the path of the compressed file.
+    "zst" is the preferred compression scheme.
+    """
+    path = Path(path)
+
+    if compression == "zst":
+        compressed_path = Path(str(path) + ".zst")
+        cctx = ZstdCompressor()
+        with open(path, "rb") as infile:
+            with open(compressed_path, "wb") as outfile:
+                outfile.write(cctx.compress(infile.read()))
+
+    elif compression == "gz":
+        compressed_path = Path(str(path) + ".gz")
+        with open(path, "rb") as infile:
+            with gzip.open(compressed_path, "wb") as outfile:
+                outfile.write(infile.read())
+
+    else:
+        raise ValueError(f"Unsupported compression format: {compression}")
+
+    if not keep_original:
+        # Delete the original file
+        path.unlink()
+
+    return compressed_path
+
+
+def decompress_file(
+    path: Union[str, Path],
+    keep_original: bool = True,
+    decompressed_path: Optional[Union[str, Path]] = None,
+) -> Path:
+    """
+    Decompresses a .gz or .zst file. It returns the path of the decompressed file.
+    """
+    path = Path(path)
+
+    if decompressed_path:
+        decompressed_path = Path(decompressed_path)
+    else:
+        # Remove the original suffix
+        decompressed_path = path.with_suffix("")
+
+    with ExitStack() as stack:
+        decompressed_file = stack.enter_context(decompressed_path.open("wb"))
+
+        if path.suffix == ".gz":
+            compressed_file = stack.enter_context(gzip.open(str(path), "rb"))
+            decompressed_file.write(compressed_file.read())
+            while True:
+                # Write the data out in chunks so that all of the it doesn't need to be
+                # into memory.
+                chunk = compressed_file.read(10_240)
+                if not chunk:
+                    break
+                decompressed_file.write(chunk)
+
+        elif path.suffix == ".zst":
+            compressed_file = stack.enter_context(open(path, "rb"))
+            for chunk in ZstdDecompressor().read_to_iter(compressed_file):
+                # Write the data out in chunks so that all of the it doesn't need to be
+                # into memory.
+                decompressed_file.write(chunk)
+        else:
+            raise ValueError(f"Unsupported file extension: {path.suffix}")
+
+    if not keep_original:
+        # Delete the original file
+        path.unlink()
+
+    return str(decompressed_path)

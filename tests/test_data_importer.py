@@ -6,12 +6,8 @@ from fixtures import DataDir, en_sample, get_mocked_downloads, ru_sample
 
 SRC = "ru"
 TRG = "en"
-ARTIFACT_EXT = "zst"
-COMPRESSION_CMD = "zstd"
 CURRENT_FOLDER = os.path.dirname(os.path.abspath(__file__))
 
-os.environ["ARTIFACT_EXT"] = ARTIFACT_EXT
-os.environ["COMPRESSION_CMD"] = COMPRESSION_CMD
 os.environ["SRC"] = SRC
 os.environ["TRG"] = TRG
 
@@ -102,16 +98,14 @@ def test_basic_corpus_import(importer, dataset, data_dir):
     data_dir.run_task(
         f"dataset-{importer}-{dataset}-en-ru",
         env={
-            "COMPRESSION_CMD": COMPRESSION_CMD,
-            "ARTIFACT_EXT": ARTIFACT_EXT,
             "WGET": os.path.join(CURRENT_FOLDER, "fixtures/wget"),
             "MOCKED_DOWNLOADS": get_mocked_downloads(),
         },
     )
 
     prefix = data_dir.join(f"artifacts/{dataset}")
-    output_src = f"{prefix}.ru.{ARTIFACT_EXT}"
-    output_trg = f"{prefix}.en.{ARTIFACT_EXT}"
+    output_src = f"{prefix}.ru.zst"
+    output_trg = f"{prefix}.en.zst"
 
     assert os.path.exists(output_src)
     assert os.path.exists(output_trg)
@@ -136,15 +130,13 @@ def test_mono_source_import(importer, language, dataset, sort_order, data_dir):
     data_dir.run_task(
         f"dataset-{importer}-{dataset}-{language}",
         env={
-            "COMPRESSION_CMD": COMPRESSION_CMD,
-            "ARTIFACT_EXT": ARTIFACT_EXT,
             "WGET": os.path.join(CURRENT_FOLDER, "fixtures/wget"),
             "MOCKED_DOWNLOADS": get_mocked_downloads(),
         },
     )
 
     prefix = data_dir.join(f"artifacts/{dataset}")
-    mono_data = f"{prefix}.{language}.{ARTIFACT_EXT}"
+    mono_data = f"{prefix}.{language}.zst"
 
     data_dir.print_tree()
 
@@ -188,10 +180,10 @@ def test_specific_augmentation(params, data_dir):
     original_dataset = "sacrebleu_wmt19"
     prefix_aug = data_dir.join(dataset)
     prefix_original = data_dir.join(original_dataset)
-    output_src = f"{prefix_aug}.{SRC}.{ARTIFACT_EXT}"
-    output_trg = f"{prefix_aug}.{TRG}.{ARTIFACT_EXT}"
-    original_src = f"{prefix_original}.{SRC}.{ARTIFACT_EXT}"
-    original_trg = f"{prefix_original}.{TRG}.{ARTIFACT_EXT}"
+    output_src = f"{prefix_aug}.{SRC}.zst"
+    output_trg = f"{prefix_aug}.{TRG}.zst"
+    original_src = f"{prefix_original}.{SRC}.zst"
+    original_trg = f"{prefix_original}.{TRG}.zst"
     run_import("corpus", original_dataset, prefix_original)
 
     run_import("corpus", dataset, prefix_aug)
@@ -223,10 +215,10 @@ def test_augmentation_mix(data_dir):
     original_dataset = "sacrebleu_wmt19"
     prefix = data_dir.join(dataset)
     prefix_original = data_dir.join(original_dataset)
-    output_src = f"{prefix}.{SRC}.{ARTIFACT_EXT}"
-    output_trg = f"{prefix}.{TRG}.{ARTIFACT_EXT}"
-    original_src = f"{prefix_original}.{SRC}.{ARTIFACT_EXT}"
-    original_trg = f"{prefix_original}.{TRG}.{ARTIFACT_EXT}"
+    output_src = f"{prefix}.{SRC}.zst"
+    output_trg = f"{prefix}.{TRG}.zst"
+    original_src = f"{prefix_original}.{SRC}.zst"
+    original_trg = f"{prefix_original}.{TRG}.zst"
     run_import("corpus", original_dataset, prefix_original)
 
     run_import("corpus", dataset, prefix)
