@@ -66,7 +66,7 @@ tasks:
                 - >-
                     $VCS_PATH/pipeline/cefilter/ce-filter.sh
                     $MOZ_FETCHES_DIR/corpus
-                    /builds/worker/artifacts/corpus
+                    $TASK_WORKDIR/artifacts/corpus
                     $MOZ_FETCHES_DIR/scores.txt
 
         dependencies:

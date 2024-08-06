@@ -68,8 +68,8 @@ task-defaults:
                 $MOZ_FETCHES_DIR/mono.{src_locale}.zst
                 $MOZ_FETCHES_DIR/corpus.{trg_locale}.zst
                 $MOZ_FETCHES_DIR/mono.{trg_locale}.zst
-                /builds/worker/artifacts/corpus.{src_locale}.zst
-                /builds/worker/artifacts/corpus.{trg_locale}.zst
+                $TASK_WORKDIR/artifacts/corpus.{src_locale}.zst
+                $TASK_WORKDIR/artifacts/corpus.{trg_locale}.zst
     fetches:
         toolchain:
             - preprocess

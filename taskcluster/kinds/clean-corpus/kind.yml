@@ -94,7 +94,10 @@ tasks:
                 - >-
                     pip install -r $VCS_PATH/pipeline/clean/requirements/clean.txt &&
                     if [ ${USE_OPUSCLEANER} == "true" ]; then dir="clean/opuscleaner"; else dir="clean"; fi &&
-                    $VCS_PATH/pipeline/${dir}/clean-corpus.sh $MOZ_FETCHES_DIR/{dataset_sanitized} /builds/worker/artifacts/{dataset_sanitized} auto {dataset} ${OPUSCLEANER_MODE} 2>&1
+                    $VCS_PATH/pipeline/${dir}/clean-corpus.sh
+                    $MOZ_FETCHES_DIR/{dataset_sanitized}
+                    $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    auto {dataset} ${OPUSCLEANER_MODE} 2>&1
         dependencies:
             "{provider}": dataset-{provider}-{dataset_sanitized}-{src_locale}-{trg_locale}
         fetches:

@@ -83,7 +83,7 @@ tasks:
                     python3 $VCS_PATH/pipeline/translate/bestbleu.py
                     -i "$MOZ_FETCHES_DIR/file.{this_chunk}.nbest"
                     -r "$MOZ_FETCHES_DIR/file.{this_chunk}.ref"
-                    -o /builds/worker/artifacts/file.{this_chunk}.nbest.out
+                    -o $TASK_WORKDIR/artifacts/file.{this_chunk}.nbest.out
                     -m bleu
 
         dependencies:
