@@ -8,10 +8,16 @@ from pathlib import Path
 from typing import Generator
 
 from pipeline.common.datasets import shuffle_with_max_lines
-from pipeline.common.downloads import read_lines, write_lines
+from pipeline.common.downloads import (
+    format_bytes,
+    get_human_readable_file_size,
+    read_lines,
+    write_lines,
+)
 from pipeline.common.logging import get_logger
+from pipeline.common.memory import log_memory
 
-logger = get_logger("merge-mono")
+logger = get_logger(__file__)
 
 # TODO(CJK) - Issue #424
 MAX_WORDS_IN_SENTENCE = 100
@@ -99,6 +105,7 @@ def filter_and_write_monolingual_data(
                 # Report progress periodically.
                 if retained % 1_000_000 == 0:
                     discards = parallel_discards + mono_discards
+                    log_memory()
                     logger.info(f"{retained:,} kept, {discards:,} discarded")
 
                 yield line
@@ -116,6 +123,7 @@ def filter_and_write_monolingual_data(
         byte_size_estimate += os.path.getsize(dataset)
     byte_size_estimate *= 0.7
 
+    log_memory()
     logger.info("Deduplicated and shuffling lines in memory.")
     with read_lines(mono_datasets) as mono_dataset_lines:
         final_lines = shuffle_with_max_lines(
@@ -128,6 +136,7 @@ def filter_and_write_monolingual_data(
             total_byte_size=byte_size_estimate,
         )
 
+    log_memory()
     logger.info(f"Write the final file: {output_path}")
     with write_lines(output_path) as outfile:
         stats.final_truncated_monolingual_lines = len(final_lines)
@@ -137,6 +146,7 @@ def filter_and_write_monolingual_data(
             if i % 1_000_000 == 999_999:
                 logger.info(f"Wrote line {i+1:,} to {output_path}")
 
+    log_memory()
     sample_path = output_path.parent / f"{output_path.stem}.sample.txt"
     logger.info(f"Write a 10,000 line sample of the final: {sample_path}")
     with write_lines(sample_path) as outfile:
@@ -149,6 +159,7 @@ def filter_and_write_monolingual_data(
         ):
             outfile.write(line)
 
+    log_memory()
     stats_path = output_path.parent / f"{output_path.stem}.stats.json"
     logger.info(f"Save the stats: {stats_path}")
     stats.save_json(stats_path)
@@ -208,8 +219,17 @@ def main() -> None:
         raise FileNotFoundError(f"No files found matching glob pattern: {args.datasets_glob}")
 
     logger.info("Monolingual datasets:")
+    total_mono_bytes = 0
     for path in mono_dataset_paths:
-        logger.info(f" - {path}")
+        formatted_size, bytes = get_human_readable_file_size(path)
+        logger.info(f" - {path} ({formatted_size})")
+        total_mono_bytes += bytes
+
+    logger.info(f" - {format_bytes(total_mono_bytes)} total")
+
+    formatted_size = (get_human_readable_file_size(path))[0]
+    logger.info("Parallel corpus:")
+    logger.info(f" - {parallel_corpus} ({formatted_size})")
 
     # Ensure output directory exists
     output_dir = output_path.parent
@@ -218,6 +238,7 @@ def main() -> None:
     # Compute the line hashes so that the monolingual data can be de-duplicated.
     # It's about 10 bytes per hash in a set, so for a 100 million sentence corpus,
     # it would be ~1G in memory.
+    log_memory()
     logger.info(f"Compute hashes of the parallel data: {path}")
     line_hashes: set[int] = compute_line_hashes(parallel_corpus)
 
@@ -232,3 +253,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+    log_memory()
