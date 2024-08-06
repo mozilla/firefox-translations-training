@@ -51,6 +51,7 @@ from typing import Optional
 from sacrebleu.metrics.bleu import BLEU, BLEUScore
 from sacrebleu.metrics.chrf import CHRF, CHRFScore
 
+from pipeline.common.downloads import decompress_file
 from pipeline.common.logging import get_logger
 
 logger = get_logger("eval")
@@ -88,11 +89,6 @@ def run_bash_oneliner(command: str):
     return subprocess.check_call(command, shell=True)
 
 
-# De-compresses files, and pipes the result as necessary.
-def decompress(path: str, compression_cmd: str, artifact_ext: str):
-    subprocess.check_call(f'{compression_cmd} -dc "{path}"')
-
-
 def main(args_list: Optional[list[str]] = None) -> None:
     parser = argparse.ArgumentParser(
         description=__doc__,
@@ -110,14 +106,6 @@ def main(args_list: Optional[list[str]] = None) -> None:
     parser.add_argument("--trg", type=str, help='The target language, e.g "ca".')
     parser.add_argument("--marian", type=str, help="The path the to marian binaries.")
     parser.add_argument("--marian_config", type=str, help="The marian yaml config for the model.")
-    parser.add_argument(
-        "--compression_cmd", default="pigz", help="The name of the compression command to use."
-    )
-    parser.add_argument(
-        "--artifact_ext",
-        default="gz",
-        help="The artifact extension for the compression",
-    )
     parser.add_argument(
         "--quantized",
         action="store_true",
@@ -163,9 +151,9 @@ def main(args_list: Optional[list[str]] = None) -> None:
     artifacts_prefix = args.artifacts_prefix
 
     artifacts_dir = os.path.dirname(artifacts_prefix)
-    source_file_compressed = f"{dataset_prefix}.{src}.{args.artifact_ext}"
+    source_file_compressed = f"{dataset_prefix}.{src}.zst"
     source_file = f"{artifacts_prefix}.{src}"
-    target_file_compressed = f"{dataset_prefix}.{trg}.{args.artifact_ext}"
+    target_file_compressed = f"{dataset_prefix}.{trg}.zst"
     target_file = f"{artifacts_prefix}.{trg}"
     target_ref_file = f"{artifacts_prefix}.{trg}.ref"
     marian_decoder = f'"{args.marian}"/marian-decoder'
@@ -215,16 +203,12 @@ def main(args_list: Optional[list[str]] = None) -> None:
 
     logger.info("Save the original target sentences to the artifacts")
 
-    run_bash_oneliner(
-        f"""
-        {args.compression_cmd} -dc "{target_file_compressed}" > "{target_ref_file}"
-        """
-    )
+    decompress_file(target_file_compressed, keep_original=False, decompressed_path=target_ref_file)
 
     run_bash_oneliner(
         f"""
-        # Decompress the source file, e.g. $fetches/wmt09.en.gz
-        {args.compression_cmd} -dc "{source_file_compressed}"
+        # Decompress the source file, e.g. $fetches/wmt09.en.zst
+        zstdmt -dc "{source_file_compressed}"
 
         # Tee the source file into the artifacts directory, e.g. $artifacts/wmt09.en
         | tee "{source_file}"

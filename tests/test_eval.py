@@ -90,8 +90,6 @@ def run_eval_test(params) -> None:
             "TEST_ARTIFACTS": data_dir.path,
             # Replace marian with the one in the fixtures path.
             "MARIAN": fixtures_path,
-            # This is included via the poetry install
-            "COMPRESSION_CMD": "zstd",
             "COMET_MODEL_DIR": model_path,
             "COMET_CPU": "1",
         }
@@ -102,8 +100,6 @@ def run_eval_test(params) -> None:
             "TEST_ARTIFACTS": data_dir.path,
             # Replace marian with the one in the fixtures path.
             "BMT_MARIAN": fixtures_path,
-            # This is included via the poetry install
-            "COMPRESSION_CMD": "zstd",
             "COMET_MODEL_DIR": model_path,
             "COMET_CPU": "1",
         }

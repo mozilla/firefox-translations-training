@@ -64,8 +64,6 @@ def alignments(data_dir, vocab, corpus):
         "TEST_ARTIFACTS": data_dir.path,
         "BIN": bin_dir,
         "MARIAN": marian_dir,
-        "COMPRESSION_CMD": "zstd",
-        "ARTIFACT_EXT": "zst",
         "SRC": "en",
         "TRG": "ru",
     }
@@ -87,8 +85,6 @@ def test_train_student_mocked(alignments, data_dir):
         "TEST_ARTIFACTS": data_dir.path,
         "BIN": bin_dir,
         "MARIAN": fixtures_path,
-        "COMPRESSION_CMD": "zstd",
-        "ARTIFACT_EXT": "zst",
         "SRC": "en",
         "TRG": "ru",
     }
@@ -113,8 +109,6 @@ def test_train_student(alignments, data_dir):
         "TEST_ARTIFACTS": data_dir.path,
         "BIN": bin_dir,
         "MARIAN": marian_dir,
-        "COMPRESSION_CMD": "zstd",
-        "ARTIFACT_EXT": "zst",
         "SRC": "en",
         "TRG": "ru",
         "USE_CPU": "true",

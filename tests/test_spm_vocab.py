@@ -21,7 +21,6 @@ def run_spm_test(arguments: list[str]) -> list[str]:
     env = {
         **os.environ,
         "MARIAN": fixtures_path,
-        "COMPRESSION_CMD": "zstd",
         # This allows the spm_train fixture to know where to output the vocab.
         "SPM_VOCAB_DATA_DIRECTORY": test_data_dir.path,
     }

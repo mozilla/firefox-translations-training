@@ -71,8 +71,6 @@ def test_teacher_original_alignments():
     env = {
         "TEST_ARTIFACTS": data_dir.path,
         "BIN": bin_dir,
-        "COMPRESSION_CMD": "zstd",
-        "ARTIFACT_EXT": "zst",
         "SRC": "en",
         "TRG": "ru",
         "ALN_CHUNK_LINES": "3",
@@ -92,8 +90,6 @@ def test_teacher_backtranslated_alignments():
     env = {
         "TEST_ARTIFACTS": data_dir.path,
         "BIN": bin_dir,
-        "COMPRESSION_CMD": "zstd",
-        "ARTIFACT_EXT": "zst",
         "SRC": "en",
         "TRG": "ru",
         "ALN_CHUNK_LINES": "3",
@@ -117,8 +113,6 @@ def test_student_alignments():
     env = {
         "TEST_ARTIFACTS": data_dir.path,
         "BIN": bin_dir,
-        "COMPRESSION_CMD": "zstd",
-        "ARTIFACT_EXT": "zst",
         "SRC": "en",
         "TRG": "ru",
         "ALN_CHUNK_LINES": "3",
@@ -140,14 +134,12 @@ def test_student_alignments():
 
 def test_shortlist():
     data_dir = DataDir("test_shortlist")
-    data_dir.create_zst("corpus.en.zst", en_sample),
-    data_dir.create_zst("corpus.ru.zst", ru_sample),
+    data_dir.create_zst("corpus.en.zst", en_sample)
+    data_dir.create_zst("corpus.ru.zst", ru_sample)
     env = {
         "TEST_ARTIFACTS": data_dir.path,
         "BIN": bin_dir,
         "MARIAN": marian_dir,
-        "COMPRESSION_CMD": "zstd",
-        "ARTIFACT_EXT": "zst",
         "SRC": "en",
         "TRG": "ru",
         "ALN_CHUNK_LINES": "3",

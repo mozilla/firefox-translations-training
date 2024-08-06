@@ -55,7 +55,7 @@ def test_model_download(src, trg, model_src, model_trg, init, data_dir):
     decompressed_path = data_dir.join(f"bicleaner-ai-{src}-{trg}")
     meta_path = os.path.join(decompressed_path, "metadata.yaml")
 
-    download_model([f"--src={src}", f"--trg={trg}", "--compression_cmd=zstd", target_path])
+    download_model([f"--src={src}", f"--trg={trg}", target_path])
 
     assert os.path.isfile(target_path)
     decompress(target_path)

@@ -11,8 +11,6 @@ from fixtures import DataDir
 
 from pipeline.translate.splitter import main as split_file
 
-COMPRESSION_CMD = "zstdmt"
-
 
 @pytest.fixture(scope="function")
 def data_dir():
@@ -52,7 +50,6 @@ def read_file(path):
 
 
 def test_split_collect_mono(data_dir):
-    os.environ["COMPRESSION_CMD"] = COMPRESSION_CMD
     length = 1234
     path = data_dir.join("mono.in")
     output = data_dir.join("mono.output")
@@ -63,7 +60,6 @@ def test_split_collect_mono(data_dir):
         [
             f"--output_dir={data_dir.path}",
             "--num_parts=10",
-            f"--compression_cmd={COMPRESSION_CMD}",
             f"{path}.zst",
         ]
     )
@@ -83,7 +79,6 @@ def test_split_collect_mono(data_dir):
 
 
 def test_split_collect_corpus(data_dir):
-    os.environ["COMPRESSION_CMD"] = COMPRESSION_CMD
     length = 1234
     path_src = data_dir.join("corpus.src.in")
     path_trg = data_dir.join("corpus.trg.in")
@@ -96,7 +91,6 @@ def test_split_collect_corpus(data_dir):
         [
             f"--output_dir={data_dir.path}",
             "--num_parts=10",
-            f"--compression_cmd={COMPRESSION_CMD}",
             f"{path_src}.zst",
         ]
     )
@@ -104,7 +98,6 @@ def test_split_collect_corpus(data_dir):
         [
             f"--output_dir={data_dir.path}",
             "--num_parts=10",
-            f"--compression_cmd={COMPRESSION_CMD}",
             "--output_suffix=.ref",
             f"{path_trg}.zst",
         ]
