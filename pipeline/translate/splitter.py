@@ -52,21 +52,22 @@ def split_file(mono_path: str, output_dir: str, num_parts: int, output_suffix: s
     line_count = 0
     file_index = 1
 
-    with ExitStack() as stack:
-        for line in read_lines(mono_path):
-            if not line_writer or line_count >= lines_per_part:
-                # The current file is full or doesn't exist, start a new one.
-                if line_writer:
-                    stack.close()
+    with read_lines(mono_path) as lines:
+        with ExitStack() as chunk_stack:
+            for line in lines:
+                if not line_writer or line_count >= lines_per_part:
+                    # The current file is full or doesn't exist, start a new one.
+                    if line_writer:
+                        chunk_stack.close()
 
-                chunk_name = f"{output_dir}/file.{file_index}{output_suffix}.zst"
-                logger.info(f"Writing to file chunk: {chunk_name}")
-                line_writer = stack.enter_context(write_lines(chunk_name))
-                file_index += 1
-                line_count = 0
+                    chunk_name = f"{output_dir}/file.{file_index}{output_suffix}.zst"
+                    logger.info(f"Writing to file chunk: {chunk_name}")
+                    line_writer = chunk_stack.enter_context(write_lines(chunk_name))
+                    file_index += 1
+                    line_count = 0
 
-            line_writer.write(line)
-            line_count += 1
+                line_writer.write(line)
+                line_count += 1
 
     logger.info("Done writing to files.")
 

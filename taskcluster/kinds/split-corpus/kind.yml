@@ -65,12 +65,12 @@ tasks:
                     python3 $VCS_PATH/pipeline/translate/splitter.py
                     --output_dir=$TASK_WORKDIR/artifacts
                     --num_parts={split_chunks}
-                    fetches/corpus.{src_locale}.zst &&
+                    $TASK_WORKDIR/fetches/corpus.{src_locale}.zst &&
                     python3 $VCS_PATH/pipeline/translate/splitter.py
                     --output_dir=$TASK_WORKDIR/artifacts
                     --num_parts={split_chunks}
                     --output_suffix=.ref
-                    fetches/corpus.{trg_locale}.zst
+                    $TASK_WORKDIR/fetches/corpus.{trg_locale}.zst
 
         dependencies:
             merge-corpus: merge-corpus-{src_locale}-{trg_locale}
