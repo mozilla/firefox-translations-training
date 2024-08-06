@@ -100,8 +100,6 @@ task-defaults:
                 sed -i -e "s,- .*artifacts,- $MOZ_FETCHES_DIR," $TASK_WORKDIR/fetches/*.yml &&
                 $VCS_PATH/pipeline/eval/eval.py
                 {language_pair}
-                --compression_cmd   zstdmt
-                --artifact_ext      zst
                 --marian_config     "$MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz.decoder.yml"
                 --models            "$MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz"
                 --dataset_prefix    "$MOZ_FETCHES_DIR/{dataset_sanitized}"

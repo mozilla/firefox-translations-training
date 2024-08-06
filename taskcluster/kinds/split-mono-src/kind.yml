@@ -49,8 +49,6 @@ task-defaults:
               type: directory
         env:
             LOCALE: "{locale}"
-            COMPRESSION_CMD: zstdmt
-            ARTIFACT_EXT: zst
         # 128 happens when cloning this repository fails
         retry-exit-status: [128]
 
@@ -66,7 +64,6 @@ task-defaults:
                 python3 $VCS_PATH/pipeline/translate/splitter.py
                 --output_dir=/builds/worker/artifacts
                 --num_parts={split_chunks}
-                --compression_cmd=zstdmt
                 $MOZ_FETCHES_DIR/mono.$LOCALE.zst
 
 tasks:

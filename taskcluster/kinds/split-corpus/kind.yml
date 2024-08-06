@@ -49,9 +49,7 @@ tasks:
                 - name: public/build
                   path: /builds/worker/artifacts
                   type: directory
-            env:
-                COMPRESSION_CMD: zstdmt
-                ARTIFACT_EXT: zst
+            env: {}
             # 128 happens when cloning this repository fails
             retry-exit-status: [128]
 
@@ -67,13 +65,11 @@ tasks:
                     python3 $VCS_PATH/pipeline/translate/splitter.py
                     --output_dir=/builds/worker/artifacts
                     --num_parts={split_chunks}
-                    --compression_cmd=zstdmt
                     fetches/corpus.{src_locale}.zst &&
                     python3 $VCS_PATH/pipeline/translate/splitter.py
                     --output_dir=/builds/worker/artifacts
                     --num_parts={split_chunks}
                     --output_suffix=.ref
-                    --compression_cmd=zstdmt
                     fetches/corpus.{trg_locale}.zst
 
         dependencies:
