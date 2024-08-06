@@ -17,9 +17,6 @@ threads=$3
 dataset=$4
 mode=$5
 
-COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
-ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
-
 if [ "$threads" = "auto" ]; then
   threads=$(nproc)
 fi
@@ -40,22 +37,22 @@ python3 generate_filters.py "${input_prefix}" "${SRC}" "${TRG}" "${dataset}" "${
 test -s "${filter_path}" || exit 1
 
 echo "### Cleaning ${input_prefix} with filter ${filter_path}"
-paste <(${COMPRESSION_CMD} -dc "${input_prefix}.${SRC}.${ARTIFACT_EXT}") \
-      <(${COMPRESSION_CMD} -dc "${input_prefix}.${TRG}.${ARTIFACT_EXT}") |
+paste <(zstdmt -dc "${input_prefix}.${SRC}.zst") \
+      <(zstdmt -dc "${input_prefix}.${TRG}.zst") |
 opuscleaner-clean \
   --parallel ${threads} \
   --batch-size=50000 \
   --input=- \
   "${filter_path}" "${SRC}" "${TRG}" |
-  tee >(cut -f1 | ${COMPRESSION_CMD} >"${output_prefix}.${SRC}.${ARTIFACT_EXT}") |
-        cut -f2 | ${COMPRESSION_CMD} >"${output_prefix}.${TRG}.${ARTIFACT_EXT}"
+  tee >(cut -f1 | zstdmt >"${output_prefix}.${SRC}.zst") |
+        cut -f2 | zstdmt >"${output_prefix}.${TRG}.zst"
 
 echo "### Checking length of the files"
-test -s "${output_prefix}.${SRC}.${ARTIFACT_EXT}" || exit 1
-test -s "${output_prefix}.${TRG}.${ARTIFACT_EXT}" || exit 1
-new_len_src="$(${COMPRESSION_CMD} -dc "${output_prefix}.${SRC}.${ARTIFACT_EXT}" | wc -l)"
-new_len_trg="$(${COMPRESSION_CMD} -dc "${output_prefix}.${TRG}.${ARTIFACT_EXT}" | wc -l)"
-orig_len_src="$(${COMPRESSION_CMD} -dc "${input_prefix}.${SRC}.${ARTIFACT_EXT}" | wc -l)"
+test -s "${output_prefix}.${SRC}.zst" || exit 1
+test -s "${output_prefix}.${TRG}.zst" || exit 1
+new_len_src="$(zstdmt -dc "${output_prefix}.${SRC}.zst" | wc -l)"
+new_len_trg="$(zstdmt -dc "${output_prefix}.${TRG}.zst" | wc -l)"
+orig_len_src="$(zstdmt -dc "${input_prefix}.${SRC}.zst" | wc -l)"
 [[ ${new_len_src} -ge 1 ]] || exit 1
 [[ ${new_len_trg} -ge 1 ]] || exit 1
 [[ "${new_len_src}" = "${new_len_trg}" ]] || exit 1
