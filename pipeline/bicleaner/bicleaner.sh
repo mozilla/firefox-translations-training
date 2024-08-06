@@ -24,9 +24,6 @@ bicleaner_threshold=$3
 threads=$4
 pack_dir=$5
 
-COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
-ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
-
 if [ "$threads" = "auto" ]; then
   threads=$(nproc)
 fi
@@ -36,8 +33,8 @@ mkdir -p "${output_dir}"
 
 if [ "${bicleaner_threshold}" == "0" ] || [ "${bicleaner_threshold}" == "0.0" ]; then
   echo "Threshold is 0, skipping filtering"
-  cp "${corpus_prefix}.${SRC}.${ARTIFACT_EXT}" "${output_prefix}.${SRC}.${ARTIFACT_EXT}"
-  cp "${corpus_prefix}.${TRG}.${ARTIFACT_EXT}" "${output_prefix}.${TRG}.${ARTIFACT_EXT}"
+  cp "${corpus_prefix}.${SRC}.zst" "${output_prefix}.${SRC}.zst"
+  cp "${corpus_prefix}.${TRG}.zst" "${output_prefix}.${TRG}.zst"
 else
 
   export scol=1
@@ -83,32 +80,32 @@ else
        }
        export -f biclean
        # {%} is a 1-indexed job slot number from GNU parallel.  We use that as the 1-indexed offset in CUDA_VISIBLE_ARRAY
-       paste <(${COMPRESSION_CMD} -dc "${corpus_prefix}.${SRC}.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${corpus_prefix}.${TRG}.${ARTIFACT_EXT}") |
+       paste <(zstdmt -dc "${corpus_prefix}.${SRC}.zst") <(zstdmt -dc "${corpus_prefix}.${TRG}.zst") |
        parallel -j ${#CUDA_VISIBLE_ARRAY[@]} --pipe -k --block 10M biclean "${pack_dir}"/*.yaml {%} |
-       ${COMPRESSION_CMD} >"${output_prefix}.scored.${ARTIFACT_EXT}"
+       zstdmt >"${output_prefix}.scored.zst"
   else
    export BICLEANER_AI_THREADS=${threads}
-   paste <(${COMPRESSION_CMD} -dc "${corpus_prefix}.${SRC}.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${corpus_prefix}.${TRG}.${ARTIFACT_EXT}") |
+   paste <(zstdmt -dc "${corpus_prefix}.${SRC}.zst") <(zstdmt -dc "${corpus_prefix}.${TRG}.zst") |
      bicleaner-ai-classify ${hardrules} --scol ${scol} --tcol ${tcol} "${threads}"  - - "${pack_dir}"/*.yaml |
-     ${COMPRESSION_CMD} >"${output_prefix}.scored.${ARTIFACT_EXT}"
+     zstdmt >"${output_prefix}.scored.zst"
   fi
 
   echo "### Filtering"
-  ${COMPRESSION_CMD} -dc "${output_prefix}.scored.${ARTIFACT_EXT}" |
+  zstdmt -dc "${output_prefix}.scored.zst" |
     awk -v threshold=${bicleaner_threshold} -F"\t" '{if ($3>threshold) {print $0}}' |
-    ${COMPRESSION_CMD} >"${output_prefix}.best.${ARTIFACT_EXT}"
+    zstdmt >"${output_prefix}.best.zst"
 
-  ${COMPRESSION_CMD} -dc "${output_prefix}.scored.${ARTIFACT_EXT}" |
+  zstdmt -dc "${output_prefix}.scored.zst" |
     awk -v threshold=${bicleaner_threshold} -F"\t" '{if ($3<=threshold) {print $0}}' |
-    ${COMPRESSION_CMD} >"${output_prefix}.filtered.${ARTIFACT_EXT}"
+    zstdmt >"${output_prefix}.filtered.zst"
 
-  echo "Lines before filtering: $(${COMPRESSION_CMD} -dc "${output_prefix}.scored.${ARTIFACT_EXT}" | wc -l)"
-  echo "Lines after filtering: $(${COMPRESSION_CMD} -dc "${output_prefix}.best.${ARTIFACT_EXT}" | wc -l)"
+  echo "Lines before filtering: $(zstdmt -dc "${output_prefix}.scored.zst" | wc -l)"
+  echo "Lines after filtering: $(zstdmt -dc "${output_prefix}.best.zst" | wc -l)"
 
   echo "### Writing output corpus"
-  ${COMPRESSION_CMD} -dc "${output_prefix}.best.${ARTIFACT_EXT}" |
-    tee >(cut -f1 | ${COMPRESSION_CMD} >"${output_prefix}.${SRC}.${ARTIFACT_EXT}") |
-    cut -f2 | ${COMPRESSION_CMD} >"${output_prefix}.${TRG}.${ARTIFACT_EXT}"
+  zstdmt -dc "${output_prefix}.best.zst" |
+    tee >(cut -f1 | zstdmt >"${output_prefix}.${SRC}.zst") |
+    cut -f2 | zstdmt >"${output_prefix}.${TRG}.zst"
 
   # do not delete intermediate files to inspect them and tune the threshold
 fi

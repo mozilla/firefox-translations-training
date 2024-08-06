@@ -20,9 +20,6 @@ vocab_path=$2
 output_dir=$3
 threads=$4
 
-COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
-ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
-
 if [ "$threads" = "auto" ]; then
   threads=$(nproc)
 fi
@@ -33,16 +30,16 @@ mkdir -p "${output_dir}"
 dir="${output_dir}/tmp"
 mkdir -p "${dir}"
 
-corpus_src="${corpus_prefix}.${SRC}.${ARTIFACT_EXT}"
-corpus_trg="${corpus_prefix}.${TRG}.${ARTIFACT_EXT}"
+corpus_src="${corpus_prefix}.${SRC}.zst"
+corpus_trg="${corpus_prefix}.${TRG}.zst"
 
 
 echo "### Subword segmentation with SentencePiece"
-${COMPRESSION_CMD} -dc "${corpus_src}" |
+zstdmt -dc "${corpus_src}" |
   parallel --no-notice --pipe -k -j "${threads}" --block 50M "${MARIAN}/spm_encode" --model "${vocab_path}" \
    >"${dir}/corpus.spm.${SRC}"
 
-${COMPRESSION_CMD} -dc "${corpus_trg}" |
+zstdmt -dc "${corpus_trg}" |
   parallel --no-notice --pipe -k -j "${threads}" --block 50M "${MARIAN}/spm_encode" --model "${vocab_path}" \
    >"${dir}/corpus.spm.${TRG}"
 
@@ -60,7 +57,7 @@ echo "### Creating shortlist"
   "${dir}/lex.t2s"
 
 if [ -f "${dir}/lex.s2t" ]; then
-  ${COMPRESSION_CMD} "${dir}/lex.s2t"
+  zstdmt "${dir}/lex.s2t"
 fi
 
 rm "${dir}/corpus.spm.${TRG}"
@@ -69,10 +66,10 @@ rm "${output_dir}/corpus.aln"
 
 echo "### Shortlist pruning"
 "${MARIAN}/spm_export_vocab" --model="${vocab_path}" --output="${dir}/vocab.txt"
-${COMPRESSION_CMD} -dc "${dir}/lex.s2t.${ARTIFACT_EXT}" |
+zstdmt -dc "${dir}/lex.s2t.zst" |
   grep -v NULL |
   python3 "prune_shortlist.py" 100 "${dir}/vocab.txt" |
-  ${COMPRESSION_CMD} >"${output_dir}/lex.s2t.pruned.${ARTIFACT_EXT}"
+  zstdmt >"${output_dir}/lex.s2t.pruned.zst"
 
 echo "### Deleting tmp dir"
 rm -rf "${dir}"

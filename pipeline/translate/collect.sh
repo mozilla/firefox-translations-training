@@ -34,19 +34,17 @@ output_path=$2
 mono_path=$3
 
 
-COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
-
 echo "### Collecting translations"
 
 find "${chunks_dir}" -name '*.out' |  # For example, finds "fetches/file.1.out", "fetches/file.2.out", etc.
   sort -t '.' -k2,2n |                      # Sort by the number in "file.1.out", e.g. 1 here.
   xargs cat |                               # Combine all of these files together.
-  ${COMPRESSION_CMD} >"${output_path}"
+  zstdmt >"${output_path}"
 
 echo "### Comparing number of sentences in source and artificial target files"
 
-src_len=$(${COMPRESSION_CMD} -dc "${mono_path}" | wc -l)
-trg_len=$(${COMPRESSION_CMD} -dc "${output_path}" | wc -l)
+src_len=$(zstdmt -dc "${mono_path}" | wc -l)
+trg_len=$(zstdmt -dc "${output_path}" | wc -l)
 
 if [ "${src_len}" != "${trg_len}" ]; then
   echo "### Error: length of ${mono_path} ${src_len} is different from ${output_path} ${trg_len}"
