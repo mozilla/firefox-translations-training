@@ -12,6 +12,7 @@ from zipfile import ZipFile
 import requests
 from zstandard import ZstdCompressor, ZstdDecompressor
 
+from pipeline.common import format_bytes
 from pipeline.common.logging import get_logger
 
 logger = get_logger(__file__)
@@ -471,3 +472,16 @@ def write_lines(path: Path | str):
 
     finally:
         stack.close()
+
+
+def get_file_size(location: Union[Path, str]) -> int:
+    """Get the size of a file, whether it is remote or local."""
+    if str(location).startswith("http://") or str(location).startswith("https://"):
+        return get_download_size(location)
+    return os.path.getsize(location)
+
+
+def get_human_readable_file_size(location: Union[Path, str]) -> tuple[int, str]:
+    """Get the size of a file in a human-readable string, and the numeric bytes."""
+    bytes = get_file_size(location)
+    return format_bytes(bytes), bytes
