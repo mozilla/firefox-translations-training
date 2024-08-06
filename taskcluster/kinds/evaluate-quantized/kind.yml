@@ -97,8 +97,6 @@ tasks:
                     $VCS_PATH/pipeline/eval/eval.py
                     --src               {src_locale}
                     --trg               {trg_locale}
-                    --compression_cmd   zstdmt
-                    --artifact_ext      zst
                     --models            "$MOZ_FETCHES_DIR/model.intgemm.alphas.bin"
                     --dataset_prefix    "$MOZ_FETCHES_DIR/{dataset_sanitized}"
                     --vocab             "$MOZ_FETCHES_DIR/vocab.spm"

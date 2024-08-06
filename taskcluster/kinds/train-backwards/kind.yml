@@ -65,9 +65,6 @@ tasks:
             # train_taskcluster.py exits with 17 if a request to Taskcluster fails
             retry-exit-status: [17]
             env:
-                ARTIFACT_EXT: zst
-                COMPRESSION_CMD: zstdmt
-
                 # Weight & Biases trigger
                 WANDB_PUBLICATION: "{wandb_publication}"
                 WANDB_AUTHOR: "{owner}"
