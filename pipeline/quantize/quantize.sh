@@ -28,11 +28,11 @@ cp "${vocab}" "${output_dir}"
 echo "### Decoding a sample test set in order to get typical quantization values"
 test -s "${output_dir}/quantmults" ||
   "${BMT_MARIAN}"/marian-decoder \
-    -m "${model}" \
-    -v "${vocab}" "${vocab}" \
-    -c "decoder.yml" \
-    -i "${devtest_src}" \
-    -o "${output_dir}/output.${TRG}" \
+    --models "${model}" \
+    --vocabs "${vocab}" "${vocab}" \
+    --config "decoder.yml" \
+    --input "${devtest_src}" \
+    --output "${output_dir}/output.${TRG}" \
     --shortlist "${shortlist}" false \
     --quiet \
     --quiet-translation \
@@ -50,8 +50,8 @@ test -s "${output_dir}/model.alphas.npz" ||
 echo "### Converting"
 test -s "${res_model}" ||
   "${BMT_MARIAN}"/marian-conv \
-    -f "${output_dir}/model.alphas.npz" \
-    -t "${res_model}" \
+    --from "${output_dir}/model.alphas.npz" \
+    --to "${res_model}" \
     --gemm-type intgemm8
 
 echo "### The result models is saved to ${res_model}"
