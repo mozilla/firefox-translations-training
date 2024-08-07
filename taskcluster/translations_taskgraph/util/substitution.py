@@ -1,3 +1,6 @@
+from typing import Any
+
+
 class PartialSubstitutionDict(dict):
     """A dictionary that will return any missing keys as their formatable
     version. Useful when a string needs to be formatted multiple times
@@ -7,7 +10,7 @@ class PartialSubstitutionDict(dict):
         return "{" + key + "}"
 
 
-def substitute(item, **subs):
+def substitute(item: Any, **subs):
     if isinstance(item, list):
         for i in range(len(item)):
             item[i] = substitute(item[i], **subs)
