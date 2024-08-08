@@ -11,18 +11,39 @@
 #
 # The jobs yielded are identical to their original, aside from
 # a `-N` being appended to their name, where N is a distinct number.
+#
+# If any `fetches` from upstream tasks are specified in a task using this
+# transform they will be applied to one (and only one) of the generated tasks.
+# This allows artifacts to be forwarded from tasks upstream of a dummy task
+# to tasks downstream of them.
+#
+# Note that the resulting tasks must be using `run-task` to actually
+# process the resulting `MOZ_FETCHES` environment variable that is generated.
+# See the `bicleaner-taskgraph-merge` kind for an example.
 
 import copy
 
 from taskgraph import MAX_DEPENDENCIES
 from taskgraph.transforms.base import TransformSequence
 
+# One less than taskgraph, because some dummy tasks may depend on:
+# - decision task (taskgraph MAX_DEPENDENCIES already accounts for this)
+# - a docker image task (taskgraph MAX_DEPENDENCIES does _not_ account for this)
+# - N other upstream tasks
+OUR_MAX_DEPENDENCIES = MAX_DEPENDENCIES - 1
+
 transforms = TransformSequence()
 
 
-def yield_job(orig_job, deps, count):
+def yield_job(orig_job, deps, fetches, count):
     job = copy.deepcopy(orig_job)
     job["dependencies"] = deps
+    if fetches:
+        job["fetches"] = fetches
+        job["attributes"]["fetched_artifacts"] = []
+        for artifacts in fetches.values():
+            for a in artifacts:
+                job["attributes"]["fetched_artifacts"].append(a["artifact"])
     job["name"] = "{}-{}".format(orig_job["name"], count)
 
     return job
@@ -33,14 +54,18 @@ def add_dependencies(config, jobs):
     for job in jobs:
         count = 1
         deps = {}
+        fetches = {}
 
         for dep_label in sorted(job["dependencies"].keys()):
             deps[dep_label] = dep_label
-            if len(deps) == MAX_DEPENDENCIES:
-                yield yield_job(job, deps, count)
+            if job.get("fetches", {}).get(dep_label):
+                fetches[dep_label] = job["fetches"][dep_label]
+            if len(deps) == OUR_MAX_DEPENDENCIES:
+                yield yield_job(job, deps, fetches, count)
                 deps = {}
+                fetches = {}
                 count += 1
 
         if deps:
-            yield yield_job(job, deps, count)
+            yield yield_job(job, deps, fetches, count)
             count += 1
