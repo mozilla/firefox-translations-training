@@ -83,7 +83,8 @@ tasks:
                   else: ${head_ref}
           in:
               $if: >
-                  tasks_for in ["action", "pr-action", "cron", "github-push"]
+                  tasks_for in ["action", "pr-action", "cron"]
+                  || (tasks_for == "github-push" && (head_branch == "refs/heads/main" || head_branch[:18] == "refs/heads/release" || head_branch[:14] == "refs/heads/dev"))
                   || (isPullRequest && pullRequestAction in ["opened", "reopened", "synchronize"])
               then:
                   $let:
