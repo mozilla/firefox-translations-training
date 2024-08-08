@@ -1,5 +1,9 @@
+import json
 import os
 from pathlib import Path
+from typing import List
+
+import wandb
 
 import taskcluster
 from translations_parser.parser import logger
@@ -157,3 +161,26 @@ def get_wandb_publisher(
         tags=tags,
         config=config,
     )
+
+
+def list_existing_group_logs_metrics(
+    wandb_run: wandb.sdk.wandb_run.Run,
+) -> List[List[str | float]]:
+    """Retrieve the data from groups_logs metric table"""
+    if wandb_run.resumed is False:
+        return []
+    logger.info(f"Retrieving existing group logs metrics from group_logs ({wandb_run.id})")
+    api = wandb.Api()
+    run = api.run(f"{wandb_run.project}/{wandb_run.id}")
+    last = next(
+        (
+            artifact
+            for artifact in list(run.files())[::-1]
+            if artifact.name.startswith("media/table/metrics")
+        ),
+        None,
+    )
+    if not last:
+        return []
+    data = json.load(last.download(replace=True))
+    return data.get("data", [])
