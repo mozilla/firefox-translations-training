@@ -1,0 +1,97 @@
+base_ref: release
+base_repository: https://github.com/mozilla/firefox-translations-training
+base_rev: 1ba10cf984bdd87bb4a6b17184af2d818dab5b49
+build_date: 1719936043
+build_number: 1
+do_not_optimize: []
+enable_always_target: true
+existing_tasks: {}
+filters:
+    - target_tasks_method
+head_ref: refs/heads/release
+head_repository: https://github.com/mozilla/firefox-translations-training
+head_rev: 456a94c190643073b41131c053aea590a2c2b7a2
+head_tag: ""
+level: "1"
+moz_build_date: "20240702160043"
+next_version: null
+optimize_strategies: null
+optimize_target_tasks: true
+owner: pavlov89@gmail.com
+project: firefox-translations-training
+pushdate: 0
+pushlog_id: "0"
+repository_type: git
+target_tasks_method: default
+tasks_for: github-push
+training_config:
+    datasets:
+        devtest:
+            - flores_dev
+            - sacrebleu_aug-upper_wmt19
+        mono-src:
+            - news-crawl_news.2008
+        mono-trg:
+            - news-crawl_news.2007
+        test:
+            - flores_devtest
+        train:
+            - opus_ada83/v1
+            - opus_ELRC-3075-wikipedia_health/v1
+            - url_https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.[LANG].zst
+    experiment:
+        best-model: chrf
+        bicleaner:
+            dataset-thresholds:
+                opus_ELRC-3075-wikipedia_health/v1: 0.6
+                opus_ada83/v1: 0.0
+            default-threshold: 0.5
+        mono-max-sentences-src: 10000
+        mono-max-sentences-trg: 10000
+        name: ci
+        opuscleaner-mode: custom
+        spm-sample-size: 10000
+        spm-vocab-size: 1000
+        src: ru
+        teacher-ensemble: 1
+        teacher-mode: two-stage
+        trg: en
+        use-opuscleaner: "true"
+    marian-args:
+        decoding-backward:
+            mini-batch-words: "2000"
+        decoding-teacher:
+            mini-batch-words: "1000"
+            precision: float16
+        training-backward:
+            after: 50u
+            dim-vocabs: 1000 1000
+            disp-freq: "2"
+            save-freq: "25"
+            valid-freq: "50"
+        training-student:
+            after: 50u
+            dim-vocabs: 1000 1000
+            disp-freq: "1"
+            save-freq: "25"
+            valid-freq: "50"
+        training-student-finetuned:
+            after: 50u
+            dim-vocabs: 1000 1000
+            disp-freq: "1"
+            save-freq: "25"
+            valid-freq: "50"
+        training-teacher:
+            after: 50u
+            dim-vocabs: 1000 1000
+            disp-freq: "1"
+            save-freq: "25"
+            task: transformer-base
+            valid-freq: "50"
+    target-stage: all
+    taskcluster:
+        split-chunks: 2
+        worker-classes:
+            default: gcp-spot
+    wandb-publication: false
+version: null

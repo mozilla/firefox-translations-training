@@ -1,0 +1,133 @@
+datasets:
+  devtest:
+  - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-ind
+  - flores_aug-mix_dev
+  mono-src:
+  - news-crawl_news.2007
+  - news-crawl_news.2008
+  - news-crawl_news.2009
+  - news-crawl_news.2010
+  - news-crawl_news.2011
+  - news-crawl_news.2012
+  - news-crawl_news.2013
+  - news-crawl_news.2014
+  - news-crawl_news.2015
+  - news-crawl_news.2016
+  - news-crawl_news.2017
+  - news-crawl_news.2018
+  - news-crawl_news.2019
+  - news-crawl_news.2020
+  - news-crawl_news.2021
+  - news-crawl_news.2022
+  - news-crawl_news.2023
+  mono-trg:
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_id_1.txt.zst
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_id_2.txt.zst
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_id_3.txt.zst
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_id_4.txt.zst
+  test:
+  - mtdata_Neulab-tedtalks_test-1-eng-ind
+  - flores_devtest
+  - flores_aug-mix_devtest
+  - flores_aug-title_devtest
+  - flores_aug-upper_devtest
+  - flores_aug-typos_devtest
+  - flores_aug-noise_devtest
+  - flores_aug-inline-noise_devtest
+  train:
+  - opus_NLLB/v1
+  - opus_CCAligned/v1
+  - opus_OpenSubtitles/v2018
+  - opus_XLEnt/v1.2
+  - opus_WikiMatrix/v1
+  - opus_Tanzil/v1
+  - opus_wikimedia/v20230407
+  - opus_QED/v2.0a
+  - opus_TED2020/v1
+  - opus_NeuLab-TedTalks/v1
+  - opus_bible-uedin/v1
+  - opus_GNOME/v1
+  - opus_News-Commentary/v16
+  - opus_GlobalVoices/v2018q4
+  - opus_KDE4/v2
+  - opus_Tatoeba/v2023-04-12
+  - opus_tico-19/v2020-10-28
+  - opus_ELRC-3049-wikipedia_health/v1
+  - opus_ELRC-wikipedia_health/v1
+  - opus_ELRC_2922/v1
+  - opus_tldr-pages/v2023-08-29
+existing_tasks:
+  build-docker-image-base: KGLmcUlaQU2Teo6AxuFjBQ
+  build-docker-image-test: AxORzebOSO2cux69U5nERw
+  build-docker-image-toolchain-build: KIoL7OpPQIawpOLY80rGWw
+  build-docker-image-train: MeuubTQ-RY6OMcl0xP0NnQ
+  fetch-browsermt-marian: LOgGxJDCTvqsG1g0QrpHfQ
+  fetch-cuda: KLqV9XnsSQuox9OgakK13A
+  fetch-cuda-11: eqc2RWW_RGesDiViKa6xFg
+  fetch-cyhunspell: drNednKSTpKERqWvciaJZw
+  fetch-extract-lex: BxR3aRqmTyabD0kVqgoNIg
+  fetch-fast-align: EjTHMVODSFq-Vf2hj6kAEA
+  fetch-hunspell: QT-IseWvSxeCTl6rN7livA
+  fetch-kenlm: WyySDRksR7-oE07dJCofFw
+  fetch-marian: Y1tTG4hVRiarJMxBaP8rag
+  fetch-preprocess: Eko2p6ePQX2GaZbjHtwFpw
+  toolchain-browsermt-marian: IhMrzGFjRWySFelmoYACzg
+  toolchain-cuda-toolkit: F7oCAOhpSEemXaOKD7mOwg
+  toolchain-cuda-toolkit-11: PhSRl-fQRKGGQcHD0xNP8w
+  toolchain-cyhunspell: QaPPYEAVQVeXoGVujIi_Jg
+  toolchain-extract-lex: NlFB6dNCSP-hBkkiSkrRLA
+  toolchain-fast-align: dyzAvLe0QZuSEI7RkWmHnw
+  toolchain-hunspell: eJVRtbCER9qtwFY0KPdEBw
+  toolchain-kenlm: Heq1Sa1-Rf2ZL2wUCifEFA
+  toolchain-marian: GXuF-oesShWULydmVsCcCw
+  toolchain-marian-cpu: OdfICPhyT0qzvHw97OP0kQ
+  toolchain-preprocess: YrfH73KoTfCN7hclqOlAdg
+previous_group_ids:
+  - LtxcyX30R1-DZJlv1ypg7A
+experiment:
+  best-model: chrf
+  bicleaner:
+    dataset-thresholds: {}
+    default-threshold: 0.5
+  mono-max-sentences-src: 500000000
+  mono-max-sentences-trg: 200000000
+  name: spring-2024
+  opuscleaner-mode: defaults
+  pretrained-models:
+    train-backwards:
+      mode: use
+      type: default
+      urls:
+      - https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/ctA3u0biRkOmuHWWMsMEbw/artifacts/public/build
+  spm-sample-size: 10000000
+  spm-vocab-size: 32000
+  src: en
+  teacher-ensemble: 2
+  teacher-mode: two-stage
+  trg: id
+  use-opuscleaner: 'true'
+marian-args:
+  decoding-backward:
+    beam-size: '12'
+    mini-batch-words: '2000'
+  decoding-teacher:
+    mini-batch-words: '4000'
+    precision: float16
+  training-backward:
+    early-stopping: '5'
+  training-student:
+    early-stopping: '20'
+  training-student-finetuned:
+    early-stopping: '20'
+  training-teacher:
+    early-stopping: '20'
+target-stage: all
+taskcluster:
+  split-chunks: 20
+  worker-classes:
+    alignments-backtranslated: gcp-standard
+    alignments-original: gcp-standard
+    alignments-student: gcp-standard
+    default: gcp-spot
+    shortlist: gcp-standard
+wandb-publication: true
