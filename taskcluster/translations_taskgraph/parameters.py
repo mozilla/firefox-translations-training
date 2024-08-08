@@ -11,7 +11,7 @@ from voluptuous import Extra, Optional, Required
 # the entire pipeline reasonably quickly to validate changes to the pipeline
 # itself. Any real training should be overriding most, if not all, of these
 # via the input to the `train` action.
-def get_defaults(_):
+def get_defaults(_) -> dict:
     return {
         "training_config": {
             "target-stage": "all",

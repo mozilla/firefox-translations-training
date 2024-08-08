@@ -135,10 +135,10 @@ opustrainer-train \
   --log-level ERROR \
   "${MARIAN}/marian" \
     --model "${model_dir}/model.npz" \
-    -c "configs/model/${model_type}.yml" "configs/training/${model_type}.${training_type}.yml" \
-    -T "${model_dir}/tmp" \
+    --config "configs/model/${model_type}.yml" "configs/training/${model_type}.${training_type}.yml" \
+    --tempdir "${model_dir}/tmp" \
     --vocabs "${vocab}" "${vocab}" \
-    -w "${WORKSPACE}" \
+    --workspace "${WORKSPACE}" \
     --devices ${GPUS} \
     --valid-metrics "${best_model_metric}" ${all_model_metrics[@]/$best_model_metric} \
     --valid-sets "${valid_tsv_dataset}" \

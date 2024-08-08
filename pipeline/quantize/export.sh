@@ -2,6 +2,9 @@
 ##
 # Export the quantized model to bergamot translator format.
 #
+# This script requires the browsermt fork of Marian for the int8shiftAlphaAll mode.
+# https://github.com/browsermt/marian-dev
+# https://github.com/browsermt/students/tree/master/train-student#5-8-bit-quantization
 
 set -x
 set -euo pipefail

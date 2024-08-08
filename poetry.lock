@@ -3348,6 +3348,19 @@ type = "directory"
 url = "tracking"
 
 [[package]]
+name = "translations_taskgraph"
+version = "0.1.0"
+description = "translations taskgraph"
+optional = false
+python-versions = ">=3.10"
+files = []
+develop = true
+
+[package.source]
+type = "directory"
+url = "taskcluster"
+
+[[package]]
 name = "types-python-dateutil"
 version = "2.9.0.20240316"
 description = "Typing stubs for python-dateutil"
@@ -3808,4 +3821,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "9fe9d000f9c2e153dd0cafe65fce1dc3e872e95b8ff4ca3cc74d833b34486018"
+content-hash = "80bfd2c140b5d785f4a052b865c1ed75c42386c98157c8c78eab837a358819ce"
