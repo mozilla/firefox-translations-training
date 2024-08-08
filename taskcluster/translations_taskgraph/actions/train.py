@@ -131,12 +131,32 @@ which allows for specifying task group ids to fetch existing tasks from.""",
                         "default": "two-stage",
                     },
                     "mono-max-sentences-src": {
-                        "type": "number",
-                        "description": "limits per downloaded src dataset",
+                        "type": "object",
+                        "default": defaults["experiment"]["mono-max-sentences-src"],
+                        "properties": {
+                            "total": {
+                                "type": "number",
+                                "description": "limits for total src dataset",
+                            },
+                            "per-dataset": {
+                                "type": "number",
+                                "description": "limits per downloaded src dataset",
+                            },
+                        },
                     },
                     "mono-max-sentences-trg": {
-                        "type": "number",
-                        "description": "limits per downloaded trg dataset",
+                        "type": "object",
+                        "default": defaults["experiment"]["mono-max-sentences-trg"],
+                        "properties": {
+                            "total": {
+                                "type": "number",
+                                "description": "limits for total trg dataset",
+                            },
+                            "per-dataset": {
+                                "type": "number",
+                                "description": "limits per downloaded trg dataset",
+                            },
+                        },
                     },
                     "spm-sample-size": {
                         "type": "number",

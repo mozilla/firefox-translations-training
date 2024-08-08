@@ -9,8 +9,12 @@ experiment:
     dataset-thresholds:
       opus_Books/v1: 0.0
       opus_CCAligned/v1: 0.7
-  mono-max-sentences-src: 100_000_000
-  mono-max-sentences-trg: 20_000_000
+  mono-max-sentences-src:
+    total: 100_000_000
+    per-dataset: 50_000_000
+  mono-max-sentences-trg:
+    total: 20_000_000
+    per-dataset: 10_000_000
   spm-sample-size: 10_000_000
   teacher-ensemble: 2
   backward-model: NOT-YET-SUPPORTED

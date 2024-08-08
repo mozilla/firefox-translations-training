@@ -120,10 +120,10 @@ def test_basic_corpus_import(importer, dataset, data_dir):
 
 
 mono_params = [
-    ("news-crawl", "en", "news_2021",                    [2, 5, 3, 7, 0, 6, 4, 1]),
-    ("news-crawl", "ru", "news_2021",                    [2, 5, 3, 7, 0, 6, 4, 1]),
-    ("url",        "en", "gcp_pytest-dataset_en_cdd0d7", [3, 4, 5, 0, 1, 6, 2, 7]),
-    ("url",        "ru", "gcp_pytest-dataset_ru_be3263", [5, 6, 2, 4, 7, 1, 3, 0]),
+    ("news-crawl", "en", "news_2021",                    [0, 1, 4, 6, 3, 7, 5, 2]),
+    ("news-crawl", "ru", "news_2021",                    [0, 1, 4, 6, 3, 7, 5, 2]),
+    ("url",        "en", "gcp_pytest-dataset_en_cdd0d7", [2, 1, 5, 4, 0, 7, 6, 3]),
+    ("url",        "ru", "gcp_pytest-dataset_ru_be3263", [5, 4, 2, 0, 7, 1, 3, 6]),
 ]  # fmt: skip
 
 

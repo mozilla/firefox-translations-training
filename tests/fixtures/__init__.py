@@ -204,6 +204,9 @@ class DataDir:
             if command_parts[0].endswith(".py"):
                 # This script is relying on a shebang, add the python3 from the executable instead.
                 command_parts.insert(0, os.path.join(python_bin_dir, "python3"))
+        elif command_parts[0].endswith(".py"):
+            # This script does not require a virtual environment.
+            command_parts.insert(0, "python3")
 
         print("┌──────────────────────────────────────────────────────────")
         print("│ run_task:", " ".join(command_parts))
@@ -384,7 +387,7 @@ def find_requirements(commands: Commands) -> Optional[str]:
     return None
 
 
-def get_task_command_and_env(task_name: str) -> tuple[str, Optional[str], dict[str, str]]:
+def get_task_command_and_env(task_name: str) -> tuple[list[str], Optional[str], dict[str, str]]:
     """
     Extracts a task's command from the full taskgraph. This allows for testing
     the full taskcluster pipeline and the scripts that it generates.
