@@ -17,9 +17,14 @@ experiment:
   mono-max-sentences-trg: 200_000_000
   spm-sample-size: 10_000_000
   spm-vocab-size: 32000
-  teacher-ensemble: 1
+  teacher-ensemble: 2
   teacher-mode: two-stage
-  pretrained-models: {}
+  pretrained-models:
+     train-backwards:
+      urls:
+        - "https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/SAN-vjuBSt-lSiKFoCFPfg/artifacts/public/build"
+      mode: use
+      type: default
 datasets:
   devtest:
   - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-swe
@@ -236,9 +241,17 @@ marian-args:
     early-stopping: '20'
   training-student-finetuned:
     early-stopping: '20'
-target-stage: evaluate-teacher
+target-stage: all
+start-stage: evaluate-teacher-ensemble
+previous_group_ids: ["ZNsC19vBRNiArhQmaIZxaA"]
+existing_tasks: { "train-vocab-sv-en": "Et8bOKpTQYywudvgDhX7mA" }
 wandb-publication: true
 taskcluster:
   split-chunks: 20
   worker-classes:
     default: gcp-spot
+    alignments-original: gcp-standard
+    alignments-backtranslated: gcp-standard
+    alignments-student: gcp-standard
+    alignments-priors2: gcp-standard
+    shortlist: gcp-standard
