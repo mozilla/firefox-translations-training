@@ -73,6 +73,9 @@ tasks:
 
         fetches:
             toolchain:
-                - hunspell
-                - cyhunspell
-                - kenlm
+                - artifact: hunspell
+                  extract: false
+                - artifact: cyhunspell
+                  extract: false
+                - artifact: kenlm
+                  extract: false

@@ -80,7 +80,10 @@ tasks:
                 COMPRESSION_CMD: zstdmt
                 ARTIFACT_EXT: zst
             # 128 happens when cloning this repository fails
-            retry-exit-status: [128]
+            # 9001 is the code for when tensorflow fails to find GPUs on the system,
+            # and biclenaer reverts to CPU time. Rather than waste time, we should
+            # restart the task.
+            retry-exit-status: [128,9001]
 
         # Don't run unless explicitly scheduled
         run-on-tasks-for: []
@@ -113,9 +116,12 @@ tasks:
             bicleaner-model: bicleaner-model-{src_locale}-{trg_locale}
         fetches:
             toolchain:
-                - hunspell
-                - cyhunspell
-                - kenlm
+                - artifact: hunspell
+                  extract: false
+                - artifact: cyhunspell
+                  extract: false
+                - artifact: kenlm
+                  extract: false
                 - cuda-toolkit-11
             "{provider}":
                 - artifact: "{dataset_sanitized}.{src_locale}.zst"
@@ -125,10 +131,3 @@ tasks:
             bicleaner-model:
                 - artifact: bicleaner-ai-{src_locale}-{trg_locale}.tar.zst
                   extract: true
-
-
-
-
-
-
-

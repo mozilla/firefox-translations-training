@@ -33,9 +33,11 @@ def get_args() -> argparse.Namespace:
 
 
 def parse_experiment(
+    *,
     project: str,
     group: str,
     name: str,
+    suffix: str,
     logs_file: Path,
     metrics_dir: Path | None = None,
 ) -> None:
@@ -57,8 +59,9 @@ def parse_experiment(
         publishers=[
             WandB(
                 project=project,
-                name=name,
                 group=group,
+                name=name,
+                suffix=suffix,
             )
         ],
     )
@@ -91,6 +94,8 @@ def main() -> None:
         project, group, *name = parents
         base_name = name[0]
         name = "_".join(name)
+        # Directly use group name as a suffix from GCP experiments, since we don't have access to the task group ID
+        suffix = f"_{group}"
         try:
             name = parse_task_label(f"train-{name}").model
         except ValueError:
@@ -105,7 +110,14 @@ def main() -> None:
             if metrics_dir is None:
                 logger.warning("Evaluation metrics files not found, skipping.")
             try:
-                parse_experiment(project, group, name, file, metrics_dir=metrics_dir)
+                parse_experiment(
+                    project=project,
+                    group=group,
+                    name=name,
+                    suffix=suffix,
+                    logs_file=file,
+                    metrics_dir=metrics_dir,
+                )
                 existing_runs.append(name)
             except Exception as e:
                 logger.error(f"An exception occured parsing {file}: {e}")
@@ -121,6 +133,12 @@ def main() -> None:
             logger.info(
                 f"Publishing '{last_project}/{last_group}' evaluation metrics and files (fake run 'group_logs')"
             )
-            WandB.publish_group_logs(prefix, last_project, last_group, existing_runs=existing_runs)
+            WandB.publish_group_logs(
+                logs_parent_folder=prefix,
+                project=last_project,
+                group=last_group,
+                suffix=suffix,
+                existing_runs=existing_runs,
+            )
             existing_runs = []
         last_index = (project, group)

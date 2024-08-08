@@ -19,96 +19,44 @@ kind-dependencies:
     - train-backwards
     - toolchain
 
-task-defaults:
-    description: translate mono for {locale}
-    attributes:
-        src_locale: "{src_locale}"
-        trg_locale: "{trg_locale}"
-        cache:
-            resources:
-                - pipeline/translate/translate.sh
-                - taskcluster/scripts/pipeline/translate-taskcluster.sh
-            from-parameters:
-                split_chunks: training_config.taskcluster.split-chunks
-                marian_args: training_config.marian-args.decoding-backward
-
-    task-context:
-        from-parameters:
-            src_locale: training_config.experiment.src
-            trg_locale: training_config.experiment.trg
-            best_model: training_config.experiment.best-model
-        substitution-fields:
-            - description
-            - fetches.train-backwards
-            - dependencies
-            - worker.env
-            - attributes
-            - label
-            - run.command
-
-    marian-args:
-        from-parameters: training_config.marian-args.decoding-backward
-
-    worker-type: b-largegpu
-    worker:
-        max-run-time: 2592000
-        artifacts:
-            - name: public/build
-              path: artifacts
-              type: directory
-        env:
-            CUDA_DIR: fetches/cuda-toolkit
-            CUDNN_DIR: fetches/cuda-toolkit
-        # 128 happens when cloning this repository fails
-        retry-exit-status: [128]
-
-    # Don't run unless explicitly scheduled
-    run-on-tasks-for: []
-
-    run:
-        using: run-task
-        command:
-            - bash
-            - -xc
-            # double curly braces are used for the chunk substitutions because
-            # this must first be formatted by task-context to get src and trg locale
-            - >-
-                export MARIAN=$MOZ_FETCHES_DIR &&
-                $VCS_PATH/taskcluster/scripts/pipeline/translate-taskcluster.sh
-                $MOZ_FETCHES_DIR/file.{{this_chunk}}.zst
-                artifacts
-                plain
-                $MOZ_FETCHES_DIR/vocab.spm
-                $MOZ_FETCHES_DIR/*.npz
-                {marian_args}
-
-    dependencies:
-        train-backwards: train-backwards-{src_locale}-{trg_locale}
-
-    fetches:
-        toolchain:
-            - marian
-            - cuda-toolkit
-        train-backwards:
-            - artifact: vocab.spm
-              extract: false
+# Translates monolingual data from target to source. This is used to synthesize
+# training data for back translations.
 
 tasks:
     trg:
+        description: translate mono for {locale}
         # double curly braces are used for the chunk substitutions because
         # this must first be formatted by task-context to get src and trg locale
         label: translate-mono-trg-{src_locale}-{trg_locale}-{{this_chunk}}/{{total_chunks}}
         attributes:
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
             stage: translate-mono-trg
             dataset-category: mono-trg
             cache:
                 type: translate-mono-trg
+                resources:
+                    - pipeline/translate/translate.sh
+                    - taskcluster/scripts/pipeline/translate-taskcluster.sh
+                from-parameters:
+                    split_chunks: training_config.taskcluster.split-chunks
+                    marian_args: training_config.marian-args.decoding-backward
 
         task-context:
             from-parameters:
+                src_locale: training_config.experiment.src
+                trg_locale: training_config.experiment.trg
+                best_model: training_config.experiment.best-model
                 locale: training_config.experiment.trg
                 split_chunks: training_config.taskcluster.split-chunks
             substitution-fields:
+                - description
+                - fetches.train-backwards
+                - dependencies
+                - worker.env
+                - attributes
+                - label
+                - run.command
                 - chunk.total-chunks
 
         cast-to:
@@ -127,9 +75,50 @@ tasks:
             train-backwards: train-backwards-{src_locale}-{trg_locale}
 
         fetches:
+            toolchain:
+                - marian
+                - cuda-toolkit
+            train-backwards:
+                - artifact: vocab.spm
+                  extract: false
+                - artifact: final.model.npz.best-{best_model}.npz
+                  extract: false
             split-mono-trg:
                 - artifact: file.{this_chunk}.zst
                   extract: true
-            train-backwards:
-                - artifact: final.model.npz.best-{best_model}.npz
-                  extract: false
+
+        marian-args:
+            from-parameters: training_config.marian-args.decoding-backward
+
+        worker-type: b-largegpu
+        worker:
+            max-run-time: 2592000
+            artifacts:
+                - name: public/build
+                  path: artifacts
+                  type: directory
+            env:
+                CUDA_DIR: fetches/cuda-toolkit
+                CUDNN_DIR: fetches/cuda-toolkit
+            # 128 happens when cloning this repository fails
+            retry-exit-status: [128]
+
+        # Don't run unless explicitly scheduled
+        run-on-tasks-for: []
+
+        run:
+            using: run-task
+            command:
+                - bash
+                - -xc
+                # double curly braces are used for the chunk substitutions because
+                # this must first be formatted by task-context to get src and trg locale
+                - >-
+                    export MARIAN=$MOZ_FETCHES_DIR &&
+                    $VCS_PATH/taskcluster/scripts/pipeline/translate-taskcluster.sh
+                    $MOZ_FETCHES_DIR/file.{{this_chunk}}.zst
+                    artifacts
+                    plain
+                    $MOZ_FETCHES_DIR/vocab.spm
+                    $MOZ_FETCHES_DIR/*.npz
+                    {marian_args}

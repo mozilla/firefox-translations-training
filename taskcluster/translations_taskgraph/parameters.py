@@ -11,7 +11,7 @@ from voluptuous import Extra, Optional, Required
 # the entire pipeline reasonably quickly to validate changes to the pipeline
 # itself. Any real training should be overriding most, if not all, of these
 # via the input to the `train` action.
-def get_defaults(_):
+def get_defaults(_) -> dict:
     return {
         "training_config": {
             "target-stage": "all",
@@ -82,6 +82,7 @@ def get_defaults(_):
                     "opus_ada83/v1",
                     "opus_ELRC-3075-wikipedia_health/v1",
                     "url_https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.[LANG].zst",
+                    "mtdata_ELRC-web_acquired_data_related_to_scientific_research-1-eng-rus",
                 ],
                 "devtest": [
                     "flores_dev",

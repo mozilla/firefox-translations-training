@@ -299,10 +299,15 @@ class DownloadChunkStreamer(io.IOBase):
                 # the retries are done.
                 logger.error(f"A download error occurred: {error}")
 
-            self.close()
+            # Close out the response on an error. It will be recreated when retrying.
+            if self.response:
+                self.response.close()
+                self.response = None
+
             logger.info(f"Retrying in {self.wait_before_retry_sec} sec")
             time.sleep(self.wait_before_retry_sec)
 
+        self.close()
         raise Exception("The download failed.")
 
     def decode(self, byte_stream) -> Generator[bytes, None, None]:

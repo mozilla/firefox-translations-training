@@ -66,8 +66,12 @@ def check_result(result: subprocess.CompletedProcess):
 
 def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None:
     tmp_dir = os.path.join(tempfile.gettempdir(), f"bicleaner-ai-{src}-{trg}")
-    if not os.path.exists(tmp_dir):
-        os.mkdir(tmp_dir)
+
+    if os.path.exists(tmp_dir):
+        # A previous download attempt failed, remove the temporary files.
+        shutil.rmtree(tmp_dir)
+
+    os.mkdir(tmp_dir)
 
     # Attempt to download a model.
     # 1: src-trg
