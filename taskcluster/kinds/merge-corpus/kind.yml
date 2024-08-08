@@ -7,75 +7,16 @@ loader: taskgraph.loader.transform:loader
 
 transforms:
     - translations_taskgraph.transforms.worker_selection
-    - translations_taskgraph.transforms.find_upstreams:by_locales
     - taskgraph.transforms.task_context
+    - taskgraph.transforms.from_deps
+    - translations_taskgraph.transforms.fetches_from_upstream
     - taskgraph.transforms.run:transforms
     - translations_taskgraph.transforms.cached_tasks:transforms
     - taskgraph.transforms.task:transforms
 
 kind-dependencies:
-    - bicleaner
+    - post-bicleaner-dummy
     - toolchain
-
-task-defaults:
-    attributes:
-        src_locale: "{src_locale}"
-        trg_locale: "{trg_locale}"
-        cache:
-            resources:
-                - pipeline/clean/merge-corpus.sh
-    task-context:
-        from-parameters:
-            src_locale: training_config.experiment.src
-            trg_locale: training_config.experiment.trg
-        substitution-fields:
-            - name
-            - label
-            - description
-            - worker.env
-            - dependencies
-            - fetches
-            - attributes
-            - run.command
-    upstreams-config:
-        upstream-artifacts:
-            - "{dataset_sanitized}.{src_locale}.zst"
-            - "{dataset_sanitized}.{trg_locale}.zst"
-    worker-type: b-cpu-largedisk
-    worker:
-        docker-image: {"in-tree": "train"}
-        max-run-time: 86400
-        artifacts:
-            - name: public/build
-              path: /builds/worker/artifacts
-              type: directory
-        env:
-            SRC: "{src_locale}"
-            TRG: "{trg_locale}"
-            COMPRESSION_CMD: zstdmt
-            ARTIFACT_EXT: zst
-        # 128 happens when cloning this repository fails
-        retry-exit-status: [128]
-
-    # Don't run unless explicitly scheduled
-    run-on-tasks-for: []
-
-    run:
-        using: run-task
-        command:
-            - bash
-            - -c
-            # Arguments are:
-            # 1) output prefix
-            # 2) input files
-            - >-
-                export BIN=$MOZ_FETCHES_DIR &&
-                $VCS_PATH/pipeline/clean/merge-corpus.sh
-                artifacts/{artifact_prefix}
-                $MOZ_FETCHES_DIR/*.zst
-    fetches:
-        toolchain:
-            - preprocess
 
 tasks:
     merge-corpus:
@@ -84,15 +25,75 @@ tasks:
         attributes:
             dataset-category: train
             stage: merge-corpus
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
             cache:
                 type: merge-corpus
-
-        upstreams-config:
-            upstream-task-attributes:
-                cleaning-type:
-                    by-cleaning-type:
-                        bicleaner-ai: bicleaner-ai
+                resources:
+                    - pipeline/clean/merge-corpus.sh
 
         task-context:
+            from-parameters:
+                src_locale: training_config.experiment.src
+                trg_locale: training_config.experiment.trg
             from-object:
                 artifact_prefix: corpus
+            substitution-fields:
+                - name
+                - label
+                - description
+                - worker.env
+                - fetches
+                - attributes
+                - run.command
+
+        from-deps:
+            unique-kinds: false
+            kinds:
+                - post-bicleaner-dummy
+            group-by: all
+
+        fetches-from-upstreams:
+            attribute: fetched_artifacts
+            extra:
+                extract: false
+
+        worker-type: b-cpu-largedisk
+        worker:
+            docker-image: {"in-tree": "train"}
+            max-run-time: 86400
+            artifacts:
+                - name: public/build
+                  path: /builds/worker/artifacts
+                  type: directory
+            env:
+                SRC: "{src_locale}"
+                TRG: "{trg_locale}"
+                COMPRESSION_CMD: zstdmt
+                ARTIFACT_EXT: zst
+            # 128 happens when cloning this repository fails
+            retry-exit-status: [128]
+
+        # Don't run unless explicitly scheduled
+        run-on-tasks-for: []
+
+        run:
+            using: run-task
+            command:
+                - bash
+                - -c
+                # Arguments are:
+                # 1) output prefix
+                # 2) input files
+                - >-
+                    export BIN=$MOZ_FETCHES_DIR &&
+                    $VCS_PATH/pipeline/clean/merge-corpus.sh
+                    artifacts/{artifact_prefix}
+                    $MOZ_FETCHES_DIR/*.zst
+
+        dependencies:
+            toolchain-preprocess: toolchain-preprocess
+
+        fetches:
+            toolchain:
+                - preprocess
