@@ -1,19 +1,19 @@
-base_ref: release
+base_ref: release_priors_no_chunks
 base_repository: https://github.com/mozilla/firefox-translations-training
-base_rev: 1ba10cf984bdd87bb4a6b17184af2d818dab5b49
-build_date: 1719936043
+base_rev: 55bb831c094fa13e1fbcd43d260f1eabeaf3c5b2
+build_date: 1722464281
 build_number: 1
 do_not_optimize: []
 enable_always_target: true
 existing_tasks: {}
 filters:
     - target_tasks_method
-head_ref: refs/heads/release
+head_ref: refs/heads/release_priors_no_chunks
 head_repository: https://github.com/mozilla/firefox-translations-training
-head_rev: 456a94c190643073b41131c053aea590a2c2b7a2
+head_rev: 8788bd1232e98d3e2fe3dcd2140936706f610cfb
 head_tag: ""
 level: "1"
-moz_build_date: "20240702160043"
+moz_build_date: "20240731221801"
 next_version: null
 optimize_strategies: null
 optimize_target_tasks: true
