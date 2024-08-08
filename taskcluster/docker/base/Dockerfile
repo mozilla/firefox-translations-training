@@ -35,6 +35,7 @@ RUN apt-get update -qq \
                           zstd \
                           screen \
                           curl \
+    # Clean up the apt cache to reduce image size.
     && apt-get clean
 
 RUN locale-gen "$LANG"
