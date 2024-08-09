@@ -1,7 +1,7 @@
 FROM ubuntu:22.04
 LABEL maintainer="Mozilla Release Engineering <release+docker@mozilla.com>"
 
-# Add worker user with the home directory /builds/worker and bash as the default shell
+# Add worker user with the home directory /builds/worker and bash as the default shell.
 # `/builds` may already exist, `-p` will ensure `mkdir` succeeds regardless
 RUN mkdir -p /builds && \
     useradd -d /builds/worker -s /bin/bash -m worker && \
