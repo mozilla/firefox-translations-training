@@ -31,6 +31,12 @@ if [ "$threads" = "auto" ]; then
   threads=$(nproc)
 fi
 
+echo "Downloading FastText model."
+# pre-download fast text model as it's causing issues:
+# https://github.com/mozilla/firefox-translations-training/issues/631
+filters_dir="/builds/worker/.local/lib/python3.10/site-packages/fastspell"
+wget -O "${filters_dir}/lid.176.bin" https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin
+
 output_dir=$(dirname "${output_prefix}")
 mkdir -p "${output_dir}"
 
