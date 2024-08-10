@@ -1,10 +1,12 @@
 import hashlib
+import json
 import os
 import tempfile
+from dataclasses import asdict, dataclass
 from io import TextIOWrapper
 from pathlib import Path
 from random import Random
-from typing import Iterator, Optional
+from typing import Callable, Iterator, Optional, Union
 from urllib.parse import urlparse
 
 # We keep this relatively short because these datasets end up in task labels,
@@ -91,7 +93,8 @@ def shuffle_with_max_lines(
     seed: str,
     max_lines: int,
     max_words_in_sentence,
-    total_byte_size: int,
+    total_byte_size: Optional[int] = None,
+    estimate_total_byte_size: Optional[Callable[[float], int]] = None,
 ) -> list[str]:
     """
     Shuffle a line stream, but only retain up to a maximum number of lines in memory.
@@ -105,12 +108,22 @@ def shuffle_with_max_lines(
     The distribution should be even unless the initial content is not representative of the
     general size of the sentences, in this case the distribution will be slightly biased. See
     the test cases for more in-depth examples.
+
+    These options are mutually exclusive, and one must be provided:
+    - total_byte_size - The byte size of the lines.
+    - estimate_total_byte_size - An estimate of the size of the corpus after max_lines have been
+                                 filled. The average bytes per line is provided
     """
     lines: list[str] = []
 
     random = Random(seed)  # Make this deterministic based on dataset key.
 
     total_bytes = 0
+
+    if total_byte_size is None:
+        assert (
+            estimate_total_byte_size
+        ), "Either total_byte_size or estimate_total_byte_size must be provided"
 
     # Fill up the lines up until the max, and measure the total bytes.
     for line in line_stream:
@@ -126,6 +139,9 @@ def shuffle_with_max_lines(
 
         if len(lines) == max_lines:
             break
+
+    if total_byte_size is None:
+        total_byte_size = estimate_total_byte_size(float(total_bytes) / float(max_lines))
 
     line_index = len(lines)
     random.shuffle(lines)
@@ -264,3 +280,84 @@ def shuffle_in_temp_files(
             output.write(shuffled_line)
 
     print(f"Shuffled with {bucket_count} buckets.")
+
+
+@dataclass
+class Statistics:
+    """
+    Base class for handling statistical data and JSON serialization in the pipeline. It
+    standardizes how the JSON is generated, and how it saves. Implement `as_json` for custom
+    JSON processing.
+
+    For instance .save_json() for Statistics("nllb.en.zst") would produce "nllb.en.stats.json".
+    """
+
+    def __init__(self, dataset_path: Union[Path, str]) -> None:
+        self.dataset_path = Path(dataset_path)
+
+    def as_json(self) -> dict:
+        """
+        Convert this data into JSON, and recurse into any other Statistics objects.
+        """
+        data = asdict(self)
+        for key, value in enumerate(data):
+            if isinstance(value, Statistics):
+                data[key] = value.as_json()
+        return data
+
+    def save_json(self) -> Path:
+        """
+        Standardizes how the JSON is saved, based on the dataset.
+        """
+        path = self.dataset_path.parent / f"{self.dataset_path.stem}.stats.json"
+        with open(path, "w", encoding="utf-8") as json_file:
+            json.dump(self.as_json(), json_file, indent=2)
+            json_file.write("\n")
+        return path
+
+
+@dataclass
+class FilteringStep(Statistics):
+    """
+    For each step for filtering, store how many were kept or filtered.
+    """
+
+    filtered: int
+    kept: int
+    description: str
+    # "visited" is implied.
+
+    def __init__(self, dataset_path: Path, description: str, filtered=0, kept=0) -> None:
+        super().__init__(dataset_path)
+        self.filtered = filtered
+        self.kept = kept
+        self.description = description
+
+    def as_json(self) -> dict:
+        return {
+            "description": self.description,
+            "filtered": self.filtered,
+            "kept": self.kept,
+            "visited": self.filtered + self.kept,
+        }
+
+
+@dataclass
+class CountingStep(Statistics):
+    """
+    This is just a single value that is being counted.
+    """
+
+    value: int
+    description: str
+
+    def __init__(self, dataset_path: Path, description: str, value=0) -> None:
+        super().__init__(dataset_path)
+        self.value = value
+        self.description = description
+
+    def as_json(self) -> dict:
+        return {
+            "description": self.description,
+            "value": self.value,
+        }

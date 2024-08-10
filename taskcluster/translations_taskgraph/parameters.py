@@ -97,9 +97,11 @@ def get_defaults(_) -> dict:
                 ],
                 "mono-src": [
                     "news-crawl_news.2008",
+                    "opus_tldr-pages/v2023-08-29",
                 ],
                 "mono-trg": [
                     "news-crawl_news.2007",
+                    "opus_tldr-pages/v2023-08-29",
                 ],
             },
             # Taskcluster-specific configuration
