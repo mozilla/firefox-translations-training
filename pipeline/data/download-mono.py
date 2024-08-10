@@ -54,6 +54,12 @@ def main(args_list: Optional[list[str]] = None) -> None:
     parser.add_argument(
         "--artifacts", type=str, help="The location where the dataset will be saved"
     )
+    parser.add_argument(
+        "--min_fluency_threshold",
+        type=float,
+        help="The minimum fluency score to filter datasets that include this metric",
+        default=0.8,
+    )
     args = parser.parse_args(args_list)
 
     dataset = Dataset(args.dataset)
@@ -65,6 +71,7 @@ def main(args_list: Optional[list[str]] = None) -> None:
     logger.info(f"Dataset: {args.dataset}")
     logger.info(f"Language: {args.language}")
     logger.info(f"Max Sentences: {args.max_sentences}")
+    logger.info(f"Min Fluency Threshold: {args.min_fluency_threshold}")
     logger.info(f"Artifacts: {args.artifacts}")
     logger.info(f"File Destination: {file_destination}")
 
