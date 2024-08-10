@@ -6,7 +6,7 @@ import time
 from contextlib import ExitStack, contextmanager
 from io import BufferedReader
 from pathlib import Path
-from typing import Generator, Literal, Optional, Union
+from typing import Callable, Generator, Literal, Optional, Union
 from zipfile import ZipFile
 
 import requests
@@ -325,7 +325,9 @@ class DownloadChunkStreamer(io.IOBase):
 
 @contextmanager
 def _read_lines_multiple_files(
-    files: list[Union[str, Path]], path_in_archive: Optional[str]
+    files: list[Union[str, Path]],
+    path_in_archive: Optional[str],
+    on_enter_location: Optional[Callable[[], None]] = None,
 ) -> Generator[str, None, None]:
     """
     Iterates through each line in multiple files, combining it into a single stream.
@@ -334,7 +336,7 @@ def _read_lines_multiple_files(
     def iter(stack: ExitStack):
         for file_path in files:
             logger.info(f"Reading lines from: {file_path}")
-            lines = stack.enter_context(read_lines(file_path, path_in_archive))
+            lines = stack.enter_context(read_lines(file_path, path_in_archive, on_enter_location))
             yield from lines
             stack.close()
 
@@ -346,7 +348,11 @@ def _read_lines_multiple_files(
 
 
 @contextmanager
-def _read_lines_single_file(location: Union[Path, str], path_in_archive: Optional[str] = None):
+def _read_lines_single_file(
+    location: Union[Path, str],
+    path_in_archive: Optional[str] = None,
+    on_enter_location: Optional[Callable[[], None]] = None,
+):
     """
     A smart function to efficiently stream lines from a local or remote file.
     The location can either be a URL or a local file system path.
@@ -356,10 +362,19 @@ def _read_lines_single_file(location: Union[Path, str], path_in_archive: Optiona
         location - URL or file path
         path_in_archive  - The path to a file in a zip archive
     """
-    try:
-        location = str(location)
-        stack = ExitStack()
+    location = str(location)
+    if on_enter_location:
+        on_enter_location()
 
+    if location.startswith("http://") or location.startswith("https://"):
+        # If this is mocked for a test, use the locally mocked path.
+        mocked_location = get_mocked_downloads_file_path(location)
+        if mocked_location:
+            location = mocked_location
+
+    stack = ExitStack()
+
+    try:
         if location.startswith("http://") or location.startswith("https://"):
             # This is a remote file.
 
@@ -388,7 +403,6 @@ def _read_lines_single_file(location: Union[Path, str], path_in_archive: Optiona
 
         else:  # noqa: PLR5501
             # This is a local file.
-
             if location.endswith(".gz") or location.endswith(".gzip"):
                 yield stack.enter_context(gzip.open(location, "rt", encoding="utf-8"))
 
@@ -415,6 +429,7 @@ def _read_lines_single_file(location: Union[Path, str], path_in_archive: Optiona
 def read_lines(
     location_or_locations: Union[Path, str, list[Union[str, Path]]],
     path_in_archive: Optional[str] = None,
+    on_enter_location: Optional[Callable[[], None]] = None,
 ) -> Generator[str, None, None]:
     """
     A smart function to efficiently stream lines from a local or remote file.
@@ -441,9 +456,11 @@ def read_lines(
     """
 
     if isinstance(location_or_locations, list):
-        return _read_lines_multiple_files(location_or_locations, path_in_archive)
+        return _read_lines_multiple_files(
+            location_or_locations, path_in_archive, on_enter_location
+        )
 
-    return _read_lines_single_file(location_or_locations, path_in_archive)
+    return _read_lines_single_file(location_or_locations, path_in_archive, on_enter_location)
 
 
 @contextmanager
