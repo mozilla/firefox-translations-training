@@ -35,6 +35,10 @@ def get_defaults(_) -> dict:
                         "opus_ELRC-3075-wikipedia_health/v1": 0.6,
                     },
                 },
+                "min-fluency-threshold": {
+                    "mono-src": 0.8,
+                    "mono-trg": 0.9,
+                },
             },
             "marian-args": {
                 "training-backward": {
@@ -147,6 +151,10 @@ extend_parameters_schema(
                     Optional("dataset-thresholds"): {
                         str: float,
                     },
+                },
+                Required("min-fluency-threshold"): {
+                    Required("mono-src"): float,
+                    Required("mono-trg"): float,
                 },
                 Optional("pretrained-models"): {
                     Optional("train-teacher"): {
