@@ -1,3 +1,4 @@
+import json
 import os
 
 import pytest
@@ -152,6 +153,78 @@ def test_mono_source_import(importer, language, dataset, sort_order, data_dir):
     assert [
         source_lines.index(line) for line in sample_lines
     ] == sort_order, "The data is shuffled."
+
+
+hplt_translations = {
+    "en": [
+        "Thermal validation & maintenance\n",
+        "These conditions are not intended to limit your rights with respect to the Australian Consumer Law.\n",
+        "See more information\n",
+        "To keep this items forever, login or register\n",
+        "Commercial\n",
+        "School Improvement\n",
+        "Items to be sold separately\n",
+        "Services\n",
+        "Who said that only women are concerned about the latest fashion trends? Nowadays men too are very serious regarding the trending fashion and their look. Every man likes to be called a stud, dude,...\n",
+        "Editorial enquiries\n",
+    ],
+    "ru": [
+        "Противодействие коррупции\n",
+        "Административные регламенты\n",
+        "Должностные лица администрации\n",
+        "Администрация сельского поселения\n",
+        "То есть об окупаемости за 7 – 9 лет речи ранее не идёт, по этой причине и банковский вклад смотрится привлекательно, таким образом как предоставляет сравнимую прибыльность. Такая инвестиция средств сгодится тем, кто более волнуется о сохранности собственных денег. Совместно с этим каждый упадок приводит к укреплению, к каковым и принадлежат франк и иена, поэтому в случае падения международной экономики можно весьма хорошо получить. Интересным считается тот факт, что они увеличиваются, в том числе и в отношении к доллару, то имеется в кризис становятся наиболее прибыльными валютами. В них можно уверенно вкладывать незначительную часть средств.\n",
+        "Чтобы в такие ситуации не угодить, нужно обладать терпением. Мир постепенно начинает меняться, хотя реальность в США и России в этом плане различается.\n",
+        "В компетенции «Фрезерные работы на станках с ЧПУ», где свое профессиональное мастерство продемонстрирует Михаил Воронцов, заявлены представители 30 государств, в том числе США, Канады, Франции, Германии, Великобритании, Японии, Китая, Марокко, Индии и Чили.\n",
+        "Географическая экология\n",
+        "Комиссия по соблюдению требований к служебному поведени...\n",
+        "Советское время начинает постепенно уходить, и многие люди хотят вложить деньги и на этом пассивно зарабатывать.\n",
+    ],
+}
+
+hplt_stats = {
+    "en": {
+        "shards": {"filtered": 1, "kept": 1},
+        "oversampling": {"filtered": 1514, "kept": 200},
+        "final": {"filtered": 1614, "kept": 100},
+        "document_count": 15,
+    },
+    "ru": {
+        "shards": {"filtered": 1, "kept": 1},
+        "oversampling": {"filtered": 2337, "kept": 200},
+        "final": {"filtered": 2437, "kept": 100},
+        "document_count": 23,
+    },
+}
+
+
+@pytest.mark.parametrize(
+    "language",
+    ["ru", "en"],
+)
+def test_mono_hplt(language, data_dir: DataDir):
+    dataset = "mono_v1_2"
+    data_dir.print_tree()
+    max_sentences = 100
+
+    data_dir.run_task(
+        f"dataset-hplt-{dataset}-{language}",
+        env={
+            "MOCKED_DOWNLOADS": get_mocked_downloads(),
+        },
+        extra_args=["--max_sentences", str(max_sentences)],
+    )
+    data_dir.print_tree()
+
+    lines = read_lines(data_dir.join(f"artifacts/{dataset}.{language}.zst"))
+    assert lines[:10] == hplt_translations[language]
+
+    assert len(lines) == max_sentences
+
+    assert (
+        json.loads(data_dir.load(f"artifacts/{dataset}.{language}.stats.json"))
+        == hplt_stats[language]
+    )
 
 
 @pytest.mark.parametrize(
