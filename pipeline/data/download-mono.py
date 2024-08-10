@@ -22,7 +22,10 @@ Artifacts:
 import argparse
 import os
 from contextlib import ExitStack
+from pathlib import Path
 from typing import Optional
+
+from importers.mono.hplt import download_hplt
 
 from pipeline.common.datasets import Dataset, shuffle_with_max_lines
 from pipeline.common.downloads import (
@@ -52,21 +55,19 @@ def main(args_list: Optional[list[str]] = None) -> None:
         "--max_sentences", type=int, help="The maximum number of sentences to retain"
     )
     parser.add_argument(
-        "--artifacts", type=str, help="The location where the dataset will be saved"
-    )
-    parser.add_argument(
         "--min_fluency_threshold",
         type=float,
         help="The minimum fluency score to filter datasets that include this metric",
         default=0.8,
     )
+    parser.add_argument(
+        "--artifacts", type=Path, help="The location where the dataset will be saved"
+    )
     args = parser.parse_args(args_list)
 
     dataset = Dataset(args.dataset)
 
-    file_destination = os.path.join(
-        args.artifacts, f"{dataset.file_safe_name()}.{args.language}.zst"
-    )
+    file_destination: Path = args.artifacts / f"{dataset.file_safe_name()}.{args.language}.zst"
 
     logger.info(f"Dataset: {args.dataset}")
     logger.info(f"Language: {args.language}")
@@ -77,6 +78,17 @@ def main(args_list: Optional[list[str]] = None) -> None:
 
     if not os.path.exists(args.artifacts):
         os.makedirs(args.artifacts)
+
+    if dataset.importer == "hplt":
+        download_hplt(
+            language=args.language,
+            min_fluency_threshold=args.min_fluency_threshold,
+            max_sentences=args.max_sentences,
+            max_words_in_sentence=MAX_WORDS_IN_SENTENCE,
+            file_destination=file_destination,
+        )
+
+        return
 
     url = None
     if dataset.importer == "url":

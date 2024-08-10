@@ -214,6 +214,149 @@ tasks:
                     --max_sentences {max_sentences}
                     --artifacts $TASK_WORKDIR/artifacts
 
+    opus-{src_locale}:
+        description: Fetch a monolingual opus dataset for {src_locale}
+        label: dataset-opus-{dataset_sanitized}-{src_locale}
+        dataset-config:
+            provider: opus
+            category: mono-src
+        attributes:
+            cache:
+                resources:
+                    - pipeline/data/download-mono.py
+                from-parameters:
+                    max_sentences:
+                        - training_config.experiment.mono-max-sentences-src.per-dataset
+        task-context:
+            from-parameters:
+                max_sentences:
+                    - training_config.experiment.mono-max-sentences-src.per-dataset
+            substitution-fields:
+                - run.command
+        run:
+            command:
+                - bash
+                - -c
+                - >-
+                    pip3 install --upgrade pip setuptools &&
+                    pip3 install -r $VCS_PATH/pipeline/data/requirements/data.txt &&
+                    export PYTHONPATH=$PYTHONPATH:$VCS_PATH &&
+                    python3 $VCS_PATH/pipeline/data/download-mono.py
+                    --dataset {dataset}
+                    --language {src_locale}
+                    --max_sentences {max_sentences}
+                    --artifacts $TASK_WORKDIR/artifacts
+
+    opus-{trg_locale}:
+        description: Fetch a monolingual opus dataset for {trg_locale}
+        label: dataset-opus-{dataset_sanitized}-{trg_locale}
+        dataset-config:
+            provider: opus
+            category: mono-trg
+        attributes:
+            cache:
+                resources:
+                    - pipeline/data/download-mono.py
+                from-parameters:
+                    max_sentences:
+                        - training_config.experiment.mono-max-sentences-trg.per-dataset
+        task-context:
+            from-parameters:
+                max_sentences:
+                    - training_config.experiment.mono-max-sentences-trg.per-dataset
+            substitution-fields:
+                - run.command
+        run:
+            command:
+                - bash
+                - -c
+                - >-
+                    pip3 install --upgrade pip setuptools &&
+                    pip3 install -r $VCS_PATH/pipeline/data/requirements/data.txt &&
+                    export PYTHONPATH=$PYTHONPATH:$VCS_PATH &&
+                    python3 $VCS_PATH/pipeline/data/download-mono.py
+                    --dataset {dataset}
+                    --language {trg_locale}
+                    --max_sentences {max_sentences}
+                    --artifacts $TASK_WORKDIR/artifacts
+
+    hplt-{src_locale}:
+        description: Fetch a sample of the HPLT monolingual data for {src_locale}
+        label: dataset-hplt-{dataset_sanitized}-{src_locale}
+        dataset-config:
+            provider: hplt
+            category: mono-src
+        attributes:
+            cache:
+                resources:
+                    - pipeline/data/download-mono.py
+                from-parameters:
+                    max_sentences:
+                        - training_config.experiment.mono-max-sentences-src.per-dataset
+                    min_fluency_threshold:
+                        - training_config.experiment.min-fluency-threshold.mono-src
+        task-context:
+            from-parameters:
+                max_sentences:
+                    - training_config.experiment.mono-max-sentences-src.per-dataset
+                min_fluency_threshold:
+                    - training_config.experiment.min-fluency-threshold.mono-src
+            substitution-fields:
+                - run.command
+        run:
+            command:
+                - bash
+                - -c
+                - >-
+                    pip3 install --upgrade pip setuptools &&
+                    pip3 install -r $VCS_PATH/pipeline/data/requirements/data.txt &&
+                    export PYTHONPATH=$PYTHONPATH:$VCS_PATH &&
+                    python3 $VCS_PATH/pipeline/data/download-mono.py
+                    --dataset {dataset}
+                    --language {src_locale}
+                    --max_sentences {max_sentences}
+                    --min_fluency_threshold {min_fluency_threshold}
+                    --artifacts $TASK_WORKDIR/artifacts
+
+    hplt-{trg_locale}:
+        description: Fetch a sample of the HPLT monolingual data for {trg_locale}
+        label: dataset-hplt-{dataset_sanitized}-{trg_locale}
+        dataset-config:
+            provider: hplt
+            category: mono-trg
+        attributes:
+            cache:
+                resources:
+                    - pipeline/data/download-mono.py
+                from-parameters:
+                    max_sentences:
+                        - training_config.experiment.mono-max-sentences-trg.per-dataset
+                    min_fluency_threshold:
+                        - training_config.experiment.min-fluency-threshold.mono-trg
+
+        task-context:
+            from-parameters:
+                max_sentences:
+                    - training_config.experiment.mono-max-sentences-trg.per-dataset
+                min_fluency_threshold:
+                    - training_config.experiment.min-fluency-threshold.mono-trg
+            substitution-fields:
+                - run.command
+        run:
+            command:
+                - bash
+                - -c
+                - >-
+                    pip3 install --upgrade pip setuptools &&
+                    pip3 install -r $VCS_PATH/pipeline/data/requirements/data.txt &&
+                    export PYTHONPATH=$PYTHONPATH:$VCS_PATH &&
+                    python3 $VCS_PATH/pipeline/data/download-mono.py
+                    --dataset {dataset}
+                    --language {trg_locale}
+                    --max_sentences {max_sentences}
+                    --min_fluency_threshold {min_fluency_threshold}
+                    --artifacts $TASK_WORKDIR/artifacts
+
     mtdata:
         description: Fetch mtdata dataset
         label: dataset-mtdata-{dataset_sanitized}-{src_locale}-{trg_locale}

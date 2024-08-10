@@ -1,10 +1,12 @@
 import hashlib
+import json
 import os
 import tempfile
+from dataclasses import asdict, dataclass
 from io import TextIOWrapper
 from pathlib import Path
 from random import Random
-from typing import Iterator, Optional
+from typing import Iterator, Optional, Union
 from urllib.parse import urlparse
 
 # We keep this relatively short because these datasets end up in task labels,
@@ -264,3 +266,62 @@ def shuffle_in_temp_files(
             output.write(shuffled_line)
 
     print(f"Shuffled with {bucket_count} buckets.")
+
+
+@dataclass
+class Statistics:
+    """
+    Base class for handling statistical data and JSON serialization in the pipeline. It
+    standardizes how the JSON is generated, and how it saves. Implement `as_json` for custom
+    JSON processing.
+
+    For instance .save_json() for Statistics("nllb.en.zst") would produce "nllb.en.stats.json".
+    """
+
+    def __init__(self, dataset_path: Union[Path, str]) -> None:
+        self.dataset_path = Path(dataset_path)
+
+    def as_json(self) -> dict:
+        """
+        Convert this data into JSON, and recurse into any other Statistics objects.
+        """
+        data = asdict(self)
+        for key, value in enumerate(data):
+            if isinstance(value, Statistics):
+                data[key] = value.as_json()
+        return data
+
+    def save_json(self) -> Path:
+        """
+        Standardizes how the JSON is saved, based on the dataset.
+        """
+        path = self.dataset_path.parent / f"{self.dataset_path.stem}.stats.json"
+        with open(path, "w", encoding="utf-8") as json_file:
+            json.dump(self.as_json(), json_file, indent=2)
+            json_file.write("\n")
+        return path
+
+
+@dataclass
+class FilteringStep(Statistics):
+    """
+    For each step for filtering, store how many were kept or filtered.
+    """
+
+    filtered: int
+    kept: int
+    # "visited" is implied.
+
+    def __init__(self, dataset_path: Path, description: str, filtered=0, kept=0) -> None:
+        super().__init__(dataset_path)
+        self.filtered = filtered
+        self.kept = kept
+        self.description = description
+
+    def as_json(self) -> dict:
+        return {
+            "description": self.description,
+            "filtered": self.filtered,
+            "kept": self.kept,
+            "visited": self.filtered + self.kept,
+        }
