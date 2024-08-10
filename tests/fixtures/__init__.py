@@ -9,7 +9,7 @@ import subprocess
 import time
 from pathlib import Path
 from subprocess import CompletedProcess
-from typing import List, Optional, Tuple, Union
+from typing import Iterable, List, Optional, Tuple, Union
 
 import zstandard as zstd
 
@@ -93,10 +93,13 @@ class DataDir:
 
         return zst_path
 
-    def create_file(self, name: str, contents: str) -> str:
+    def create_file(self, name: str, contents: Union[str, Iterable[str]]) -> str:
         """
         Creates a text file and returns the path to it.
         """
+        if not isinstance(contents, str):
+            contents = "\n".join(contents) + "\n"
+
         text_path = os.path.join(self.path, name)
         if not os.path.exists(self.path):
             raise Exception(f"Directory for the text file does not exist: {self.path}")
@@ -244,7 +247,12 @@ class DataDir:
         for root, dirs, files in os.walk(self.path):
             level = root.replace(self.path, "").count(os.sep)
             indent = " " * 4 * (level)
-            folder_text = f"│ {indent}{os.path.basename(root)}/"
+            if level == 0:
+                # For the root level, display the relative path to the data directory.
+                folder_text = root.replace(f"{ROOT_PATH}/", "")
+                folder_text = f"│ {folder_text}"
+            else:
+                folder_text = f"│ {indent}{os.path.basename(root)}/"
             print(f"{folder_text.ljust(span_len)} │")
             subindent = " " * 4 * (level + 1)
 
