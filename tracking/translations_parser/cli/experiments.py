@@ -94,8 +94,14 @@ def main() -> None:
         project, group, *name = parents
         base_name = name[0]
         name = "_".join(name)
-        # Directly use group name as a suffix from GCP experiments, since we don't have access to the task group ID
-        suffix = f"_{group}"
+
+        if group.startswith("baseline_") and len(group) >= 31:
+            # When possible, use task group ID as suffix from folder's name (e.g. baseline_enhu_PuI6mYZPTUqAfyZMTgeUng)
+            suffix = f"_{group[-22:-17]}"
+        else:
+            # Defaults using the full experiment name as a suffix
+            suffix = f"_{group}"
+
         try:
             name = parse_task_label(f"train-{name}").model
         except ValueError:
