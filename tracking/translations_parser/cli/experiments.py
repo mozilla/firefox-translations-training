@@ -129,12 +129,12 @@ def main() -> None:
                 logger.error(f"An exception occured parsing {file}: {e}")
 
         # Try to publish related log files to the group on a last run named "group_logs"
-        if index == len(file_groups) or last_index and last_index != (project, group):
-            last_project, last_group = (
+        if index == len(file_groups) or last_index and last_index != (project, group, suffix):
+            last_project, last_group, last_suffix = (
                 last_index
                 if last_index
                 # May occur when handling a single run
-                else (project, group)
+                else (project, group, suffix)
             )
             logger.info(
                 f"Publishing '{last_project}/{last_group}' evaluation metrics and files (fake run 'group_logs')"
@@ -143,8 +143,9 @@ def main() -> None:
                 logs_parent_folder=prefix,
                 project=last_project,
                 group=last_group,
-                suffix=suffix,
+                suffix=last_suffix,
                 existing_runs=existing_runs,
             )
             existing_runs = []
-        last_index = (project, group)
+
+        last_index = (project, group, suffix)
