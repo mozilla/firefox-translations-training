@@ -23,6 +23,7 @@ task-defaults:
             type: split-mono
             resources:
                 - pipeline/translate/splitter.py
+                - pipeline/translate/requirements/splitter.txt
             from-parameters:
                 split_chunks: training_config.taskcluster.split-chunks
 
@@ -61,6 +62,7 @@ task-defaults:
             - bash
             - -c
             - >-
+                pip3 install -r $VCS_PATH/pipeline/alignments/requirements/alignments.txt &&
                 export PYTHONPATH=$PYTHONPATH:$VCS_PATH &&
                 python3 $VCS_PATH/pipeline/translate/splitter.py
                 --output_dir=$TASK_WORKDIR/artifacts
