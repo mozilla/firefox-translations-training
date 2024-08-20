@@ -83,7 +83,7 @@ task-defaults:
                 --parallel_corpus $MOZ_FETCHES_DIR/corpus/corpus.{locale}.zst
                 --output $TASK_WORKDIR/artifacts/mono.{locale}.zst
                 --max_sentences {max_sentences}
-                --datasets_glob $MOZ_FETCHES_DIR/*.zst
+                --datasets_glob "$MOZ_FETCHES_DIR/*.zst"
 
     fetches:
         merge-corpus:
