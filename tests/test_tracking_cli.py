@@ -99,7 +99,10 @@ def test_taskcluster(wandb_mock, getargs_mock, disable_wandb, caplog, samples_di
 
 @patch(
     "translations_parser.cli.experiments.get_args",
-    return_value=argparse.Namespace(directory=Path(__file__).parent / "data" / "experiments_1_10"),
+    return_value=argparse.Namespace(
+        directory=Path(__file__).parent / "data" / "experiments_1_10",
+        mode="snakemake",
+    ),
 )
 @patch("translations_parser.publishers.wandb")
 def test_experiments_marian_1_10(
@@ -225,7 +228,10 @@ def test_experiments_marian_1_10(
 
 @patch(
     "translations_parser.cli.experiments.get_args",
-    return_value=argparse.Namespace(directory=Path(__file__).parent / "data" / "experiments_1_12"),
+    return_value=argparse.Namespace(
+        directory=Path(__file__).parent / "data" / "experiments_1_12",
+        mode="snakemake",
+    ),
 )
 @patch("translations_parser.publishers.wandb")
 def test_experiments_marian_1_12(
