@@ -178,8 +178,8 @@ marian-args:
   training-student-finetuned:
     early-stopping: '20'
 target-stage: all
-start-stage: translate-mono-src
-previous_group_ids: ["G0OCbMeKRaSLUFYxCgD4FQ"]
+start-stage: cefilter
+previous_group_ids: ["WrJzypznQeukjTH_2eFV9Q"]
 existing_tasks: {
   "train-teacher-en-ru-1": "MH3_5l1jS3-eJ4lSxydNQQ",
   "alignments-original-en-ru": "K6XCM0LhQGWHvFNvOc7f8Q",
