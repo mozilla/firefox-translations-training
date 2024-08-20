@@ -55,6 +55,7 @@ def parse_experiment(
     suffix: str,
     logs_file: Path,
     metrics_dir: Path | None = None,
+    mode=ExperimentMode,
 ) -> None:
     """
     Parse logs from a Taskcluster dump and publish data to W&B.
@@ -63,7 +64,16 @@ def parse_experiment(
     metrics = []
     if metrics_dir:
         for metrics_file in metrics_dir.glob("*.metrics"):
-            importer, dataset = metrics_file.stem.split("_", 1)
+            if mode == ExperimentMode.SNAKEMAKE:
+                # Snakemake experiments metrics are in the form `<importer><?_dataset>`
+                importer, *dataset = metrics_file.stem.split("_", 1)
+                dataset = dataset[0] if dataset else None
+            else:
+                # Taskcluster experiments metrics are in the form `<?augmentation_><dataset>`.
+                # As importer is a required attribute, we publish the metric base on its file
+                # name directly, making comparison with other type of publication impossible.
+                importer = metrics_file.stem
+                dataset = None
             metrics.append(Metric.from_file(metrics_file, importer=importer, dataset=dataset))
 
     with logs_file.open("r") as f:
@@ -145,6 +155,7 @@ def main() -> None:
                     suffix=suffix,
                     logs_file=file,
                     metrics_dir=metrics_dir,
+                    mode=mode,
                 )
                 existing_runs.append(name)
             except Exception as e:
