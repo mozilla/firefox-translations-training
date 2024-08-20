@@ -9,6 +9,7 @@ Example:
 import argparse
 import logging
 import os
+from enum import Enum
 from itertools import groupby
 from pathlib import Path
 
@@ -20,8 +21,22 @@ from translations_parser.utils import parse_task_label
 logger = logging.getLogger(__name__)
 
 
+class ExperimentMode(Enum):
+    SNAKEMAKE = "snakemake"
+    TASKCLUSTER = "taskcluster"
+
+
 def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Publish multiple experiments to Weight & Biases")
+    parser.add_argument(
+        "--mode",
+        "-m",
+        help="Mode to publish experiments.",
+        type=ExperimentMode,
+        choices=ExperimentMode,
+        metavar=[e.value for e in ExperimentMode],
+        required=True,
+    )
     parser.add_argument(
         "--directory",
         "-d",
@@ -71,6 +86,7 @@ def parse_experiment(
 def main() -> None:
     args = get_args()
     directory = args.directory
+    mode = args.mode
     # Ignore files with a different name than "train.log"
     file_groups = {
         path: list(files)
@@ -95,8 +111,12 @@ def main() -> None:
         base_name = name[0]
         name = "_".join(name)
 
-        if group.startswith("baseline_") and len(group) >= 31:
-            # When possible, use task group ID as suffix from folder's name (e.g. baseline_enhu_PuI6mYZPTUqAfyZMTgeUng)
+        if mode == ExperimentMode.TASKCLUSTER:
+            if len(group) < 22:
+                logger.error(
+                    f"Skip folder {group} as it cannot contain a task group ID (too few caracters)."
+                )
+                continue
             suffix = f"_{group[-22:-17]}"
         else:
             # Defaults using the full experiment name as a suffix
