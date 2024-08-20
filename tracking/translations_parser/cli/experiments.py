@@ -131,7 +131,9 @@ def main() -> None:
         # Publish a run for each file inside that group
         for file in files:
             # Also publish metric files when available
-            metrics_path = Path("/".join([*prefix, project, group, "evaluation", base_name]))
+            metrics_path = Path(
+                "/".join([*prefix[:-1], "models", project, group, "evaluation", base_name])
+            )
             metrics_dir = metrics_path if metrics_path.is_dir() else None
             if metrics_dir is None:
                 logger.warning("Evaluation metrics files not found, skipping.")
