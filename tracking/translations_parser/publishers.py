@@ -284,10 +284,10 @@ class WandB(Publisher):
             metrics["quantized"].append(Metric.from_file(file, importer=importer, dataset=dataset))
         # Add metrics from tasks logs
         for file in logs_metrics:
-            model_name, importer, dataset, aug = parse_task_label(file.stem)
-            with file.open("r") as f:
-                lines = f.readlines()
             try:
+                model_name, importer, dataset, aug = parse_task_label(file.stem)
+                with file.open("r") as f:
+                    lines = f.readlines()
                 metrics[model_name].append(
                     Metric.from_tc_context(
                         importer=importer, dataset=dataset, lines=lines, augmentation=aug
