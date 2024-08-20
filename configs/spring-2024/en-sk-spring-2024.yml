@@ -183,6 +183,35 @@ marian-args:
   training-student-finetuned:
     early-stopping: '20'
 target-stage: all
+start-stage: train-student
+previous_group_ids: ["f0U4TAUCQ6SYnK0BHpuuQA"]
+existing_tasks: {
+        "build-docker-image-base": "BAvLUilqQ3SYqy6Ck55CUQ",
+        "build-docker-image-test": "f0gbptvMTDaKODjqL9hlOw",
+        "build-docker-image-toolchain-build": "LlZa8-L9TRemgyzQcAxuHw",
+        "build-docker-image-train": "fBMJa9R5SKaXd2wgWeD5yQ",
+        "fetch-browsermt-marian": "BRviRlEMTie8AUFf5prHvg",
+        "fetch-cuda": "Kc8iWZguSyeGMZKY7OxnTQ",
+        "fetch-cuda-11": "RjR9dsYTQhe0HQJPHNN4Tg",
+        "fetch-cyhunspell": "XNYpMzBvSraicoNKyUIwxA",
+        "fetch-extract-lex": "J2FS7TLLT4m2mjD0IGw91A",
+        "fetch-fast-align": "Tim8u7s-TAeTYG5VnzmXfA",
+        "fetch-hunspell": "Wn1pnCSQSpqKeRpCV52FqQ",
+        "fetch-kenlm": "J4U7RFz2TASaNNTTqoQ8sg",
+        "fetch-marian": "Sw_bpajdSgWxEDG3uW0-nQ",
+        "fetch-preprocess": "Scn2N5dLRXKCEU4T1JYE3A",
+        "toolchain-browsermt-marian": "aP5l3b05S9q3G25Nm85d6w",
+        "toolchain-cuda-toolkit": "UuUG70nvSj2pHcKt8JFbKw",
+        "toolchain-cuda-toolkit-11": "YhKI4TKlTFep-FpU7D2L7A",
+        "toolchain-cyhunspell": "DTvS_tZeSluSlAHkViW3lg",
+        "toolchain-extract-lex": "Xb7KAXA7TziSrxVQWS0Wmw",
+        "toolchain-fast-align": "Ia-7gLTQSJeCj_RLs7sg4w",
+        "toolchain-hunspell": "V84fX3jvQ-Knr4hZT9B8DQ",
+        "toolchain-kenlm": "X6SgAIzhQlyL7g_nIfE-YQ",
+        "toolchain-marian": "AoV-W4IzRo22lQBtJWsTxQ",
+        "toolchain-marian-cpu": "Za5VkFoyS6mauNnmEYxV7g",
+        "toolchain-preprocess": "ZozJMTdgQD-Bm9sSaG7soA"
+    }
 wandb-publication: true
 taskcluster:
   split-chunks: 20
