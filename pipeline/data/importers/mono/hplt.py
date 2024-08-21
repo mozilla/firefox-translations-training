@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from pipeline.common.datasets import CountingStep, FilteringStep, Statistics
-from pipeline.common.downloads import read_lines, write_lines
+from pipeline.common.downloads import location_exists, read_lines, write_lines
 from pipeline.common.logging import get_logger
 from pipeline.common.memory import log_memory
 
@@ -76,6 +76,12 @@ class FilteringStatistics(Statistics):
     def count_shards_visited(self):
         self.shards.filtered -= 1
         self.shards.kept += 1
+
+
+def language_has_hplt_support(language: str) -> bool:
+    return location_exists(
+        f"https://data.hplt-project.org/one/monotext/cleaned/{language}_map.txt"
+    )
 
 
 def load_shard_urls(language: str) -> list[str]:

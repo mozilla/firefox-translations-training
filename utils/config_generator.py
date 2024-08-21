@@ -4,14 +4,15 @@ import subprocess
 import sys
 from io import StringIO
 from pathlib import Path
+from typing import Literal, Union
 
 import ruamel.yaml
 
+from pipeline.common.downloads import get_download_size, location_exists
+from pipeline.data.importers.mono.hplt import language_has_hplt_support
 from utils.find_corpus import (
-    fetch_hplt,
     fetch_mtdata,
     fetch_news_crawl,
-    fetch_nllb_mono,
     fetch_opus,
     fetch_sacrebleu,
     get_remote_file_size,
@@ -120,8 +121,20 @@ def update_config(
         datasets["devtest"],
         comment_section,
     )
-    add_mono_data(source, datasets["mono-src"], "  mono-src:", comment_section)
-    add_mono_data(target, datasets["mono-trg"], "  mono-trg:", comment_section)
+    add_mono_data(
+        source,
+        "src",
+        datasets,
+        experiment,
+        comment_section,
+    )
+    add_mono_data(
+        target,
+        "trg",
+        datasets,
+        experiment,
+        comment_section,
+    )
 
     return comment_section
 
@@ -305,54 +318,72 @@ def estimate_sentence_size(bytes: int) -> int:
 
 def add_mono_data(
     lang: str,
-    datasets: list[str],
-    comment_key: str,
+    direction: Union[Literal["src"], Literal["trg"]],
+    datasets: dict[str, list[str]],
+    experiment: any,
     comment_section: dict[str, str],
 ):
+    mono_datasets = datasets[f"mono-{direction}"]
+    max_per_dataset: int = experiment[f"mono-max-sentences-{direction}"]["per-dataset"]
+
+    def add_comment(dataset_name: str, comment: str):
+        """Add a right justified comment to a dataset."""
+        mono_datasets.yaml_add_eol_comment(
+            comment.rjust(50 - len(dataset_name), " "),
+            len(mono_datasets) - 1,
+        )
+
+    extra_comments: list[str] = []
+    skipped_datasets = []
+
     print("Fetching newscrawl for", lang)
     sentence_count = 0
     for dataset in fetch_news_crawl(lang):
-        datasets.append(dataset.name)
+        mono_datasets.append(dataset.name)
         if dataset.size:
             sentences = estimate_sentence_size(dataset.size)
             sentence_count += sentences
-            datasets.yaml_add_eol_comment(
-                f"~{sentences:,} sentences".rjust(50 - len(dataset.name), " ")
-                + f" ({dataset.display_size})",
-                len(datasets) - 1,
-            )
+            add_comment(dataset.name, f"~{sentences:,} sentences")
 
     print("Fetching HPLT mono for", lang)
-    # use lower quality but higher volume of data for distillation and
-    # higher quality but lower amount of data for back-translations
-    hplt_prefix = "08" if "mono-src" in comment_key else "09"
-
-    for dataset in fetch_hplt(lang, (hplt_prefix,)):
-        datasets.append(dataset.name)
-        if dataset.lines_num:
-            sentence_count += dataset.lines_num
-            datasets.yaml_add_eol_comment(
-                f"{dataset.lines_num:,} sentences".rjust(50 - len(dataset.name), " "),
-                len(datasets) - 1,
-            )
+    if language_has_hplt_support(lang):
+        dataset_name = "hplt_mono/v1.2"
+        mono_datasets.append(dataset_name)
+        add_comment(dataset_name, f"Up to {max_per_dataset:,} sentences")
+        extra_comments.append(f"  Up to {max_per_dataset:,} sentences from HPLT")
 
     print("Fetching NLLB mono for", lang)
-    for dataset in fetch_nllb_mono(lang):
-        datasets.append(dataset.name)
-        sentence_count += dataset.lines_num
-        datasets.yaml_add_eol_comment(
-            f"{dataset.lines_num:,} sentences".rjust(50 - len(dataset.name), " "),
-            len(datasets) - 1,
-        )
+    opus_nllb_url = f"https://object.pouta.csc.fi/OPUS-NLLB/v1/mono/{lang}.txt.gz"
+    if location_exists(opus_nllb_url):
+        dataset_name = "opus_NLLB/v1"
+        lines_num = estimate_sentence_size(get_download_size(opus_nllb_url))
+        if direction == "trg":
+            skipped_datasets.append(
+                f"{dataset_name} - data may have lower quality, disable for back-translations ({lines_num:,} sentences)"
+            )
+        else:
+            mono_datasets.append(dataset_name)
+            sentence_count += lines_num
+            add_comment(dataset_name, f"~{lines_num:,} sentences")
+
+    skipped_datasets_final = []
+    if skipped_datasets:
+        skipped_datasets_final.append("")
+        skipped_datasets_final.append("Skipped datasets:")
+        for d in skipped_datasets:
+            skipped_datasets_final.append(f" - {d}")
 
     comment = "\n".join(
         [
             "The monolingual data contains:",
             f"  ~{sentence_count:,} sentences",
+            # Append any additional information.
+            *extra_comments,
+            *skipped_datasets_final,
         ]
     )
 
-    comment_section[comment_key] = comment
+    comment_section[f"  mono-{direction}:"] = comment
 
 
 def strip_comments(yaml_text: str) -> list[str]:
