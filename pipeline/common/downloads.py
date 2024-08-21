@@ -60,6 +60,16 @@ def get_mocked_downloads_file_path(url: str) -> Optional[str]:
     return source_file
 
 
+def location_exists(location: str):
+    """
+    Checks if a location (url or file path) exists.
+    """
+    if location.startswith("http://") or location.startswith("https://"):
+        response = requests.head(location, allow_redirects=True)
+        return response.ok
+    return os.path.exists(location)
+
+
 def attempt_mocked_request(url: str) -> Optional[BufferedReader]:
     """
     If there are mocked download, use that.
