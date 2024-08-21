@@ -41,11 +41,18 @@ skip_datasets = [
     "WikiTitles",
     # This mtdata dataset fails in a task, and is a duplicate to OPUS.
     "swedish_work_environment",
+    # Fails to load from mtdata.
+    "lithuanian_legislation_seimas_lithuania",
+    # Fails to load from OPUS.
+    "SPC",
 ]
 
 # Do not include small datasets. This works around #508, and minimizes dataset tasks that
 # won't bring a lot more data.
 minimum_dataset_sentences = 200
+
+# If a task name is too long, it will fail.
+max_dataset_name_size = 80
 
 flores_101_languages = {
     "af", "amh", "ar", "as", "ast", "az", "be", "bn", "bs", "bg", "ca", "ceb", "cs", "ckb", "cy",
@@ -162,6 +169,9 @@ def add_train_data(
                 f"{dataset.corpus_key()} - not enough data  ({sentences:,} sentences)"
             )
             continue
+        if len(dataset.corpus) > max_dataset_name_size:
+            skipped_datasets.append(f"{dataset.corpus_key()} - corpus name is too long for tasks")
+            continue
 
         total_sentences += sentences
         corpus_key = dataset.corpus_key()
@@ -190,6 +200,9 @@ def add_train_data(
 
             if entry.did.name in skip_datasets:
                 skipped_datasets.append(f"{entry.did.name} - ignored datasets")
+                continue
+            if len(entry.did.name) > max_dataset_name_size:
+                skipped_datasets.append(f"{entry.did.name} - corpus name is too long for tasks")
                 continue
 
         if fast:
@@ -290,6 +303,8 @@ def add_test_data(
         if dataset_name in skip_datasets:
             # This could be a dataset with a variant design.
             skipped_datasets.append(f"{dataset_name} - variant dataset")
+        elif len(dataset_name) > max_dataset_name_size:
+            skipped_datasets.append(f"{dataset_name} - corpus name is too long for tasks")
         else:
             dataset_name = dataset_name.replace("sacrebleu_", "")
             if is_test:
