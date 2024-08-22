@@ -112,8 +112,9 @@ class RemoteDecodingLineStreamer:
         self.decoding_stream.close()
         self.byte_chunk_stream.close()
 
-    def decode(self, byte_stream):
-        raise NotImplementedError("Decoding is not implemented")
+    def decode(self, byte_stream: BufferedReader):
+        # This byte stream requires no decoding, so just pass it on through.
+        return byte_stream
 
 
 class RemoteGzipLineStreamer(RemoteDecodingLineStreamer):
@@ -241,6 +242,9 @@ class DownloadChunkStreamer(io.IOBase):
         self.buffer = self.buffer[size:]
 
         return result
+
+    def readable(self):
+        return True
 
     def download_chunks(self) -> Generator[bytes, None, None]:
         """
