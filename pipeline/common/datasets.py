@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass
 from io import TextIOWrapper
 from pathlib import Path
 from random import Random
-from typing import Iterator, Optional, Union
+from typing import Callable, Iterator, Optional, Union
 from urllib.parse import urlparse
 
 # We keep this relatively short because these datasets end up in task labels,
@@ -93,7 +93,8 @@ def shuffle_with_max_lines(
     seed: str,
     max_lines: int,
     max_words_in_sentence,
-    total_byte_size: int,
+    total_byte_size: Optional[int] = None,
+    estimate_total_byte_size: Optional[Callable[[float], int]] = None,
 ) -> list[str]:
     """
     Shuffle a line stream, but only retain up to a maximum number of lines in memory.
@@ -107,12 +108,22 @@ def shuffle_with_max_lines(
     The distribution should be even unless the initial content is not representative of the
     general size of the sentences, in this case the distribution will be slightly biased. See
     the test cases for more in-depth examples.
+
+    These options are mutually exclusive, and one must be provided:
+    - total_byte_size - The byte size of the lines.
+    - estimate_total_byte_size - An estimate of the size of the corpus after max_lines have been
+                                 filled. The average bytes per line is provided
     """
     lines: list[str] = []
 
     random = Random(seed)  # Make this deterministic based on dataset key.
 
     total_bytes = 0
+
+    if total_byte_size is None:
+        assert (
+            estimate_total_byte_size
+        ), "Either total_byte_size or estimate_total_byte_size must be provided"
 
     # Fill up the lines up until the max, and measure the total bytes.
     for line in line_stream:
@@ -128,6 +139,9 @@ def shuffle_with_max_lines(
 
         if len(lines) == max_lines:
             break
+
+    if total_byte_size is None:
+        total_byte_size = estimate_total_byte_size(float(total_bytes) / float(max_lines))
 
     line_index = len(lines)
     random.shuffle(lines)

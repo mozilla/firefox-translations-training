@@ -83,7 +83,7 @@ def main(args_list: Optional[list[str]] = None) -> None:
         download_hplt(
             language=args.language,
             min_fluency_threshold=args.min_fluency_threshold,
-            max_sentences=args.max_sentences,
+            max_lines=args.max_sentences,
             max_words_in_sentence=MAX_WORDS_IN_SENTENCE,
             file_destination=file_destination,
         )
