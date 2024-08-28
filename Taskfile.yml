@@ -133,6 +133,14 @@ tasks:
     cmds:
       - task docker-run -- task test
 
+  train:
+    desc: Start a training run
+    summary: Open up the train task from the CLI based on your current branch.
+    deps: [poetry-install-utils]
+    cmds:
+      - >-
+          poetry run python -W ignore utils/train.py {{.CLI_ARGS}}
+
   docker:
     desc: Interactively run the local docker test image.
     deps: [docker-build]
