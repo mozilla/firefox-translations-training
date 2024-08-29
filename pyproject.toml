@@ -37,6 +37,8 @@ humanize = "^4.9.0"
 blessed = "^1.20.0"
 huggingface-hub = "^0.20.3"
 websocket_client ="*"
+PyGithub="2.4.0"
+pyperclip="1.9.0"
 
 # This install group is for running tests. Note that any dependencies in the
 # pipeline are installed separately through the run_task test abstraction. This
@@ -54,6 +56,7 @@ zstandard = "^0.22.0"
 translations_parser = {path="./tracking/", develop=true}
 taskcluster-taskgraph = "^10.0.1"
 translations_taskgraph = {path="./taskcluster/", develop=true}
+sacremoses = "0.1.1"
 
 [tool.black]
 extend-exclude= "/3rd_party"
@@ -76,6 +79,7 @@ ignore = [
   "PLR09",     # too-many-return-statements, too-many-branches, too-many-arguments, too-many-statements
   "PLR2004",   # magic-value-comparison
   "PLW0603",   # global-statement
+  "I001",      # This is broken, see #614
 
   # These are handled by black.
   "E1", "E4", "E5", "W2", "W5"

@@ -30,6 +30,7 @@ tasks:
                 resources:
                     - pipeline/alignments/generate-shortlist.sh
                     - pipeline/alignments/align.py
+                    - pipeline/alignments/tokenizer.py
                     - pipeline/alignments/prune_shortlist.py
                     - pipeline/alignments/requirements/alignments.txt
         task-context:
@@ -43,7 +44,7 @@ tasks:
                 - dependencies
                 - worker.env
                 - attributes
-        worker-type: b-cpu-xlargedisk-64-512
+        worker-type: b-cpu-xlargedisk-32-256
         expires-after: "90 days"
         worker:
             docker-image: {"in-tree": "train"}

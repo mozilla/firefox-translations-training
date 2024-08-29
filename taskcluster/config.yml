@@ -115,6 +115,11 @@ workers:
             implementation: generic-worker
             os: linux
             worker-type: '{alias}'
+        b-linux-v100-gpu-4-2tb:
+            provisioner: '{trust-domain}-{level}'
+            implementation: generic-worker
+            os: linux
+            worker-type: '{alias}'
         b-linux-v100-gpu-4-1tb-standard:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
@@ -176,6 +181,12 @@ local-worker-aliases:
         by-worker-class:
             gcp-standard: 'b-linux-v100-gpu-4-1tb-standard'
             default: 'b-linux-v100-gpu-4-1tb'
+    # Use for student training, see https://github.com/mozilla/firefox-translations-training/issues/774
+    b-largegpu-xxlargedisk:
+        by-worker-class:
+            gcp-standard: 'b-linux-v100-gpu-4-2tb'
+            default: 'b-linux-v100-gpu-4-2tb'
+
 
 # Keys are worker type, and align with the `worker-type` entries in the
 # `worker.aliases` above.
@@ -196,6 +207,11 @@ worker-configuration:
             WORKSPACE: "12000"
 
     b-linux-v100-gpu-4-1tb:
+        env:
+            GPUS: "0 1 2 3"
+            WORKSPACE: "12000"
+
+    b-linux-v100-gpu-4-2tb:
         env:
             GPUS: "0 1 2 3"
             WORKSPACE: "12000"
