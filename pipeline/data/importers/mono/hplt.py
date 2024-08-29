@@ -3,9 +3,8 @@ import random
 from contextlib import ExitStack
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Generator
 
-from pipeline.common.datasets import FilteringStep, Statistics, shuffle_with_max_lines
+from pipeline.common.datasets import CountingStep, FilteringStep, Statistics
 from pipeline.common.downloads import read_lines, write_lines
 from pipeline.common.logging import get_logger
 from pipeline.common.memory import log_memory
@@ -50,27 +49,33 @@ class FilteringStatistics(Statistics):
     """
 
     shards: FilteringStep
-    oversampling: FilteringStep
-    final: FilteringStep
-    document_count: int
+    visited_lines: FilteringStep
+    document_count: CountingStep
+    final_lines: CountingStep
 
     def __init__(self, dataset_path: Path) -> None:
         super().__init__(dataset_path)
         self.shards = FilteringStep(
             dataset_path,
             "How many shards were sampled from. Each shard contains a subset of the "
-            "total datasets available",
+            "total datasets available.",
         )
-        self.oversampling = FilteringStep(
+        self.visited_lines = FilteringStep(
             dataset_path,
-            "The sentences are oversampled in order to get a more representative sample "
-            "of the data.",
+            "How many lines were visited and kept from the HPLT documents.",
         )
-        self.final = FilteringStep(
+        self.document_count = CountingStep(
             dataset_path,
-            "The final filtering step of datasets. This is what will be used for training.",
+            "How many documents were visited. This can help represent data diversity.",
         )
-        self.document_count = 0
+        self.final_lines = CountingStep(
+            dataset_path,
+            "How many lines were actually written. Smaller lines will be combined together.",
+        )
+
+    def count_shards_visited(self):
+        self.shards.filtered -= 1
+        self.shards.kept += 1
 
 
 def load_shard_urls(language: str) -> list[str]:
@@ -101,131 +106,20 @@ def load_shard_urls(language: str) -> list[str]:
     return shard_urls
 
 
-class Downloader:
-    """
-    Controls the logic of over-sampling the HPLT datasets to provide a representative sample.
-    The max_lines are loaded fully into memory, shuffled, and then written out to disk.
-    """
-
-    def __init__(
-        self,
-        language: str,
-        max_lines: int,
-        min_fluency_threshold: float,
-        oversample_factor: float,
-        stack: ExitStack,
-        file_destination: Path,
-        max_words_in_sentence: int,
-    ) -> None:
-        self.visited_lines = 0
-        self.language: str = language
-        self.max_lines: int = max_lines
-        self.min_fluency_threshold = min_fluency_threshold
-        self.oversample_line_count = int(max_lines * oversample_factor)
-        self.stack = stack
-        self.file_destination = file_destination
-        self.max_words_in_sentence = max_words_in_sentence
-        self.stats = FilteringStatistics(file_destination)
-
-    def estimate_total_byte_size(self, average_bytes_per_line: float):
-        """This is required for the distribution of the shuffling behavior."""
-        size_estimate = int(average_bytes_per_line * self.oversample_line_count)
-        logger.info(f"Size estimate computed: {size_estimate:,} bytes")
-        return size_estimate
-
-    def run(self):
-        """
-        Oversample HPLT, loading up to max_lines in memory, and then shuffle and write it to disk.
-        """
-        shuffle_stream = shuffle_with_max_lines(
-            line_stream=self.oversample_hplt_iterator(),
-            seed=f"hplt-{self.language}",
-            max_lines=self.max_lines,
-            max_words_in_sentence=self.max_words_in_sentence,
-            estimate_total_byte_size=self.estimate_total_byte_size,
-        )
-
-        logger.info(
-            f"Finished loading HPLT data in memory, write it out to {self.file_destination}"
-        )
-
-        outfile = self.stack.enter_context(write_lines(self.file_destination))
-        for line in shuffle_stream:
-            self.stats.final.kept += 1
-            outfile.write(line)
-            if self.stats.final.kept % 1_000_000 == 0:
-                logger.info(
-                    f"Wrote {self.stats.final.kept:,} / {self.max_lines:,} lines "
-                    f"to: {self.file_destination.name}"
-                )
-                log_memory()
-
-        self.stats.final.filtered = self.visited_lines - self.stats.final.kept
-
-        logger.info(f"Wrote {self.stats.final.kept:,} lines to: {self.file_destination}")
-        stat_path = self.stats.save_json()
-        logger.info(f"Saved filtering stats to: {stat_path}")
-
-    def oversample_hplt_iterator(self) -> Generator[str, None, None]:
-        """
-        Oversample HPLT data, as there is usually more data than we need and we want to make sure
-        we have a more representative sample of the data. This way a single document or bias in
-        the ordering of the shard is not over-represented in the final data.
-        """
-        stats = self.stats
-
-        logger.info(f"Oversample the HPLT datasets with {self.oversample_line_count} lines")
-
-        def count_shards_visited():
-            stats.shards.filtered -= 1
-            stats.shards.kept += 1
-
-        shard_urls = load_shard_urls(self.language)
-        stats.shards.filtered = len(shard_urls)
-        document_stream = self.stack.enter_context(
-            read_lines(shard_urls, on_enter_location=count_shards_visited)
-        )
-
-        for document_json in document_stream:
-            self.stats.document_count += 1
-
-            document = HPLTDocument(**json.loads(document_json))
-
-            for score, lang_item, sentence in zip(document.scores, document.langs, document.lines):
-                self.visited_lines += 1
-
-                if lang_item == self.language and score >= self.min_fluency_threshold:
-                    stats.oversampling.kept += 1
-                    yield sentence + "\n"
-                else:
-                    stats.oversampling.filtered += 1
-
-                if self.visited_lines % 1_000_000 == 0:
-                    logger.info(f"Visited {self.visited_lines:,} lines")
-                    logger.info(
-                        f"Kept {stats.oversampling.kept:,} with a target of {self.oversample_line_count:,} for oversampling."
-                    )
-                    log_memory()
-
-                if stats.oversampling.kept == self.oversample_line_count:
-                    return
-
-
 def download_hplt(
     language: str,
     min_fluency_threshold: float,
     max_lines: int,
     max_words_in_sentence,
     file_destination: Path,
-    oversample_factor: float = 2.0,
 ):
     """
     Downloads and filters the HPLT dataset.
     https://hplt-project.org/datasets/v1.2
 
-    The function oversamples the data to ensure a more representative sample, filters the data
-    based on the specified language and minimum score, and writes the final dataset to the
-    specified file destination.
+    In the English data with a fluency score of 0.9, about 5% of the total sentences visited
+    are fluent enough to keep. That means to generate a monolingual dataset of 100 million
+    lines 2 billion lines need to be visited.
 
     Parameters:
      - language: The BCP 47 language code to filter the documents.
@@ -233,17 +127,87 @@ def download_hplt(
      - max_lines: The maximum number of lines to include in the final dataset.
      - max_words_in_sentence: The maximum number of words allowed in each sentence.
      - file_destination: The destination path where the final dataset will be written.
-     - oversample_factor: The factor by which to oversample the data.
     """
 
     with ExitStack() as stack:
-        downloader = Downloader(
-            language=language,
-            max_lines=max_lines,
-            min_fluency_threshold=min_fluency_threshold,
-            oversample_factor=oversample_factor,
-            stack=stack,
-            file_destination=file_destination,
-            max_words_in_sentence=max_words_in_sentence,
+        stats = FilteringStatistics(file_destination)
+
+        outfile = stack.enter_context(write_lines(file_destination))
+
+        shard_urls = load_shard_urls(language)
+        stats.shards.filtered = len(shard_urls)
+        document_stream = stack.enter_context(
+            read_lines(shard_urls, on_enter_location=stats.count_shards_visited)
         )
-        downloader.run()
+
+        visited_lines = 0
+
+        # Subtract 1 as the final newline is written outside of the for loop.
+        last_line = max_lines - 1
+
+        for document_json in document_stream:
+            stats.document_count.value += 1
+
+            document = HPLTDocument(**json.loads(document_json))
+
+            cumulative_word_count = 0
+            has_written_once = False
+
+            # Visit the lines in the document.
+            for score, lang_item, line in zip(document.scores, document.langs, document.lines):
+                visited_lines += 1
+
+                # Check for the fluency scores.
+                if lang_item == language and score >= min_fluency_threshold:
+                    # TODO(CJK) - Issue #424
+                    word_count = len(line.split())
+
+                    if word_count > max_words_in_sentence:
+                        # This sentence is too long.
+                        cumulative_word_count = 0
+                    else:
+                        stats.visited_lines.kept += 1
+
+                        if has_written_once:
+                            # Determine if this sentence should be added to the previous one or
+                            # written out as a new line. Only concurrent sentences that meet
+                            # the fluency requirement will be combined together.
+                            if (
+                                cumulative_word_count
+                                and cumulative_word_count + word_count < max_words_in_sentence
+                            ):
+                                # Combine sentences together in the outfile.
+                                cumulative_word_count += word_count
+                                outfile.write(" ")
+                            else:
+                                cumulative_word_count = 0
+                                outfile.write("\n")
+                                stats.final_lines.value += 1
+
+                        # Actually write out the line. The next iteration will determine
+                        # if it's a complete sentence, or if it should be added onto.
+                        outfile.write(line)
+                        has_written_once = True
+                        stats.visited_lines.kept += 1
+                else:
+                    cumulative_word_count = 0
+
+                if visited_lines % 5_000_000 == 0:
+                    logger.info(f"Visited {visited_lines:,} lines")
+                    logger.info(f"Kept {stats.visited_lines.kept:,}.")
+                    logger.info(f"Wrote {stats.final_lines.value:,} out of {max_lines:,}.")
+                    log_memory()
+
+                if stats.final_lines.value == last_line:
+                    break
+            if stats.final_lines.value == last_line:
+                break
+
+        # Account for the final line.
+        outfile.write("\n")
+        stats.final_lines.value += 1
+
+        stats.visited_lines.filtered = visited_lines - stats.visited_lines.kept
+        logger.info(f"Wrote {stats.final_lines.value:,} lines to: {file_destination}")
+        stat_path = stats.save_json()
+        logger.info(f"Saved filtering stats to: {stat_path}")

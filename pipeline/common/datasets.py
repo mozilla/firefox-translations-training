@@ -339,3 +339,23 @@ class FilteringStep(Statistics):
             "kept": self.kept,
             "visited": self.filtered + self.kept,
         }
+
+
+@dataclass
+class CountingStep(Statistics):
+    """
+    This is just a single value that is being counted.
+    """
+
+    value: int
+
+    def __init__(self, dataset_path: Path, description: str, value=0) -> None:
+        super().__init__(dataset_path)
+        self.value = value
+        self.description = description
+
+    def as_json(self) -> dict:
+        return {
+            "description": self.description,
+            "value": self.value,
+        }
