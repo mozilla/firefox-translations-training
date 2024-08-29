@@ -1,6 +1,7 @@
 FROM ubuntu:22.04
 LABEL maintainer="Mozilla Release Engineering <release+docker@mozilla.com>"
 
+# cache bust
 # Add worker user
 # `/builds` may already exist, `-p` will ensure `mkdir` succeeds regardless
 RUN mkdir -p /builds && \
