@@ -100,8 +100,14 @@ def get_wandb_names() -> tuple[str, str, str, str]:
     else:
         experiment = config["experiment"]
 
+    # Publish experiments triggered from the CI to a specific "ci" project
+    if experiment["name"] == "ci":
+        project = "ci"
+    else:
+        project = f'{experiment["src"]}-{experiment["trg"]}'
+
     return (
-        f'{experiment["src"]}-{experiment["trg"]}',
+        project,
         f'{experiment["name"]}_{group_id}',
         task_name,
         group_id,
