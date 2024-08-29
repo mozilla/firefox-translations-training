@@ -106,7 +106,7 @@ def get_defaults(_) -> dict:
                 },
             },
             # Disable Weight & Biases publication on CI
-            "wandb-publication": False,
+            "wandb-publication": True,
         },
     }
 
