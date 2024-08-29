@@ -1,0 +1,68 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.worker_selection
+    - taskgraph.transforms.task_context
+    - taskgraph.transforms.from_deps
+    - translations_taskgraph.transforms.dependency_dummies
+    - taskgraph.transforms.run:transforms
+    - translations_taskgraph.transforms.cached_tasks:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - bicleaner
+
+tasks:
+    post-bicleaner-dummy:
+        description: Dummy task that runs downstream of bicleaner tasks to reduce the number of dependencies that tasks further downstream will need
+        attributes:
+            stage: bicleaner
+            cleaning-type: bicleaner-ai
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
+            cache:
+                type: bicleaner-ai
+                resources: []
+
+        task-context:
+            from-parameters:
+                src_locale: training_config.experiment.src
+                trg_locale: training_config.experiment.trg
+            substitution-fields:
+                - attributes
+
+        run-on-tasks-for: []
+        worker-type: b-cpu-largedisk
+        worker:
+            docker-image: {"in-tree": "base"}
+            max-run-time: 86400
+            artifacts:
+                - name: public/build
+                  path: /builds/worker/artifacts
+                  type: directory
+            # 128 happens when cloning this repository fails
+            retry-exit-status: [128]
+
+        run:
+            using: run-task
+            # The only thing we care about doing here is republishing artifacts fetched
+            # from the upstream bicleaner tasks.
+            command:
+                - bash
+                - -c
+                - mv fetches/* artifacts
+
+        from-deps:
+            unique-kinds: false
+            group-by: all
+            fetches:
+                bicleaner:
+                    - artifact: "{dataset_sanitized}.{src_locale}.zst"
+                      extract: false
+                    - artifact: "{dataset_sanitized}.{trg_locale}.zst"
+                      extract: false
