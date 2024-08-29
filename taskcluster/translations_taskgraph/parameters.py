@@ -4,6 +4,7 @@
 
 from taskgraph.parameters import extend_parameters_schema
 from voluptuous import Extra, Optional, Required
+import uuid
 
 
 # These defaults line up with the `config.ci.yml` pipeline as much as possible.
@@ -73,6 +74,8 @@ def get_defaults(_) -> dict:
                     "mini-batch-words": "1000",
                     "precision": "float16",
                 },
+                # Add a unique ID to each CI run, so the tasks are not cached in Taskcluster
+                "ci_unique_id": str(uuid.uuid4()),
             },
             # These will never be used in practice, but specifying them ensures
             # that we always generate at least one task for each kind, which helps
@@ -122,6 +125,7 @@ extend_parameters_schema(
                 Optional("training-student-finetuned"): {str: str},
                 Optional("decoding-backward"): {str: str},
                 Optional("decoding-teacher"): {str: str},
+                Optional("ci_unique_id"): str,
             },
             Required("experiment"): {
                 Required("name"): str,
