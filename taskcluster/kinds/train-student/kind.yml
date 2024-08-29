@@ -57,7 +57,7 @@ tasks:
         worker-type:
             by-tasks-for:
                 github-pull-request: b-largegpu-largedisk
-                default: b-largegpu-xlargedisk
+                default: b-largegpu-xxlargedisk
         worker:
             max-run-time: 2592000
             # train_taskcluster.py exits with 17 if a request to Taskcluster fails

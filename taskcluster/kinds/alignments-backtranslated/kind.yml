@@ -31,6 +31,7 @@ tasks:
                 type: alignment
                 resources:
                     - pipeline/alignments/align.py
+                    - pipeline/alignments/tokenizer.py
                     - pipeline/alignments/requirements/alignments.txt
         task-context:
             from-parameters:
@@ -44,7 +45,7 @@ tasks:
                 - dependencies
                 - worker.env
                 - attributes
-        worker-type: b-cpu-xlargedisk-64-512
+        worker-type: b-cpu-xlargedisk-32-256
         expires-after: "90 days"
         worker:
             docker-image: {"in-tree": "train"}
@@ -78,6 +79,7 @@ tasks:
                     --corpus_src=$MOZ_FETCHES_DIR/mono.{src_locale}.zst
                     --corpus_trg=$MOZ_FETCHES_DIR/mono.{trg_locale}.zst
                     --output_path=$TASK_WORKDIR/artifacts/mono.aln.zst
+                    --tokenization=moses
                     --priors_input_path=$MOZ_FETCHES_DIR/corpus.priors
 
         dependencies:
