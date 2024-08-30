@@ -98,6 +98,7 @@ class WandB(Publisher):
 
         self.project = project
         self.group = group
+        self.suffix = suffix
         # Build a unique run identifier based on the passed suffix
         # This ID is also used as display name on W&B, as the interface expects unique display names among runs
         self.run = f"{name}{suffix}"
