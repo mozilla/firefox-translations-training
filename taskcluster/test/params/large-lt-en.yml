@@ -134,8 +134,12 @@ training_config:
         opus_WikiMatrix/v1: 0.7
         opus_bible-uedin/v1: 0.7
       default-threshold: 0.5
-    mono-max-sentences-src: 500000000
-    mono-max-sentences-trg: 500000000
+    mono-max-sentences-src:
+      total: 500_000_000
+      per-dataset: 200_000_000
+    mono-max-sentences-trg:
+      total: 500_000_000
+      per-dataset: 200_000_000
     name: opustrainer
     split-length: 2000000
     spm-sample-size: 10000000

@@ -162,11 +162,11 @@ tasks:
                     - pipeline/data/download-mono.py
                 from-parameters:
                     max_sentences:
-                        - training_config.experiment.mono-max-sentences-src
+                        - training_config.experiment.mono-max-sentences-src.per-dataset
         task-context:
             from-parameters:
                 max_sentences:
-                    - training_config.experiment.mono-max-sentences-src
+                    - training_config.experiment.mono-max-sentences-src.per-dataset
             substitution-fields:
                 - run.command
         run:
@@ -195,11 +195,11 @@ tasks:
                     - pipeline/data/download-mono.py
                 from-parameters:
                     max_sentences:
-                        - training_config.experiment.mono-max-sentences-trg
+                        - training_config.experiment.mono-max-sentences-trg.per-dataset
         task-context:
             from-parameters:
                 max_sentences:
-                    - training_config.experiment.mono-max-sentences-trg
+                    - training_config.experiment.mono-max-sentences-trg.per-dataset
             substitution-fields:
                 - run.command
         run:
@@ -253,11 +253,11 @@ tasks:
                     - pipeline/data/download-mono.py
                 from-parameters:
                     max_sentences:
-                        - training_config.experiment.mono-max-sentences-src
+                        - training_config.experiment.mono-max-sentences-src.per-dataset
         task-context:
             from-parameters:
                 max_sentences:
-                    - training_config.experiment.mono-max-sentences-src
+                    - training_config.experiment.mono-max-sentences-src.per-dataset
             substitution-fields:
                 - run.command
         run:
@@ -286,11 +286,11 @@ tasks:
                     - pipeline/data/download-mono.py
                 from-parameters:
                     max_sentences:
-                        - training_config.experiment.mono-max-sentences-trg
+                        - training_config.experiment.mono-max-sentences-trg.per-dataset
         task-context:
             from-parameters:
                 max_sentences:
-                    - training_config.experiment.mono-max-sentences-trg
+                    - training_config.experiment.mono-max-sentences-trg.per-dataset
             substitution-fields:
                 - run.command
         run:

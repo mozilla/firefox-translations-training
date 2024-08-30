@@ -21,15 +21,14 @@ Artifacts:
 
 import argparse
 import os
+from contextlib import ExitStack
 from typing import Optional
-
-import zstandard
 
 from pipeline.common.datasets import Dataset, shuffle_with_max_lines
 from pipeline.common.downloads import (
-    RemoteGzipLineStreamer,
-    RemoteZstdLineStreamer,
     get_download_size,
+    read_lines,
+    write_lines,
 )
 from pipeline.common.logging import get_logger
 
@@ -72,31 +71,34 @@ def main(args_list: Optional[list[str]] = None) -> None:
     if not os.path.exists(args.artifacts):
         os.makedirs(args.artifacts)
 
-    line_streamer = None
     url = None
     if dataset.importer == "url":
-        dataset = Dataset(args.dataset)
         url = dataset.name
-        line_streamer = RemoteZstdLineStreamer(url)
     elif dataset.importer == "news-crawl":
         url = f"http://data.statmt.org/news-crawl/{args.language}/{dataset.name}.{args.language}.shuffled.deduped.gz"
         logger.info("Downloading WMT newscrawl monolingual data")
         logger.info(url)
-        line_streamer = RemoteGzipLineStreamer(url)
+    elif dataset.importer == "opus":
+        url = f"https://object.pouta.csc.fi/OPUS-{dataset.name}/mono/{args.language}.txt.gz"
+        logger.info("Downloading OPUS monolingual data")
+        logger.info(url)
     else:
         raise Exception(f'Unsupported importer "{dataset.importer}"')
 
     logger.info(f"URL: {url}")
 
-    with zstandard.open(file_destination, "wb") as zst_file, line_streamer as line_stream:
+    with ExitStack() as stack:
+        outfile = stack.enter_context(write_lines(file_destination))
+        lines = stack.enter_context(read_lines(url))
+
         for line in shuffle_with_max_lines(
-            line_stream=line_stream,
+            line_stream=lines,
             seed=dataset.name,
             max_lines=args.max_sentences,
-            max_words_in_sentence=100,
+            max_words_in_sentence=MAX_WORDS_IN_SENTENCE,
             total_byte_size=get_download_size(url),
         ):
-            zst_file.write(line.encode("utf-8"))
+            outfile.write(line)
 
 
 if __name__ == "__main__":
