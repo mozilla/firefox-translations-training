@@ -124,8 +124,12 @@ experiment:
   bicleaner:
     dataset-thresholds: []
     default-threshold: 0
-  mono-max-sentences-src: 100000000
-  mono-max-sentences-trg: 20000000
+  mono-max-sentences-src:
+    total: 100_000_000
+    per-dataset: 50_000_000
+  mono-max-sentences-trg:
+    total: 20_000_000
+    per-dataset: 10_000_000
   name: opusprod
   opusmt-backward: https://object.pouta.csc.fi/Tatoeba-MT-models/fin-eng/opusTCv20210807+bt-2021-08-25.zip
   opusmt-teacher: https://object.pouta.csc.fi/Tatoeba-MT-models/eng-fin/opusTCv20210807+bt-2021-09-01.zip
