@@ -375,6 +375,7 @@ def main(args_list: Optional[list[str]] = None) -> None:
             project=run_client.wandb.project,
             group=run_client.wandb.group,
             name="group_logs",
+            suffix=run_client.suffix,
         )
         logger.info("Adding metric row to the 'group_logs' run")
         group_logs_client.open(resume=True)
