@@ -46,8 +46,12 @@ training_config:
         opus_ELRC-3075-wikipedia_health/v1: 0.6
         opus_ada83/v1: 0.0
       default-threshold: 0.5
-    mono-max-sentences-src: 10000
-    mono-max-sentences-trg: 10000
+    mono-max-sentences-src:
+      total: 1000
+      per-dataset: 1000
+    mono-max-sentences-trg:
+      total: 1000
+      per-dataset: 1000
     name: ci
     split-length: 5000
     spm-sample-size: 10000
