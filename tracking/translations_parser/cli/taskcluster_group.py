@@ -213,6 +213,7 @@ def publish_task_group(group_id: str, override: bool = False) -> None:
     experiment = config["experiment"]
     project_name = f'{experiment["src"]}-{experiment["trg"]}'
     group_name = f'{experiment["name"]}_{group_id}'
+    suffix = suffix_from_group(group_id)
 
     grouped_tasks = list_completed_tasks(group_id)
     training_tasks = list_training_tasks(group_id, grouped_tasks)
@@ -260,7 +261,7 @@ def publish_task_group(group_id: str, override: bool = False) -> None:
         publish_task(
             project=project_name,
             group=group_name,
-            suffix=suffix_from_group(group_id),
+            suffix=suffix,
             name=training_task["name"],
             task=training_task,
             metrics=metrics,
@@ -270,6 +271,7 @@ def publish_task_group(group_id: str, override: bool = False) -> None:
     publish_group_logs_from_tasks(
         project=project_name,
         group=group_name,
+        suffix=suffix,
         metrics_tasks=metrics_tasks,
         config=config,
     )

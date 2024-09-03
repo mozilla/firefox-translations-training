@@ -204,7 +204,7 @@ def publish_group_logs_from_tasks(
     *,
     project: str,
     group: str,
-    suffix: str | None = None,
+    suffix: str = "",
     metrics_tasks: dict[str, dict] = {},
     config: dict = {},
 ):
