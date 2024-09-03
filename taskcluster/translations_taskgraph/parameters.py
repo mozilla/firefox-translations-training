@@ -39,7 +39,7 @@ def get_defaults(_) -> dict:
             "marian-args": {
                 "training-backward": {
                     "disp-freq": "2",
-                    "save-freq": "26",
+                    "save-freq": "25",
                     "valid-freq": "50",
                     "after": "50u",
                     "dim-vocabs": "1000 1000",

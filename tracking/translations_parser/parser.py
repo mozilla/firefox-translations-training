@@ -276,9 +276,9 @@ class TrainingParser:
 
         # Handle Marian model and training YAML configuration files (called as --config or -c)
         for path in args.get("config", args["c"]):
-            if path.endswith("train.yml"):
+            if path.startswith("configs/training"):
                 key = "training"
-            elif path.endswith(".yml"):
+            elif path.startswith("configs/model"):
                 key = "model"
             else:
                 continue
