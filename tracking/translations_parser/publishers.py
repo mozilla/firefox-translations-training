@@ -10,7 +10,7 @@ from typing import Sequence
 import wandb
 import yaml
 
-from translations_parser.data import Metric, TrainingEpoch, TrainingLog, ValidationEpoch
+from translations_parser.data import Metric, TrainingEpoch, ValidationEpoch
 from translations_parser.utils import parse_task_label
 
 logger = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ class Publisher(ABC):
     def handle_metrics(self, metrics: Sequence[Metric]) -> None:
         ...
 
-    def publish(self, log: TrainingLog) -> None:
+    def publish(self) -> None:
         ...
 
     def close(self) -> None:
@@ -48,9 +48,15 @@ class Publisher(ABC):
 
 class CSVExport(Publisher):
     def __init__(self, output_dir: Path) -> None:
+        from translations_parser.parser import TrainingParser
+
         if not output_dir.is_dir():
             raise ValueError("Output must be a valid directory for the CSV export")
         self.output_dir = output_dir
+        self.parser: TrainingParser | None = None
+
+    def open(self, parser=None) -> None:
+        self.parser = parser
 
     def write_data(
         self, output: Path, entries: Sequence[TrainingEpoch | ValidationEpoch], dataclass: type
@@ -63,7 +69,9 @@ class CSVExport(Publisher):
             for entry in entries:
                 writer.writerow(vars(entry))
 
-    def publish(self, training_log: TrainingLog) -> None:
+    def publish(self) -> None:
+        assert self.parser is not None, "Parser must be set to run CSV publication."
+        training_log = self.parser.output
         training_output = self.output_dir / "training.csv"
         if training_output.exists():
             logger.warning(f"Training output file {training_output} exists, skipping.")
@@ -109,10 +117,30 @@ class WandB(Publisher):
         self.parser: TrainingParser | None = None
         self.wandb: wandb.sdk.wandb_run.Run | wandb.sdk.lib.disabled.RunDisabled | None = None
 
+    def close(self) -> None:
+        if self.wandb is None:
+            return
+
+        # Publish artifacts
+        if self.artifacts:
+            artifact = wandb.Artifact(name=self.artifacts_name, type=self.artifacts_name)
+            artifact.add_dir(local_path=str(self.artifacts.resolve()))
+            self.wandb.log_artifact(artifact)
+
+        if self.parser is not None:
+            # Store Marian logs as the main log artifact, instead of W&B client runtime.
+            # This will be overwritten in case an unhandled exception occurs.
+            for line in self.parser.parsed_logs:
+                sys.stdout.write(f"{line}\n")
+
+        self.wandb.finish()
+
     def open(self, parser=None, resume: bool = False) -> None:
         self.parser = parser
-        config = getattr(parser, "config", {})
+        config = getattr(parser, "config", {}).copy()
         config.update(self.extra_kwargs.pop("config", {}))
+        # Publish datasets stats directly in the dashboard
+        datasets = config.pop("datasets", None)
 
         # Avoid overriding an existing run on a first training, this should not happen
         if resume is False and int(os.environ.get("RUN_ID", 0)) > 0:
@@ -135,6 +163,22 @@ class WandB(Publisher):
                 logger.info(f"W&B run is being resumed from existing run '{self.run}'.")
         except Exception as e:
             logger.error(f"WandB client could not be initialized: {e}. No data will be published.")
+
+        if datasets is not None:
+            # Log dataset sizes as a custom bar chart
+            self.wandb.log(
+                {
+                    "Datasets": wandb.plot.bar(
+                        wandb.Table(
+                            columns=["Name", "Count"],
+                            data=[[key, value] for key, value in datasets.items()],
+                        ),
+                        "Name",
+                        "Count",
+                        title="Datasets",
+                    )
+                }
+            )
 
     def generic_log(self, data: TrainingEpoch | ValidationEpoch) -> None:
         if self.wandb is None:
@@ -180,24 +224,6 @@ class WandB(Publisher):
                     )
                 }
             )
-
-    def close(self) -> None:
-        if self.wandb is None:
-            return
-
-        # Publish artifacts
-        if self.artifacts:
-            artifact = wandb.Artifact(name=self.artifacts_name, type=self.artifacts_name)
-            artifact.add_dir(local_path=str(self.artifacts.resolve()))
-            self.wandb.log_artifact(artifact)
-
-        if self.parser is not None:
-            # Store Marian logs as the main log artifact, instead of W&B client runtime.
-            # This will be overwritten in case an unhandled exception occurs.
-            for line in self.parser.parsed_logs:
-                sys.stdout.write(f"{line}\n")
-
-        self.wandb.finish()
 
     @classmethod
     def publish_group_logs(
