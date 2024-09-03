@@ -1,14 +1,18 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+import copy
+import functools
 import json
 import logging
+import requests
 
 from taskgraph.actions.registry import register_callback_action
 from taskgraph.decision import taskgraph_decision
 from taskgraph.parameters import Parameters
 from taskgraph.taskgraph import TaskGraph
-from taskgraph.util.taskcluster import get_ancestors, get_artifact
+from taskgraph.util.taskcluster import get_artifact, get_task_definition
+from typing import Dict, List, Union
 
 from translations_taskgraph.parameters import get_defaults
 
@@ -440,3 +444,54 @@ def train_action(parameters, graph_config, input, task_group_id, task_id):
 
     parameters = Parameters(**parameters)
     taskgraph_decision({"root": graph_config.root_dir}, parameters=parameters)
+
+
+## Backport of https://github.com/taskcluster/taskgraph/pull/569 for the
+## release branch to unblock some training. Do not merge this to main!
+@functools.lru_cache(maxsize=None)
+def _get_deps(task_ids, use_proxy):
+    upstream_tasks = {}
+    for task_id in task_ids:
+        try:
+            task_def = get_task_definition(task_id, use_proxy)
+        except requests.HTTPError as e:
+            if e.response.status_code == 404:
+                continue
+            raise e
+
+        upstream_tasks[task_def["metadata"]["name"]] = task_id
+
+        upstream_tasks.update(_get_deps(tuple(task_def["dependencies"]), use_proxy))
+
+    return upstream_tasks
+
+
+def get_ancestors(task_ids: Union[List[str], str], use_proxy: bool = False) -> Dict[str, str]:
+    """Gets the ancestor tasks of the given task_ids as a dictionary of label -> taskid.
+
+    Args:
+        task_ids (str or [str]): A single task id or a list of task ids to find the ancestors of.
+        use_proxy (bool): See get_root_url.
+
+    Returns:
+        dict: A dict whose keys are task labels and values are task ids.
+    """
+    upstream_tasks: Dict[str, str] = {}
+
+    if isinstance(task_ids, str):
+        task_ids = [task_ids]
+
+    for task_id in task_ids:
+        try:
+            task_def = get_task_definition(task_id, use_proxy)
+        except requests.HTTPError as e:
+            # Task has most likely expired, which means it's no longer a
+            # dependency for the purposes of this function.
+            if e.response.status_code == 404:
+                continue
+
+            raise e
+
+        upstream_tasks.update(_get_deps(tuple(task_def["dependencies"]), use_proxy))
+
+    return copy.deepcopy(upstream_tasks)
