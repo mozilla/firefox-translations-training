@@ -71,7 +71,7 @@ tasks:
                     $MOZ_FETCHES_DIR
                     $MOZ_FETCHES_DIR/lex.s2t.pruned
                     $MOZ_FETCHES_DIR/vocab.spm
-                    /builds/worker/artifacts
+                    $TASK_WORKDIR/artifacts
 
         dependencies:
             train-vocab: train-vocab-{src_locale}-{trg_locale}
