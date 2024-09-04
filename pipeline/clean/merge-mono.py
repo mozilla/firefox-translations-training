@@ -123,7 +123,7 @@ def filter_and_write_monolingual_data(
         byte_size_estimate += os.path.getsize(dataset)
     byte_size_estimate *= 0.7
 
-    log_memory()
+    log_memory(gc_collect=True)
     logger.info("Deduplicated and shuffling lines in memory.")
     with read_lines(mono_datasets) as mono_dataset_lines:
         final_lines = shuffle_with_max_lines(
@@ -136,7 +136,7 @@ def filter_and_write_monolingual_data(
             total_byte_size=byte_size_estimate,
         )
 
-    log_memory()
+    log_memory(gc_collect=True)
     logger.info(f"Write the final file: {output_path}")
     with write_lines(output_path) as outfile:
         stats.final_truncated_monolingual_lines = len(final_lines)
@@ -146,7 +146,7 @@ def filter_and_write_monolingual_data(
             if i % 1_000_000 == 999_999:
                 logger.info(f"Wrote line {i+1:,} to {output_path}")
 
-    log_memory()
+    log_memory(gc_collect=True)
     sample_path = output_path.parent / f"{output_path.stem}.sample.txt"
     logger.info(f"Write a 10,000 line sample of the final: {sample_path}")
     with write_lines(sample_path) as outfile:
@@ -159,7 +159,7 @@ def filter_and_write_monolingual_data(
         ):
             outfile.write(line)
 
-    log_memory()
+    log_memory(gc_collect=True)
     stats_path = output_path.parent / f"{output_path.stem}.stats.json"
     logger.info(f"Save the stats: {stats_path}")
     stats.save_json(stats_path)

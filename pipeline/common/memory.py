@@ -24,7 +24,6 @@ def get_memory_string() -> str:
     if not _memory_process:
         _memory_process = psutil.Process(os.getpid())
 
-    gc.collect()
     memory_info = _memory_process.memory_info()
     bytes = memory_info.rss
 
@@ -42,11 +41,18 @@ def get_memory_string() -> str:
     return string
 
 
-def log_memory() -> None:
+def log_memory(gc_collect=False) -> None:
     """
     Logs the memory usage of the current Python process.
+
+    Args:
+    - gc_collect - Perform a GC before measuring memory.
     """
     global _memory_logger
     if not _memory_logger:
         _memory_logger = get_logger("memory")
+
+    if gc_collect:
+        gc.collect()
+
     _memory_logger.info(get_memory_string())
