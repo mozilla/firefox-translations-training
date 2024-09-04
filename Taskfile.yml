@@ -128,6 +128,19 @@ tasks:
       - poetry install --only tests --only utils --no-root
       - PYTHONPATH="$(pwd):$(pwd)/taskcluster/scripts/pipeline" poetry run pytest -vv {{.CLI_ARGS}}
 
+  test-fast:
+    desc: Re-run tests in a faster configuration.
+    summary: |
+      This command skips taskgraph generation and skips the poetry install in order to
+      re-run tests quickly. If the taskgraph or dependencies are out of date, then tests
+      may incorrectly fail. It also outputs the captured stdout.
+
+        task test-fast -- tests/test_alignments.py
+    cmds:
+      - >-
+        SKIP_TASKGRAPH=1 PYTHONPATH="$(pwd):$(pwd)/taskcluster/scripts/pipeline"
+        poetry run pytest -vv -s {{.CLI_ARGS}}
+
   test-docker:
     desc: Run the unit tests in the docker image. Some tests require the pre-built Linux executables.
     cmds:
