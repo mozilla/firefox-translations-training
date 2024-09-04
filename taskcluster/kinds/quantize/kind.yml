@@ -81,7 +81,7 @@ tasks:
                     $MOZ_FETCHES_DIR/vocab.spm
                     $MOZ_FETCHES_DIR/lex.s2t.pruned
                     $MOZ_FETCHES_DIR/devset.{src_locale}
-                    /builds/worker/artifacts
+                    $TASK_WORKDIR/artifacts
 
         dependencies:
             merge-devset: merge-devset-{src_locale}-{trg_locale}
