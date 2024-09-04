@@ -7,7 +7,7 @@ from translations_taskgraph.parameters import get_defaults
 PARAMS = deepcopy(get_defaults(None))
 PARAMS["target_tasks_method"] = "train-target-tasks"
 PARAMS["training_config"]["experiment"]["pretrained-models"] = {
-    "train-backwards": {
+    "train-teacher": {
         "mode": "use",
         "type": "default",
         "urls": [
@@ -31,7 +31,7 @@ MOCK_REQUESTS = [
 
 
 def test_artifact_mounts(full_task_graph: TaskGraph):
-    task = [t for t in full_task_graph.tasks.values() if t.label == "train-backwards-ru-en"][0]
+    task = [t for t in full_task_graph.tasks.values() if t.label == "train-teacher-ru-en-1"][0]
     # No need to bother looking for _all_ files (we'd just duplicate
     # the full list if we did that...), but we verify that one file
     # is well formed.
@@ -42,11 +42,11 @@ def test_artifact_mounts(full_task_graph: TaskGraph):
 
 
 def test_no_eval_tasks(optimized_task_graph: TaskGraph):
-    """Ensure evaluate tasks for train-backwards aren't targeted.
+    """Ensure evaluate tasks for train-teacher aren't targeted.
     See https://github.com/mozilla/firefox-translations-training/issues/628"""
     eval_tasks = [
         task.label
         for task in optimized_task_graph.tasks.values()
-        if task.label.startswith("evaluate-backward")
+        if task.label.startswith("evaluate-teacher")
     ]
     assert len(eval_tasks) == 0
