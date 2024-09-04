@@ -7,7 +7,6 @@ Example:
     python download_pack.py \
         --src=en \
         --trg=ru \
-        --compression_cmd=zstd \
         artifacts/bicleaner-model-en-ru.zst
 """
 
@@ -19,6 +18,7 @@ import tarfile
 import tempfile
 from typing import Optional
 
+from pipeline.common.downloads import compress_file
 from pipeline.common.logging import get_logger
 
 logger = get_logger(__file__)
@@ -36,22 +36,14 @@ def _run_download(src: str, trg: str, dir: str) -> subprocess.CompletedProcess:
     )
 
 
-def _compress_dir(dir_path: str, compression_cmd: str) -> str:
+def _compress_dir(dir_path: str) -> str:
     logger.info(f"Compressing {dir_path}")
-    if compression_cmd not in ["gzip", "zstd", "zstdmt", "pigz"]:
-        raise ValueError(f"Unsupported compression tool {compression_cmd}.")
 
     tarball_path = f"{dir_path}.tar"
     with tarfile.open(tarball_path, "w") as tar:
         tar.add(dir_path, arcname=os.path.basename(dir_path))
 
-    if compression_cmd in ("gzip", "pigz"):
-        comp_ext = ".gz"
-    else:
-        comp_ext = ".zst"
-
-    compressed_path = tarball_path + comp_ext
-    subprocess.run([compression_cmd, tarball_path], check=True)
+    compressed_path = str(compress_file(tarball_path))
 
     return compressed_path
 
@@ -64,7 +56,7 @@ def check_result(result: subprocess.CompletedProcess):
         result.check_returncode()
 
 
-def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None:
+def download(src: str, trg: str, output_path: str) -> None:
     tmp_dir = os.path.join(tempfile.gettempdir(), f"bicleaner-ai-{src}-{trg}")
 
     if os.path.exists(tmp_dir):
@@ -105,9 +97,8 @@ def download(src: str, trg: str, output_path: str, compression_cmd: str) -> None
             print(f"The model for {src}-{trg} is downloaded")
 
     pack_path = tmp_dir
-    if compression_cmd:
-        logger.info("Compress the downloaded pack.")
-        pack_path = _compress_dir(pack_path, compression_cmd)
+    logger.info("Compress the downloaded pack.")
+    pack_path = _compress_dir(pack_path)
 
     # Move to the expected path
     logger.info(f"Moving {pack_path} to {output_path}")
@@ -124,12 +115,6 @@ def main(args: Optional[list[str]] = None) -> None:
     parser.add_argument("--src", type=str, help="Source language code")
     parser.add_argument("--trg", type=str, help="Target language code")
     parser.add_argument(
-        "--compression_cmd",
-        type=str,
-        help="Compression command (eg. pigz, zstd). "
-        "Optional, if not provided the directory will not be compressed",
-    )
-    parser.add_argument(
         "output_path",
         type=str,
         help="Full output file or directory path for example artifacts/en-pt.zst",
@@ -141,7 +126,6 @@ def main(args: Optional[list[str]] = None) -> None:
         src=parsed_args.src,
         trg=parsed_args.trg,
         output_path=parsed_args.output_path,
-        compression_cmd=parsed_args.compression_cmd,
     )
 
 

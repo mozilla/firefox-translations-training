@@ -15,30 +15,27 @@ test -v BIN
 output_prefix=$1
 inputs=( "${@:2}" )
 
-COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
-ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
-
 tmp="${output_prefix}/merge"
 mkdir -p "${tmp}"
 
 echo "### Merging"
-if [[ "${inputs[0]}" == *.${ARTIFACT_EXT} ]]; then
-  cat `echo ${inputs[@]} | tr ' ' '\n' | grep "${SRC}.${ARTIFACT_EXT}" | tr '\n' ' '` >"${tmp}/corpus.${SRC}.dup.${ARTIFACT_EXT}"
-  cat `echo ${inputs[@]} | tr ' ' '\n' | grep "${TRG}.${ARTIFACT_EXT}" | tr '\n' ' '` >"${tmp}/corpus.${TRG}.dup.${ARTIFACT_EXT}"
+if [[ "${inputs[0]}" == *.zst ]]; then
+  cat `echo ${inputs[@]} | tr ' ' '\n' | grep "${SRC}.zst" | tr '\n' ' '` >"${tmp}/corpus.${SRC}.dup.zst"
+  cat `echo ${inputs[@]} | tr ' ' '\n' | grep "${TRG}.zst" | tr '\n' ' '` >"${tmp}/corpus.${TRG}.dup.zst"
 else
-  cat "${inputs[@]/%/.${SRC}.${ARTIFACT_EXT}}" >"${tmp}/corpus.${SRC}.dup.${ARTIFACT_EXT}"
-  cat "${inputs[@]/%/.${TRG}.${ARTIFACT_EXT}}" >"${tmp}/corpus.${TRG}.dup.${ARTIFACT_EXT}"
+  cat "${inputs[@]/%/.${SRC}.zst}" >"${tmp}/corpus.${SRC}.dup.zst"
+  cat "${inputs[@]/%/.${TRG}.zst}" >"${tmp}/corpus.${TRG}.dup.zst"
 fi
 
 # See pipeline/translate/merge-corpus.sh for more information on the deduplication step.
 
 echo "### Deduplication"
-paste <(${COMPRESSION_CMD} -dc "${tmp}/corpus.${SRC}.dup.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${tmp}/corpus.${TRG}.dup.${ARTIFACT_EXT}") |
+paste <(zstdmt -dc "${tmp}/corpus.${SRC}.dup.zst") <(zstdmt -dc "${tmp}/corpus.${TRG}.dup.zst") |
 ${BIN}/dedupe |
-${COMPRESSION_CMD} >"${tmp}.${SRC}${TRG}.${ARTIFACT_EXT}"
+zstdmt >"${tmp}.${SRC}${TRG}.zst"
 
-${COMPRESSION_CMD} -dc "${tmp}.${SRC}${TRG}.${ARTIFACT_EXT}" | cut -f1 | ${COMPRESSION_CMD} > "${output_prefix}.${SRC}.${ARTIFACT_EXT}"
-${COMPRESSION_CMD} -dc "${tmp}.${SRC}${TRG}.${ARTIFACT_EXT}" | cut -f2 | ${COMPRESSION_CMD} > "${output_prefix}.${TRG}.${ARTIFACT_EXT}"
+zstdmt -dc "${tmp}.${SRC}${TRG}.zst" | cut -f1 | zstdmt > "${output_prefix}.${SRC}.zst"
+zstdmt -dc "${tmp}.${SRC}${TRG}.zst" | cut -f2 | zstdmt > "${output_prefix}.${TRG}.zst"
 
 rm -rf "${tmp}"
 

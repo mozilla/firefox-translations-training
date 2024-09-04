@@ -74,8 +74,6 @@ tasks:
                 TRG: "{trg_locale}"
                 USE_OPUSCLEANER: "{use_opuscleaner}"
                 OPUSCLEANER_MODE: "{opuscleaner_mode}"
-                COMPRESSION_CMD: zstdmt
-                ARTIFACT_EXT: zst
             # there might be intermittent issues with OpusCleaner, specifically FastText model downloading can fail
             retry-exit-status:
                 - 1

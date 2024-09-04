@@ -1,13 +1,14 @@
 import gzip
 import io
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+from pathlib import Path
 from threading import Thread
 
 import pytest
 import zstandard
 from fixtures import DataDir
 
-from pipeline.common.downloads import read_lines, write_lines
+from pipeline.common.downloads import compress_file, decompress_file, read_lines, write_lines
 
 # Content to serve
 line_fixtures = [
@@ -169,3 +170,43 @@ def test_read_lines_local_multiple():
 
     with read_lines(file_paths) as lines:
         assert list(lines) == [*line_fixtures, *line_fixtures, *line_fixtures]
+
+
+def assert_matches_test_content(file_path: str):
+    with read_lines(file_path) as lines:
+        assert list(lines) == line_fixtures, f"{file_path} matches the fixtures"
+
+
+@pytest.mark.parametrize(
+    "compression, keep_original",
+    [("gz", False), ("zst", True)],
+)
+def test_compress_file(compression: str, keep_original: bool):
+    data_dir = DataDir("test_compress_file")
+
+    text_file = data_dir.join("text_file.txt")
+    compressed_file = data_dir.join(f"text_file.txt.{compression}")
+
+    write_test_content(text_file)
+
+    compress_file(text_file, keep_original, compression)
+    data_dir.print_tree()
+    assert Path(text_file).exists() == keep_original
+    assert_matches_test_content(compressed_file)
+
+
+@pytest.mark.parametrize(
+    "compression, keep_original",
+    [("gz", False), ("zst", True)],
+)
+def test_decompress_file(compression: str, keep_original: bool):
+    data_dir = DataDir("test_compress_file")
+
+    compressed_file = data_dir.join(f"text_file.txt.{compression}")
+    text_file = data_dir.join("text_file.txt")
+    write_test_content(compressed_file)
+
+    decompress_file(compressed_file, keep_original, text_file)
+    data_dir.print_tree()
+    assert Path(compressed_file).exists() == keep_original
+    assert_matches_test_content(text_file)

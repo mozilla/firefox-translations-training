@@ -103,8 +103,6 @@ tasks:
                     $VCS_PATH/pipeline/eval/eval.py
                     --src              {src_locale}
                     --trg              {trg_locale}
-                    --compression_cmd  zstdmt
-                    --artifact_ext     zst
                     --dataset_prefix   "$MOZ_FETCHES_DIR/{dataset_sanitized}"
                     --marian_config    "$MOZ_FETCHES_DIR/final.model.npz.best-{best_model}.npz.decoder.yml"
                     --models           "$MOZ_FETCHES_DIR/model*/*.npz"

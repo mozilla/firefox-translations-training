@@ -55,8 +55,6 @@ tasks:
                   path: /builds/worker/artifacts
                   type: directory
             env:
-                COMPRESSION_CMD: zstdmt
-                ARTIFACT_EXT: zst
                 SRC: "{src_locale}"
                 TRG: "{trg_locale}"
             # 128 happens when cloning this repository fails

@@ -68,7 +68,6 @@ tasks:
                     python3 $VCS_PATH/pipeline/bicleaner/download_pack.py
                     --src={src_locale}
                     --trg={trg_locale}
-                    --compression_cmd=zstdmt
                     artifacts/bicleaner-ai-{src_locale}-{trg_locale}.tar.zst
 
         fetches:

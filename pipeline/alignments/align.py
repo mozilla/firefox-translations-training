@@ -36,7 +36,6 @@ from pipeline.alignments.tokenizer import tokenize_moses
 from pipeline.common.logging import get_logger
 
 logger = get_logger("alignments")
-COMPRESSION_CMD = "zstdmt"
 
 
 class Tokenization(Enum):
@@ -97,7 +96,7 @@ def run(
         remap(corpus_src, corpus_trg, tokenized_src, tokenized_trg, output_aln, remapped_aln)
         if output_path.endswith(".zst"):
             logger.info("Compressing final alignments")
-            subprocess.check_call([COMPRESSION_CMD, "--rm", remapped_aln])
+            subprocess.check_call(["zstdmt", "--rm", remapped_aln])
             remapped_aln += ".zst"
         shutil.move(remapped_aln, output_path)
 
@@ -105,7 +104,7 @@ def run(
 def decompress(file_path: str):
     if file_path.endswith(".zst"):
         logger.info(f"Decompressing file {file_path}")
-        subprocess.check_call([COMPRESSION_CMD, "-d", "-f", "--rm", file_path])
+        subprocess.check_call(["zstdmt", "-d", "-f", "--rm", file_path])
         return file_path[:-4]
     return file_path
 
@@ -182,10 +181,10 @@ def symmetrize(bin: str, fwd_path: str, rev_path: str, output_path: str):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     # Wrap the file with a compressor stream if it needs to be compressed
     with ExitStack() as stack:
-        with zstandard.ZstdCompressor().stream_writer(
-            stack.enter_context(open(output_path, "wb"))
-        ) if output_path.endswith(".zst") else stack.enter_context(
-            open(output_path, "w", encoding="utf-8")
+        with (
+            zstandard.ZstdCompressor().stream_writer(stack.enter_context(open(output_path, "wb")))
+            if output_path.endswith(".zst")
+            else stack.enter_context(open(output_path, "w", encoding="utf-8"))
         ) as stream:
             with subprocess.Popen(
                 [

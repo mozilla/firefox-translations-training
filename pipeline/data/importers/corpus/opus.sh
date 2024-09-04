@@ -13,8 +13,6 @@ trg=$2
 output_prefix=$3
 dataset=$4
 
-COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
-ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
 WGET="${WGET:-wget}" # This can be overridden by tests.
 
 name=${dataset%%/*}
@@ -30,8 +28,8 @@ ${WGET} -O "${archive_path}" "https://object.pouta.csc.fi/OPUS-${dataset}/moses/
 unzip -o "${archive_path}" -d "${tmp}"
 
 for lang in ${src} ${trg}; do
-  ${COMPRESSION_CMD} -c "${tmp}/${name}.${src}-${trg}.${lang}" > "${output_prefix}.${lang}.${ARTIFACT_EXT}" ||
-    ${COMPRESSION_CMD} -c "${tmp}/${name}.${trg}-${src}.${lang}" > "${output_prefix}.${lang}.${ARTIFACT_EXT}"
+  zstdmt -c "${tmp}/${name}.${src}-${trg}.${lang}" > "${output_prefix}.${lang}.zst" ||
+    zstdmt -c "${tmp}/${name}.${trg}-${src}.${lang}" > "${output_prefix}.${lang}.zst"
 done
 
 rm -rf "${tmp}"
