@@ -115,6 +115,12 @@ previous_group_ids: ["SsGpi3TGShaDT-h93fHL-g"]
 
 Note: This feature should _never_ be used for production training, as it completely bypasses all caching mechanisms, and you will most likely end up with invalid or useless models.
 
+## Dealing with expired upstream tasks
+
+All tasks eventually expire, and have their artifacts and metadata deleted from Taskcluster, typically 1 year after creation. This can cause problems if it happens while partway through a training session. This happens most commonly with tasks that are shared across multiple training runs, such as `toolchain` and `docker-image` tasks. When this happens you can use the "Rebuild Docker Images and Toolchains" action to rebuild these, and add the task group they are rebuilt in to the `previous_group_ids` when kicking off a training run.
+
+You may also use this action directly prior to kicking off the start of a new lanugage pair training to ensure that it uses fresh toolchains and docker images, which will typically avoid this problem altogether.
+
 ## Interactive Tasks
 
 Taskcluster allows authorized users to run so-called [interactive tasks](https://docs.taskcluster.net/docs/reference/workers/docker-worker/features#feature-interactive). These tasks allow users to gain a shell in the same environment that a pipeline step runs in. This can often be useful for quicker debugging or testing of ideas.
