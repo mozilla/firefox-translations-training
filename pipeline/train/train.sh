@@ -6,6 +6,8 @@
 set -x
 set -euo pipefail
 
+# Cache bust
+
 echo "###### Training a model"
 
 model_type=$1
