@@ -63,6 +63,7 @@ task-defaults:
             - bash
             - -c
             - >-
+                export PYTHONPATH=$PYTHONPATH:$VCS_PATH &&
                 python3 $VCS_PATH/pipeline/translate/splitter.py
                 --output_dir=/builds/worker/artifacts
                 --num_parts={split_chunks}
