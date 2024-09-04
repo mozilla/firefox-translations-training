@@ -28,9 +28,6 @@ seed=${11}
 teacher_mode=${12}
 extra_params=( "${@:13}" )
 
-COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
-ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
-
 test -v GPUS
 test -v MARIAN
 test -v WORKSPACE
@@ -66,9 +63,9 @@ for index in "${!datasets[@]}"; do
       train_aln="${alns[index]}"
 
       echo "### Generating tsv dataset with alignments ${alignments}"
-      paste <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${src}.${ARTIFACT_EXT}") \
-            <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${trg}.${ARTIFACT_EXT}") \
-            <(${COMPRESSION_CMD} -dc "${train_aln}") \
+      paste <(zstdmt -dc "${train_set_prefix}.${src}.zst") \
+            <(zstdmt -dc "${train_set_prefix}.${trg}.zst") \
+            <(zstdmt -dc "${train_aln}") \
             >"${tsv_dataset}"
       rm "${train_aln}"
       # grep returns exit code 1 if there are no matches
@@ -77,13 +74,13 @@ for index in "${!datasets[@]}"; do
     else
       echo "### Generating tsv dataset"
       # OpusTrainer supports only tsv and gzip
-      paste <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${src}.${ARTIFACT_EXT}") \
-            <(${COMPRESSION_CMD} -dc "${train_set_prefix}.${trg}.${ARTIFACT_EXT}") \
+      paste <(zstdmt -dc "${train_set_prefix}.${src}.zst") \
+            <(zstdmt -dc "${train_set_prefix}.${trg}.zst") \
             >"${tsv_dataset}"
     fi
     # free disk space
-    rm "${train_set_prefix}.${src}.${ARTIFACT_EXT}"
-    rm "${train_set_prefix}.${trg}.${ARTIFACT_EXT}"
+    rm "${train_set_prefix}.${src}.zst"
+    rm "${train_set_prefix}.${trg}.zst"
     # replace the dataset path in the template in place
     sed -i -e "s#<dataset${index}>#${tsv_dataset}#g" "${new_config}"
 done
@@ -101,8 +98,8 @@ sed -i -e "s#<seed>#${seed}#g" "${new_config}"
 # if the training set is a tsv, validation set also has to be a tsv
 echo "### Converting validation sets to tsv"
 valid_tsv_dataset="${valid_set_prefix}.${src}${trg}.tsv"
-paste <(${COMPRESSION_CMD} -dc "${valid_set_prefix}.${src}.${ARTIFACT_EXT}") \
-      <(${COMPRESSION_CMD} -dc "${valid_set_prefix}.${trg}.${ARTIFACT_EXT}") \
+paste <(zstdmt -dc "${valid_set_prefix}.${src}.zst") \
+      <(zstdmt -dc "${valid_set_prefix}.${trg}.zst") \
       >"${valid_tsv_dataset}"
 
 

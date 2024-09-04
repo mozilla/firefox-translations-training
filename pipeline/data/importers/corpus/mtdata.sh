@@ -13,9 +13,6 @@ trg=$2
 output_prefix=$3
 dataset=$4
 
-COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
-ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
-
 tmp="$(dirname "${output_prefix}")/mtdata/${dataset}"
 mkdir -p "${tmp}"
 
@@ -26,8 +23,8 @@ mtdata get -l "${src}-${trg}" -tr "${dataset}" -o "${tmp}"
 
 find "${tmp}"
 
-cat "${tmp}/train-parts/${dataset}.${src_iso}" | ${COMPRESSION_CMD} -c > "${output_prefix}.${src}.${ARTIFACT_EXT}"
-cat "${tmp}/train-parts/${dataset}.${trg_iso}" | ${COMPRESSION_CMD} -c > "${output_prefix}.${trg}.${ARTIFACT_EXT}"
+cat "${tmp}/train-parts/${dataset}.${src_iso}" | zstdmt -c > "${output_prefix}.${src}.zst"
+cat "${tmp}/train-parts/${dataset}.${trg_iso}" | zstdmt -c > "${output_prefix}.${trg}.zst"
 
 rm -rf "${tmp}"
 

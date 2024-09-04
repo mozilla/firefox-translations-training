@@ -13,9 +13,6 @@ trg=$2
 output_prefix=$3
 dataset=$4
 
-COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
-ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
-
 {
   set +e
 
@@ -23,13 +20,13 @@ ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
     --test-set "${dataset}"         \
     --language-pair "${src}-${trg}" \
     --echo src                      \
-  | ${COMPRESSION_CMD} -c > "${output_prefix}.${src}.${ARTIFACT_EXT}"
+  | zstdmt -c > "${output_prefix}.${src}.zst"
 
   sacrebleu                         \
     --test-set "${dataset}"         \
     --language-pair "${src}-${trg}" \
     --echo ref                      \
-  | ${COMPRESSION_CMD} -c > "${output_prefix}.${trg}.${ARTIFACT_EXT}"
+  | zstdmt -c > "${output_prefix}.${trg}.zst"
 
   status=$?
 
@@ -43,13 +40,13 @@ if [ $status -ne 0 ]; then
     --test-set "${dataset}"         \
     --language-pair "${trg}-${src}" \
     --echo src                      \
-    | ${COMPRESSION_CMD} -c > "${output_prefix}.${trg}.${ARTIFACT_EXT}"
+    | zstdmt -c > "${output_prefix}.${trg}.zst"
 
   sacrebleu                         \
     --test-set "${dataset}"         \
     --language-pair "${trg}-${src}" \
     --echo ref                      \
-    | ${COMPRESSION_CMD} -c > "${output_prefix}.${src}.${ARTIFACT_EXT}"
+    | zstdmt -c > "${output_prefix}.${src}.zst"
 fi
 
 

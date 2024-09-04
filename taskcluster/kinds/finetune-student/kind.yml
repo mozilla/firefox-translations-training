@@ -66,9 +66,6 @@ tasks:
             # 128 happens when cloning this repository fails
             retry-exit-status: [17, 128]
             env:
-                ARTIFACT_EXT: zst
-                COMPRESSION_CMD: zstdmt
-
                 # Weight & Biases trigger
                 WANDB_PUBLICATION: "{wandb_publication}"
                 WANDB_AUTHOR: "{owner}"

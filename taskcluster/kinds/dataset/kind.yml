@@ -33,8 +33,6 @@ task-defaults:
         docker-image: {in-tree: toolchain-build}
         max-run-time: 86400
         env:
-            COMPRESSION_CMD: zstdmt
-            ARTIFACT_EXT: zst
             SRC: "{src_locale}"
             TRG: "{trg_locale}"
         artifacts:

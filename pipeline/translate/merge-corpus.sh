@@ -29,14 +29,11 @@ trg2=$4
 res_src=$5
 res_trg=$6
 
-COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
-ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
-
 tmp_dir="$(dirname "${res_src}")/tmp"
 mkdir -p "${tmp_dir}"
 
-cat <(${COMPRESSION_CMD} -dc "${src1}") <(${COMPRESSION_CMD} -dc "${src2}") | ${COMPRESSION_CMD} >"${tmp_dir}/original.src.${ARTIFACT_EXT}"
-cat <(${COMPRESSION_CMD} -dc "${trg1}") <(${COMPRESSION_CMD} -dc "${trg2}") | ${COMPRESSION_CMD} >"${tmp_dir}/original.trg.${ARTIFACT_EXT}"
+cat <(zstdmt -dc "${src1}") <(zstdmt -dc "${src2}") | zstdmt >"${tmp_dir}/original.src.zst"
+cat <(zstdmt -dc "${trg1}") <(zstdmt -dc "${trg2}") | zstdmt >"${tmp_dir}/original.trg.zst"
 
 # De-duplicating uses dedupe from: https://github.com/kpu/preprocess
 #
@@ -53,16 +50,16 @@ cat <(${COMPRESSION_CMD} -dc "${trg1}") <(${COMPRESSION_CMD} -dc "${trg2}") | ${
 #  Deduplicate parallel data, removing if either side is non-unique ./bin/dedupe -p in_en in_fr out_en out_fr
 
 echo "#### Deduplicating"
-paste <(${COMPRESSION_CMD} -dc "${tmp_dir}/original.src.${ARTIFACT_EXT}") <(${COMPRESSION_CMD} -dc "${tmp_dir}/original.trg.${ARTIFACT_EXT}") |
+paste <(zstdmt -dc "${tmp_dir}/original.src.zst") <(zstdmt -dc "${tmp_dir}/original.trg.zst") |
   shuf --random-source=<(get_seeded_random 42) |
   ${BIN}/dedupe |
-  ${COMPRESSION_CMD} > "${tmp_dir}/all.${ARTIFACT_EXT}"
+  zstdmt > "${tmp_dir}/all.zst"
 
-${COMPRESSION_CMD} -dc "${tmp_dir}/all.${ARTIFACT_EXT}" | cut -f1 | ${COMPRESSION_CMD} > "${res_src}"
-${COMPRESSION_CMD} -dc "${tmp_dir}/all.${ARTIFACT_EXT}" | cut -f2 | ${COMPRESSION_CMD} > "${res_trg}"
+zstdmt -dc "${tmp_dir}/all.zst" | cut -f1 | zstdmt > "${res_src}"
+zstdmt -dc "${tmp_dir}/all.zst" | cut -f2 | zstdmt > "${res_trg}"
 
-src_len=$(${COMPRESSION_CMD} -dc "${res_src}" | wc -l)
-trg_len=$(${COMPRESSION_CMD} -dc "${res_trg}" | wc -l)
+src_len=$(zstdmt -dc "${res_src}" | wc -l)
+trg_len=$(zstdmt -dc "${res_trg}" | wc -l)
 if [ "${src_len}" != "${trg_len}" ]; then
   echo "Error: length of ${res_src} ${src_len} is different from ${res_trg} ${trg_len}"
   exit 1
