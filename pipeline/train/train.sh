@@ -39,13 +39,26 @@ all_model_metrics=(chrf ce-mean-words bleu-detok)
 
 echo "### Preparing tsv datasets and config"
 
+# use a different OpusTrainer config for CJK
+if [[ ${SRC} == 'zh' ||
+      ${TRG} == 'zh' ||
+      ${SRC} == 'ja' ||
+      ${TRG} == 'ja' ||
+      ${SRC} == 'ko' ||
+      ${TRG} == 'ko' ]]
+then
+  config_suffix='cjk.yml'
+else
+  config_suffix='yml'
+fi
+
 # Generate a new OpusTrainer config based on a template to fill paths of the datasets
 new_config="${model_dir}/config.opustrainer.yml"
 if [ "${model_type}" == "teacher" ] ; then
   echo "### Using teacher training mode: ${teacher_mode}"
-  cp "configs/opustrainer/${model_type}.${teacher_mode}.yml" "${new_config}"
+  cp "configs/opustrainer/${model_type}.${teacher_mode}.${config_suffix}" "${new_config}"
 else
-  cp "configs/opustrainer/${model_type}.yml" "${new_config}"
+  cp "configs/opustrainer/${model_type}.${config_suffix}" "${new_config}"
 fi
 
 # Iterate over the training sets

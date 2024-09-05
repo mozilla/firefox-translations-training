@@ -19,7 +19,7 @@ experiment:
   spm-sample-size: 10_000_000
   spm-vocab-size: 32000
   teacher-ensemble: 2
-  teacher-mode: two-stage
+  teacher-mode: cjk-two-stage
   pretrained-models: {}
 datasets:
   devtest:
