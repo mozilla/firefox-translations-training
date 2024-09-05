@@ -137,7 +137,6 @@ opustrainer-train \
     --config "configs/model/${model_type}.yml" "configs/training/${model_type}.${training_type}.yml" \
     --tempdir "${model_dir}/tmp" \
     --vocabs "${vocab}" "${vocab}" \
-    --workspace "${WORKSPACE}" \
     --devices ${GPUS} \
     --valid-metrics "${best_model_metric}" ${all_model_metrics[@]/$best_model_metric} \
     --valid-sets "${valid_tsv_dataset}" \
