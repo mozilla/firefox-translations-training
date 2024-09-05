@@ -90,7 +90,6 @@ def shuffle_with_max_lines(
     line_stream: Iterator[str],
     seed: str,
     max_lines: int,
-    max_words_in_sentence,
     total_byte_size: int,
 ) -> list[str]:
     """
@@ -116,12 +115,6 @@ def shuffle_with_max_lines(
     for line in line_stream:
         # Encoding returns the underlying byte representation which is then measured.
         total_bytes = total_bytes + len(line.encode("utf-8"))
-
-        if len(line.split()) > max_words_in_sentence:
-            # TODO(CJK) - Issue #424
-            # This sentence is too long.
-            continue
-
         lines.append(line)
 
         if len(lines) == max_lines:

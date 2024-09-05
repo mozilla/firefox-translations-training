@@ -32,8 +32,6 @@ from pipeline.common.downloads import (
 )
 from pipeline.common.logging import get_logger
 
-# TODO(CJK) - Issue #424
-MAX_WORDS_IN_SENTENCE = 100
 
 CURRENT_FOLDER = os.path.dirname(os.path.abspath(__file__))
 IMPORTERS_PATH = os.path.abspath(os.path.join(CURRENT_FOLDER, "mono"))
@@ -95,7 +93,6 @@ def main(args_list: Optional[list[str]] = None) -> None:
             line_stream=lines,
             seed=dataset.name,
             max_lines=args.max_sentences,
-            max_words_in_sentence=MAX_WORDS_IN_SENTENCE,
             total_byte_size=get_download_size(url),
         ):
             outfile.write(line)
