@@ -2,8 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import os
 from taskgraph.parameters import extend_parameters_schema
 from voluptuous import Extra, Optional, Required
+
+print("!!! taskcluster/translations_taskgraph/parameters.py")
 
 
 # These defaults line up with the `config.ci.yml` pipeline as much as possible.
@@ -11,7 +14,10 @@ from voluptuous import Extra, Optional, Required
 # the entire pipeline reasonably quickly to validate changes to the pipeline
 # itself. Any real training should be overriding most, if not all, of these
 # via the input to the `train` action.
-def get_defaults(_) -> dict:
+def get_defaults() -> dict:
+    for key in os.environ.keys():
+        print("!!! environment variable get key", key)
+
     return {
         "training_config": {
             "target-stage": "all",
