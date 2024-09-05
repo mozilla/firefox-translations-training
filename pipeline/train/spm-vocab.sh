@@ -70,6 +70,17 @@ zstdmt -dc "${merged_corpus_trg}" >"${vocab_dir}/data.trg.txt"
 # byte_fallback - decomposes unknown pieces into UTF-8 bytes
 # user_defined_symbols - placeholders
 # character_coverage - CJK is recommended to have 0.9995, vocab languages probably you want 1
+if [[ ${SRC} == 'zh' ||
+      ${TRG} == 'zh' ||
+      ${SRC} == 'ja' ||
+      ${TRG} == 'ja' ||
+      ${SRC} == 'ko' ||
+      ${TRG} == 'ko' ]]
+then
+  character_coverage=0.9995
+else
+  character_coverage=1.0
+fi
 "${MARIAN}/spm_train" \
   --bos_id=-1 \
   --eos_id=0 \
@@ -81,7 +92,7 @@ zstdmt -dc "${merged_corpus_trg}" >"${vocab_dir}/data.trg.txt"
   --input_sentence_size="${sample_size}" \
   --shuffle_input_sentence=true \
   --byte_fallback \
-  --character_coverage=1.0 \
+  --"${character_coverage}" \
   --num_threads "${num_threads}"
 
 rm "${vocab_dir}/data.src.txt" "${vocab_dir}/data.trg.txt"
