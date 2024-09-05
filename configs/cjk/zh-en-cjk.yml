@@ -23,35 +23,26 @@ experiment:
   pretrained-models: {}
 datasets:
   devtest:
+  # disable augmentations
   - mtdata_Neulab-tedtalks_dev-1-eng-zho
-  - flores_aug-mix_dev
-  - sacrebleu_aug-mix_wmt20
-  - sacrebleu_aug-mix_wmt18
-  - sacrebleu_aug-mix_wmt17
-  - sacrebleu_aug-mix_wmt17/dev
-  - sacrebleu_aug-mix_iwslt17
-  - sacrebleu_aug-mix_iwslt17/tst2015
-  - sacrebleu_aug-mix_iwslt17/tst2013
-  - sacrebleu_aug-mix_iwslt17/tst2011
-  - sacrebleu_aug-mix_iwslt17/dev2010
+  - flores_dev
+  - sacrebleu_wmt22
+  - sacrebleu_wmt20
+  - sacrebleu_wmt18
   test:
   - mtdata_Neulab-tedtalks_test-1-eng-zho
   - flores_devtest
-  - flores_aug-mix_devtest
-  - flores_aug-title_devtest
-  - flores_aug-upper_devtest
-  - flores_aug-typos_devtest
-  - flores_aug-noise_devtest
-  - flores_aug-inline-noise_devtest
-  - sacrebleu_wmt20/tworefs
+  - sacrebleu_wmt21
   - sacrebleu_wmt19
-  - sacrebleu_wmt18/test-ts
-  - sacrebleu_wmt17/improved
-  - sacrebleu_wmt17/ms
-  - sacrebleu_iwslt17/tst2016
-  - sacrebleu_iwslt17/tst2014
-  - sacrebleu_iwslt17/tst2012
-  - sacrebleu_iwslt17/tst2010
+  - sacrebleu_wmt17
+  # disable augmentations
+#  - flores_aug-mix_devtest
+#  - flores_aug-title_devtest
+#  - flores_aug-upper_devtest
+#  - flores_aug-typos_devtest
+#  - flores_aug-noise_devtest
+#  - flores_aug-inline-noise_devtest
+
 
   # The training data contains:
   #   127,346,161 sentences
