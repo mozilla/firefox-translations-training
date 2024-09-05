@@ -48,7 +48,6 @@ marian-args:
     transformer-dim-aan: "256"
     transformer-heads: "2"
     beam-size: "2"
-    precision: float16
   training-teacher:
     disp-freq: "2"
     save-freq: "10"
@@ -65,7 +64,6 @@ marian-args:
     transformer-dim-aan: "256"
     transformer-heads: "2"
     beam-size: "2"
-    precision: float16
   training-student:
     disp-freq: "2"
     save-freq: "10"
@@ -79,7 +77,6 @@ marian-args:
     transformer-dim-ffn: "256"
     transformer-dim-aan: "256"
     transformer-heads: "2"
-    precision: float16
   training-student-finetuned:
     disp-freq: "2"
     save-freq: "10"
@@ -93,7 +90,6 @@ marian-args:
     transformer-dim-ffn: "256"
     transformer-dim-aan: "256"
     transformer-heads: "2"
-    precision: float16
   decoding-backward:
     mini-batch-words: "2000"
   decoding-teacher:
