@@ -9,7 +9,8 @@ experiment:
   trg: en
   best-model: chrf
   use-opuscleaner: 'true'
-  opuscleaner-mode: defaults
+  # Use custom configs. Cleaning rules are different for CJK languages
+  opuscleaner-mode: custom
   bicleaner:
     default-threshold: 0.5
     dataset-thresholds: {}
