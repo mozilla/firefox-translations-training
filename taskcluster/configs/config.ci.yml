@@ -48,7 +48,6 @@ marian-args:
     transformer-dim-aan: "128"
     transformer-heads: "2"
     beam-size: "2"
-    precision: float16 float16
     # This model doesn't need much memory now.
     workspace: "256" # mb
   training-teacher:
@@ -67,7 +66,6 @@ marian-args:
     transformer-dim-aan: "128"
     transformer-heads: "2"
     beam-size: "2"
-    precision: float16 float16
     # This model doesn't need much memory now.
     workspace: "256" # mb
   training-student:
@@ -83,7 +81,6 @@ marian-args:
     transformer-dim-ffn: "128"
     transformer-dim-aan: "128"
     transformer-heads: "2"
-    precision: float16 float16
     # This model doesn't need much memory now.
     workspace: "256" # mb
   training-student-finetuned:
@@ -99,7 +96,6 @@ marian-args:
     transformer-dim-ffn: "128"
     transformer-dim-aan: "128"
     transformer-heads: "2"
-    precision: float16 float16
     # This model doesn't need much memory now.
     workspace: "256" # mb
   decoding-backward:
