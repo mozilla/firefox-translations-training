@@ -34,24 +34,13 @@ marian-args:
   training-backward:
     # Run training for 10 updates, and display 5 updates. Only validate and save the
     # model once.
-    disp-freq: "2"
+    disp-freq: "1"
     save-freq: "10"
     valid-freq: "10"
     after: 10u
-    # Drastically shrink parameters that affect model size:
-    dim-vocabs: "128 128"
-    enc-depth: "2"
-    dec-depth: "2"
-    dim-emb: "16"
-    dim-rnn: "16"
-    transformer-dim-ffn: "128"
-    transformer-dim-aan: "128"
-    transformer-heads: "2"
-    beam-size: "2"
-    # This model doesn't need much memory now.
     workspace: "256" # mb
   training-teacher:
-    disp-freq: "2"
+    disp-freq: "1"
     save-freq: "10"
     valid-freq: "10"
     after: 10u
@@ -69,18 +58,10 @@ marian-args:
     # This model doesn't need much memory now.
     workspace: "256" # mb
   training-student:
-    disp-freq: "2"
+    disp-freq: "1"
     save-freq: "10"
     valid-freq: "10"
     after: 10u
-    # Drastically shrink parameters that affect model size:
-    enc-depth: "2"
-    dec-depth: "2"
-    dim-emb: "16"
-    dim-rnn: "16"
-    transformer-dim-ffn: "128"
-    transformer-dim-aan: "128"
-    transformer-heads: "2"
     # This model doesn't need much memory now.
     workspace: "256" # mb
   training-student-finetuned:
@@ -88,14 +69,6 @@ marian-args:
     save-freq: "10"
     valid-freq: "10"
     after: 10u
-    # Drastically shrink parameters that affect model size:
-    enc-depth: "2"
-    dec-depth: "2"
-    dim-emb: "16"
-    dim-rnn: "16"
-    transformer-dim-ffn: "128"
-    transformer-dim-aan: "128"
-    transformer-heads: "2"
     # This model doesn't need much memory now.
     workspace: "256" # mb
   decoding-backward:
