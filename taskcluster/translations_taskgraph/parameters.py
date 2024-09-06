@@ -80,7 +80,7 @@ def get_defaults(_) -> dict:
             "datasets": {
                 "train": [
                     "opus_NeuLab-TedTalks/v1",
-                    "opus_ELRC-3075-wikipedia_health/v1",
+                    "opus_ELRC-3056-wikipedia_health/v1",
                 ],
                 "devtest": [
                     "flores_dev",
