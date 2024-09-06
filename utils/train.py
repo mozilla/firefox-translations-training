@@ -101,6 +101,11 @@ def main() -> None:
         )
         sys.exit(1)
 
+    if branch != "main" and not branch.startswith("dev") and not branch.startswith("release"):
+        print(
+            f"Branch must be `main` or start with `dev` or `release` for training to run. Detected branch was {branch}"
+        )
+
     timeout = 10
     while True:
         decision_task = get_decision_task_push(branch)

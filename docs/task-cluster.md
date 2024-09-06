@@ -14,6 +14,10 @@ which increases scalability and observability compared to [Snakemake](snakemake.
 We use [Taskcluster taskgraph](https://taskcluster-taskgraph.readthedocs.io/en/latest/) to define the DAG
 (Directly Acyclic Graph) of the pipeline steps.
 
+## Development
+
+When making changes to Taskcluster parts of the pipeline it is often necessary to run training before opening a pull request with the change. To do this, ensure that you push your change to a branch of `mozilla/firefox-translations-training` that begins with `dev`. (Only pushes to `main`, `dev*`, and `release*` will run Taskcluster tasks.)
+
 ## Running training
 
 1. Create a new branch in your local git repo and push it to `mozilla/firefox-translations-training`.
