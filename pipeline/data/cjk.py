@@ -17,16 +17,19 @@ class ChineseConverter:
         self.s2t = opencc.OpenCC("s2t.json")
         self.t2s = opencc.OpenCC("t2s.json")
 
-    def convert_file(self, input_path: str, output_path: str, to: ChineseType):
+    def convert_file(self, input_path: str, output_path: str, to: ChineseType) -> int:
+        count = 0
         with write_lines(output_path) as out_file, read_lines(input_path) as lines:
             for line in lines:
                 # remove new line
                 ch_type = self._detect(line)
                 if ch_type not in (ch_type.none, to):
                     new_line = self._convert_line(line, to)
+                    count += 1
                 else:
                     new_line = line
                 out_file.write(new_line)
+        return count
 
     @staticmethod
     def _detect(text) -> ChineseType:

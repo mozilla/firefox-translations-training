@@ -54,16 +54,18 @@ def data_dir():
 )
 def test_convert_file(text: str, expected: str, type: ChineseType, data_dir: DataDir):
     in_path = data_dir.create_file("cjk_test_in.txt", text)
+    all_text = text + "\n" + text + "\n" + text
     with open(in_path, "w") as f:
-        f.write(text + "\n" + text + "\n" + text)
+        f.write(all_text)
     out_path = data_dir.join("cjk_test_out.txt")
     converter = ChineseConverter()
 
-    converter.convert_file(in_path, out_path, type)
+    count = converter.convert_file(in_path, out_path, type)
 
     with open(out_path, "r") as f:
         out_text = f.read()
     assert out_text
+    assert count == (3 if all_text != out_text else 0)
     out_texts = out_text.split("\n")
     assert len(out_texts) == 3
     assert out_texts[0] == out_texts[1] == out_texts[2]

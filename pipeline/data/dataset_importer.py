@@ -233,12 +233,13 @@ def run_import(type: str, dataset: str, output_prefix: str):
             if lang == "zh":
                 logger.info("Converting the output file to Chinese Simplified")
                 chinese_converter = ChineseConverter()
-                chinese_converter.convert_file(
+                count = chinese_converter.convert_file(
                     f"{output_prefix}.{lang}.zst",
                     f"{output_prefix}.converted.{lang}.zst",
                     ChineseType.simplified,
                 )
                 shutil.move(f"{output_prefix}.converted.{lang}.zst", f"{output_prefix}.{lang}.zst")
+                logger.info(f"Converted {count} lines to Chinese Simplified")
 
         if aug_modifer:
             print("Running augmentation")
