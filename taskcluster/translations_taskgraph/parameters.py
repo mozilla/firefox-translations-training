@@ -17,7 +17,7 @@ def get_defaults(_) -> dict:
             "target-stage": "all",
             "experiment": {
                 "name": "ci",
-                "src": "ru",
+                "src": "zh",
                 "trg": "en",
                 "teacher-ensemble": 1,
                 "teacher-mode": "two-stage",
@@ -79,20 +79,17 @@ def get_defaults(_) -> dict:
             # to avoid bustage that doesn't show up until we run the training action.
             "datasets": {
                 "train": [
-                    "opus_ada83/v1",
+                    "opus_NeuLab-TedTalks/v1",
                     "opus_ELRC-3075-wikipedia_health/v1",
-                    "url_https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.[LANG].zst",
-                    "mtdata_ELRC-web_acquired_data_related_to_scientific_research-1-eng-rus",
                 ],
                 "devtest": [
                     "flores_dev",
-                    "sacrebleu_aug-upper_wmt19",
                 ],
                 "test": [
                     "flores_devtest",
                 ],
                 "mono-src": [
-                    "news-crawl_news.2008",
+                    "news-crawl_news.2010",
                 ],
                 "mono-trg": [
                     "news-crawl_news.2007",
