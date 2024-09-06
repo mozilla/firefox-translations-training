@@ -103,7 +103,7 @@ tasks:
                     finetune
                     {src_locale}
                     {trg_locale}
-                    {experiment_name}
+                    "{experiment_name}"
                     $MOZ_FETCHES_DIR/corpus
                     $MOZ_FETCHES_DIR/devset
                     $TASK_WORKDIR/artifacts
