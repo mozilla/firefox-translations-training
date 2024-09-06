@@ -63,7 +63,7 @@ def validate_pretrained_models(params):
     title="Train",
     symbol="train",
     description="Initiate part or all of the training pipeline",
-    generic=False,
+    cb_name="train",
     order=500,
     context=[],
     available=can_train,
