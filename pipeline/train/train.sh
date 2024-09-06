@@ -14,21 +14,22 @@ model_type=$1
 training_type=$2
 src=$3
 trg=$4
+experiment_name=$5
 # comma separated prefixes to datasets for curriculum learning
 # for example path1/corpus,path2/mono
-train_set_prefixes=$5
-valid_set_prefix=$6
-model_dir=$7
-vocab=$8
-best_model_metric=$9
+train_set_prefixes=$6
+valid_set_prefix=$7
+model_dir=$8
+vocab=$9
+best_model_metric=$10
 # comma separated alignment paths that correspond to each training dataset
 # (required for Tags modifier and guided alignments for student training)
 # or None to train without alignments
-alignments=${10}
+alignments=$11
 # random seed, UINT
-seed=${11}
-teacher_mode=${12}
-extra_params=( "${@:13}" )
+seed=$12
+teacher_mode=$13
+extra_params=( "${@:14}" )
 
 test -v GPUS
 test -v MARIAN
@@ -126,12 +127,20 @@ else
   PARSER="parse_tc_logs --from-stream --publish-group-logs -v"
 fi
 
+log_level="ERROR"
+extra_configs=""
+if [[ $experiment_name == "ci" ]]; then
+  log_level="INFO"
+  extra_configs+="--batch-size 100 "
+  extra_configs+="--chunk-size 16 "
+fi
+
 echo "### Training ${model_dir}"
 # OpusTrainer reads the datasets, shuffles, augments them and feeds to stdin of Marian
-opustrainer-train \
+opustrainer-train $extra_configs \
   --config "${new_config}" \
   --log-file "${model_dir}/opustrainer.log" \
-  --log-level ERROR \
+  --log-level "${log_level}" \
   "${MARIAN}/marian" \
     --model "${model_dir}/model.npz" \
     --config "configs/model/${model_type}.yml" "configs/training/${model_type}.${training_type}.yml" \

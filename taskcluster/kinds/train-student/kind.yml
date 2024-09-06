@@ -31,6 +31,7 @@ tasks:
                 trg_locale: training_config.experiment.trg
                 wandb_publication: training_config.wandb-publication
                 owner: owner
+                experiment_name: training_config.experiment.name
             substitution-fields:
                 - description
                 - name
@@ -103,6 +104,7 @@ tasks:
                     train
                     {src_locale}
                     {trg_locale}
+                    {experiment_name}
                     $MOZ_FETCHES_DIR/corpus
                     $MOZ_FETCHES_DIR/devset
                     $TASK_WORKDIR/artifacts
