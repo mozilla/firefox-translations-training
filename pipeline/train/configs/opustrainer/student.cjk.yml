@@ -19,9 +19,9 @@ modifiers:
 # generates inline noise (emojis etc.) matching position in source and target using alignments
 # spm_vocab argument: retokenize alignments from spaces to Sentencepiece subwords and feed to Marian
 # Tags modifier has to be the last one to retokenize the alignments
-- Tags: 0.005
-  augment: 1
-  spm_vocab: <vocab>
+#- Tags: 0.005
+#  augment: 1
+#  spm_vocab: <vocab>
 
 seed: 1111
 # parallel sentences + token alignments
