@@ -2,9 +2,9 @@ from copy import deepcopy
 
 from taskgraph.taskgraph import TaskGraph
 
-from translations_taskgraph.parameters import get_ci_training_config
+from translations_taskgraph.parameters import get_defaults
 
-PARAMS = deepcopy(get_ci_training_config())
+PARAMS = deepcopy(get_defaults(None))
 PARAMS["target_tasks_method"] = "train-target-tasks"
 PARAMS["training_config"]["experiment"]["pretrained-models"] = {
     "train-backwards": {

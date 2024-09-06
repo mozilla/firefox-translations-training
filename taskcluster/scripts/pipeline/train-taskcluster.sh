@@ -16,17 +16,16 @@ model_type=$1
 training_type=$2
 src=$3
 trg=$4
-experiment_name=$5
-train_set_prefix=$6
-valid_set_prefix=$7
-model_dir=$8
-best_model_metric=$9
-alignments=$10
-seed=$11
-teacher_mode=$12
-pretrained_model_mode=$13
-pretrained_model_type=$14
-extra_params=( "${@:15}" )
+train_set_prefix=$5
+valid_set_prefix=$6
+model_dir=$7
+best_model_metric=$8
+alignments=$9
+seed=${10}
+teacher_mode=${11}
+pretrained_model_mode=${12}
+pretrained_model_type=${13}
+extra_params=( "${@:14}" )
 
 if [ "$pretrained_model_mode" != "use" ]; then
     # MOZ_FETCHES_DIR is not required for the "use" pretrained model mode
@@ -57,7 +56,6 @@ case "$pretrained_model_mode" in
         "$training_type" \
         "$src" \
         "$trg" \
-        "$experiment_name" \
         "$train_set_prefix" \
         "$valid_set_prefix" \
         "$model_dir" \

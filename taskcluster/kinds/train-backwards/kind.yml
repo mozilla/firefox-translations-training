@@ -44,7 +44,6 @@ tasks:
                 best_model: training_config.experiment.best-model
                 src_locale: training_config.experiment.src
                 trg_locale: training_config.experiment.trg
-                experiment_name: training_config.experiment.name
                 pretrained_backward_mode: training_config.experiment.pretrained-models.train-backwards.mode
                 pretrained_backward_type: training_config.experiment.pretrained-models.train-backwards.type
                 wandb_publication: training_config.wandb-publication
@@ -108,7 +107,6 @@ tasks:
                     train
                     {trg_locale}
                     {src_locale}
-                    "{experiment_name}"
                     $MOZ_FETCHES_DIR/corpus
                     $MOZ_FETCHES_DIR/devset
                     $TASK_WORKDIR/artifacts
