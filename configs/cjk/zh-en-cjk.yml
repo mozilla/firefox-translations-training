@@ -17,7 +17,9 @@ experiment:
   mono-max-sentences-src: 500_000_000
   mono-max-sentences-trg: 200_000_000
   spm-sample-size: 10_000_000
-  spm-vocab-size: 32000
+  # increase vocab size for Chinese,
+  # see https://github.com/hplt-project/HPLT-MT-Models/blob/main/v1.0/training/en-zh_hant/hplt/model.train.log
+  spm-vocab-size: 64000000
   teacher-ensemble: 2
   teacher-mode: cjk-two-stage
   pretrained-models: {}
