@@ -21,6 +21,7 @@ Artifacts:
 
 import argparse
 import os
+import shutil
 from contextlib import ExitStack
 from typing import Optional
 
@@ -31,7 +32,7 @@ from pipeline.common.downloads import (
     write_lines,
 )
 from pipeline.common.logging import get_logger
-
+from pipeline.data.cjk import ChineseConverter, ChineseType
 
 CURRENT_FOLDER = os.path.dirname(os.path.abspath(__file__))
 IMPORTERS_PATH = os.path.abspath(os.path.join(CURRENT_FOLDER, "mono"))
@@ -96,6 +97,15 @@ def main(args_list: Optional[list[str]] = None) -> None:
             total_byte_size=get_download_size(url),
         ):
             outfile.write(line)
+
+    # TODO: convert everything to Chinese simplified for now
+    if args.language == "zh":
+        logger.info("Converting the output file to Chinese Simplified")
+        chinese_converter = ChineseConverter()
+        chinese_converter.convert_file(
+            file_destination, file_destination + ".converted.zst", ChineseType.simplified
+        )
+        shutil.move(file_destination + ".converted.zst", file_destination)
 
 
 if __name__ == "__main__":
