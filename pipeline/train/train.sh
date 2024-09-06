@@ -129,7 +129,7 @@ echo "### Training ${model_dir}"
 opustrainer-train \
   --config "${new_config}" \
   --log-file "${model_dir}/opustrainer.log" \
-  --log-level ERROR \
+  --log-level INFO \
   "${MARIAN}/marian" \
     --model "${model_dir}/model.npz" \
     --config "configs/model/${model_type}.yml" "configs/training/${model_type}.${training_type}.yml" \
