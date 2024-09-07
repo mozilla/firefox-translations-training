@@ -229,7 +229,7 @@ def run_import(type: str, dataset: str, output_prefix: str):
         run_cmd([os.path.join(current_dir, "download-corpus.sh"), no_aug_id, output_prefix])
 
         # TODO: convert everything to Chinese simplified for now
-        for lang in (os.environ["SRC"], os.environ["TRG"]):
+        for lang in (SRC, TRG):
             if lang == "zh":
                 logger.info("Converting the output file to Chinese Simplified")
                 chinese_converter = ChineseConverter()
