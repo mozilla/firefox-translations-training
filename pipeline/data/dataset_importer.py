@@ -25,7 +25,6 @@ from opustrainer.modifiers.typos import TypoModifier
 from opustrainer.types import Modifier
 
 from pipeline.common.downloads import compress_file, decompress_file
-from pipeline.common.logging import get_logger
 from pipeline.data.cjk import ChineseConverter, ChineseType
 
 # these envs are standard across the pipeline
@@ -33,8 +32,6 @@ SRC = os.environ["SRC"]
 TRG = os.environ["TRG"]
 
 random.seed(1111)
-
-logger = get_logger(__file__)
 
 
 class CompositeModifier:
@@ -231,7 +228,7 @@ def run_import(type: str, dataset: str, output_prefix: str):
         # TODO: convert everything to Chinese simplified for now
         for lang in (SRC, TRG):
             if lang == "zh":
-                logger.info("Converting the output file to Chinese Simplified")
+                print("Converting the output file to Chinese Simplified")
                 chinese_converter = ChineseConverter()
                 count = chinese_converter.convert_file(
                     f"{output_prefix}.{lang}.zst",
@@ -239,7 +236,7 @@ def run_import(type: str, dataset: str, output_prefix: str):
                     ChineseType.simplified,
                 )
                 shutil.move(f"{output_prefix}.converted.{lang}.zst", f"{output_prefix}.{lang}.zst")
-                logger.info(f"Converted {count} lines to Chinese Simplified")
+                print(f"Converted {count} lines to Chinese Simplified")
 
         if aug_modifer:
             print("Running augmentation")
