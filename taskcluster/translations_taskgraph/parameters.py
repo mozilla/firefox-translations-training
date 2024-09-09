@@ -14,7 +14,7 @@ from voluptuous import Extra, Optional, Required
 def get_defaults(_) -> dict:
     return {
         "training_config": {
-            "target-stage": "all",
+            "target-stage": "train-teacher",
             "experiment": {
                 "name": "ci",
                 "src": "zh",
