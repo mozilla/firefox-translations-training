@@ -83,7 +83,8 @@ tasks:
                   else: ${head_ref}
           in:
               $if: >
-                  tasks_for in ["action", "pr-action", "cron", "github-push"]
+                  tasks_for in ["action", "pr-action", "cron"]
+                  || (tasks_for == "github-push" && (head_branch == "refs/heads/main" || head_branch[:18] == "refs/heads/release" || head_branch[:14] == "refs/heads/dev"))
                   || (isPullRequest && pullRequestAction in ["opened", "reopened", "synchronize"])
               then:
                   $let:
@@ -225,7 +226,7 @@ tasks:
                               features:
                                   taskclusterProxy: true
     
-                              image: mozillareleases/taskgraph:decision-v10.0.1@sha256:3a798e2aeeea2af54f3e96599b4e9543294e2dbca2f0a79c52c2f13a9db12f28
+                              image: mozillareleases/taskgraph:decision-v11.0.0@sha256:8c57e30214c85625856479812e63212dc2873b1ffcd97467a7c93508cbb3075a
                               maxRunTime: 1800
                               onExitStatus:
                                 retry:
