@@ -116,6 +116,12 @@ class ParsedTaskLabel(NamedTuple):
     augmentation: Optional[str]
 
 
+class ParsedGCPMetric(NamedTuple):
+    importer: str
+    augmentation: Optional[str]
+    dataset: Optional[str]
+
+
 def parse_task_label(task_label: str) -> ParsedTaskLabel:
     """
     Parse details out of train-* and evaluate-* task labels.
@@ -280,3 +286,21 @@ def suffix_from_group(task_group_id: str) -> str:
 def get_lines_count(file_path: str) -> int:
     with open(file_path, "r") as f:
         return sum(1 for _ in f)
+
+
+def parse_gcp_metric(filename: str) -> tuple[str, str, str]:
+    importer, *extra_str = filename.split("_", 1)
+    if importer not in DATASET_KEYWORDS:
+        raise ValueError()
+
+    extra_args = {"dataset": None}
+    if extra_str:
+        re_match = re.match(
+            r"(?P<augmentation>aug-[^_]+)?_?(?P<dataset>[-\w\d_]+(-[a-z]{3}-[a-z]{3})?)",
+            *extra_str,
+        )
+        if not re_match:
+            raise ValueError()
+        extra_args.update(re_match.groupdict())
+
+    return ParsedGCPMetric(importer, **extra_args)

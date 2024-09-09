@@ -16,7 +16,7 @@ from pathlib import Path
 from translations_parser.data import Metric
 from translations_parser.parser import TrainingParser
 from translations_parser.publishers import WandB
-from translations_parser.utils import parse_task_label
+from translations_parser.utils import parse_task_label, parse_gcp_metric
 
 logger = logging.getLogger(__name__)
 
@@ -64,17 +64,19 @@ def parse_experiment(
     metrics = []
     if metrics_dir:
         for metrics_file in metrics_dir.glob("*.metrics"):
-            if mode == ExperimentMode.SNAKEMAKE:
-                # Snakemake experiments metrics are in the form `<importer><?_dataset>`
-                importer, *dataset = metrics_file.stem.split("_", 1)
-                dataset = dataset[0] if dataset else None
+            try:
+                metric_attrs = parse_gcp_metric(metrics_file.stem)
+            except ValueError:
+                logger.error(f"Error parsing metric from GCP: {metrics_file.stem}. Skipping.")
             else:
-                # Taskcluster experiments metrics are in the form `<?augmentation_><dataset>`.
-                # As importer is a required attribute, we publish the metric base on its file
-                # name directly, making comparison with other type of publication impossible.
-                importer = metrics_file.stem
-                dataset = None
-            metrics.append(Metric.from_file(metrics_file, importer=importer, dataset=dataset))
+                metrics.append(
+                    Metric.from_file(
+                        metrics_file,
+                        importer=metric_attrs.importer,
+                        dataset=metric_attrs.dataset,
+                        augmentation=metric_attrs.augmentation,
+                    )
+                )
 
     with logs_file.open("r") as f:
         lines = (line.strip() for line in f.readlines())
