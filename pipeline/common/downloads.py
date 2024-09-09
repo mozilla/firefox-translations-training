@@ -474,6 +474,15 @@ def write_lines(path: Path | str):
         stack.close()
 
 
+def count_lines(path: Path | str) -> int:
+    """
+    Similar to wc -l, this counts the lines in a file. However, this command does so regardless
+    of the compression strategy used on the file.
+    """
+    with read_lines(path) as lines:
+        return sum(1 for _ in lines)
+
+
 def get_file_size(location: Union[Path, str]) -> int:
     """Get the size of a file, whether it is remote or local."""
     if str(location).startswith("http://") or str(location).startswith("https://"):
