@@ -11,7 +11,7 @@ import wandb
 import yaml
 
 from translations_parser.data import Metric, TrainingEpoch, ValidationEpoch
-from translations_parser.utils import parse_task_label, parse_gcp_metric
+from translations_parser.utils import parse_task_label, parse_gcp_metric, patch_model_name
 
 logger = logging.getLogger(__name__)
 
@@ -314,7 +314,7 @@ class WandB(Publisher):
 
         # Add metrics from new Taskcluster .metrics files
         for file in taskcluster_metrics:
-            model_name = file.parent.name
+            model_name = patch_model_name(file.parent.name)
             metric_attrs = parse_gcp_metric(file.stem)
             try:
                 metrics[model_name].append(

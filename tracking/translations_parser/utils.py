@@ -122,6 +122,14 @@ class ParsedGCPMetric(NamedTuple):
     dataset: Optional[str]
 
 
+def patch_model_name(model):
+    """Naming may be inconsistent between train and evaluation tasks"""
+    model = model.replace("finetuned", "finetune")
+    if model == "backward":
+        model = "backwards"
+    return model
+
+
 def parse_task_label(task_label: str) -> ParsedTaskLabel:
     """
     Parse details out of train-* and evaluate-* task labels.
@@ -134,12 +142,7 @@ def parse_task_label(task_label: str) -> ParsedTaskLabel:
     if not match:
         raise ValueError(f"Label could not be parsed: {task_label}")
     groups = match.groupdict()
-    model = groups["model"]
-
-    # Naming may be inconsistent between train and evaluation tasks
-    model = model.replace("finetuned", "finetune")
-    if model == "backward":
-        model = "backwards"
+    model = patch_model_name(groups["model"])
 
     suffix = groups.get("suffix") or groups.get("task_suffix")
     if not suffix and model == "teacher":
