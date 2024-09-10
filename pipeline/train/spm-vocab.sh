@@ -92,7 +92,7 @@ fi
   --input_sentence_size="${sample_size}" \
   --shuffle_input_sentence=true \
   --byte_fallback \
-  --"${character_coverage}" \
+  --character_coverage=${character_coverage} \
   --num_threads "${num_threads}"
 
 rm "${vocab_dir}/data.src.txt" "${vocab_dir}/data.trg.txt"
