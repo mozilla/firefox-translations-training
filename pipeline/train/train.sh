@@ -40,12 +40,12 @@ all_model_metrics=(chrf ce-mean-words bleu-detok)
 echo "### Preparing tsv datasets and config"
 
 # use a different OpusTrainer config for CJK
-if [[ ${SRC} == 'zh' ||
-      ${TRG} == 'zh' ||
-      ${SRC} == 'ja' ||
-      ${TRG} == 'ja' ||
-      ${SRC} == 'ko' ||
-      ${TRG} == 'ko' ]]
+if [[ ${src} == 'zh' ||
+      ${trg} == 'zh' ||
+      ${src} == 'ja' ||
+      ${trg} == 'ja' ||
+      ${src} == 'ko' ||
+      ${trg} == 'ko' ]]
 then
   config_suffix='cjk.yml'
 else
