@@ -224,8 +224,9 @@ marian-args:
     early-stopping: '20'
 target-stage: all
 start-stage: alignments-student
-previous_group_ids: ["SRqS_ljaRxG3ZRcwKYlF9g"]
+previous_group_ids: ["CYZBfFIXRV2qzROcGvlUHA"]
 existing_tasks: {
+        "shortlist-en-ro": "XLIc4OMCQyiePoFEN_sV2A",
         "build-docker-image-base": "BAvLUilqQ3SYqy6Ck55CUQ",
         "build-docker-image-test": "f0gbptvMTDaKODjqL9hlOw",
         "build-docker-image-toolchain-build": "LlZa8-L9TRemgyzQcAxuHw",

@@ -121,9 +121,10 @@ marian-args:
   training-student-finetuned:
     early-stopping: '20'
 target-stage: all
-start-stage: merge-translated
-previous_group_ids: ["TSvbd6EuTmGayUQtIP3Lbg"]
+start-stage: alignments-student
+previous_group_ids: ["B_zr10hIQm-17bJybx7cBQ"]
 existing_tasks: {
+        "shortlist-en-id": "I6Sr27bEQfKFgxySrvIsTg",
         "build-docker-image-base": "BAvLUilqQ3SYqy6Ck55CUQ",
         "build-docker-image-test": "f0gbptvMTDaKODjqL9hlOw",
         "build-docker-image-toolchain-build": "LlZa8-L9TRemgyzQcAxuHw",
