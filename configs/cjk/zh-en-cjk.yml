@@ -4,7 +4,7 @@
 # The documentation for this config can be found here:
 # https://github.com/mozilla/firefox-translations-training/blob/2027f4e99b78d45ce73e44ed454c8527e03718f7/taskcluster/configs/config.prod.yml
 experiment:
-  name: cjk
+  name: teacher-test
   src: zh
   trg: en
   best-model: chrf
@@ -19,7 +19,7 @@ experiment:
   spm-sample-size: 10_000_000
   # increase vocab size for Chinese,
   # see https://github.com/hplt-project/HPLT-MT-Models/blob/main/v1.0/training/en-zh_hant/hplt/model.train.log
-  spm-vocab-size: 64000000
+  spm-vocab-size: 64000
   teacher-ensemble: 2
   teacher-mode: cjk-two-stage
   pretrained-models: {}
