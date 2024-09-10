@@ -24,7 +24,7 @@ def get_defaults(_) -> dict:
                 "mono-max-sentences-trg": {"total": 10000, "per-dataset": 10000},
                 "mono-max-sentences-src": {"total": 10000, "per-dataset": 10000},
                 "spm-sample-size": 10000,
-                "spm-vocab-size": 1000,
+                "spm-vocab-size": 3000,
                 "best-model": "chrf",
                 "use-opuscleaner": "true",
                 "opuscleaner-mode": "custom",
