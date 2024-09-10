@@ -234,6 +234,7 @@ class WandB(Publisher):
         group: str,
         suffix: str,
         existing_runs: list[str] | None = None,
+        snakemake: bool = False,
     ) -> None:
         """
         Publish files within `logs_dir` to W&B artifacts for a specific group.
@@ -270,7 +271,12 @@ class WandB(Publisher):
         )
         logs_metrics = sorted((logs_dir / "eval").glob("eval*.log"))
         direct_metrics = sorted((logs_dir / "metrics").glob("*.metrics"))
-        taskcluster_metrics = sorted((models_dir).glob("**/*.metrics"))
+
+        taskcluster_metrics = []
+        # Do not retrieve metrics from models directory for legacy Snakemake experiments
+        if snakemake is False:
+            taskcluster_metrics = sorted((models_dir).glob("**/*.metrics"))
+
         if quantized_metrics:
             logger.info(f"Found {len(quantized_metrics)} quantized metrics from speed folder")
         if logs_metrics:

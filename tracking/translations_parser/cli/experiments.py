@@ -180,6 +180,7 @@ def main() -> None:
                 group=last_group,
                 suffix=last_suffix,
                 existing_runs=existing_runs,
+                snakemake=(mode == ExperimentMode.SNAKEMAKE.value),
             )
             existing_runs = []
 
