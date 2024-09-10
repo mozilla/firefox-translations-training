@@ -8,7 +8,7 @@ VCS_ROOT=$(pwd)
 popd &>/dev/null
 
 if [ "$#" -lt 10 ]; then
-    echo "Usage: $0 <model_type> <training_type> <src_locale> <trg_locale> <train_set_prefix> <valid_set_prefix> <model_dir> <best_model_metric> <alignments> <pretrained_model_mode> <pretrained_model_type> [extra_params...]"
+    echo "Usage: $0 <model_type> <training_type> <src_locale> <trg_locale> <train_set_prefix> <validation_set_prefix> <artifacts> <best_model_metric> <alignments> <pretrained_model_mode> <pretrained_model_type> [extra_marian_args...]"
     exit 1
 fi
 
@@ -16,16 +16,16 @@ model_type=$1
 training_type=$2
 src=$3
 trg=$4
-train_set_prefix=$5
-valid_set_prefix=$6
-model_dir=$7
+train_set_prefixes=$5
+validation_set_prefix=$6
+artifacts=$7
 best_model_metric=$8
 alignments=$9
 seed=${10}
 teacher_mode=${11}
 pretrained_model_mode=${12}
 pretrained_model_type=${13}
-extra_params=( "${@:14}" )
+extra_marian_args=( "${@:14}" )
 
 if [ "$pretrained_model_mode" != "use" ]; then
     # MOZ_FETCHES_DIR is not required for the "use" pretrained model mode
@@ -49,21 +49,24 @@ case "$pretrained_model_mode" in
         fi
 
         if [ "$pretrained_model_mode" == "init" ]; then
-            extra_params+=("--pretrained-model" "$TASK_WORKDIR/artifacts/final.model.npz.best-$best_model_metric.npz" "--no-restore-corpus")
+            extra_marian_args+=("--pretrained-model" "$TASK_WORKDIR/artifacts/final.model.npz.best-$best_model_metric.npz" "--no-restore-corpus")
         fi
-        $VCS_ROOT/pipeline/train/train.sh \
-        "$model_type" \
-        "$training_type" \
-        "$src" \
-        "$trg" \
-        "$train_set_prefix" \
-        "$valid_set_prefix" \
-        "$model_dir" \
-        "$TASK_WORKDIR/artifacts/vocab.spm" \
-        "$best_model_metric" \
-        "$alignments" \
-        "$seed" \
-        "$teacher_mode" \
-        "${extra_params[@]}"
+        python3 $VCS_ROOT/pipeline/train/train.py \
+        --model_type "$model_type" \
+        --training_type "$training_type" \
+        --src "$src" \
+        --trg "$trg" \
+        --train_set_prefixes "$train_set_prefixes" \
+        --validation_set_prefix "$validation_set_prefix" \
+        --artifacts "$artifacts" \
+        --vocab "$TASK_WORKDIR/artifacts/vocab.spm" \
+        --best_model_metric "$best_model_metric" \
+        --alignments "$alignments" \
+        --seed "$seed" \
+        --teacher_mode "$teacher_mode" \
+        --gpus "$GPUS" \
+        --marian_dir "$MARIAN" \
+        --workspace "$WORKSPACE" \
+        -- "${extra_marian_args[@]}"
         ;;
 esac
