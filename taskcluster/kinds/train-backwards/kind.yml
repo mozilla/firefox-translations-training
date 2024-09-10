@@ -30,7 +30,7 @@ tasks:
             cache:
                 type: train-backwards
                 resources:
-                    - pipeline/train/train.sh
+                    - pipeline/train/train.py
                     - taskcluster/scripts/pipeline/train_taskcluster.py
                     - taskcluster/scripts/pipeline/train-taskcluster.sh
                     - pipeline/train/configs/model/backward.yml

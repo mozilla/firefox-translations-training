@@ -1,5 +1,5 @@
 datasets:
-  original: <dataset0> # Original parallel corpus
+  original: {dataset0} # Original parallel corpus
 
 stages:
   - train

@@ -1,5 +1,5 @@
 datasets:
-  original: <dataset0> # Original parallel corpus
+  original: {dataset0} # Original parallel corpus
 
 stages:
   - train
@@ -26,7 +26,7 @@ modifiers:
 # Tags modifier has to be the last one to retokenize the alignments
 - Tags: 0.005
   augment: 1
-  spm_vocab: <vocab>
+  spm_vocab: {vocab}
 
 seed: 1111
 # parallel sentences + token alignments
