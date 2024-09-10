@@ -57,7 +57,7 @@ def run(
     src = os.environ["SRC"]
     trg = os.environ["TRG"]
 
-    tmp_dir = os.path.join(os.path.dirname(output_path), "tmp")
+    tmp_dir = os.path.join(os.path.dirname(output_path), "tmp_aln")
     os.makedirs(tmp_dir, exist_ok=True)
 
     corpus_src = decompress(corpus_src)
@@ -100,6 +100,9 @@ def run(
             subprocess.check_call([COMPRESSION_CMD, "--rm", remapped_aln])
             remapped_aln += ".zst"
         shutil.move(remapped_aln, output_path)
+
+    # Remove temporary directory to prevent uploading to artifacts
+    shutil.rmtree(tmp_dir)
 
 
 def decompress(file_path: str):
