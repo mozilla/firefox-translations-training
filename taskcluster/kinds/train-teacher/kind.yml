@@ -133,7 +133,7 @@ tasks:
                     $MOZ_FETCHES_DIR/devset
                     $TASK_WORKDIR/artifacts
                     {best_model}
-                    None,None
+                    None
                     {{this_chunk}}
                     {teacher_mode}
                     {pretrained_teacher_mode}
