@@ -315,8 +315,8 @@ class WandB(Publisher):
         # Add metrics from new Taskcluster .metrics files
         for file in taskcluster_metrics:
             model_name = patch_model_name(file.parent.name)
-            metric_attrs = parse_gcp_metric(file.stem)
             try:
+                metric_attrs = parse_gcp_metric(file.stem)
                 metrics[model_name].append(
                     Metric.from_file(
                         file,
