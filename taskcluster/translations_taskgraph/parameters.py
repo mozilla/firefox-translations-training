@@ -20,7 +20,7 @@ def get_defaults(_) -> dict:
                 "src": "zh",
                 "trg": "en",
                 "teacher-ensemble": 1,
-                "teacher-mode": "two-stage",
+                "teacher-mode": "cjk-two-stage",
                 "mono-max-sentences-trg": {"total": 10000, "per-dataset": 10000},
                 "mono-max-sentences-src": {"total": 10000, "per-dataset": 10000},
                 "spm-sample-size": 10000,
