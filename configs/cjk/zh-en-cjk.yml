@@ -14,14 +14,14 @@ experiment:
   bicleaner:
     default-threshold: 0.5
     dataset-thresholds: {}
-  mono-max-sentences-src: 500_000_000
-  mono-max-sentences-trg: 200_000_000
+  mono-max-sentences-src: {"total": 500000000, "per-dataset": 500000000}
+  mono-max-sentences-trg: {"total": 200000000, "per-dataset": 200000000}
   spm-sample-size: 10_000_000
   # increase vocab size for Chinese,
   # see https://github.com/hplt-project/HPLT-MT-Models/blob/main/v1.0/training/en-zh_hant/hplt/model.train.log
   spm-vocab-size: 64000
   teacher-ensemble: 2
-  teacher-mode: cjk-two-stage
+  teacher-mode: two-stage
   pretrained-models: {}
 datasets:
   devtest:
