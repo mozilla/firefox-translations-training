@@ -30,7 +30,7 @@ fi
 cd "$(dirname "${0}")"
 
 mkdir -p "${output_dir}"
-dir="${output_dir}/tmp"
+dir="${output_dir}/tmp_shortlist"
 mkdir -p "${dir}"
 
 corpus_src="${corpus_prefix}.${SRC}.${ARTIFACT_EXT}"
