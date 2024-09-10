@@ -122,11 +122,26 @@ class ParsedGCPMetric(NamedTuple):
     dataset: Optional[str]
 
 
-def patch_model_name(model):
-    """Naming may be inconsistent between train and evaluation tasks"""
+def patch_model_name(model, suffix=None):
+    """Model Naming and suffix may be inconsistent between different sources"""
+    if suffix is None:
+        # Try to autodetect suffix based on name
+        re_match = re.search(r"(?P<end>-?(?P<suffix>\d+))$", model)
+        if re_match:
+            re_match = re_match.groupdict()
+            model = model[: -len(re_match["end"])]
+            suffix = re_match["suffix"]
+
     model = model.replace("finetuned", "finetune")
     if model == "backward":
         model = "backwards"
+
+    if not suffix and model == "teacher":
+        # Keep the index on teacher runs for compatibility with legacy models
+        # https://github.com/mozilla/firefox-translations-training/issues/573
+        suffix = "1"
+    if suffix:
+        model = f"{model}-{suffix}"
     return model
 
 
@@ -142,15 +157,10 @@ def parse_task_label(task_label: str) -> ParsedTaskLabel:
     if not match:
         raise ValueError(f"Label could not be parsed: {task_label}")
     groups = match.groupdict()
-    model = patch_model_name(groups["model"])
+    model = patch_model_name(
+        groups["model"], suffix=groups.get("suffix") or groups.get("task_suffix")
+    )
 
-    suffix = groups.get("suffix") or groups.get("task_suffix")
-    if not suffix and model == "teacher":
-        # Keep the index on teacher runs for compatibility with legacy models
-        # https://github.com/mozilla/firefox-translations-training/issues/573
-        suffix = "1"
-    if suffix:
-        model = f"{model}-{suffix}"
     return ParsedTaskLabel(model, groups.get("importer"), groups.get("dataset"), groups.get("aug"))
 
 
