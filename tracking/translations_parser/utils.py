@@ -304,16 +304,17 @@ def get_lines_count(file_path: str) -> int:
 def parse_gcp_metric(filename: str) -> tuple[str, str, str]:
     importer, *extra_str = filename.split("_", 1)
     if importer not in DATASET_KEYWORDS:
-        raise ValueError()
+        raise ValueError(f"Importer {importer} is not supported")
 
     extra_args = {"dataset": None}
     if extra_str:
+        (extra_str,) = extra_str
         re_match = re.match(
             r"(?P<augmentation>aug-[^_]+)?_?(?P<dataset>[-\w\d_]+(-[a-z]{3}-[a-z]{3})?)",
-            *extra_str,
+            extra_str,
         )
         if not re_match:
-            raise ValueError()
+            raise ValueError(f"Could not detect augmentation nor dataset from {extra_str}")
         extra_args.update(re_match.groupdict())
 
     return ParsedGCPMetric(importer, **extra_args)
