@@ -127,7 +127,7 @@ which allows for specifying task group ids to fetch existing tasks from.""",
                     "teacher-mode": {
                         "type": "string",
                         "description": "Teacher training mode",
-                        "enum": ["one-stage", "two-stage", "cjk-two-stage"],
+                        "enum": ["one-stage", "two-stage"],
                         "default": "two-stage",
                     },
                     "mono-max-sentences-src": {
