@@ -11,7 +11,7 @@ import wandb
 import yaml
 
 from translations_parser.data import Metric, TrainingEpoch, ValidationEpoch
-from translations_parser.utils import parse_task_label
+from translations_parser.utils import parse_task_label, parse_gcp_metric
 
 logger = logging.getLogger(__name__)
 
@@ -261,6 +261,7 @@ class WandB(Publisher):
                 logger.warning(f"Detection of a previous group_logs run failed: {e}")
 
         logs_dir = Path("/".join([*logs_parent_folder[:-1], "logs", project, group]))
+        models_dir = Path("/".join([*logs_parent_folder[:-1], "models", project, group]))
         # Old experiments use `speed` directory for quantized metrics
         quantized_metrics = sorted(
             Path("/".join([*logs_parent_folder, project, group, "evaluation", "speed"])).glob(
@@ -269,12 +270,17 @@ class WandB(Publisher):
         )
         logs_metrics = sorted((logs_dir / "eval").glob("eval*.log"))
         direct_metrics = sorted((logs_dir / "metrics").glob("*.metrics"))
+        taskcluster_metrics = sorted((models_dir).glob("**/*.metrics"))
         if quantized_metrics:
             logger.info(f"Found {len(quantized_metrics)} quantized metrics from speed folder")
         if logs_metrics:
             logger.info(f"Found {len(logs_metrics)} metrics from task logs")
         if direct_metrics:
-            logger.info(f"Found {len(logs_metrics)} metrics from .metrics artifacts")
+            logger.info(f"Found {len(direct_metrics)} Snakemake metrics from .metrics artifacts")
+        if taskcluster_metrics:
+            logger.info(
+                f"Found {len(taskcluster_metrics)} Taskcluster metrics from .metrics artifacts"
+            )
 
         # Store metrics by run name
         metrics = defaultdict(list)
@@ -295,12 +301,29 @@ class WandB(Publisher):
                 )
             except ValueError as e:
                 logger.error(f"Could not parse metrics from {file.resolve()}: {e}")
-        # Add metrics from .metrics files
+
+        # Add metrics from old SnakeMake .metrics files
         for file in direct_metrics:
             model_name, importer, dataset, aug = parse_task_label(file.stem)
             try:
                 metrics[model_name].append(
                     Metric.from_file(file, importer=importer, dataset=dataset, augmentation=aug)
+                )
+            except ValueError as e:
+                logger.error(f"Could not parse metrics from {file.resolve()}: {e}")
+
+        # Add metrics from new Taskcluster .metrics files
+        for file in taskcluster_metrics:
+            model_name = file.parent.name
+            metric_attrs = parse_gcp_metric(file.stem)
+            try:
+                metrics[model_name].append(
+                    Metric.from_file(
+                        file,
+                        importer=metric_attrs.importer,
+                        dataset=metric_attrs.dataset,
+                        augmentation=metric_attrs.augmentation,
+                    )
                 )
             except ValueError as e:
                 logger.error(f"Could not parse metrics from {file.resolve()}: {e}")
