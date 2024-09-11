@@ -121,7 +121,7 @@ def get_log_parser_command():
         return ["cat"]
 
     logger.info("Weight & Biases publication is available.")
-    return ["parse_tc_logs", "--from-stream", "--publish-group-logs", "-v"]
+    return ["parse_tc_logs", "--from-stream", "--publish-group-logs", "--verbose"]
 
 
 class TrainCLI:
