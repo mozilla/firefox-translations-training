@@ -2,12 +2,11 @@ import argparse
 import glob
 import json
 import os
-import unicodedata
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Generator
 
-from pipeline.common.datasets import shuffle_with_max_lines
+from pipeline.common.datasets import hash_line, shuffle_with_max_lines
 from pipeline.common.downloads import (
     format_bytes,
     get_human_readable_file_size,
@@ -21,15 +20,6 @@ logger = get_logger(__file__)
 
 # TODO(CJK) - Issue #424
 MAX_WORDS_IN_SENTENCE = 100
-
-
-def hash_line(line: str) -> int:
-    """
-    Return a hash of a line. The line has its whitespace stripped and text representation
-    normalized to ensure a consistent representation.
-    """
-    cleaned_line = unicodedata.normalize("NFC", line.strip())
-    return hash(cleaned_line)
 
 
 @dataclass

@@ -157,70 +157,78 @@ def test_mono_source_import(importer, language, dataset, sort_order, data_dir):
 
 hplt_translations = {
     "en": [
-        "If you are having problems with your HP Computer, the article below will help determine if the problem is with your HP Drivers.\n",
-        "Downloading the latest Driver releases helps resolve Driver conflicts and improve your computer's stability and performance. Updates are recommended for all Windows 10, 8, Windows 7, XP and Vista users.\n",
+        "If you are having problems with your HP Computer, the article below will help determine if the problem is with your HP Drivers. Downloading the latest Driver releases helps resolve Driver conflicts and improve your computer's stability and performance. Updates are recommended for all Windows 10, 8, Windows 7, XP and Vista users.\n",
         "This webpage shows information on what a issue is and the various issues that may occurs when no permission to write document. Several issue are easy to fix, but others are not, so you need to read our article to find proper methods, so, our article is very necessary for you to read.\n",
         "0x8004D00D XACT_E_NOTCURRENT The transaction failed to commit due to the failure of optimistic concurrency control in at least one of the resource managers.\n",
-        "5. Download the driver which you want. There may be numerous variations shown. Pick the latest one.\n",
-        "If these doesn't work, the easiest way you can see.\n",
-        '3. Depending on your view options either click on "uninstall a program" or "program and features".\n',
-        '4. When the programs and features window opens select the program your want to uninstall from the list and click on the "Uninstall" button.\n',
-        '5. Confirm that you want to uninstall a program by clicking on the "Yes" button.\n',
-        "2.Follow the instructions in the preceding procedure to update drivers.\n",
+        "5. Download the driver which you want. There may be numerous variations shown. Pick the latest one. If these doesn't work, the easiest way you can see.\n",
+        '3. Depending on your view options either click on "uninstall a program" or "program and features". 4. When the programs and features window opens select the program your want to uninstall from the list and click on the "Uninstall" button. 5. Confirm that you want to uninstall a program by clicking on the "Yes" button.\n',
+        "2.Follow the instructions in the preceding procedure to update drivers. 3.Click Search automatically for updated driver software. 4. If below message popped up, your driver is already the latest driver and there is no need to update. 5. If a new driver is found, please follow the instruction to install it and restart your computer. Description Compatibility\n",
+        "Show the most common Drivers below\n",
+        "HP Drivers Download Utility was created to save your time resolving driver problems by providing you with a single, automatic tool.\n",
+        "All your drivers just in a minute!\n",
+        "Have you encountered and don't know how to resolve issue? This guide show information on most usual lead to for problem, we hope your PC can in order after reading this.\n",
     ],
     "ru": [
-        "Мы прошли проверку временем, и стали одним из ведущих операторов на рынке России в поставках металла как со склада, так и напрямую с металлургических комбинатов на объекты наших клиентов.\n",
-        "Мы предлагаем оптимальные варианты поставок металла вашему предприятию в нужные сроки, в требуемом объеме, с необходимым качеством.\n",
+        "Мы прошли проверку временем, и стали одним из ведущих операторов на рынке России в поставках металла как со склада, так и напрямую с металлургических комбинатов на объекты наших клиентов. Мы предлагаем оптимальные варианты поставок металла вашему предприятию в нужные сроки, в требуемом объеме, с необходимым качеством.\n",
         "Именно так мы видим нашу историю, – 17 лет ежедневного упорного труда «вопреки, а не благодаря», - формируя рынок и меняя компанию. Это история, которую мы пишем и сегодня, - принимая решения и воплощая их в жизнь. Это история про отношения и про внутренние рекорды. История о том, как складывать пазл внутри компании, достигать, и кропотливо создавать следующий пазл. История о том, как этические ценности становятся генетическим кодом компании. История строительства умного бизнеса. История создания своей бизнес-модели, во главу которой поставлен клиент и его потребности. Мы не останавливаемся, мы уже работаем в будущем.\n",
         "«быть конкурентоспособней» – мы становимся полностью независимым металлотрейдером, это решение во многом предопределило наше острое восприятие рынка и потребностей наших клиентов.\n",
         "«быть лучше» – мы значительно улучшили предлагаемый клиентам ассортимент, - мы начинаем работать со всеми ведущими металлургическим комбинатами России и зарубежья.\n",
-        "«быть в гармонии» – сетевое развитие становится стратегической целью компании, в её рамках клиентская перспектива становится ключевым компонентом.Поэтому никакой критической ситуации сейчас нет, как и необходимости вводить какие-либо ограничения на федеральном уровне. Но рекомендуется следовать стандартным мерам предосторожности — носить маски в общественных местах, соблюдать гигиену рук. Это крайне важно для уязвимых категорий граждан. Также следует вакцинироваться, если подошло время.\n",
+        "«быть в гармонии» – сетевое развитие становится стратегической целью компании, в её рамках клиентская перспектива становится ключевым компонентом.\n",
+        "Поэтому никакой критической ситуации сейчас нет, как и необходимости вводить какие-либо ограничения на федеральном уровне. Но рекомендуется следовать стандартным мерам предосторожности — носить маски в общественных местах, соблюдать гигиену рук. Это крайне важно для уязвимых категорий граждан. Также следует вакцинироваться, если подошло время.\n",
         "Отмечу, что сегодняшний рост в большей степени связан со сменой циркулирующих субвариантов вируса, а не с сезоном летних отпусков. Ведь летом люди проводят больше времени на открытом воздухе, где риски инфицирования не столь высоки. Хотя в некоторых случаях повышенная мобильность, смена климата и часовых поясов всё же могут приводить к ослаблению иммунитета и способствовать развитию инфекции. Это многие ощущали на себе в период после летних отпусков.\n",
-        "— Итальянские исследователи пришли к выводу, что к каждому 20-му, кто переболел коронавирусом, возможно, никогда больше не вернутся обоняние и вкус. О подобных осложнениях также говорят российские специалисты. Вызывает ли постковид новые, более лёгкие варианты коронавируса?\n",
-        "— Постковидный синдром продолжает регистрироваться у людей по всему миру. Считается, что он встречается у одного из восьми взрослых. В отдельных случаях при постковидном синдроме наблюдаются признаки поражения сердечно-сосудистой системы, почек, метаболические нарушения. У некоторых пациентов стойкая потеря вкуса и запаха отмечается уже на протяжении двух лет.\n",
+        "— Итальянские исследователи пришли к выводу, что к каждому 20-му, кто переболел коронавирусом, возможно, никогда больше не вернутся обоняние и вкус. О подобных осложнениях также говорят российские специалисты. Вызывает ли постковид новые, более лёгкие варианты коронавируса? — Постковидный синдром продолжает регистрироваться у людей по всему миру. Считается, что он встречается у одного из восьми взрослых. В отдельных случаях при постковидном синдроме наблюдаются признаки поражения сердечно-сосудистой системы, почек, метаболические нарушения. У некоторых пациентов стойкая потеря вкуса и запаха отмечается уже на протяжении двух лет.\n",
         "Главным фактором прекращения пандемии COVID-19 станет коллективный иммунитет, его можно достичь за счёт вакцинации. Об этом в интервью...\n",
+        "Сложно сказать, восстановится ли окончательно вкус или обоняние у тех, кто испытывает проблемы с ними после перенесённого COVID-19. Ещё в доковидную эпоху было показано, что 1,5% населения имеют проблемы с обонянием. После 50 лет их ощущают более 50% населения, а после 80 лет — более 80%. Поэтому если предрасположенность к этим нарушениям у человека была и до COVID-19, то такие нарушения после перенесённой инфекции могут продолжаться неопределённо долго.\n",
     ],
 }
 
 hplt_stats = {
     "en": {
-        "document_count": {
-            "description": "How many documents were visited. This can help represent data diversity.",
-            "value": 6,
-        },
-        "final_lines": {
-            "description": "How many lines were actually written. Smaller lines will be combined together.",
-            "value": 100,
-        },
         "shards": {
-            "description": "How many shards were sampled from. Each shard contains a subset of the total datasets available.",
             "filtered": 1,
             "kept": 1,
+            "description": "How many shards were sampled from. Each shard contains a subset of the total datasets available.",
         },
         "visited_lines": {
+            "filtered": 1517,
+            "kept": 208,
             "description": "How many lines were visited and kept from the HPLT documents.",
-            "filtered": 862,
-            "kept": 210,
+        },
+        "document_count": {
+            "value": 15,
+            "description": "How many documents were visited. This can help represent data diversity.",
+        },
+        "duplicate_lines": {
+            "value": 27,
+            "description": "Of the collected lines, this counts how many were duplicates and discarded.",
+        },
+        "final_lines": {
+            "value": 100,
+            "description": "How many lines were actually written. Smaller lines will be combined together.",
         },
     },
     "ru": {
-        "document_count": {
-            "description": "How many documents were visited. This can help represent data diversity.",
-            "value": 14,
-        },
-        "final_lines": {
-            "description": "How many lines were actually written. Smaller lines will be combined together.",
-            "value": 100,
-        },
         "shards": {
-            "description": "How many shards were sampled from. Each shard contains a subset of the total datasets available.",
             "filtered": 1,
             "kept": 1,
+            "description": "How many shards were sampled from. Each shard contains a subset of the total datasets available.",
         },
         "visited_lines": {
+            "filtered": 2192,
+            "kept": 164,
             "description": "How many lines were visited and kept from the HPLT documents.",
-            "filtered": 1298,
-            "kept": 216,
+        },
+        "document_count": {
+            "value": 22,
+            "description": "How many documents were visited. This can help represent data diversity.",
+        },
+        "duplicate_lines": {
+            "value": 33,
+            "description": "Of the collected lines, this counts how many were duplicates and discarded.",
+        },
+        "final_lines": {
+            "value": 100,
+            "description": "How many lines were actually written. Smaller lines will be combined together.",
         },
     },
 }

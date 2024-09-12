@@ -371,6 +371,7 @@ def _read_lines_single_file(
     Args:
         location - URL or file path
         path_in_archive  - The path to a file in a zip archive
+        on_enter_location - A lambda for when a new location is entered
     """
     location = str(location)
     if on_enter_location:

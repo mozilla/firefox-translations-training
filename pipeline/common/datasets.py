@@ -8,6 +8,7 @@ from pathlib import Path
 from random import Random
 from typing import Callable, Iterator, Optional, Union
 from urllib.parse import urlparse
+import unicodedata
 
 # We keep this relatively short because these datasets end up in task labels,
 # which end up in task cache routes, which need to be <= 256 characters.
@@ -361,3 +362,12 @@ class CountingStep(Statistics):
             "description": self.description,
             "value": self.value,
         }
+
+
+def hash_line(line: str) -> int:
+    """
+    Return a hash of a line. The line has its whitespace stripped and text representation
+    normalized to ensure a consistent representation.
+    """
+    cleaned_line = unicodedata.normalize("NFC", line.strip())
+    return hash(cleaned_line)

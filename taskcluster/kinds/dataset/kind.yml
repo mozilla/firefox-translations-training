@@ -294,13 +294,13 @@ tasks:
                 from-parameters:
                     max_sentences:
                         - training_config.experiment.mono-max-sentences-src.per-dataset
-                    min_fluency_threshold:
+                    hlpt_min_fluency:
                         - training_config.experiment.min-fluency-threshold.mono-src
         task-context:
             from-parameters:
                 max_sentences:
                     - training_config.experiment.mono-max-sentences-src.per-dataset
-                min_fluency_threshold:
+                hlpt_min_fluency:
                     - training_config.experiment.min-fluency-threshold.mono-src
             substitution-fields:
                 - run.command
@@ -316,7 +316,7 @@ tasks:
                     --dataset {dataset}
                     --language {src_locale}
                     --max_sentences {max_sentences}
-                    --min_fluency_threshold {min_fluency_threshold}
+                    --hlpt_min_fluency {hlpt_min_fluency}
                     --artifacts $TASK_WORKDIR/artifacts
 
     hplt-{trg_locale}:
@@ -332,14 +332,14 @@ tasks:
                 from-parameters:
                     max_sentences:
                         - training_config.experiment.mono-max-sentences-trg.per-dataset
-                    min_fluency_threshold:
+                    hlpt_min_fluency:
                         - training_config.experiment.min-fluency-threshold.mono-trg
 
         task-context:
             from-parameters:
                 max_sentences:
                     - training_config.experiment.mono-max-sentences-trg.per-dataset
-                min_fluency_threshold:
+                hlpt_min_fluency:
                     - training_config.experiment.min-fluency-threshold.mono-trg
             substitution-fields:
                 - run.command
@@ -355,7 +355,7 @@ tasks:
                     --dataset {dataset}
                     --language {trg_locale}
                     --max_sentences {max_sentences}
-                    --min_fluency_threshold {min_fluency_threshold}
+                    --hlpt_min_fluency {hlpt_min_fluency}
                     --artifacts $TASK_WORKDIR/artifacts
 
     mtdata:

@@ -55,7 +55,7 @@ def main(args_list: Optional[list[str]] = None) -> None:
         "--max_sentences", type=int, help="The maximum number of sentences to retain"
     )
     parser.add_argument(
-        "--min_fluency_threshold",
+        "--hlpt_min_fluency",
         type=float,
         help="The minimum fluency score to filter datasets that include this metric",
         default=0.8,
@@ -72,7 +72,7 @@ def main(args_list: Optional[list[str]] = None) -> None:
     logger.info(f"Dataset: {args.dataset}")
     logger.info(f"Language: {args.language}")
     logger.info(f"Max Sentences: {args.max_sentences}")
-    logger.info(f"Min Fluency Threshold: {args.min_fluency_threshold}")
+    logger.info(f"Mininmum Fluency Threshold: {args.hlpt_min_fluency}")
     logger.info(f"Artifacts: {args.artifacts}")
     logger.info(f"File Destination: {file_destination}")
 
@@ -82,7 +82,7 @@ def main(args_list: Optional[list[str]] = None) -> None:
     if dataset.importer == "hplt":
         download_hplt(
             language=args.language,
-            min_fluency_threshold=args.min_fluency_threshold,
+            hlpt_min_fluency=args.hlpt_min_fluency,
             max_lines=args.max_sentences,
             max_words_in_sentence=MAX_WORDS_IN_SENTENCE,
             file_destination=file_destination,

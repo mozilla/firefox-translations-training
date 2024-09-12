@@ -4,7 +4,7 @@ from contextlib import ExitStack
 from dataclasses import dataclass
 from pathlib import Path
 
-from pipeline.common.datasets import CountingStep, FilteringStep, Statistics
+from pipeline.common.datasets import CountingStep, FilteringStep, Statistics, hash_line
 from pipeline.common.downloads import location_exists, read_lines, write_lines
 from pipeline.common.logging import get_logger
 from pipeline.common.memory import log_memory
@@ -21,7 +21,7 @@ class HPLTDocument:
     https://hplt-project.org/datasets/v1.2
 
     Usage:
-        doc = Document(**json)
+        doc = HPLTDocument(**raw_json)
     """
 
     id: int
@@ -51,6 +51,7 @@ class FilteringStatistics(Statistics):
     shards: FilteringStep
     visited_lines: FilteringStep
     document_count: CountingStep
+    duplicate_lines: CountingStep
     final_lines: CountingStep
 
     def __init__(self, dataset_path: Path) -> None:
@@ -72,6 +73,10 @@ class FilteringStatistics(Statistics):
             dataset_path,
             "How many lines were actually written. Smaller lines will be combined together.",
         )
+        self.duplicate_lines = CountingStep(
+            dataset_path,
+            "Of the collected lines, this counts how many were duplicates and discarded.",
+        )
 
     def count_shards_visited(self):
         self.shards.filtered -= 1
@@ -84,7 +89,7 @@ def language_has_hplt_support(language: str) -> bool:
     )
 
 
-def load_shard_urls(language: str) -> list[str]:
+def load_shuffled_shard_urls(language: str) -> list[str]:
     """
     Download the list of shards, e.g.
 
@@ -114,7 +119,7 @@ def load_shard_urls(language: str) -> list[str]:
 
 def download_hplt(
     language: str,
-    min_fluency_threshold: float,
+    hlpt_min_fluency: float,
     max_lines: int,
     max_words_in_sentence,
     file_destination: Path,
@@ -129,7 +134,7 @@ def download_hplt(
 
     Parameters:
      - language: The BCP 47 language code to filter the documents.
-     - min_fluency_threshold: The minimum score a sentence must have to be included in the final dataset.
+     - hlpt_min_fluency: The minimum score a sentence must have to be included in the final dataset.
      - max_lines: The maximum number of lines to include in the final dataset.
      - max_words_in_sentence: The maximum number of words allowed in each sentence.
      - file_destination: The destination path where the final dataset will be written.
@@ -140,63 +145,81 @@ def download_hplt(
 
         outfile = stack.enter_context(write_lines(file_destination))
 
-        shard_urls = load_shard_urls(language)
-        stats.shards.filtered = len(shard_urls)
+        shuffled_shard_urls = load_shuffled_shard_urls(language)
+        stats.shards.filtered = len(shuffled_shard_urls)
+
+        # The shard URLs are shuffled, and then streamed into the read_lines iterator.
+        # This iterator can work over multiple documents. The first document is loaded,
+        # and then the documents in the shard are read in order from that shard. After
+        # the first shard is read, the iterator continues with the next shards until
+        # enough fluent sentences are collected. At this point the remaining shards
+        # will not be visited.
         document_stream = stack.enter_context(
-            read_lines(shard_urls, on_enter_location=stats.count_shards_visited)
+            read_lines(shuffled_shard_urls, on_enter_location=stats.count_shards_visited)
         )
 
+        # Subtract 1 as the final newline is written outside of the for loop.
+        line_hashes: set[int] = set()
+        accumulated_text: str = ""
+        cumulative_word_count = 0
         visited_lines = 0
 
-        # Subtract 1 as the final newline is written outside of the for loop.
-        last_line = max_lines - 1
+        def maybe_write_accumulated_text():
+            """
+            Since the loop below is building up paragraphs of text, we only want to write
+            out a line when enough text has been accumulated. The paragraph should be
+            written out when either the text gets too long, or the next line is discarded.
+            """
+            nonlocal accumulated_text
+            nonlocal cumulative_word_count
+            cumulative_word_count = 0
+            if accumulated_text:
+                hashed_line = hash_line(accumulated_text)
+                if hashed_line in line_hashes:
+                    stats.duplicate_lines.value += 1
+                else:
+                    outfile.write(accumulated_text + "\n")
+                    stats.final_lines.value += 1
+                    line_hashes.add(hashed_line)
+                accumulated_text = ""
 
         for document_json in document_stream:
             stats.document_count.value += 1
 
             document = HPLTDocument(**json.loads(document_json))
 
-            cumulative_word_count = 0
-            has_written_once = False
+            maybe_write_accumulated_text()
 
             # Visit the lines in the document.
             for score, lang_item, line in zip(document.scores, document.langs, document.lines):
                 visited_lines += 1
 
                 # Check for the fluency scores.
-                if lang_item == language and score >= min_fluency_threshold:
+                if lang_item == language and score >= hlpt_min_fluency:
                     # TODO(CJK) - Issue #424
                     word_count = len(line.split())
 
                     if word_count > max_words_in_sentence:
                         # This sentence is too long.
-                        cumulative_word_count = 0
+                        maybe_write_accumulated_text()
                     else:
                         stats.visited_lines.kept += 1
 
-                        if has_written_once:
-                            # Determine if this sentence should be added to the previous one or
-                            # written out as a new line. Only concurrent sentences that meet
-                            # the fluency requirement will be combined together.
-                            if (
-                                cumulative_word_count
-                                and cumulative_word_count + word_count < max_words_in_sentence
-                            ):
-                                # Combine sentences together in the outfile.
-                                cumulative_word_count += word_count
-                                outfile.write(" ")
-                            else:
-                                cumulative_word_count = 0
-                                outfile.write("\n")
-                                stats.final_lines.value += 1
+                        # Determine if this sentence should be added to the previous one or
+                        # written out as a new line. Only concurrent sentences that meet
+                        # the fluency requirement will be combined together.
+                        if cumulative_word_count + word_count > max_words_in_sentence:
+                            # This line would be too long, write it out.
+                            maybe_write_accumulated_text()
 
-                        # Actually write out the line. The next iteration will determine
-                        # if it's a complete sentence, or if it should be added onto.
-                        outfile.write(line)
-                        has_written_once = True
-                        stats.visited_lines.kept += 1
+                        cumulative_word_count += word_count
+                        # Collect this line to write.
+                        if accumulated_text:
+                            accumulated_text = f"{accumulated_text} {line}"
+                        else:
+                            accumulated_text = line
                 else:
-                    cumulative_word_count = 0
+                    maybe_write_accumulated_text()
 
                 if visited_lines % 5_000_000 == 0:
                     logger.info(f"Visited {visited_lines:,} lines")
@@ -204,14 +227,12 @@ def download_hplt(
                     logger.info(f"Wrote {stats.final_lines.value:,} out of {max_lines:,}.")
                     log_memory()
 
-                if stats.final_lines.value == last_line:
+                if stats.final_lines.value == max_lines:
                     break
-            if stats.final_lines.value == last_line:
-                break
 
-        # Account for the final line.
-        outfile.write("\n")
-        stats.final_lines.value += 1
+            if stats.final_lines.value == max_lines:
+                break
+            maybe_write_accumulated_text()
 
         stats.visited_lines.filtered = visited_lines - stats.visited_lines.kept
         logger.info(f"Wrote {stats.final_lines.value:,} lines to: {file_destination}")
