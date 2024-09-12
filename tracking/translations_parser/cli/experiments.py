@@ -99,30 +99,25 @@ def main() -> None:
     args = get_args()
     directory = args.directory
     mode = args.mode
+
     # Ignore files with a different name than "train.log"
-    file_groups = {
-        path: list(files)
-        for path, files in groupby(
-            sorted(directory.glob("**/train.log")), lambda path: path.parent
-        )
-    }
-    logger.info(f"Reading {len(file_groups)} train.log data")
-    prefix = os.path.commonprefix([path.parts for path in file_groups])
+    train_files = sorted(directory.glob("**/train.log"))
+
+    logger.info(f"Reading {len(train_files)} train.log data")
+    prefix = os.path.commonprefix([path.parts for path in train_files])
+
+    # Move on top of the main models (Snakemake) or logs (Taskcluster) folder
     if "models" in prefix:
-        prefix = prefix[: prefix.index("models") + 1]
+        prefix = prefix[: prefix.index("models")]
+    if "logs" in prefix:
+        prefix = prefix[: prefix.index("logs")]
 
-    last_index = None
-    existing_runs = []
-    for index, (path, files) in enumerate(file_groups.items(), start=1):
+    # First parent folder correspond to the run name, second one is the group
+    groups = groupby(train_files, lambda path: path.parent.parent)
+
+    for path, files in groups:
         logger.info(f"Parsing folder {path.resolve()}")
-        parents = path.parts[len(prefix) :]
-        if len(parents) < 3:
-            logger.warning(f"Skipping folder {path.resolve()}: Unexpected folder structure")
-            continue
-        project, group, *name = parents
-        base_name = name[0]
-        name = "_".join(name)
-
+        *_, project, group = path.parts
         if mode == ExperimentMode.TASKCLUSTER:
             if len(group) < 22:
                 logger.error(
@@ -131,24 +126,26 @@ def main() -> None:
                 continue
             suffix = f"_{group[-22:-17]}"
         else:
-            # Defaults using the full experiment name as a suffix
+            # Use the full experiment name as a suffix for old Snakemake experiments
             suffix = f"_{group}"
 
-        try:
-            name = parse_task_label(f"train-{name}").model
-        except ValueError:
-            logger.error(f"Invalid tag extracted from file @{path}: '{name}'")
-            continue
-
         # Publish a run for each file inside that group
+        published_runs = []
         for file in files:
+            try:
+                name = parse_task_label(f"train-{file.stem}").model
+            except ValueError:
+                logger.error(f"Invalid tag extracted from file @{path}: '{file.stem}'")
+                continue
+
             # Also publish metric files when available
             metrics_path = Path(
-                "/".join([*prefix[:-1], "models", project, group, "evaluation", base_name])
+                "/".join([*prefix[:-1], "models", project, group, "evaluation", file.stem])
             )
             metrics_dir = metrics_path if metrics_path.is_dir() else None
             if metrics_dir is None:
-                logger.warning("Evaluation metrics files not found, skipping.")
+                logger.warning(f"Evaluation metrics files not found. {file.stem}-{suffix}")
+
             try:
                 parse_experiment(
                     project=project,
@@ -159,29 +156,20 @@ def main() -> None:
                     metrics_dir=metrics_dir,
                     mode=mode,
                 )
-                existing_runs.append(name)
             except Exception as e:
-                logger.error(f"An exception occured parsing {file}: {e}")
+                logger.error(f"An exception occured parsing training file {file}: {e}")
+            else:
+                published_runs.append(name)
 
         # Try to publish related log files to the group on a last run named "group_logs"
-        if index == len(file_groups) or last_index and last_index != (project, group, suffix):
-            last_project, last_group, last_suffix = (
-                last_index
-                if last_index
-                # May occur when handling a single run
-                else (project, group, suffix)
-            )
-            logger.info(
-                f"Publishing '{last_project}/{last_group}' evaluation metrics and files (fake run 'group_logs')"
-            )
-            WandB.publish_group_logs(
-                logs_parent_folder=prefix,
-                project=last_project,
-                group=last_group,
-                suffix=last_suffix,
-                existing_runs=existing_runs,
-                snakemake=(mode == ExperimentMode.SNAKEMAKE.value),
-            )
-            existing_runs = []
-
-        last_index = (project, group, suffix)
+        logger.info(
+            f"Publishing '{project}/{group}' evaluation metrics and files (fake run 'group_logs')"
+        )
+        WandB.publish_group_logs(
+            logs_parent_folder=prefix,
+            project=project,
+            group=group,
+            suffix=suffix,
+            existing_runs=published_runs,
+            snakemake=(mode == ExperimentMode.SNAKEMAKE.value),
+        )
