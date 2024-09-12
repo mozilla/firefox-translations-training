@@ -4,7 +4,7 @@ from typing import Iterator
 import pytest
 from fixtures import DataDir
 
-from pipeline.common.datasets import shuffle_in_temp_files, shuffle_with_max_lines
+from pipeline.common.datasets import WeakStringSet, shuffle_in_temp_files, shuffle_with_max_lines
 
 ITEMS = 100_000
 # ITEMS = 1_000
@@ -154,3 +154,40 @@ def test_shuffle_in_temp_files():
             0.101,
             0.15,
         ]
+
+
+def test_weak_string_set():
+    """
+    Test all of the Set operations that take an "elem" per:
+    https://docs.python.org/3/library/stdtypes.html#set
+    """
+    unique_strings = WeakStringSet()
+    unique_strings.add("string a")
+    unique_strings.add("string b")
+
+    assert "string a" in unique_strings
+    assert "string b" in unique_strings
+    assert "string c" not in unique_strings
+    assert len(unique_strings) == 2
+
+    unique_strings.update(
+        [
+            "string d",
+            "string e",
+        ]
+    )
+    assert "string d" in unique_strings
+    assert "string e" in unique_strings
+    assert "string f" not in unique_strings
+
+    unique_strings.remove("string d")
+    assert "string d" not in unique_strings
+
+    unique_strings.discard("string e")
+    assert "string e" not in unique_strings
+
+    unique_strings2 = WeakStringSet(["string a", "string b"])
+    assert "string a" in unique_strings2
+    assert "string b" in unique_strings2
+    assert "string c" not in unique_strings2
+    assert len(unique_strings2) == 2

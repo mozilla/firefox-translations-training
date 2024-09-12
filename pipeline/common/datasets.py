@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 import hashlib
 import json
 import os
@@ -6,7 +7,7 @@ from dataclasses import asdict, dataclass
 from io import TextIOWrapper
 from pathlib import Path
 from random import Random
-from typing import Callable, Iterator, Optional, Union
+from typing import Callable, Iterator, Optional, Set, Union
 from urllib.parse import urlparse
 import unicodedata
 
@@ -364,10 +365,51 @@ class CountingStep(Statistics):
         }
 
 
-def hash_line(line: str) -> int:
+class WeakStringSet(Set):
     """
-    Return a hash of a line. The line has its whitespace stripped and text representation
-    normalized to ensure a consistent representation.
+    A Set that weakly holds on to strings by storing a hashed `int`. Using this class
+    makes it easy to see if a string is duplicated across large datasets without holding
+    the entire set of strings in memory.
+
+    Usage:
+        unique_strings = WeakStringSet()
+        unique_strings.add("string a")
+        unique_strings.add("string b")
+
+        assert "string a" in unique_strings
+        assert "string b" in unique_strings
+        assert "string c" not in unique_strings
     """
-    cleaned_line = unicodedata.normalize("NFC", line.strip())
-    return hash(cleaned_line)
+
+    def __init__(self, iter: Optional[Iterable[str]] = None) -> None:
+        if iter:
+            super().__init__((WeakStringSet._hash_string(string) for string in iter))
+        else:
+            super().__init__()
+
+    def __contains__(self, string: str) -> bool:
+        return super().__contains__(WeakStringSet._hash_string(string))
+
+    def add(self, string: str) -> None:
+        """
+        Add a string to the weak set. The strings are stored uniquely based on their
+        contents with the whitespace surrounding them stripped.
+        """
+        super().add(WeakStringSet._hash_string(string))
+
+    def update(self, iter: Iterable[str]):
+        super().update((WeakStringSet._hash_string(string) for string in iter))
+
+    def remove(self, string: str):
+        super().remove(WeakStringSet._hash_string(string))
+
+    def discard(self, string: str):
+        super().discard(WeakStringSet._hash_string(string))
+
+    def _hash_string(string: str) -> int:
+        """
+        Return a hash of a line. The line has its whitespace stripped and text representation
+        normalized to ensure a consistent representation.
+        """
+        cleaned_line = unicodedata.normalize("NFC", string.strip())
+        return hash(cleaned_line)

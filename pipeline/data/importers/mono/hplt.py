@@ -4,7 +4,12 @@ from contextlib import ExitStack
 from dataclasses import dataclass
 from pathlib import Path
 
-from pipeline.common.datasets import CountingStep, FilteringStep, Statistics, hash_line
+from pipeline.common.datasets import (
+    CountingStep,
+    FilteringStep,
+    Statistics,
+    WeakStringSet,
+)
 from pipeline.common.downloads import location_exists, read_lines, write_lines
 from pipeline.common.logging import get_logger
 from pipeline.common.memory import log_memory
@@ -158,8 +163,7 @@ def download_hplt(
             read_lines(shuffled_shard_urls, on_enter_location=stats.count_shards_visited)
         )
 
-        # Subtract 1 as the final newline is written outside of the for loop.
-        line_hashes: set[int] = set()
+        strings_seen = WeakStringSet()
         accumulated_text: str = ""
         cumulative_word_count = 0
         visited_lines = 0
@@ -174,13 +178,12 @@ def download_hplt(
             nonlocal cumulative_word_count
             cumulative_word_count = 0
             if accumulated_text:
-                hashed_line = hash_line(accumulated_text)
-                if hashed_line in line_hashes:
+                if accumulated_text in strings_seen:
                     stats.duplicate_lines.value += 1
                 else:
                     outfile.write(accumulated_text + "\n")
                     stats.final_lines.value += 1
-                    line_hashes.add(hashed_line)
+                    strings_seen.add(accumulated_text)
                 accumulated_text = ""
 
         for document_json in document_stream:
