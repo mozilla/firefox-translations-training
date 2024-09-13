@@ -265,9 +265,11 @@ class WandB(Publisher):
         models_dir = Path("/".join([*logs_parent_folder[:-1], "models", project, group]))
         # Old experiments use `speed` directory for quantized metrics
         quantized_metrics = sorted(
-            Path("/".join([*logs_parent_folder, project, group, "evaluation", "speed"])).glob(
-                "*.metrics"
-            )
+            Path(
+                "/".join(
+                    [*logs_parent_folder[:-1], "models", project, group, "evaluation", "speed"]
+                )
+            ).glob("*.metrics")
         )
         logs_metrics = sorted((logs_dir / "eval").glob("eval*.log"))
         direct_metrics = sorted((logs_dir / "metrics").glob("*.metrics"))
