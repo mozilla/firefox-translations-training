@@ -120,11 +120,12 @@ def test_experiments_marian_1_10(
     assert set([(level, message) for _module, level, message in caplog.record_tuples]) == set(
         [
             (logging.INFO, "Reading 3 train.log data"),
-            # student
             (
                 logging.INFO,
-                f"Parsing folder {samples_dir}/experiments_1_10/models/en-nl/prod/student",
+                f"Parsing folder {samples_dir}/experiments_1_10/models/en-nl/prod",
             ),
+            # student
+            (logging.INFO, "Handling training task student"),
             (logging.INFO, "Reading logs stream."),
             (logging.INFO, "Detected Marian version 1.10"),
             (logging.INFO, "Reading Marian command line arguments."),
@@ -136,19 +137,13 @@ def test_experiments_marian_1_10(
             (logging.INFO, "Found 550 training entries"),
             (logging.INFO, "Found 108 validation entries"),
             # teacher-finetuned0
-            (
-                logging.INFO,
-                f"Parsing folder {samples_dir}/experiments_1_10/models/en-nl/prod/teacher-finetuned0",
-            ),
+            (logging.INFO, "Handling training task teacher-finetune-0"),
             (logging.INFO, "Reading logs stream."),
             (logging.INFO, "Successfully parsed 1944 lines"),
             (logging.INFO, "Found 567 training entries"),
             (logging.INFO, "Found 189 validation entries"),
             # teacher-finetuned1
-            (
-                logging.INFO,
-                f"Parsing folder {samples_dir}/experiments_1_10/models/en-nl/prod/teacher-finetuned1",
-            ),
+            (logging.INFO, "Handling training task teacher-finetune-1"),
             (logging.INFO, "Reading logs stream."),
             (logging.INFO, "Successfully parsed 1963 lines"),
             (logging.INFO, "Found 573 training entries"),
@@ -249,24 +244,22 @@ def test_experiments_marian_1_12(
     assert set([(level, message) for _module, level, message in caplog.record_tuples]) == set(
         [
             (logging.INFO, "Reading 2 train.log data"),
+            (
+                logging.INFO,
+                f"Parsing folder {samples_dir}/experiments_1_12/models/fi-en/opusprod",
+            ),
             (logging.INFO, "Detected Marian version 1.12"),
             (logging.INFO, "Reading Marian command line arguments."),
             (
                 logging.INFO,
                 "Extra configuration files can only be retrieved in Taskcluster context, skipping.",
             ),
-            (
-                logging.INFO,
-                f"Parsing folder {samples_dir}/experiments_1_12/models/fi-en/opusprod/student",
-            ),
+            (logging.INFO, "Handling training task student"),
             (logging.INFO, "Reading logs stream."),
             (logging.INFO, "Successfully parsed 1533 lines"),
             (logging.INFO, "Found 405 training entries"),
             (logging.INFO, "Found 79 validation entries"),
-            (
-                logging.INFO,
-                f"Parsing folder {samples_dir}/experiments_1_12/models/fi-en/opusprod/student-finetuned",
-            ),
+            (logging.INFO, "Handling training task student-finetune"),
             (logging.INFO, "Reading logs stream."),
             (logging.INFO, "Successfully parsed 1174 lines"),
             (logging.INFO, "Found 330 training entries"),
