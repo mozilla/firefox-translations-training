@@ -133,18 +133,20 @@ def main() -> None:
         published_runs = []
         for file in files:
             try:
-                name = parse_task_label(f"train-{file.stem}").model
+                tag = f"train-{file.parent.name}"
+                name = parse_task_label(tag).model
             except ValueError:
-                logger.error(f"Invalid tag extracted from file @{path}: '{file.stem}'")
+                logger.error(f"Invalid tag extracted from file @{path}: {tag}")
                 continue
+            logger.info(f"Handling training task {name}")
 
             # Also publish metric files when available
             metrics_path = Path(
-                "/".join([*prefix[:-1], "models", project, group, "evaluation", file.stem])
+                "/".join([*prefix, "models", project, group, "evaluation", file.parent.name])
             )
             metrics_dir = metrics_path if metrics_path.is_dir() else None
             if metrics_dir is None:
-                logger.warning(f"Evaluation metrics files not found. {file.stem}-{suffix}")
+                logger.warning(f"Evaluation metrics files not found for {name}.")
 
             try:
                 parse_experiment(
@@ -166,7 +168,7 @@ def main() -> None:
             f"Publishing '{project}/{group}' evaluation metrics and files (fake run 'group_logs')"
         )
         WandB.publish_group_logs(
-            logs_parent_folder=prefix,
+            logs_parent_folder=[*prefix, "logs"],
             project=project,
             group=group,
             suffix=suffix,
