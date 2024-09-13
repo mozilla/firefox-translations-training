@@ -13,9 +13,10 @@ test -v TRG
 test -v BIN
 
 output_prefix=$1
-inputs=( "${@:2}" )
+max_sentences=$2
+inputs=( "${@:3}" )
 
-tmp="${output_prefix}/merge"
+tmp="${output_prefix}/merge-tmp"
 mkdir -p "${tmp}"
 
 echo "### Merging"
@@ -34,8 +35,15 @@ paste <(zstdmt -dc "${tmp}/corpus.${SRC}.dup.zst") <(zstdmt -dc "${tmp}/corpus.$
 ${BIN}/dedupe |
 zstdmt >"${tmp}.${SRC}${TRG}.zst"
 
-zstdmt -dc "${tmp}.${SRC}${TRG}.zst" | cut -f1 | zstdmt > "${output_prefix}.${SRC}.zst"
-zstdmt -dc "${tmp}.${SRC}${TRG}.zst" | cut -f2 | zstdmt > "${output_prefix}.${TRG}.zst"
+if [[ -n "$max_sentences" ]]; then
+  # head generates a 141 SIGPIPE error, which is why || true is needed here.
+  zstdmt -dc "${tmp}.${SRC}${TRG}.zst" | head -n "$max_sentences" || true | cut -f1 | zstdmt > "${output_prefix}.${SRC}.zst"
+  zstdmt -dc "${tmp}.${SRC}${TRG}.zst" | head -n "$max_sentences" || true | cut -f2 | zstdmt > "${output_prefix}.${TRG}.zst"
+
+else
+  zstdmt -dc "${tmp}.${SRC}${TRG}.zst" | cut -f1 | zstdmt > "${output_prefix}.${SRC}.zst"
+  zstdmt -dc "${tmp}.${SRC}${TRG}.zst" | cut -f2 | zstdmt > "${output_prefix}.${TRG}.zst"
+fi
 
 rm -rf "${tmp}"
 

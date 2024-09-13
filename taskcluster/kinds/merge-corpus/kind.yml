@@ -65,11 +65,13 @@ task-defaults:
             - -c
             # Arguments are:
             # 1) output prefix
-            # 2) input files
+            # 2) max_sentences
+            # 3) input files
             - >-
                 export BIN=$MOZ_FETCHES_DIR &&
                 $VCS_PATH/pipeline/clean/merge-corpus.sh
                 artifacts/{artifact_prefix}
+                {max_sentences}
                 $MOZ_FETCHES_DIR/*.zst
     fetches:
         toolchain:
@@ -84,6 +86,9 @@ tasks:
             stage: merge-corpus
             cache:
                 type: merge-corpus
+                from-parameters:
+                    max_sentences:
+                        - training_config.experiment.corpus-max-sentences
 
         upstreams-config:
             upstream-task-attributes:
@@ -94,3 +99,6 @@ tasks:
         task-context:
             from-object:
                 artifact_prefix: corpus
+            from-parameters:
+                locale: training_config.experiment.trg
+                max_sentences: training_config.experiment.corpus-max-sentences
