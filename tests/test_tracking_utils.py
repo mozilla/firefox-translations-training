@@ -1,7 +1,12 @@
 import pytest
 from fixtures import get_full_taskgraph
 
-from tracking.translations_parser.utils import ParsedTaskLabel, build_task_name, parse_task_label
+from tracking.translations_parser.utils import (
+    ParsedTaskLabel,
+    build_task_name,
+    parse_task_label,
+    parse_gcp_metric,
+)
 
 
 @pytest.mark.parametrize(
@@ -129,3 +134,78 @@ def test_parse_labels_on_full_taskgraph():
 def test_build_task_name(task_tags, values):
     task = {"tags": task_tags}
     assert build_task_name(task) == values
+
+
+@pytest.mark.parametrize(
+    "filename, parsed_values",
+    [
+        (
+            "flores_aug-mix_devtest",
+            ("flores", "aug-mix", "devtest"),
+        ),
+        (
+            "flores_aug-title_devtest",
+            ("flores", "aug-title", "devtest"),
+        ),
+        (
+            "flores_aug-title-strict_devtest",
+            ("flores", "aug-title-strict", "devtest"),
+        ),
+        (
+            "flores_aug-typos_devtest",
+            ("flores", "aug-typos", "devtest"),
+        ),
+        (
+            "flores_aug-upper_devtest",
+            ("flores", "aug-upper", "devtest"),
+        ),
+        (
+            "flores_aug-upper-strict_devtest",
+            ("flores", "aug-upper-strict", "devtest"),
+        ),
+        (
+            "flores_devtest",
+            ("flores", None, "devtest"),
+        ),
+        (
+            "mtdata_aug-mix_Neulab-tedtalks_test-1-eng-lit",
+            ("mtdata", "aug-mix", "Neulab-tedtalks_test-1-eng-lit"),
+        ),
+        (
+            "mtdata_Neulab-tedtalks_test-1-eng-lit",
+            ("mtdata", None, "Neulab-tedtalks_test-1-eng-lit"),
+        ),
+        (
+            "sacrebleu_aug-mix_wmt19",
+            ("sacrebleu", "aug-mix", "wmt19"),
+        ),
+        (
+            "sacrebleu_aug-title-strict_wmt19",
+            ("sacrebleu", "aug-title-strict", "wmt19"),
+        ),
+        (
+            "sacrebleu_aug-title_wmt19",
+            ("sacrebleu", "aug-title", "wmt19"),
+        ),
+        (
+            "sacrebleu_aug-typos_wmt19",
+            ("sacrebleu", "aug-typos", "wmt19"),
+        ),
+        (
+            "sacrebleu_aug-upper-strict_wmt19",
+            ("sacrebleu", "aug-upper-strict", "wmt19"),
+        ),
+        (
+            "sacrebleu_wmt19",
+            ("sacrebleu", None, "wmt19"),
+        ),
+    ],
+)
+def test_gcp_metric(filename, parsed_values):
+    assert tuple(parse_gcp_metric(filename)) == parsed_values
+
+
+@pytest.mark.parametrize("filename", ["devtest", "tc_Tatoeba-Challenge-v2021-08-07", "test"])
+def test_wrong_gcp_metric(filename):
+    with pytest.raises(ValueError):
+        parse_gcp_metric(filename)
