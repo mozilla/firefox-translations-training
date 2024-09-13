@@ -8,6 +8,10 @@ train:
   - original 1.0
   - until original inf # General training until marian early stops
 
+ci_train:
+  - original 1.0
+  - until original 1
+
 # The default values of the modifiers are taken from the paper https://arxiv.org/pdf/2311.14838.pdf
 # Please refer to docs/opus-trainer.md for further details
 modifiers:

@@ -12,10 +12,19 @@ pretrain:
   - backtranslated 0.4
   - until backtranslated 2
 
+ci_pretrain:
+  - original 0.6
+  - backtranslated 0.4
+  - until backtranslated 1
+
 # Fine-tuning only on original clean corpus until the early stopping
 finetune:
   - original 1.0
   - until original inf
+
+ci_finetune:
+  - original 1.0
+  - until original 1
 
 # The default values of the modifiers are taken from the paper https://arxiv.org/pdf/2311.14838.pdf
 # Please refer to docs/opus-trainer.md for further details

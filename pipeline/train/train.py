@@ -12,6 +12,8 @@ import shutil
 import tempfile
 from typing import Any, Generator, Optional
 
+import yaml
+
 from pipeline.common.downloads import read_lines, write_lines
 from pipeline.common.logging import get_logger
 from pipeline.common.processes import apply_command_args, run_pipeline
@@ -248,8 +250,27 @@ class TrainCLI:
         for key, value in self.config_variables.items():
             logger.info(f" - {key}: {value}")
 
+        config_text = config_text.format(**self.config_variables)
+
+        # TODO - Wire me in.
+        is_ci = True
+        if is_ci:
+            logger.info("Override the stages for faster training configuration.")
+            config = yaml.safe_load(config_text)
+
+            for stage in config["stages"]:
+                ci_stage = f"ci_{stage}"
+                if ci_stage not in config:
+                    raise Exception(
+                        f'Expected a "{ci_stage}" property to override the stage "{stage}" '
+                        f"in the opus configuration {config_input}"
+                    )
+
+                config[stage] = config[ci_stage]
+
+            config_text = yaml.dump(config)
+
         with self.opustrainer_config.open("wt", encoding="utf-8") as file:
-            config_text = config_text.format(**self.config_variables)
             file.write(config_text)
 
     def get_opustrainer_cmd(self):
@@ -259,7 +280,14 @@ class TrainCLI:
                 {
                     "config": str(self.opustrainer_config),
                     "log-file": str(self.artifacts / "opustrainer.log"),
-                    "log-level": "ERROR",
+                    "log-level": "INFO",
+                    # In performance testing, these parameters didn't change the behavior
+                    # much for the speed, but changing them to have the batch size
+                    # divisible by the chunk size is a bit cleaner. The batch size is how
+                    # many lines are processed in a batch, and the chunk is how many lines
+                    # are put into a worker for that batch.
+                    "batch-size": 128,
+                    "chunk-size": 16,
                 }
             ),
         ]

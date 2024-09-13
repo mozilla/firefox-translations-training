@@ -8,6 +8,9 @@ train:
   - original 1.0
   - until original 10 # Train for 10 epochs. Only OpusTrainer can control epochs, it's all one big epoch for Marian
 
+ci_train:
+  - original 1.0
+  - until original 1
 
 seed: 1111
 num_fields: 2
