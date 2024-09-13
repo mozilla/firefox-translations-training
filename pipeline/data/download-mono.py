@@ -21,6 +21,7 @@ Artifacts:
 
 import argparse
 import os
+import shutil
 from contextlib import ExitStack
 from typing import Optional
 
@@ -31,9 +32,7 @@ from pipeline.common.downloads import (
     write_lines,
 )
 from pipeline.common.logging import get_logger
-
-# TODO(CJK) - Issue #424
-MAX_WORDS_IN_SENTENCE = 100
+from pipeline.data.cjk import ChineseConverter, ChineseType
 
 CURRENT_FOLDER = os.path.dirname(os.path.abspath(__file__))
 IMPORTERS_PATH = os.path.abspath(os.path.join(CURRENT_FOLDER, "mono"))
@@ -95,10 +94,19 @@ def main(args_list: Optional[list[str]] = None) -> None:
             line_stream=lines,
             seed=dataset.name,
             max_lines=args.max_sentences,
-            max_words_in_sentence=MAX_WORDS_IN_SENTENCE,
             total_byte_size=get_download_size(url),
         ):
             outfile.write(line)
+
+    # TODO: convert everything to Chinese simplified for now
+    if args.language == "zh":
+        logger.info("Converting the output file to Chinese Simplified")
+        chinese_converter = ChineseConverter()
+        count = chinese_converter.convert_file(
+            file_destination, file_destination + ".converted.zst", ChineseType.simplified
+        )
+        shutil.move(file_destination + ".converted.zst", file_destination)
+        logger.info(f"Converted {count} lines to Chinese Simplified")
 
 
 if __name__ == "__main__":

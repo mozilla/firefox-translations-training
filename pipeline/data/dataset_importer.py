@@ -13,6 +13,7 @@ import argparse
 import os
 import random
 import re
+import shutil
 import subprocess
 import sys
 from typing import Dict, Iterable, List
@@ -24,6 +25,7 @@ from opustrainer.modifiers.typos import TypoModifier
 from opustrainer.types import Modifier
 
 from pipeline.common.downloads import compress_file, decompress_file
+from pipeline.data.cjk import ChineseConverter, ChineseType
 
 # these envs are standard across the pipeline
 SRC = os.environ["SRC"]
@@ -222,6 +224,20 @@ def run_import(type: str, dataset: str, output_prefix: str):
 
         print("Downloading parallel dataset")
         run_cmd([os.path.join(current_dir, "download-corpus.sh"), no_aug_id, output_prefix])
+
+        # TODO: convert everything to Chinese simplified for now
+        for lang in (SRC, TRG):
+            if lang == "zh":
+                print("Converting the output file to Chinese Simplified")
+                chinese_converter = ChineseConverter()
+                count = chinese_converter.convert_file(
+                    f"{output_prefix}.{lang}.zst",
+                    f"{output_prefix}.converted.{lang}.zst",
+                    ChineseType.simplified,
+                )
+                shutil.move(f"{output_prefix}.converted.{lang}.zst", f"{output_prefix}.{lang}.zst")
+                print(f"Converted {count} lines to Chinese Simplified")
+
         if aug_modifer:
             print("Running augmentation")
             augment(output_prefix, aug_modifer)
