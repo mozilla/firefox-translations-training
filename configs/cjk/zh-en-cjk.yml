@@ -20,7 +20,7 @@ experiment:
   # increase vocab size for Chinese,
   # see https://github.com/hplt-project/HPLT-MT-Models/blob/main/v1.0/training/en-zh_hant/hplt/model.train.log
   spm-vocab-size: 64000
-  teacher-ensemble: 2
+  teacher-ensemble: 1
   teacher-mode: two-stage
   pretrained-models: {}
 datasets:
