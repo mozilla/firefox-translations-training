@@ -36,4 +36,4 @@ finetune:
 # random seed should be different for different teacher models
 seed: <seed>
 # parallel sentences + token alignments
-num_fields: 3
+num_fields: 2
