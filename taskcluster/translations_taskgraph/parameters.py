@@ -35,6 +35,10 @@ def get_defaults(_) -> dict:
                         "opus_ELRC-3075-wikipedia_health/v1": 0.6,
                     },
                 },
+                "min-fluency-threshold": {
+                    "mono-src": 0.8,
+                    "mono-trg": 0.9,
+                },
             },
             "marian-args": {
                 "training-backward": {
@@ -93,9 +97,11 @@ def get_defaults(_) -> dict:
                 ],
                 "mono-src": [
                     "news-crawl_news.2008",
+                    "opus_tldr-pages/v2023-08-29",
                 ],
                 "mono-trg": [
                     "news-crawl_news.2007",
+                    "opus_tldr-pages/v2023-08-29",
                 ],
             },
             # Taskcluster-specific configuration
@@ -147,6 +153,10 @@ extend_parameters_schema(
                     Optional("dataset-thresholds"): {
                         str: float,
                     },
+                },
+                Required("min-fluency-threshold"): {
+                    Required("mono-src"): float,
+                    Required("mono-trg"): float,
                 },
                 Optional("pretrained-models"): {
                     Optional("train-teacher"): {

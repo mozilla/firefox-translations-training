@@ -515,65 +515,6 @@ def fetch_hplt(lang: str, prefixes=("08", "09")) -> list[MonoDataset]:
     return all_datasets
 
 
-def get_hplt_mono(source: str, target: str):
-    for lang in (source, target):
-        datasets = fetch_hplt(lang)
-
-        print("")
-        print("┌─────────────────────────────────────────────────────────────────────┐")
-        print(f"│ hplt mono ({lang}) - https://hplt-project.org/datasets/v1.2         │")
-        print("└─────────────────────────────────────────────────────────────────────┘")
-        print_table(
-            [
-                [
-                    "Dataset",
-                    "Number of lines",
-                ],
-                *[[name, lines] for name, _, _, _, lines in datasets],
-            ]
-        )
-
-        print_yaml([name for name, _, _, _, _ in datasets])
-
-
-def fetch_nllb_mono(
-    lang: str,
-) -> list[MonoDataset]:
-    info_url = f"https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-{lang}.info.json"
-    url = f"https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-{lang}.txt.zst"
-    response = requests.get(info_url)
-
-    if response.ok:
-        info = response.json()
-        sentences = info["sentences_kept"]
-        assert sentences
-        # There is only one file, but it's easier to return an array for the print_table call.
-        return [MonoDataset(f"url_{url}", url, None, None, sentences)]
-
-    return []
-
-
-def get_nllb_mono(source: str, target: str):
-    for lang in (source, target):
-        datasets = fetch_nllb_mono(lang)
-
-        print("")
-        print("┌─────────────────────────────────────────────────────────────────────┐")
-        print(f"│ nllp mono ({lang}) - https://opus.nlpl.eu/NLLB/corpus/version/NLLB  │")
-        print("└─────────────────────────────────────────────────────────────────────┘")
-        print_table(
-            [
-                [
-                    "Dataset",
-                    "Size",
-                ],
-                *[[name, display_size] for name, _, display_size, _, _ in datasets],
-            ]
-        )
-
-        print_yaml([name for name, _, _, _, _ in datasets])
-
-
 def print_yaml(names: list[str], exclude: list[str] = []):
     cleaned = set()
     for name in names:
@@ -677,12 +618,6 @@ def main(args: Optional[list[str]] = None) -> None:
 
     if args.importer == "news-crawl" or not args.importer:
         get_news_crawl(args.source, args.target)
-
-    if args.importer == "hplt-mono" or not args.importer:
-        get_hplt_mono(args.source, args.target)
-
-    if args.importer == "nllb-mono" or not args.importer:
-        get_nllb_mono(args.source, args.target)
 
 
 if __name__ == "__main__":

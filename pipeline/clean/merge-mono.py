@@ -2,12 +2,11 @@ import argparse
 import glob
 import json
 import os
-import unicodedata
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Generator
 
-from pipeline.common.datasets import shuffle_with_max_lines
+from pipeline.common.datasets import WeakStringSet, shuffle_with_max_lines
 from pipeline.common.downloads import (
     format_bytes,
     get_human_readable_file_size,
@@ -21,15 +20,6 @@ logger = get_logger(__file__)
 
 # TODO(CJK) - Issue #424
 MAX_WORDS_IN_SENTENCE = 100
-
-
-def hash_line(line: str) -> int:
-    """
-    Return a hash of a line. The line has its whitespace stripped and text representation
-    normalized to ensure a consistent representation.
-    """
-    cleaned_line = unicodedata.normalize("NFC", line.strip())
-    return hash(cleaned_line)
 
 
 @dataclass
@@ -69,7 +59,7 @@ class FilteringStatistics:
 def filter_and_write_monolingual_data(
     mono_datasets: list[str],
     output_path: Path,
-    parallel_hashes: set[int],
+    parallel_hashes: WeakStringSet,
     max_lines: int,
     sample_size: int,
     stats: FilteringStatistics,
@@ -80,7 +70,7 @@ def filter_and_write_monolingual_data(
     a set[str], as the latter would retain the string in memory.
     """
 
-    mono_hashes = set()
+    mono_hashes = WeakStringSet()
 
     def deduplicate_lines(lines: Generator[str, None, None]) -> Generator[str, None, None]:
         """
@@ -91,16 +81,15 @@ def filter_and_write_monolingual_data(
         mono_discards = 0
         retained = 0
         for line in lines:
-            hashed_line = hash_line(line)
             # Don't add this sentence if it's in the original parallel corpus, or if it's
             # already present in the monolingual data, perhaps from another source.
-            if hashed_line in parallel_hashes:
+            if line in parallel_hashes:
                 parallel_discards += 1
-            elif hashed_line in mono_hashes:
+            elif line in mono_hashes:
                 mono_discards += 1
             else:
                 retained += 1
-                mono_hashes.add(hashed_line)  # Don't add this sentence again.
+                mono_hashes.add(line)  # Don't add this sentence again.
 
                 # Report progress periodically.
                 if retained % 1_000_000 == 0:
@@ -165,13 +154,13 @@ def filter_and_write_monolingual_data(
     stats.save_json(stats_path)
 
 
-def compute_line_hashes(path: Path) -> set[int]:
+def compute_line_hashes(path: Path) -> WeakStringSet:
     """
     In order to de-duplicate sentences we can compute a hash and store it in memory. This makes
     it so that we don't have to store the full sentence in memory. It's about 10 bytes per int
     stored in the set.
     """
-    line_hashes: set[int] = set()
+    line_hashes = WeakStringSet()
     sentences_visited = 0
 
     with read_lines(path) as lines:
@@ -179,7 +168,7 @@ def compute_line_hashes(path: Path) -> set[int]:
             sentences_visited += 1
             if sentences_visited % 1_000_000 == 0:
                 logger.info(f"Hashing sentence {sentences_visited:,}")
-            line_hashes.add(hash_line(line))
+            line_hashes.add(line)
 
     return line_hashes
 
@@ -240,7 +229,7 @@ def main() -> None:
     # it would be ~1G in memory.
     log_memory()
     logger.info(f"Compute hashes of the parallel data: {path}")
-    line_hashes: set[int] = compute_line_hashes(parallel_corpus)
+    line_hashes = compute_line_hashes(parallel_corpus)
 
     stats = FilteringStatistics()
 
