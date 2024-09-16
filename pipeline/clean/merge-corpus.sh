@@ -16,35 +16,49 @@ output_prefix=$1
 max_sentences=$2
 inputs=( "${@:3}" )
 
-tmp="${output_prefix}/merge-tmp"
+shuf_params=()
+if [[ "$max_sentences" != "None" ]]; then
+    shuf_params+=(--head-count "$max_sentences")
+fi
+
+output_dir=$(dirname "$output_prefix")
+tmp="${output_dir}/tmp"
+deduplicated_corpus="${tmp}/deduplicated.${SRC}${TRG}.zst"
+merged_src="${tmp}/corpus.${SRC}.dup.zst"
+merged_trg="${tmp}/corpus.${TRG}.dup.zst"
+final_src="${output_prefix}.${SRC}.zst"
+final_trg="${output_prefix}.${TRG}.zst"
+
 mkdir -p "${tmp}"
 
 echo "### Merging"
-if [[ "${inputs[0]}" == *.zst ]]; then
-  cat `echo ${inputs[@]} | tr ' ' '\n' | grep "${SRC}.zst" | tr '\n' ' '` >"${tmp}/corpus.${SRC}.dup.zst"
-  cat `echo ${inputs[@]} | tr ' ' '\n' | grep "${TRG}.zst" | tr '\n' ' '` >"${tmp}/corpus.${TRG}.dup.zst"
-else
-  cat "${inputs[@]/%/.${SRC}.zst}" >"${tmp}/corpus.${SRC}.dup.zst"
-  cat "${inputs[@]/%/.${TRG}.zst}" >"${tmp}/corpus.${TRG}.dup.zst"
-fi
+cat `echo ${inputs[@]} | tr ' ' '\n' | grep "${SRC}.zst" | tr '\n' ' '` > "$merged_src"
+cat `echo ${inputs[@]} | tr ' ' '\n' | grep "${TRG}.zst" | tr '\n' ' '` > "$merged_trg"
 
 # See pipeline/translate/merge-corpus.sh for more information on the deduplication step.
 
 echo "### Deduplication"
-paste <(zstdmt -dc "${tmp}/corpus.${SRC}.dup.zst") <(zstdmt -dc "${tmp}/corpus.${TRG}.dup.zst") |
-${BIN}/dedupe |
-zstdmt >"${tmp}.${SRC}${TRG}.zst"
 
-if [[ -n "$max_sentences" ]]; then
-  # head generates a 141 SIGPIPE error, which is why || true is needed here.
-  zstdmt -dc "${tmp}.${SRC}${TRG}.zst" | head -n "$max_sentences" || true | cut -f1 | zstdmt > "${output_prefix}.${SRC}.zst"
-  zstdmt -dc "${tmp}.${SRC}${TRG}.zst" | head -n "$max_sentences" || true | cut -f2 | zstdmt > "${output_prefix}.${TRG}.zst"
+get_seeded_random() {
+  set +x
+  for i in {1..1000}; do
+    echo "merge-corpus-${SRC}-${TRG}-${i}"
+  done
+  set -x
+}
 
-else
-  zstdmt -dc "${tmp}.${SRC}${TRG}.zst" | cut -f1 | zstdmt > "${output_prefix}.${SRC}.zst"
-  zstdmt -dc "${tmp}.${SRC}${TRG}.zst" | cut -f2 | zstdmt > "${output_prefix}.${TRG}.zst"
-fi
+paste <(zstdmt -dc "$merged_src") <(zstdmt -dc "$merged_trg")      |
+  ${BIN}/dedupe                                                    |
+  shuf --random-source=<(get_seeded_random) "${shuf_params[@]}" |
+  zstdmt >"$deduplicated_corpus"
 
-rm -rf "${tmp}"
+rm "$merged_src" "$merged_trg"
+
+echo "### Splitting languages into separate files"
+
+zstdmt -dc "$deduplicated_corpus" | cut -f1 | zstdmt > "$final_src"
+zstdmt -dc "$deduplicated_corpus" | cut -f2 | zstdmt > "$final_trg"
+
+rm -rf "$tmp"
 
 echo "###### Done: Merging parallel datasets"

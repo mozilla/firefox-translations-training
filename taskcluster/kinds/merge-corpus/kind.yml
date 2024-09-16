@@ -97,8 +97,6 @@ tasks:
                         bicleaner-ai: bicleaner-ai
 
         task-context:
-            from-object:
-                artifact_prefix: corpus
             from-parameters:
                 locale: training_config.experiment.trg
                 max_sentences: training_config.experiment.corpus-max-sentences
