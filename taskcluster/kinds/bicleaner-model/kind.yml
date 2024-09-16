@@ -68,7 +68,7 @@ tasks:
                     python3 $VCS_PATH/pipeline/bicleaner/download_pack.py
                     --src={src_locale}
                     --trg={trg_locale}
-                    artifacts/bicleaner-ai-{src_locale}-{trg_locale}.tar.zst
+                    $TASK_WORKDIR/artifacts/bicleaner-ai-{src_locale}-{trg_locale}.tar.zst
 
         fetches:
             toolchain:
