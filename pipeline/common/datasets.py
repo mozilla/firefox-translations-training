@@ -1,11 +1,15 @@
+from collections.abc import Iterable
 import hashlib
+import json
 import os
 import tempfile
+from dataclasses import asdict, dataclass
 from io import TextIOWrapper
 from pathlib import Path
 from random import Random
-from typing import Iterator, Optional
+from typing import Callable, Iterator, Optional, Set, Union
 from urllib.parse import urlparse
+import unicodedata
 
 # We keep this relatively short because these datasets end up in task labels,
 # which end up in task cache routes, which need to be <= 256 characters.
@@ -91,7 +95,8 @@ def shuffle_with_max_lines(
     seed: str,
     max_lines: int,
     max_words_in_sentence,
-    total_byte_size: int,
+    total_byte_size: Optional[int] = None,
+    estimate_total_byte_size: Optional[Callable[[float], int]] = None,
 ) -> list[str]:
     """
     Shuffle a line stream, but only retain up to a maximum number of lines in memory.
@@ -105,12 +110,22 @@ def shuffle_with_max_lines(
     The distribution should be even unless the initial content is not representative of the
     general size of the sentences, in this case the distribution will be slightly biased. See
     the test cases for more in-depth examples.
+
+    These options are mutually exclusive, and one must be provided:
+    - total_byte_size - The byte size of the lines.
+    - estimate_total_byte_size - An estimate of the size of the corpus after max_lines have been
+                                 filled. The average bytes per line is provided
     """
     lines: list[str] = []
 
     random = Random(seed)  # Make this deterministic based on dataset key.
 
     total_bytes = 0
+
+    if total_byte_size is None:
+        assert (
+            estimate_total_byte_size
+        ), "Either total_byte_size or estimate_total_byte_size must be provided"
 
     # Fill up the lines up until the max, and measure the total bytes.
     for line in line_stream:
@@ -126,6 +141,9 @@ def shuffle_with_max_lines(
 
         if len(lines) == max_lines:
             break
+
+    if total_byte_size is None:
+        total_byte_size = estimate_total_byte_size(float(total_bytes) / float(max_lines))
 
     line_index = len(lines)
     random.shuffle(lines)
@@ -264,3 +282,134 @@ def shuffle_in_temp_files(
             output.write(shuffled_line)
 
     print(f"Shuffled with {bucket_count} buckets.")
+
+
+@dataclass
+class Statistics:
+    """
+    Base class for handling statistical data and JSON serialization in the pipeline. It
+    standardizes how the JSON is generated, and how it saves. Implement `as_json` for custom
+    JSON processing.
+
+    For instance .save_json() for Statistics("nllb.en.zst") would produce "nllb.en.stats.json".
+    """
+
+    def __init__(self, dataset_path: Union[Path, str]) -> None:
+        self.dataset_path = Path(dataset_path)
+
+    def as_json(self) -> dict:
+        """
+        Convert this data into JSON, and recurse into any other Statistics objects.
+        """
+        data = asdict(self)
+        for key, value in enumerate(data):
+            if isinstance(value, Statistics):
+                data[key] = value.as_json()
+        return data
+
+    def save_json(self) -> Path:
+        """
+        Standardizes how the JSON is saved, based on the dataset.
+        """
+        path = self.dataset_path.parent / f"{self.dataset_path.stem}.stats.json"
+        with open(path, "w", encoding="utf-8") as json_file:
+            json.dump(self.as_json(), json_file, indent=2)
+            json_file.write("\n")
+        return path
+
+
+@dataclass
+class FilteringStep(Statistics):
+    """
+    For each step for filtering, store how many were kept or filtered.
+    """
+
+    filtered: int
+    kept: int
+    description: str
+    # "visited" is implied.
+
+    def __init__(self, dataset_path: Path, description: str, filtered=0, kept=0) -> None:
+        super().__init__(dataset_path)
+        self.filtered = filtered
+        self.kept = kept
+        self.description = description
+
+    def as_json(self) -> dict:
+        return {
+            "description": self.description,
+            "filtered": self.filtered,
+            "kept": self.kept,
+            "visited": self.filtered + self.kept,
+        }
+
+
+@dataclass
+class CountingStep(Statistics):
+    """
+    This is just a single value that is being counted.
+    """
+
+    value: int
+    description: str
+
+    def __init__(self, dataset_path: Path, description: str, value=0) -> None:
+        super().__init__(dataset_path)
+        self.value = value
+        self.description = description
+
+    def as_json(self) -> dict:
+        return {
+            "description": self.description,
+            "value": self.value,
+        }
+
+
+class WeakStringSet(Set):
+    """
+    A Set that weakly holds on to strings by storing a hashed `int`. Using this class
+    makes it easy to see if a string is duplicated across large datasets without holding
+    the entire set of strings in memory.
+
+    Usage:
+        unique_strings = WeakStringSet()
+        unique_strings.add("string a")
+        unique_strings.add("string b")
+
+        assert "string a" in unique_strings
+        assert "string b" in unique_strings
+        assert "string c" not in unique_strings
+    """
+
+    def __init__(self, iter: Optional[Iterable[str]] = None) -> None:
+        if iter:
+            super().__init__((WeakStringSet._hash_string(string) for string in iter))
+        else:
+            super().__init__()
+
+    def __contains__(self, string: str) -> bool:
+        return super().__contains__(WeakStringSet._hash_string(string))
+
+    def add(self, string: str) -> None:
+        """
+        Add a string to the weak set. The strings are stored uniquely based on their
+        contents with the whitespace surrounding them stripped.
+        """
+        super().add(WeakStringSet._hash_string(string))
+
+    def update(self, iter: Iterable[str]):
+        super().update((WeakStringSet._hash_string(string) for string in iter))
+
+    def remove(self, string: str):
+        super().remove(WeakStringSet._hash_string(string))
+
+    def discard(self, string: str):
+        super().discard(WeakStringSet._hash_string(string))
+
+    def _hash_string(string: str) -> int:
+        """
+        Return a hash of a line. The line has its whitespace stripped and text representation
+        normalized to ensure a consistent representation.
+        """
+        cleaned_line = unicodedata.normalize("NFC", string.strip())
+        return hash(cleaned_line)

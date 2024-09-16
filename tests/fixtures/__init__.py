@@ -9,7 +9,7 @@ import subprocess
 import time
 from pathlib import Path
 from subprocess import CompletedProcess
-from typing import List, Optional, Tuple, Union
+from typing import Iterable, List, Optional, Tuple, Union
 
 import zstandard as zstd
 
@@ -93,10 +93,13 @@ class DataDir:
 
         return zst_path
 
-    def create_file(self, name: str, contents: str) -> str:
+    def create_file(self, name: str, contents: Union[str, Iterable[str]]) -> str:
         """
         Creates a text file and returns the path to it.
         """
+        if not isinstance(contents, str):
+            contents = "\n".join(contents) + "\n"
+
         text_path = os.path.join(self.path, name)
         if not os.path.exists(self.path):
             raise Exception(f"Directory for the text file does not exist: {self.path}")
@@ -244,7 +247,12 @@ class DataDir:
         for root, dirs, files in os.walk(self.path):
             level = root.replace(self.path, "").count(os.sep)
             indent = " " * 4 * (level)
-            folder_text = f"│ {indent}{os.path.basename(root)}/"
+            if level == 0:
+                # For the root level, display the relative path to the data directory.
+                folder_text = root.replace(f"{ROOT_PATH}/", "")
+                folder_text = f"│ {folder_text}"
+            else:
+                folder_text = f"│ {indent}{os.path.basename(root)}/"
             print(f"{folder_text.ljust(span_len)} │")
             subindent = " " * 4 * (level + 1)
 
@@ -484,6 +492,18 @@ def get_mocked_downloads() -> str:
                 get_path("pytest-dataset.en.zst"),
             "https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.ru.zst":
                 get_path("pytest-dataset.ru.zst"),
+            "https://data.hplt-project.org/one/monotext/cleaned/ru/ru_10.jsonl.zst":
+                get_path("hplt-ru_10.jsonl.zst"),
+            "https://data.hplt-project.org/one/monotext/cleaned/ru/ru_11.jsonl.zst":
+                get_path("hplt-ru_11.jsonl.zst"),
+            "https://data.hplt-project.org/one/monotext/cleaned/en/en_100.jsonl.zst":
+                get_path("hplt-en_100.jsonl.zst"),
+            "https://data.hplt-project.org/one/monotext/cleaned/en/en_101.jsonl.zst":
+                get_path("hplt-en_101.jsonl.zst"),
+            "https://data.hplt-project.org/one/monotext/cleaned/ru_map.txt":
+                get_path("hplt-ru_map.txt"),
+            "https://data.hplt-project.org/one/monotext/cleaned/en_map.txt":
+                get_path("hplt-en_map.txt"),
         }
     )  # fmt: skip
 

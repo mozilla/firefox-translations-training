@@ -46,6 +46,9 @@ training_config:
         opus_ELRC-3075-wikipedia_health/v1: 0.6
         opus_ada83/v1: 0.0
       default-threshold: 0.5
+    min-fluency-threshold:
+      mono-src: 0.8
+      mono-trg: 0.9
     mono-max-sentences-src:
       total: 1000
       per-dataset: 1000

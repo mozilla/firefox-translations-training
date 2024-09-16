@@ -71,8 +71,10 @@ datasets:
     - flores_devtest
   mono-src:
     - news-crawl_news.2008
+    - opus_tldr-pages/v2023-08-29 # 36 sentences
   mono-trg:
     - news-crawl_news.2007
+    - opus_tldr-pages/v2023-08-29 # 39,646 sentences
 
 wandb-publication: false
 target-stage: all
