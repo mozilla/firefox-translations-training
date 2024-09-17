@@ -1,6 +1,6 @@
 datasets:
-  original: <dataset0> # Original parallel corpus
-  backtranslated: <dataset1> # Back-translated data
+  original: {dataset0} # Original parallel corpus
+  backtranslated: {dataset1} # Back-translated data
 
 stages:
   - train
@@ -11,6 +11,11 @@ train:
   - original 0.7
   - backtranslated 0.3
   - until original inf
+
+ci_train:
+  - original 0.7
+  - backtranslated 0.3
+  - until original 1
 
 # The default values of the modifiers are taken from the paper https://arxiv.org/pdf/2311.14838.pdf
 # Please refer to docs/opus-trainer.md for further details
@@ -34,6 +39,6 @@ modifiers:
 
 
 # random seed should be different for different teacher models
-seed: <seed>
+seed: {seed}
 # parallel sentences + token alignments
 num_fields: 3

@@ -78,7 +78,7 @@ tasks:
                 - >-
                     $VCS_PATH/pipeline/translate/collect.sh
                     fetches
-                    artifacts/corpus.{trg_locale}.zst
+                    $TASK_WORKDIR/artifacts/corpus.{trg_locale}.zst
                     $MOZ_FETCHES_DIR/corpus.{trg_locale}.zst
 
         # Don't run unless explicitly scheduled

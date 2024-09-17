@@ -65,11 +65,13 @@ task-defaults:
             - -c
             # Arguments are:
             # 1) output prefix
-            # 2) input files
+            # 2) max_sentences
+            # 3) input files
             - >-
                 export BIN=$MOZ_FETCHES_DIR &&
                 $VCS_PATH/pipeline/clean/merge-corpus.sh
-                artifacts/{artifact_prefix}
+                $TASK_WORKDIR/artifacts/devset
+                None
                 $MOZ_FETCHES_DIR/*.zst
     fetches:
         toolchain:
@@ -88,7 +90,3 @@ tasks:
         upstreams-config:
             upstream-task-attributes:
                 kind: dataset
-
-        task-context:
-            from-object:
-                artifact_prefix: devset

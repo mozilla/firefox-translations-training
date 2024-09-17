@@ -76,10 +76,10 @@ tasks:
                     export MARIAN=$MOZ_FETCHES_DIR &&
                     find fetches &&
                     $VCS_PATH/pipeline/cefilter/score.sh
-                    fetches/final.model.npz.best-{best_model}.npz
-                    fetches/vocab.spm
-                    fetches/corpus
-                    artifacts/scores.txt
+                    $TASK_WORKDIR/fetches/final.model.npz.best-{best_model}.npz
+                    $TASK_WORKDIR/fetches/vocab.spm
+                    $TASK_WORKDIR/fetches/corpus
+                    $TASK_WORKDIR/artifacts/scores.txt
 
         dependencies:
             train-backwards: train-backwards-{src_locale}-{trg_locale}

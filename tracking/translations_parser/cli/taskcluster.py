@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Extract information from Marian execution on Task Cluster.
+Extract information from Marian execution on Taskcluster.
 
 Example with a local file:
-    parse_tc_logs -i ./tests/data/taskcluster.log
+    parse_tc_logs --input-file ./tests/data/taskcluster.log
 
 Example reading logs from a process:
-    ./tests/data/simulate_process.py | parse_tc_logs -s --verbose
+    ./tests/data/simulate_process.py | parse_tc_logs --from-stream --verbose
 
 Example publishing data to Weight & Biases:
-    parse_tc_logs -i ./tests/data/taskcluster.log --wandb-project <project> --wandb-group <group> --wandb-run-name <run>
+    parse_tc_logs --input-file ./tests/data/taskcluster.log --wandb-project <project> --wandb-group <group> --wandb-run-name <run>
 """
 
 import argparse
@@ -80,6 +80,24 @@ def get_args() -> argparse.Namespace:
     add_wandb_arguments(parser)
 
     return parser.parse_args()
+
+
+def is_running_in_ci():
+    """
+    Determine if this run is being done in CI.
+    """
+    task_id = os.environ.get("TASK_ID")
+    if not task_id:
+        return False
+
+    logger.info(f'Fetching the experiment for task "{task_id}" to check if this is running in CI.')
+    queue = taskcluster.Queue({"rootUrl": os.environ["TASKCLUSTER_PROXY_URL"]})
+    task = queue.task(task_id)
+    group_id = task["taskGroupId"]
+    task_group = queue.task(group_id)
+    # e.g,. "github-pull-request", "action", "github-push"
+    tasks_for = task_group.get("extra", {}).get("tasks_for")
+    return tasks_for != "action"
 
 
 def boot() -> None:
@@ -154,10 +172,15 @@ def main() -> None:
     """
     try:
         boot()
-    except Exception:
-        logger.exception("Publication failed")
-        if os.environ.get("MOZ_AUTOMATION") is not None:
-            # Stop cleanly when in taskcluster
-            sys.exit(0)
+    except Exception as exception:
+        if os.environ.get("MOZ_AUTOMATION") is None:
+            logger.exception("Publication failed when running locally.")
+            raise exception
+        elif is_running_in_ci():
+            logger.exception("Publication failed when running in CI.")
+            raise exception
         else:
-            raise
+            logger.exception(
+                "Publication failed! The error is ignored to not break training, but it should be fixed."
+            )
+            sys.exit(0)

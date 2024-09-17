@@ -60,7 +60,7 @@ It likely will be the case when using a pre-trained student model as a backward 
 OpusTrainer configuration files for the trained models are located in 
 the [/pipeline/train/configs/opustrainer/](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/opustrainer/) directory.
 
-`<dataset0>`, `<dataset1>` and `<vocab>` will be replaced by the training datasets and a path to Sentencepiece `vocab.spm` passed in `pipeline/train/train.sh` script.
+`{dataset0}`, `{dataset1}` and `{vocab}` will be replaced by the training datasets and a path to Sentencepiece `vocab.spm` passed in `pipeline/train/train.py` script.
 
 See more details on configuration in the OpusTrainer [readme](https://github.com/hplt-project/OpusTrainer).
 
@@ -167,4 +167,3 @@ so it should only be used on small evaluation datasets.
     - flores_aug-noise_devtest
     - flores_aug-inline-noise_devtest
 ```
-

@@ -105,7 +105,7 @@ tasks:
                     export PATH=$PATH:~/.local/bin &&
                     $VCS_PATH/pipeline/bicleaner/bicleaner.sh
                     $MOZ_FETCHES_DIR/{dataset_sanitized}
-                    artifacts/{dataset_sanitized}
+                    $TASK_WORKDIR/artifacts/{dataset_sanitized}
                     {bicleaner_threshold}
                     {bicleaner_threads}
                     $MOZ_FETCHES_DIR/bicleaner-ai-{src_locale}-{trg_locale}

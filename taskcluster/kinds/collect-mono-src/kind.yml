@@ -63,7 +63,7 @@ task-defaults:
                 zstd -d --rm $MOZ_FETCHES_DIR/file* &&
                 $VCS_PATH/pipeline/translate/collect.sh
                 fetches
-                artifacts/mono.{trg_locale}.zst
+                $TASK_WORKDIR/artifacts/mono.{trg_locale}.zst
                 $MOZ_FETCHES_DIR/mono.{src_locale}.zst
 
 tasks:
