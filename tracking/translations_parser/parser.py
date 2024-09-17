@@ -128,9 +128,11 @@ class TrainingParser:
         values["sen"] = values["sen"].replace(",", "_")
         # Cast values to match output types
         casted_values = {
-            k: TrainingEpoch.__annotations__[k](v)
-            if callable(TrainingEpoch.__annotations__[k])
-            else float(v)
+            k: (
+                TrainingEpoch.__annotations__[k](v)
+                if callable(TrainingEpoch.__annotations__[k])
+                else float(v)
+            )
             for k, v in values.items()
         }
         training_epoch = TrainingEpoch(**casted_values)
@@ -329,9 +331,8 @@ class TrainingParser:
             try:
                 headers, text = next(logs_iter)
                 logger.debug(f"Marian header not found in: headers={headers} text={text.strip()}")
-            except StopIteration as exception:
-                logger.debug("Could not find a [marian] entry in the training log.")
-                raise exception
+            except StopIteration:
+                raise ValueError("Could not find a [marian] entry in the training log.")
 
         logger.debug(f"Reading Marian version from text={text.strip()}")
         _, version, self.version_hash, self.release_date, *_ = text.split()

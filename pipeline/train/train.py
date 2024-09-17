@@ -14,7 +14,7 @@ from typing import Any, Generator, Optional
 
 from pipeline.common.downloads import read_lines, write_lines
 from pipeline.common.logging import get_logger
-from pipeline.common.processes import apply_command_args, run_pipeline
+from pipeline.common.command_runner import apply_command_args, run_command_pipeline
 
 logger = get_logger(__file__)
 train_dir = Path(__file__).parent
@@ -35,6 +35,19 @@ class TeacherMode(Enum):
     none = "None"
     one_stage = "one-stage"
     two_stage = "two-stage"
+
+
+class BestModelMetric(Enum):
+    chrf = "chrf"
+    ce_mean_words = "ce-mean-words"
+    bleu_detok = "bleu-detok"
+    # These are also available in Marian, but not used here:
+    #   cross_entropy = "cross-entropy"
+    #   perplexity = "perplexity"
+    #   valid_script = "valid-script"
+    #   translation = "translation"
+    #   bleu = "bleu"
+    #   bleu_segmented = "bleu-segmented"
 
 
 def build_dataset_tsv(
@@ -140,7 +153,7 @@ class TrainCLI:
         self.model_type: ModelType = args.model_type
         self.teacher_mode: TeacherMode = args.teacher_mode
         self.training_type: TrainingType = args.training_type
-        self.best_model_metric: str = args.best_model_metric
+        self.best_model_metric: BestModelMetric = args.best_model_metric
         self.extra_marian_args: list[str] = args.extra_marian_args
         self.marian_bin = args.marian_dir / "marian"
         self.gpus = args.gpus
@@ -232,8 +245,7 @@ class TrainCLI:
         if self.model_type == ModelType.teacher:
             teacher_mode = self.teacher_mode.value
             if teacher_mode == TeacherMode.none.value:
-                logger.error("Teacher mode was not properly set")
-                teacher_mode = TeacherMode.two_stage.value
+                raise ValueError("Teacher mode was not properly set, as it was set to none")
 
             config_input = (
                 train_dir / f"configs/opustrainer/{self.model_type.value}.{teacher_mode}.yml"
@@ -257,9 +269,9 @@ class TrainCLI:
             "opustrainer-train",
             *apply_command_args(
                 {
-                    "config": str(self.opustrainer_config),
-                    "log-file": str(self.artifacts / "opustrainer.log"),
-                    "log-level": "ERROR",
+                    "config": self.opustrainer_config,
+                    "log-file": self.artifacts / "opustrainer.log",
+                    "log-level": "INFO",
                 }
             ),
         ]
@@ -268,9 +280,9 @@ class TrainCLI:
         all_model_metrics = ["chrf", "ce-mean-words", "bleu-detok"]
         validation_metrics = [
             # Place the best model metric first.
-            self.best_model_metric,
+            self.best_model_metric.value,
             # And then the rest of the metrics should follow.
-            *[m for m in all_model_metrics if m != self.best_model_metric],
+            *[m for m in all_model_metrics if m != self.best_model_metric.value],
         ]
 
         # Take off the "--" from beginning of the list.
@@ -320,7 +332,7 @@ class TrainCLI:
         outputs the progress as in its log. The final part of the pipeline is the log
         parser which parses the streamed logs and reports the results to W&B.
         """
-        run_pipeline(
+        run_command_pipeline(
             [
                 [
                     # OpusTrainer controls the marian commands.
@@ -334,12 +346,13 @@ class TrainCLI:
         )
 
         shutil.copy(
-            self.artifacts / f"model.npz.best-{self.best_model_metric}.npz",
-            self.artifacts / f"final.model.npz.best-{self.best_model_metric}.npz",
+            self.artifacts / f"model.npz.best-{self.best_model_metric.value}.npz",
+            self.artifacts / f"final.model.npz.best-{self.best_model_metric.value}.npz",
         )
         shutil.copy(
-            self.artifacts / f"model.npz.best-{self.best_model_metric}.npz.decoder.yml",
-            self.artifacts / f"final.model.npz.best-{self.best_model_metric}.npz.decoder.yml",
+            self.artifacts / f"model.npz.best-{self.best_model_metric.value}.npz.decoder.yml",
+            self.artifacts
+            / f"final.model.npz.best-{self.best_model_metric.value}.npz.decoder.yml",
         )
 
 
@@ -363,14 +376,24 @@ def main() -> None:
         choices=TrainingType,
         help="Type of teacher training",
     )
-    parser.add_argument("--gpus", type=str, required=True, help="GPUs to use")
+    parser.add_argument(
+        "--gpus",
+        type=str,
+        required=True,
+        help='The indexes of the GPUs to use on a system, e.g. --gpus "0 1 2 3"',
+    )
     parser.add_argument(
         "--marian_dir",
         type=Path,
         required=True,
         help="Path to Marian binary directory. This allows for overriding to use the browser-mt fork.",
     )
-    parser.add_argument("--workspace", type=str, required=True, help="Workspace directory")
+    parser.add_argument(
+        "--workspace",
+        type=str,
+        required=True,
+        help="The amount of Marian memory (in MB) to preallocate",
+    )
     parser.add_argument("--src", type=str, help="Source language")
     parser.add_argument("--trg", type=str, help="Target language")
     parser.add_argument(
@@ -381,7 +404,11 @@ def main() -> None:
     parser.add_argument("--validation_set_prefix", type=str, help="Prefix to validation dataset")
     parser.add_argument("--artifacts", type=Path, help="Where to save the model artifacts")
     parser.add_argument("--vocab", type=Path, help="Path to vocab file")
-    parser.add_argument("--best_model_metric", type=str, help="Best model metric")
+    parser.add_argument(
+        "--best_model_metric",
+        type=BestModelMetric,
+        help="Multiple metrics are gathered, but only the best model for a given metric will be retained",
+    )
     parser.add_argument(
         "--alignments",
         type=str,

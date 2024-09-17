@@ -44,7 +44,7 @@ def apply_command_args(dict: dict[str, any]):
         yield str(value)
 
 
-def run_pipeline(
+def run_command_pipeline(
     commands: list[list[str]], pipe_stderr=False, capture=False, logger=None
 ) -> str | None:
     """

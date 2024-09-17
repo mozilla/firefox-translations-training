@@ -1,5 +1,5 @@
 import pytest
-from pipeline.common.processes import run_pipeline
+from pipeline.common.command_runner import run_command_pipeline
 from shlex import join
 
 
@@ -32,7 +32,7 @@ def test_run_pipeline(capture: bool, test_case, capfd):
     for command in commands[1:]:
         command_text = f"{command_text} | {join(command)}"
 
-    actual_result = run_pipeline(commands, capture=capture)
+    actual_result = run_command_pipeline(commands, capture=capture)
     if not capture:
         captured = capfd.readouterr()
         actual_result = captured.out
