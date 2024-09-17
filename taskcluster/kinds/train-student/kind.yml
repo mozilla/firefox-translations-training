@@ -15,7 +15,6 @@ transforms:
 
 kind-dependencies:
     - merge-devset
-    - cefilter
     - train-vocab
     - alignments-student
     - shortlist
@@ -118,7 +117,6 @@ tasks:
         dependencies:
             train-vocab: train-vocab-{src_locale}-{trg_locale}
             merge-devset: merge-devset-{src_locale}-{trg_locale}
-            cefilter: cefilter-{src_locale}-{trg_locale}
             alignments: alignments-student-{src_locale}-{trg_locale}
 
         fetches:
@@ -127,11 +125,6 @@ tasks:
             train-vocab:
                 - artifact: vocab.spm
                   extract: false
-            cefilter:
-                - artifact: corpus.{src_locale}.zst
-                  extract: false
-                - artifact: corpus.{trg_locale}.zst
-                  extract: false
             merge-devset:
                 - artifact: devset.{src_locale}.zst
                   extract: false
@@ -139,3 +132,7 @@ tasks:
                   extract: false
             alignments:
                 - artifact: corpus.aln.zst
+                - artifact: corpus.{src_locale}.moses.zst
+                  extract: false
+                - artifact: corpus.{trg_locale}.moses.zst
+                  extract: false
