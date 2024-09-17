@@ -17,78 +17,72 @@ kind-dependencies:
     - dataset
     - toolchain
 
-task-defaults:
-    attributes:
-        src_locale: "{src_locale}"
-        trg_locale: "{trg_locale}"
-        cache:
-            resources:
-                - pipeline/clean/merge-corpus.sh
-    task-context:
-        from-parameters:
-            src_locale: training_config.experiment.src
-            trg_locale: training_config.experiment.trg
-        substitution-fields:
-            - name
-            - label
-            - description
-            - worker.env
-            - dependencies
-            - fetches
-            - attributes
-            - run.command
-    upstreams-config:
-        upstream-artifacts:
-            - "{dataset_sanitized}.{src_locale}.zst"
-            - "{dataset_sanitized}.{trg_locale}.zst"
-    worker-type: b-cpu
-    worker:
-        docker-image: {"in-tree": "train"}
-        max-run-time: 86400
-        artifacts:
-            - name: public/build
-              path: /builds/worker/artifacts
-              type: directory
-        env:
-            SRC: "{src_locale}"
-            TRG: "{trg_locale}"
-        # 128 happens when cloning this repository fails
-        retry-exit-status: [128]
-
-    # Don't run unless explicitly scheduled
-    run-on-tasks-for: []
-
-    run:
-        using: run-task
-        command:
-            - bash
-            - -c
-            # Arguments are:
-            # 1) output prefix
-            # 2) input files
-            - >-
-                export BIN=$MOZ_FETCHES_DIR &&
-                $VCS_PATH/pipeline/clean/merge-corpus.sh
-                $TASK_WORKDIR/artifacts/{artifact_prefix}
-                $MOZ_FETCHES_DIR/*.zst
-    fetches:
-        toolchain:
-            - preprocess
-
 tasks:
     merge-devset:
         label: merge-devset-{src_locale}-{trg_locale}
         description: merge devset for {src_locale}-{trg_locale}
+
+        worker-type: b-cpu
+        worker:
+            docker-image: {"in-tree": "train"}
+            max-run-time: 86400
+            artifacts:
+                - name: public/build
+                  path: /builds/worker/artifacts
+                  type: directory
+            env:
+                SRC: "{src_locale}"
+                TRG: "{trg_locale}"
+            # 128 happens when cloning this repository fails
+            retry-exit-status: [128]
+
+        # Don't run unless explicitly scheduled
+        run-on-tasks-for: []
+
         attributes:
+            src_locale: "{src_locale}"
+            trg_locale: "{trg_locale}"
             dataset-category: devtest
             stage: merge-devset
             cache:
                 type: merge-devset
+                resources:
+                    - pipeline/clean/merge-corpus.sh
+
+        task-context:
+            from-parameters:
+                src_locale: training_config.experiment.src
+                trg_locale: training_config.experiment.trg
+            substitution-fields:
+                - name
+                - label
+                - description
+                - worker.env
+                - dependencies
+                - fetches
+                - attributes
+                - run.command
 
         upstreams-config:
+            upstream-artifacts:
+                - "{dataset_sanitized}.{src_locale}.zst"
+                - "{dataset_sanitized}.{trg_locale}.zst"
             upstream-task-attributes:
                 kind: dataset
 
-        task-context:
-            from-object:
-                artifact_prefix: devset
+        run:
+            using: run-task
+            command:
+                - bash
+                - -c
+                # Arguments are:
+                # 1) output prefix
+                # 2) input files
+                - >-
+                    export BIN=$MOZ_FETCHES_DIR &&
+                    $VCS_PATH/pipeline/clean/merge-corpus.sh
+                    $TASK_WORKDIR/artifacts/devset
+                    $MOZ_FETCHES_DIR/*.zst
+        fetches:
+            toolchain:
+                - preprocess
