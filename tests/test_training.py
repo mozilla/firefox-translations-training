@@ -3,7 +3,7 @@ import shutil
 
 import pytest
 import sentencepiece as spm
-from fixtures import DataDir, en_sample, ru_sample
+from fixtures import DataDir, en_sample, ru_sample, zh_sample, FIXTURES_PATH
 
 pytestmark = [pytest.mark.docker_amd64]
 
@@ -45,37 +45,55 @@ def data_dir():
     return DataDir("test_training")
 
 
-@pytest.fixture()
-def vocab(data_dir):
-    shutil.copyfile("tests/data/vocab.spm", data_dir.join("vocab.spm"))
+@pytest.fixture(params=["ru", "zh"])
+def trg_lang(request):
+    return request.param
+
+
+@pytest.fixture
+def config(trg_lang):
+    zh_config_path = os.path.abspath(os.path.join(FIXTURES_PATH, "config.pytest.enzh.yml"))
+    return zh_config_path if trg_lang == "zh" else None
 
 
 @pytest.fixture()
-def corpus(data_dir):
+def vocab(data_dir, trg_lang):
+    output_path = data_dir.join("vocab.spm")
+    if trg_lang == "ru":
+        shutil.copyfile("tests/data/vocab.spm", output_path)
+    else:
+        shutil.copyfile("tests/data/vocab.zhen.spm", output_path)
+
+    return output_path
+
+
+@pytest.fixture()
+def corpus(data_dir, trg_lang):
+    sample = zh_sample if trg_lang == "zh" else ru_sample
     data_dir.create_zst("corpus.en.zst", en_sample)
-    data_dir.create_zst("corpus.ru.zst", ru_sample)
+    data_dir.create_zst(f"corpus.{trg_lang}.zst", sample)
     data_dir.create_zst("mono.en.zst", en_sample)
-    data_dir.create_zst("mono.ru.zst", ru_sample)
+    data_dir.create_zst(f"mono.{trg_lang}.zst", sample)
     data_dir.create_zst("devset.en.zst", en_sample)
-    data_dir.create_zst("devset.ru.zst", ru_sample)
+    data_dir.create_zst(f"devset.{trg_lang}.zst", sample)
 
 
 @pytest.fixture()
-def alignments(data_dir, vocab, corpus):
+def alignments(data_dir, vocab, corpus, trg_lang, config):
     env = {
         "TEST_ARTIFACTS": data_dir.path,
         "BIN": bin_dir,
         "MARIAN": marian_dir,
         "SRC": "en",
-        "TRG": "ru",
+        "TRG": trg_lang,
     }
     for task, corpus in [("original", "corpus"), ("backtranslated", "mono")]:
-        data_dir.run_task(f"alignments-{task}-en-ru", env=env)
+        data_dir.run_task(f"alignments-{task}-en-{trg_lang}", env=env, config=config)
         shutil.copyfile(
             os.path.join(data_dir.path, "artifacts", f"{corpus}.aln.zst"),
             data_dir.join(f"{corpus}.aln.zst"),
         )
-        for lang in ["en", "ru"]:
+        for lang in ["en", trg_lang]:
             shutil.copyfile(
                 os.path.join(data_dir.path, "artifacts", f"{corpus}.moses.{lang}.zst"),
                 data_dir.join(f"{corpus}.moses.{lang}.zst"),
@@ -87,10 +105,10 @@ def alignments(data_dir, vocab, corpus):
             )
     # recreate corpus
     data_dir.create_zst("corpus.en.zst", en_sample)
-    data_dir.create_zst("corpus.ru.zst", ru_sample)
+    data_dir.create_zst(f"corpus.{trg_lang}.zst", ru_sample)
 
 
-def test_train_student_mocked(alignments, data_dir):
+def test_train_student_mocked(alignments, data_dir, trg_lang, vocab, config):
     """
     Run training with mocked marian to check OpusTrainer output
     """
@@ -100,10 +118,10 @@ def test_train_student_mocked(alignments, data_dir):
         "BIN": bin_dir,
         "MARIAN": fixtures_path,
         "SRC": "en",
-        "TRG": "ru",
+        "TRG": trg_lang,
     }
 
-    data_dir.run_task("train-student-en-ru", env=env)
+    data_dir.run_task(f"train-student-en-{trg_lang}", env=env, config=config)
 
     assert os.path.isfile(
         os.path.join(data_dir.path, "artifacts", "final.model.npz.best-chrf.npz")
@@ -111,10 +129,10 @@ def test_train_student_mocked(alignments, data_dir):
     assert os.path.isfile(
         os.path.join(data_dir.path, "artifacts", "model.npz.best-chrf.npz.decoder.yml")
     )
-    validate_alignments(data_dir.join("marian.input.txt"), data_dir.join("vocab.spm"))
+    validate_alignments(data_dir.join("marian.input.txt"), vocab)
 
 
-def test_train_student(alignments, data_dir):
+def test_train_student(alignments, data_dir, trg_lang, config):
     """
     Run real training with Marian as an integration test
     """
@@ -124,7 +142,7 @@ def test_train_student(alignments, data_dir):
         "BIN": bin_dir,
         "MARIAN": marian_dir,
         "SRC": "en",
-        "TRG": "ru",
+        "TRG": trg_lang,
         "USE_CPU": "true",
     }
     marian_args = [
@@ -139,7 +157,9 @@ def test_train_student(alignments, data_dir):
         "--log-level", "trace",
     ]  # fmt:skip
 
-    data_dir.run_task("train-student-en-ru", env=env, extra_args=marian_args)
+    data_dir.run_task(
+        f"train-student-en-{trg_lang}", env=env, extra_args=marian_args, config=config
+    )
 
     assert os.path.isfile(
         os.path.join(data_dir.path, "artifacts", "final.model.npz.best-chrf.npz")
@@ -149,7 +169,7 @@ def test_train_student(alignments, data_dir):
     )
 
 
-def test_train_teacher(alignments, data_dir):
+def test_train_teacher(alignments, data_dir, trg_lang, config):
     """
     Run real training with Marian as an integration test
     """
@@ -159,7 +179,7 @@ def test_train_teacher(alignments, data_dir):
         "BIN": bin_dir,
         "MARIAN": marian_dir,
         "SRC": "en",
-        "TRG": "ru",
+        "TRG": trg_lang,
         "USE_CPU": "true",
     }
     marian_args = [
@@ -182,7 +202,9 @@ def test_train_teacher(alignments, data_dir):
 
     ]  # fmt:skip
 
-    data_dir.run_task("train-teacher-en-ru-1", env=env, extra_args=marian_args)
+    data_dir.run_task(
+        f"train-teacher-en-{trg_lang}-1", env=env, extra_args=marian_args, config=config
+    )
 
     assert os.path.isfile(
         os.path.join(data_dir.path, "artifacts", "final.model.npz.best-chrf.npz")
@@ -192,7 +214,7 @@ def test_train_teacher(alignments, data_dir):
     )
 
 
-def test_train_backwards(corpus, vocab, data_dir):
+def test_train_backwards(corpus, vocab, data_dir, trg_lang, config):
     """
     Run real training with Marian as an integration test
     """
@@ -202,7 +224,7 @@ def test_train_backwards(corpus, vocab, data_dir):
         "BIN": bin_dir,
         "MARIAN": marian_dir,
         "SRC": "en",
-        "TRG": "ru",
+        "TRG": trg_lang,
         "USE_CPU": "true",
     }
     marian_args = [
@@ -222,7 +244,9 @@ def test_train_backwards(corpus, vocab, data_dir):
         "--beam-size", "1"
     ]  # fmt:skip
 
-    data_dir.run_task("train-backwards-en-ru", env=env, extra_args=marian_args)
+    data_dir.run_task(
+        f"train-backwards-en-{trg_lang}", env=env, extra_args=marian_args, config=config
+    )
 
     assert os.path.isfile(
         os.path.join(data_dir.path, "artifacts", "final.model.npz.best-chrf.npz")
