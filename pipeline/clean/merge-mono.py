@@ -1,12 +1,17 @@
 import argparse
 import glob
-import json
 import os
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Generator
 
-from pipeline.common.datasets import WeakStringSet, shuffle_with_max_lines
+from pipeline.common.datasets import (
+    CountingStep,
+    FilteringStep,
+    Statistics,
+    WeakStringSet,
+    shuffle_with_max_lines,
+)
 from pipeline.common.downloads import (
     format_bytes,
     get_human_readable_file_size,
@@ -23,37 +28,42 @@ MAX_WORDS_IN_SENTENCE = 100
 
 
 @dataclass
-class FilteringStatistics:
+class FilteringStatistics(Statistics):
     """
     Gather statistics about the filtering process.
     """
 
-    # The size of the merged parallel corpus.
-    parallel_corpus_lines: int = 0
+    def __init__(self, dataset_path: Path) -> None:
+        super().__init__(dataset_path)
+        self.final_truncated_monolingual_lines = CountingStep(
+            "After truncation via the config's `experiment.mono-max-sentences-src.total`, "
+            "how many lines are left."
+        )
 
-    # How much of the monolingual data was duplicated in the merged parallel corpus.
-    duplicates_of_parallel_corpus: int = 0
+        self.final_truncated_monolingual_codepoints = CountingStep(
+            "The amount of codepoints in the final monolingual corpus."
+        )
 
-    # How much of the monolingual data was duplicated across the monolingual datasets.
-    duplicates_of_monolingual_corpus: int = 0
+        self.parallel_corpus_lines = CountingStep(
+            "The size of the merged parallel corpus before truncation."
+        )
 
-    # What was the size of the monolingual data that was filtered. This doesn't count the
-    # truncation of datasets at the datasets gathering time.
-    original_monolingual_lines: int = 0
+        self.duplicates_of_parallel_corpus = CountingStep(
+            "How much of the monolingual data was duplicated in the merged parallel corpus."
+        )
 
-    # After deduplication, how much monolingual data is left.
-    deduplicated_monolingual_lines: int = 0
+        self.duplicates_of_monolingual_corpus = CountingStep(
+            "How much of the monolingual data was duplicated across the monolingual datasets."
+        )
 
-    # After truncation via the config's `experiment.mono-max-sentences-src.total`,
-    # how many lines are left.
-    final_truncated_monolingual_lines: int = 0
+        self.deduplicated_size = FilteringStep(
+            "What was the size of the monolingual data and how much was deduplicated. This "
+            "doesn't count the truncation of datasets at the datasets gathering time."
+        )
 
-    # The amount of codepoints in the final monolingual corpus.
-    final_truncated_monolingual_codepoints: int = 0
-
-    def save_json(self, path: Path) -> None:
-        with open(path, "w", encoding="utf-8") as json_file:
-            json.dump(asdict(self), json_file, indent=2)
+        self.deduplicated_monolingual_lines = CountingStep(
+            "After deduplication, how much monolingual data is left."
+        )
 
 
 def filter_and_write_monolingual_data(
@@ -99,11 +109,13 @@ def filter_and_write_monolingual_data(
 
                 yield line
 
-        stats.original_monolingual_lines = parallel_discards + mono_discards + retained
-        stats.duplicates_of_parallel_corpus = parallel_discards
-        stats.duplicates_of_monolingual_corpus = mono_discards
-        stats.deduplicated_monolingual_lines = retained
-        stats.parallel_corpus_lines = len(parallel_hashes)
+        stats.deduplicated_size.kept = retained
+        stats.deduplicated_size.filtered = parallel_discards + mono_discards
+        stats.deduplicated_monolingual_lines.value = retained
+
+        stats.duplicates_of_parallel_corpus.value = parallel_discards
+        stats.duplicates_of_monolingual_corpus.value = mono_discards
+        stats.parallel_corpus_lines.value = len(parallel_hashes)
 
     # Estimate the byte size. The better the estimate, the better the data distribution will be.
     # When filtering mono NLLB data against parallel NLLB data, roughly 70% is kept.
@@ -128,9 +140,9 @@ def filter_and_write_monolingual_data(
     log_memory(gc_collect=True)
     logger.info(f"Write the final file: {output_path}")
     with write_lines(output_path) as outfile:
-        stats.final_truncated_monolingual_lines = len(final_lines)
+        stats.final_truncated_monolingual_lines.value = len(final_lines)
         for i, line in enumerate(final_lines):
-            stats.final_truncated_monolingual_codepoints += len(line)
+            stats.final_truncated_monolingual_codepoints.value += len(line)
             outfile.write(line)
             if i % 1_000_000 == 999_999:
                 logger.info(f"Wrote line {i+1:,} to {output_path}")
@@ -149,9 +161,8 @@ def filter_and_write_monolingual_data(
             outfile.write(line)
 
     log_memory(gc_collect=True)
-    stats_path = output_path.parent / f"{output_path.stem}.stats.json"
-    logger.info(f"Save the stats: {stats_path}")
-    stats.save_json(stats_path)
+    stats_path = stats.save_json()
+    logger.info(f"Saved the stats: {stats_path}")
 
 
 def compute_line_hashes(path: Path) -> WeakStringSet:
@@ -231,7 +242,7 @@ def main() -> None:
     logger.info(f"Compute hashes of the parallel data: {path}")
     line_hashes = compute_line_hashes(parallel_corpus)
 
-    stats = FilteringStatistics()
+    stats = FilteringStatistics(output_path)
 
     filter_and_write_monolingual_data(
         mono_dataset_paths, output_path, line_hashes, max_sentences, args.sample_size, stats

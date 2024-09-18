@@ -51,13 +51,36 @@ def test_merge_mono(task: str):
     data_dir.print_tree()
 
     assert json.loads(data_dir.load(f"artifacts/mono.{locale}.stats.json")) == {
-        "duplicates_of_monolingual_corpus": 2,
-        "duplicates_of_parallel_corpus": 2,
-        "parallel_corpus_lines": 7,
-        "original_monolingual_lines": 14,
-        "deduplicated_monolingual_lines": 10,
-        "final_truncated_monolingual_lines": 10,
-        "final_truncated_monolingual_codepoints": 104,
+        "final_truncated_monolingual_lines": {
+            "description": "After truncation via the config's `experiment.mono-max-sentences-src.total`, how many lines are left.",
+            "value": 10,
+        },
+        "final_truncated_monolingual_codepoints": {
+            "description": "The amount of codepoints in the final monolingual corpus.",
+            "value": 104,
+        },
+        "parallel_corpus_lines": {
+            "description": "The size of the merged parallel corpus before truncation.",
+            "value": 7,
+        },
+        "duplicates_of_parallel_corpus": {
+            "description": "How much of the monolingual data was duplicated in the merged parallel corpus.",
+            "value": 2,
+        },
+        "duplicates_of_monolingual_corpus": {
+            "description": "How much of the monolingual data was duplicated across the monolingual datasets.",
+            "value": 2,
+        },
+        "deduplicated_size": {
+            "description": "What was the size of the monolingual data and how much was deduplicated. This doesn't count the truncation of datasets at the datasets gathering time.",
+            "filtered": 4,
+            "kept": 10,
+            "visited": 14,
+        },
+        "deduplicated_monolingual_lines": {
+            "description": "After deduplication, how much monolingual data is left.",
+            "value": 10,
+        },
     }
 
     with read_lines(data_dir.join(f"artifacts/mono.{locale}.zst")) as lines_iter:
