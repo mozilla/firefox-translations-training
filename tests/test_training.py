@@ -54,6 +54,8 @@ def vocab(data_dir):
 def corpus(data_dir):
     data_dir.create_zst("corpus.en.zst", en_sample)
     data_dir.create_zst("corpus.ru.zst", ru_sample)
+    data_dir.create_zst("mono.en.zst", en_sample)
+    data_dir.create_zst("mono.ru.zst", ru_sample)
     data_dir.create_zst("devset.en.zst", en_sample)
     data_dir.create_zst("devset.ru.zst", ru_sample)
 
@@ -67,10 +69,22 @@ def alignments(data_dir, vocab, corpus):
         "SRC": "en",
         "TRG": "ru",
     }
-    data_dir.run_task("alignments-original-en-ru", env=env)
-    shutil.copyfile(
-        os.path.join(data_dir.path, "artifacts", "corpus.aln.zst"), data_dir.join("corpus.aln.zst")
-    )
+    for task, corpus in [("original", "corpus"), ("backtranslated", "mono")]:
+        data_dir.run_task(f"alignments-{task}-en-ru", env=env)
+        shutil.copyfile(
+            os.path.join(data_dir.path, "artifacts", f"{corpus}.aln.zst"),
+            data_dir.join(f"{corpus}.aln.zst"),
+        )
+        for lang in ["en", "ru"]:
+            shutil.copyfile(
+                os.path.join(data_dir.path, "artifacts", f"{corpus}.moses.{lang}.zst"),
+                data_dir.join(f"{corpus}.moses.{lang}.zst"),
+            )
+        if task == "original":
+            shutil.copyfile(
+                os.path.join(data_dir.path, "artifacts", "corpus.priors"),
+                data_dir.join("corpus.priors"),
+            )
     # recreate corpus
     data_dir.create_zst("corpus.en.zst", en_sample)
     data_dir.create_zst("corpus.ru.zst", ru_sample)
@@ -126,6 +140,89 @@ def test_train_student(alignments, data_dir):
     ]  # fmt:skip
 
     data_dir.run_task("train-student-en-ru", env=env, extra_args=marian_args)
+
+    assert os.path.isfile(
+        os.path.join(data_dir.path, "artifacts", "final.model.npz.best-chrf.npz")
+    )
+    assert os.path.isfile(
+        os.path.join(data_dir.path, "artifacts", "model.npz.best-chrf.npz.decoder.yml")
+    )
+
+
+def test_train_teacher(alignments, data_dir):
+    """
+    Run real training with Marian as an integration test
+    """
+
+    env = {
+        "TEST_ARTIFACTS": data_dir.path,
+        "BIN": bin_dir,
+        "MARIAN": marian_dir,
+        "SRC": "en",
+        "TRG": "ru",
+        "USE_CPU": "true",
+    }
+    marian_args = [
+        "--disp-freq", "1",
+        "--save-freq", "2",
+        "--valid-freq", "2",
+        "--after-batches", "2",
+        "--dim-vocabs", "1000", "1000",
+        "--mini-batch", "10",
+        "--maxi-batch", "10",
+        "--mini-batch-fit", "false",
+        "--log-level", "trace",
+        # simplify architecture to run faster
+        "--task", "transformer-base",
+        "--enc-depth", "1",
+        "--dec-depth", "1",
+        "--dim-emb", "32",
+        "--transformer-dim-ffn", "128",
+        "--beam-size", "1"
+
+    ]  # fmt:skip
+
+    data_dir.run_task("train-teacher-en-ru-1", env=env, extra_args=marian_args)
+
+    assert os.path.isfile(
+        os.path.join(data_dir.path, "artifacts", "final.model.npz.best-chrf.npz")
+    )
+    assert os.path.isfile(
+        os.path.join(data_dir.path, "artifacts", "model.npz.best-chrf.npz.decoder.yml")
+    )
+
+
+def test_train_backwards(corpus, vocab, data_dir):
+    """
+    Run real training with Marian as an integration test
+    """
+
+    env = {
+        "TEST_ARTIFACTS": data_dir.path,
+        "BIN": bin_dir,
+        "MARIAN": marian_dir,
+        "SRC": "en",
+        "TRG": "ru",
+        "USE_CPU": "true",
+    }
+    marian_args = [
+        "--disp-freq", "1",
+        "--save-freq", "2",
+        "--valid-freq", "2",
+        "--after-batches", "2",
+        "--dim-vocabs", "1000", "1000",
+        "--mini-batch", "10",
+        "--maxi-batch", "10",
+        "--mini-batch-fit", "false",
+        "--log-level", "trace",
+        "--enc-depth", "1",
+        "--dec-depth", "1",
+        "--dim-emb", "32",
+        "--dim-rnn", "16",
+        "--beam-size", "1"
+    ]  # fmt:skip
+
+    data_dir.run_task("train-backwards-en-ru", env=env, extra_args=marian_args)
 
     assert os.path.isfile(
         os.path.join(data_dir.path, "artifacts", "final.model.npz.best-chrf.npz")

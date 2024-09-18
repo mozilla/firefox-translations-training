@@ -103,7 +103,7 @@ tasks:
                     train
                     {src_locale}
                     {trg_locale}
-                    $MOZ_FETCHES_DIR/corpus
+                    $MOZ_FETCHES_DIR/corpus.moses
                     $MOZ_FETCHES_DIR/devset
                     $TASK_WORKDIR/artifacts
                     {best_model}
@@ -132,7 +132,7 @@ tasks:
                   extract: false
             alignments:
                 - artifact: corpus.aln.zst
-                - artifact: corpus.{src_locale}.moses.zst
+                - artifact: corpus.moses.{src_locale}.zst
                   extract: false
-                - artifact: corpus.{trg_locale}.moses.zst
+                - artifact: corpus.moses.{trg_locale}.zst
                   extract: false

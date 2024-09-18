@@ -64,7 +64,12 @@ def run(
     corpus_trg = decompress(corpus_trg)
 
     if tokenization == Tokenization.moses:
-        tokenized_src, tokenized_trg = corpus_src + ".moses", corpus_trg + ".moses"
+        tokenized_src = (
+            corpus_src[: corpus_src.rfind(".")] + ".moses" + corpus_src[corpus_src.rfind(".") :]
+        )
+        tokenized_trg = (
+            corpus_trg[: corpus_trg.rfind(".")] + ".moses" + corpus_trg[corpus_trg.rfind(".") :]
+        )
         output_aln = os.path.join(tmp_dir, "aln")
         # C++ tokenizer can process 100k sentences per second on a single core,
         # so the chunks to parallelize things should be large enough to increase throughput
