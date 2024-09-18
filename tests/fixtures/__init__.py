@@ -282,7 +282,7 @@ def fail_on_error(result: CompletedProcess[bytes]):
 _full_taskgraph: Optional[dict[str, object]] = None
 
 
-def get_full_taskgraph(config: Optional[str]):
+def get_full_taskgraph(config: Optional[str] = None):
     """
     Generates the full taskgraph and stores it for re-use. It uses the config.pytest.yml
     in this directory.
