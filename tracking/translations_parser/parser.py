@@ -19,6 +19,10 @@ from translations_parser.utils import get_lines_count
 logger = logging.getLogger(__name__)
 
 HEADER_RE = re.compile(r"(?<=\[)(?P<value>.+?)\] ")
+#                            \[               \]   Match square brackets
+#                        (?<=\[)                   This is a positive lookbehind, that looks for the first "[" in a line.
+#                                                  This line does not actually capture
+#                               (?P<value>.+?)     Non-greedily match the "value" inside of the square brackes.
 VALIDATION_RE = re.compile(
     r"Ep\.[ :]+(?P<ep>\d+)"
     r"[ :]+Up\.[ :]+(?P<up>\d+)"
@@ -124,9 +128,11 @@ class TrainingParser:
         values["sen"] = values["sen"].replace(",", "_")
         # Cast values to match output types
         casted_values = {
-            k: TrainingEpoch.__annotations__[k](v)
-            if callable(TrainingEpoch.__annotations__[k])
-            else float(v)
+            k: (
+                TrainingEpoch.__annotations__[k](v)
+                if callable(TrainingEpoch.__annotations__[k])
+                else float(v)
+            )
             for k, v in values.items()
         }
         training_epoch = TrainingEpoch(**casted_values)
@@ -322,8 +328,11 @@ class TrainingParser:
         headers: list[tuple[str]] = []
         # Consume first lines until we get the Marian header
         while ("marian",) not in headers:
-            headers, text = next(logs_iter)
-            logger.debug(f"Marian header not found in: headers={headers} text={text.strip()}")
+            try:
+                headers, text = next(logs_iter)
+                logger.debug(f"Marian header not found in: headers={headers} text={text.strip()}")
+            except StopIteration:
+                raise ValueError("Could not find a [marian] entry in the training log.")
 
         logger.debug(f"Reading Marian version from text={text.strip()}")
         _, version, self.version_hash, self.release_date, *_ = text.split()
@@ -439,8 +448,7 @@ class TrainingParser:
         try:
             self.parse()
         except StopIteration:
-            # A StopIteration can be raised if some required lines are never found.
-            raise ValueError("Logs file ended up unexpectedly")
+            raise ValueError("Not all required lines were found from the log file.")
 
         count = len(self.parsed_logs)
         logger.info(f"Successfully parsed {count} lines")

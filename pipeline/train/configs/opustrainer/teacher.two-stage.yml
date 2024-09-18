@@ -1,6 +1,6 @@
 datasets:
-  original: <dataset0> # Original parallel corpus
-  backtranslated: <dataset1> # Back-translated data
+  original: {dataset0} # Original parallel corpus
+  backtranslated: {dataset1} # Back-translated data
 
 stages:
   - pretrain
@@ -39,6 +39,6 @@ modifiers:
 
 
 # random seed should be different for different teacher models
-seed: <seed>
+seed: {seed}
 # parallel sentences + token alignments
 num_fields: 3

@@ -139,10 +139,10 @@ For more details on data cleaning see the documents on [Data cleaning](cleaning.
 ## 4. Set hyperparameters
 
 The pipeline supports overriding the default [Marian settings](https://marian-nmt.github.io/docs/cmd/marian/) in the training config. The default settings are in the `pipeline/train/configs` directory,
-for example [`teacher.train.yml`] and in the [`train.sh`] script.
+for example [`teacher.train.yml`] and in the [`train.py`] script.
 
 [teacher.train.yml]: https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/training/teacher.train.yml
-[train.sh]: https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/train.sh
+[train.py]: https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/train.py
 
 ### Model training
 
@@ -224,7 +224,7 @@ Find the full description of the pipeline steps [here](pipeline-steps.md).
 ### Cluster specific configuaiton
 
 The Marian workspace is usually safe to set to about 3/4 of available GPU memory 
-(in a [profile for Snakemake](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/train.sh) and throughout the ci steps in Task cluster).
+(in a [profile for Snakemake](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/train.py) and throughout the ci steps in Task cluster).
 Setting a higher value speeds up training but might lead to out of GPU memory error.
 
 ### Taskcluster
@@ -319,7 +319,7 @@ Taskcluster retries automatically.
 
 Usually, by the time we train the student, it's so much data that it might not fit in 128 GB of RAM. 
 For very high-resource languages like French it can happen even earlier, on the backward/teacher training stage. 
-The workaround is to remove `--shuffle-in-ram` from the [training script](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/train.sh) 
+The workaround is to remove `--shuffle-in-ram` from the [training script](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/train.py) 
 and add `--shuffle batches`  instead.
 More details in the [issue](https://github.com/mozilla/firefox-translations-training/issues/21).
 

@@ -164,6 +164,10 @@ class DataDir:
                 command_parts_split.extend(extra_args)
 
             final_env = {
+                # The following are set by the Taskcluster server.
+                "TASK_ID": "fake_id",
+                "RUN_ID": "0",
+                "TASKCLUSTER_ROOT_URL": "https://some.cluster",
                 **os.environ,
                 **task_env,
                 "TASK_WORKDIR": work_dir,

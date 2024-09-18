@@ -74,6 +74,7 @@ def alignments(data_dir, vocab, corpus):
     # recreate corpus
     data_dir.create_zst("corpus.en.zst", en_sample)
     data_dir.create_zst("corpus.ru.zst", ru_sample)
+    data_dir.print_tree()
 
 
 def test_train_student_mocked(alignments, data_dir):
@@ -90,6 +91,7 @@ def test_train_student_mocked(alignments, data_dir):
     }
 
     data_dir.run_task("train-student-en-ru", env=env)
+    data_dir.print_tree()
 
     assert os.path.isfile(
         os.path.join(data_dir.path, "artifacts", "final.model.npz.best-chrf.npz")
@@ -126,6 +128,60 @@ def test_train_student(alignments, data_dir):
     ]  # fmt:skip
 
     data_dir.run_task("train-student-en-ru", env=env, extra_args=marian_args)
+    data_dir.print_tree()
+
+    assert os.path.isfile(
+        os.path.join(data_dir.path, "artifacts", "final.model.npz.best-chrf.npz")
+    )
+    assert os.path.isfile(
+        os.path.join(data_dir.path, "artifacts", "model.npz.best-chrf.npz.decoder.yml")
+    )
+
+
+def test_train_backwards_mocked(data_dir, vocab, corpus):
+    """
+    Run training with mocked Marian to validate the backwards training configuration.
+    """
+
+    env = {
+        "TEST_ARTIFACTS": data_dir.path,
+        "BIN": bin_dir,
+        "MARIAN": fixtures_path,
+        "SRC": "en",
+        "TRG": "ru",
+    }
+
+    data_dir.run_task("train-backwards-en-ru", env=env)
+    data_dir.print_tree()
+
+    assert os.path.isfile(
+        os.path.join(data_dir.path, "artifacts", "final.model.npz.best-chrf.npz")
+    )
+    assert os.path.isfile(
+        os.path.join(data_dir.path, "artifacts", "model.npz.best-chrf.npz.decoder.yml")
+    )
+
+
+def test_train_teacher_mocked(alignments, data_dir):
+    """
+    Run training with mocked Marian to validate the teacher training configuration.
+    """
+
+    env = {
+        "TEST_ARTIFACTS": data_dir.path,
+        "BIN": bin_dir,
+        "MARIAN": fixtures_path,
+        "SRC": "en",
+        "TRG": "ru",
+    }
+
+    # Fake the datasets that are required.
+    shutil.copy(data_dir.join("corpus.aln.zst"), data_dir.join("mono.aln.zst"))
+    shutil.copy(data_dir.join("corpus.en.zst"), data_dir.join("mono.en.zst"))
+    shutil.copy(data_dir.join("corpus.ru.zst"), data_dir.join("mono.ru.zst"))
+
+    data_dir.run_task("train-teacher-en-ru-1", env=env)
+    data_dir.print_tree()
 
     assert os.path.isfile(
         os.path.join(data_dir.path, "artifacts", "final.model.npz.best-chrf.npz")
