@@ -84,6 +84,7 @@ def get_defaults(_) -> dict:
                 ],
                 "devtest": [
                     "flores_dev",
+                    "sacrebleu_aug-mix-cjk_wmt17"
                 ],
                 "test": [
                     "flores_devtest",
