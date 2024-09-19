@@ -11,6 +11,9 @@ endif()
 
 project(bergamot_translator CXX C)
 
+# Retrieve the parent-directory path of PROJECT_SOURCE_DIR and assign that to REPOSITORY_ROOT_DIR.
+cmake_path(GET PROJECT_SOURCE_DIR PARENT_PATH REPOSITORY_ROOT_DIR)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -96,7 +99,7 @@ endif()
 # Documentation: https://cliutils.gitlab.io/modern-cmake/chapters/projects/submodule.html
 # Ensures the submodules are set correctly during a build.
 find_package(Git QUIET)
-if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+if(GIT_FOUND AND EXISTS "${REPOSITORY_ROOT_DIR}/.git")
 # Update submodules as needed
     option(GIT_SUBMODULE "Check submodules during build" ON)
     if(GIT_SUBMODULE)
