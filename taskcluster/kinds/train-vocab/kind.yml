@@ -75,7 +75,7 @@ tasks:
                     $VCS_PATH/pipeline/train/spm-vocab.sh
                     $TASK_WORKDIR/fetches/corpus.{src_locale}.zst
                     $TASK_WORKDIR/fetches/corpus.{trg_locale}.zst
-                    $TASK_WORKDIR/vocab.spm
+                    $TASK_WORKDIR/artifacts/vocab.spm
                     {spm_sample_size}
                     auto
                     {spm_vocab_size}
