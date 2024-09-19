@@ -31,6 +31,16 @@ if [[ -z "${MARIAN}" ]]; then
     exit 1
 fi
 
+if [[ -z "${SRC}" ]]; then
+    echo "Error: The SRC environment variable was not provided."
+    exit 1
+fi
+
+if [[ -z "${TRG}" ]]; then
+    echo "Error: The TRG environment variable was not provided."
+    exit 1
+fi
+
 # The name of the source corpus, e.g. "fetches/corpus.en.zst".
 merged_corpus_src=$1
 # The name of the target corpus, e.g. "fetches/corpus.ca.zst".
