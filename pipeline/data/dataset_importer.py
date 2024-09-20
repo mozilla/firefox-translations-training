@@ -88,6 +88,9 @@ modifier_map = {
 
 def run_cmd(cmd: List[str], env: Dict[str, str]):
     result = None
+    # make sure to preserve the current process env vars
+    env_vars = dict(os.environ)
+    env_vars.update(env)
     try:
         result = subprocess.run(
             cmd,
@@ -95,7 +98,7 @@ def run_cmd(cmd: List[str], env: Dict[str, str]):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             check=False,
-            env=env,
+            env=env_vars,
         )
         result.check_returncode()
     except:

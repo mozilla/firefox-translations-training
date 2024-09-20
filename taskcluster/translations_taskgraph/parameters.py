@@ -82,10 +82,7 @@ def get_defaults(_) -> dict:
                     "opus_NeuLab-TedTalks/v1",
                     "opus_ELRC-3056-wikipedia_health/v1",
                 ],
-                "devtest": [
-                    "flores_dev",
-                    "sacrebleu_aug-mix-cjk_wmt17"
-                ],
+                "devtest": ["flores_dev", "sacrebleu_aug-mix-cjk_wmt17"],
                 "test": [
                     "flores_devtest",
                 ],
