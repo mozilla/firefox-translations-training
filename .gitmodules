@@ -10,10 +10,6 @@
 	path = inference-engine/3rd_party/browsermt-marian-dev
 	url = https://github.com/browsermt/marian-dev
 
-[submodule "inference-engine/3rd_party/pybind11"]
-	path = inference-engine/3rd_party/pybind11
-	url = https://github.com/pybind/pybind11.git
-
 [submodule "inference-engine/3rd_party/ssplit-cpp"]
 	path = inference-engine/3rd_party/ssplit-cpp
 	url = https://github.com/browsermt/ssplit-cpp
