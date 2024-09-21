@@ -4,7 +4,7 @@
 # The documentation for this config can be found here:
 # https://github.com/mozilla/firefox-translations-training/blob/2027f4e99b78d45ce73e44ed454c8527e03718f7/taskcluster/configs/config.prod.yml
 experiment:
-  name: teacher-test
+  name: teacher-test-aln
   src: zh
   trg: en
   best-model: chrf
@@ -20,30 +20,31 @@ experiment:
   # increase vocab size for Chinese,
   # see https://github.com/hplt-project/HPLT-MT-Models/blob/main/v1.0/training/en-zh_hant/hplt/model.train.log
   spm-vocab-size: 64000
-  teacher-ensemble: 1
+  teacher-ensemble: 2
   teacher-mode: two-stage
-  pretrained-models: {}
+  pretrained-models:
+     train-backwards:
+      urls:
+        - "https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/Q5CG-D5kQaqZQGYukCsrcg/artifacts/public/build"
+      mode: use
+      type: default
 datasets:
   devtest:
   # disable augmentations
-  - mtdata_Neulab-tedtalks_dev-1-eng-zho
-  - flores_dev
-  - sacrebleu_wmt22
-  - sacrebleu_wmt20
-  - sacrebleu_wmt18
+  - mtdata_aug-mix-cjk_Neulab-tedtalks_dev-1-eng-zho
+  - flores_aug-mix-cjk_dev
+  - sacrebleu_aug-mix-cjk_wmt22
+  - sacrebleu_aug-mix-cjk_wmt20
+  - sacrebleu_aug-mix-cjk_wmt18
   test:
   - mtdata_Neulab-tedtalks_test-1-eng-zho
   - flores_devtest
   - sacrebleu_wmt21
   - sacrebleu_wmt19
   - sacrebleu_wmt17
-  # disable augmentations
-#  - flores_aug-mix_devtest
-#  - flores_aug-title_devtest
-#  - flores_aug-upper_devtest
-#  - flores_aug-typos_devtest
-#  - flores_aug-noise_devtest
-#  - flores_aug-inline-noise_devtest
+  - flores_aug-mix-cjk_devtest
+  - flores_aug-noise_devtest
+  - flores_aug-inline-noise_devtest
 
 
   # The training data contains:
@@ -140,13 +141,23 @@ marian-args:
     precision: float16
   training-backward:
     early-stopping: '5'
+    dim-vocabs: '64000,64000'
   training-teacher:
     early-stopping: '20'
+    dim-vocabs: '64000,64000'
   training-student:
     early-stopping: '20'
+    dim-vocabs: '64000,64000'
   training-student-finetuned:
     early-stopping: '20'
+    dim-vocabs: '64000,64000'
 target-stage: all
+start-stage: collect-mono-trg
+previous_group_ids: ["E8S5g0hdSh-Hafz5pRBO8w"]
+existing_tasks: { "train-vocab-zh-en": "T9jhBqKQQrujPAtSfTcjaQ",
+#                  "collect-mono-trg-en": "JeeAKl3EQXuK8cl3bN8bVw",
+                  "merge-mono-trg-zh": "KMmPM-HhSYGdXd2AihVfrg",
+                  "merge-corpus-zh-en": "SySVapHpRAasghB6RPiKKg"}
 wandb-publication: true
 taskcluster:
   split-chunks: 20
