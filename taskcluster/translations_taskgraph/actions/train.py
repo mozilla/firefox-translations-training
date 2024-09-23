@@ -10,7 +10,7 @@ from taskgraph.parameters import Parameters
 from taskgraph.taskgraph import TaskGraph
 from taskgraph.util.taskcluster import get_ancestors, get_artifact
 
-from translations_taskgraph.parameters import get_defaults
+from translations_taskgraph.parameters import get_ci_training_config
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ def can_train(parameters):
     )
 
 
-defaults = get_defaults("")["training_config"]
+defaults = get_ci_training_config()["training_config"]
 
 
 def validate_pretrained_models(params):
