@@ -1,1 +1,1 @@
-taskcluster-taskgraph>=11
+taskcluster-taskgraph>=11.1.0
