@@ -69,7 +69,7 @@ task-defaults:
             - >-
                 export BIN=$MOZ_FETCHES_DIR &&
                 $VCS_PATH/pipeline/clean/merge-corpus.sh
-                artifacts/{artifact_prefix}
+                $TASK_WORKDIR/artifacts/{artifact_prefix}
                 $MOZ_FETCHES_DIR/*.zst
     fetches:
         toolchain:
