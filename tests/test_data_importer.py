@@ -185,50 +185,54 @@ hplt_translations = {
 hplt_stats = {
     "en": {
         "shards": {
+            "description": "How many shards were sampled from. Each shard contains a subset of the total datasets available.",
             "filtered": 1,
             "kept": 1,
-            "description": "How many shards were sampled from. Each shard contains a subset of the total datasets available.",
+            "visited": 2,
         },
         "visited_lines": {
+            "description": "How many lines were visited and kept from the HPLT documents.",
             "filtered": 1517,
             "kept": 208,
-            "description": "How many lines were visited and kept from the HPLT documents.",
+            "visited": 1725,
         },
         "document_count": {
-            "value": 15,
             "description": "How many documents were visited. This can help represent data diversity.",
+            "value": 15,
         },
         "duplicate_lines": {
-            "value": 27,
             "description": "Of the collected lines, this counts how many were duplicates and discarded.",
+            "value": 27,
         },
         "final_lines": {
-            "value": 100,
             "description": "How many lines were actually written. Smaller lines will be combined together.",
+            "value": 100,
         },
     },
     "ru": {
         "shards": {
+            "description": "How many shards were sampled from. Each shard contains a subset of the total datasets available.",
             "filtered": 1,
             "kept": 1,
-            "description": "How many shards were sampled from. Each shard contains a subset of the total datasets available.",
+            "visited": 2,
         },
         "visited_lines": {
+            "description": "How many lines were visited and kept from the HPLT documents.",
             "filtered": 2192,
             "kept": 164,
-            "description": "How many lines were visited and kept from the HPLT documents.",
+            "visited": 2356,
         },
         "document_count": {
-            "value": 22,
             "description": "How many documents were visited. This can help represent data diversity.",
+            "value": 22,
         },
         "duplicate_lines": {
-            "value": 33,
             "description": "Of the collected lines, this counts how many were duplicates and discarded.",
+            "value": 33,
         },
         "final_lines": {
-            "value": 100,
             "description": "How many lines were actually written. Smaller lines will be combined together.",
+            "value": 100,
         },
     },
 }

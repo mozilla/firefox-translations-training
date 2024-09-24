@@ -3,7 +3,7 @@ import hashlib
 import json
 import os
 import tempfile
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from io import TextIOWrapper
 from pathlib import Path
 from random import Random
@@ -284,64 +284,102 @@ def shuffle_in_temp_files(
     print(f"Shuffled with {bucket_count} buckets.")
 
 
-@dataclass
 class Statistics:
     """
-    Base class for handling statistical data and JSON serialization in the pipeline. It
-    standardizes how the JSON is generated, and how it saves. Implement `as_json` for custom
-    JSON processing.
+    Base class for handling statistical data and JSON serialization in the pipeline. All
+    public data attributes in the implementing class will be saved as JSON. This class
+    standardizes how the JSON is generated, and where it is saved.
 
-    For instance .save_json() for Statistics("nllb.en.zst") would produce "nllb.en.stats.json".
+    You can derive data at JSON generation time by providing an update_derived_data method.
+
+    For instance stats.save_json() for Statistics("nllb.en.zst") would produce "nllb.en.stats.json".
     """
 
-    def __init__(self, dataset_path: Union[Path, str]) -> None:
-        self.dataset_path = Path(dataset_path)
-
-    def as_json(self) -> dict:
-        """
-        Convert this data into JSON, and recurse into any other Statistics objects.
-        """
-        data = asdict(self)
-        for key, value in enumerate(data):
-            if isinstance(value, Statistics):
-                data[key] = value.as_json()
-        return data
+    def __init__(self, dataset_path: Optional[Union[Path, str]] = None) -> None:
+        self._dataset_path = Path(dataset_path) if dataset_path else None
 
     def save_json(self) -> Path:
         """
         Standardizes how the JSON is saved, based on the dataset.
         """
-        path = self.dataset_path.parent / f"{self.dataset_path.stem}.stats.json"
+        if not self._dataset_path:
+            raise Exception("A dataset_path is required when saving to JSON.")
+
+        path = self._dataset_path.parent / f"{self._dataset_path.stem}.stats.json"
+        obj = self.as_json()
         with open(path, "w", encoding="utf-8") as json_file:
-            json.dump(self.as_json(), json_file, indent=2)
+            json.dump(obj, json_file, indent=2)
             json_file.write("\n")
         return path
 
+    def _is_subclass(value: any):
+        """
+        Determine if a child object is a subclass or not.
+        """
+        try:
+            return issubclass(value.__class__, Statistics)
+        except AttributeError:
+            return False
 
-@dataclass
+    def as_json(root: Union[int, str, float, list, "Statistics"]) -> Union[int, str, float, list]:
+        """
+        Recursively walk the data attributes of the statistics.
+        """
+        if Statistics._is_subclass(root):
+            stats: Statistics = root
+            stats.update_derived_data()
+            obj = {}
+            for key, value in stats.__dict__.items():
+                if key.startswith("_"):
+                    continue
+                obj[key] = Statistics.as_json(value)
+
+            return obj
+
+        if isinstance(root, list):
+            return [Statistics.as_json(item) for item in root]
+
+        if isinstance(root, dict):
+            root_dict: dict = root
+            return {key: Statistics.as_json(value) for key, value in root_dict.items()}
+
+        if isinstance(root, (float, int, str)):
+            return root
+
+        return str(root)
+
+    def update_derived_data(self):
+        """
+        Update any derived data in the sub values. Override this method if anything
+        needs to be derived.
+        """
+        pass
+
+
 class FilteringStep(Statistics):
     """
     For each step for filtering, store how many were kept or filtered.
     """
 
-    filtered: int
-    kept: int
-    description: str
-    # "visited" is implied.
-
-    def __init__(self, dataset_path: Path, description: str, filtered=0, kept=0) -> None:
+    def __init__(
+        self, description: str, filtered=0, kept=0, dataset_path: Optional[Path] = None
+    ) -> None:
         super().__init__(dataset_path)
+        self.description = description
         self.filtered = filtered
         self.kept = kept
-        self.description = description
+        self.visited = 0
 
-    def as_json(self) -> dict:
-        return {
-            "description": self.description,
-            "filtered": self.filtered,
-            "kept": self.kept,
-            "visited": self.filtered + self.kept,
-        }
+    def update_derived_data(self):
+        super().update_derived_data()
+        # Only two of the values need to be kept up to date, the last can be computed.
+        if not self.visited:
+            self.visited = self.filtered + self.kept
+        elif self.filtered and not self.kept:
+            self.kept = self.visited - self.filtered
+            return
+        elif self.kept and not self.filtered:
+            self.filtered = self.visited - self.kept
 
 
 @dataclass
@@ -353,16 +391,15 @@ class CountingStep(Statistics):
     value: int
     description: str
 
-    def __init__(self, dataset_path: Path, description: str, value=0) -> None:
+    def __init__(
+        self,
+        description: str,
+        value=0,
+        dataset_path: Optional[Path] = None,
+    ) -> None:
         super().__init__(dataset_path)
-        self.value = value
         self.description = description
-
-    def as_json(self) -> dict:
-        return {
-            "description": self.description,
-            "value": self.value,
-        }
+        self.value = value
 
 
 class WeakStringSet(Set):

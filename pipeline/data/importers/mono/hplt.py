@@ -47,40 +47,28 @@ class HPLTDocument:
         self.lines = self.text.split("\n")
 
 
-@dataclass
 class FilteringStatistics(Statistics):
     """
     Gather statistics about the filtering process.
     """
 
-    shards: FilteringStep
-    visited_lines: FilteringStep
-    document_count: CountingStep
-    duplicate_lines: CountingStep
-    final_lines: CountingStep
-
     def __init__(self, dataset_path: Path) -> None:
         super().__init__(dataset_path)
         self.shards = FilteringStep(
-            dataset_path,
             "How many shards were sampled from. Each shard contains a subset of the "
             "total datasets available.",
         )
         self.visited_lines = FilteringStep(
-            dataset_path,
             "How many lines were visited and kept from the HPLT documents.",
         )
         self.document_count = CountingStep(
-            dataset_path,
             "How many documents were visited. This can help represent data diversity.",
         )
-        self.final_lines = CountingStep(
-            dataset_path,
-            "How many lines were actually written. Smaller lines will be combined together.",
-        )
         self.duplicate_lines = CountingStep(
-            dataset_path,
             "Of the collected lines, this counts how many were duplicates and discarded.",
+        )
+        self.final_lines = CountingStep(
+            "How many lines were actually written. Smaller lines will be combined together.",
         )
 
     def count_shards_visited(self):
