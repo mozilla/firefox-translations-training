@@ -7,14 +7,13 @@ The parser supports different sources:
 * Deferred publication from a Taskcluster task or group of tasks.
 * Deferred publication from a local directory containing archived training data.
 
+## Parser
+
+The parser supports writting metrics to [Weight & Biases](https://wandb.ai/) external storage (see the [section above](#weight-&-biases-dashboard)), or produce local artifacts (CSV files).
+
 It actually supports logs from **Marian 1.10** and **Marian 1.12**. Above versions (even minor) will raise a warning and may result in missing data.
 
-## Publication
-
-The parser supports writting metrics to [Weight & Biases](https://wandb.ai/) external storage, or produce local artifacts (CSV files).
-The publication is handled via the extensible module `translations_parser.publishers`.
-
-### Real time publication
+### Real time publication from Taskcluster
 
 Publication is implemented within the training (`pipeline.train.train.get_log_parser_command`) and evaluation (`pipeline.eval.eval.main`). This is the prefered way to track metrics, as machine resource usage will also be published to Weight & Biases.
 
@@ -40,7 +39,7 @@ You can also run the parser based on the logs of a single task:
 parse_tc_logs ----input-file=live_backing.log
 ```
 
-### Deffered publication from GCP archive
+### Deffered publication from a GCP archive
 
 The parser supports browsing a folder structure from a GCP archive of multiple training runs.
 This method is useful to reupload data of past training and evaluation tasks that are not available anymore from Taskcluster (expired) or when handling a large amount of data.
@@ -83,6 +82,46 @@ The structure from older experiments that ran with Snakemake should look like th
             │   └── valid.log
             └─ …
 ```
+
+## Weight & Biases dashboard
+
+The publication is handled via the extensible module `translations_parser.publishers`.
+
+### Structure
+
+Runs on Weight & Biases are groupped by expermient. The group is suffixed by the complete Taskcluster group ID, and each of its runs (train or evaluation) is prefixed by the first 5 characters. This is required to compare runs with similar name (e.g. `teacher-1`) among different groups.
+
+### Training data
+
+Metrics parsed in real time during the training are published in the **Charts** section of Weight & Biases.
+
+![Training charts](img/tracking/training_charts.png)
+
+Training runs have their Marian and Opustrainer configuration published to the **Overview** section in Weight & Biases.
+
+![Training config](img/tracking/run_config.png)
+
+### Evaluation metrics
+
+Metrics from evaluation tasks are published as table artifacts on Weight & Biases, with a custom chart for better comparison among runs.
+
+![Evaluation custom charts](img/tracking/metrics.png)
+
+### Group logs
+
+On every group, a last run named `group_logs` is also published. This group does not represent a training nor evaluation task, but contains the overall experiment configuration in the **Overview** link in the left menu.
+
+![Group logs config](img/tracking/experiment_config.png)
+
+This run also contain a table published as artifact, with a summary of all evaluation metrics which is visible in the **Tables** section.
+
+![Group logs table](img/tracking/group_logs_table.png)
+
+### System charts
+
+When running online from Taskcluster, the resources used by the machine will be published in a **System** section of Weight & Biases.
+
+![System charts](img/tracking/system_charts.png)
 
 ## Development
 
