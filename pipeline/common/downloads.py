@@ -336,6 +336,7 @@ class DownloadChunkStreamer(io.IOBase):
 @contextmanager
 def _read_lines_multiple_files(
     files: list[Union[str, Path]],
+    encoding: str,
     path_in_archive: Optional[str],
     on_enter_location: Optional[Callable[[], None]] = None,
 ) -> Generator[str, None, None]:
@@ -346,7 +347,9 @@ def _read_lines_multiple_files(
     def iter(stack: ExitStack):
         for file_path in files:
             logger.info(f"Reading lines from: {file_path}")
-            lines = stack.enter_context(read_lines(file_path, path_in_archive, on_enter_location))
+            lines = stack.enter_context(
+                read_lines(file_path, path_in_archive, on_enter_location, encoding=encoding)
+            )
             yield from lines
             stack.close()
 
@@ -360,6 +363,7 @@ def _read_lines_multiple_files(
 @contextmanager
 def _read_lines_single_file(
     location: Union[Path, str],
+    encoding: str,
     path_in_archive: Optional[str] = None,
     on_enter_location: Optional[Callable[[], None]] = None,
 ):
@@ -415,12 +419,12 @@ def _read_lines_single_file(
         else:  # noqa: PLR5501
             # This is a local file.
             if location.endswith(".gz") or location.endswith(".gzip"):
-                yield stack.enter_context(gzip.open(location, "rt", encoding="utf-8"))
+                yield stack.enter_context(gzip.open(location, "rt", encoding=encoding))
 
             elif location.endswith(".zst"):
                 input_file = stack.enter_context(open(location, "rb"))
                 zst_reader = stack.enter_context(ZstdDecompressor().stream_reader(input_file))
-                yield stack.enter_context(io.TextIOWrapper(zst_reader, encoding="utf-8"))
+                yield stack.enter_context(io.TextIOWrapper(zst_reader, encoding=encoding))
 
             elif location.endswith(".zip"):
                 if not path_in_archive:
@@ -428,11 +432,11 @@ def _read_lines_single_file(
                 zip = stack.enter_context(ZipFile(location, "r"))
                 if path_in_archive not in zip.namelist():
                     raise Exception(f"Path did not exist in the zip file: {path_in_archive}")
-                file = stack.enter_context(zip.open(path_in_archive, "r"))
-                yield stack.enter_context(io.TextIOWrapper(file, encoding="utf-8"))
+                file = stack.enter_context(zip.open(path_in_archive, "r", encoding=encoding))
+                yield stack.enter_context(io.TextIOWrapper(file, encoding=encoding))
             else:
                 # Treat as plain text.
-                yield stack.enter_context(open(location, "rt", encoding="utf-8"))
+                yield stack.enter_context(open(location, "rt", encoding=encoding))
     finally:
         stack.close()
 
@@ -441,6 +445,7 @@ def read_lines(
     location_or_locations: Union[Path, str, list[Union[str, Path]]],
     path_in_archive: Optional[str] = None,
     on_enter_location: Optional[Callable[[], None]] = None,
+    encoding="utf-8",
 ) -> Generator[str, None, None]:
     """
     A smart function to efficiently stream lines from a local or remote file.
@@ -468,17 +473,21 @@ def read_lines(
 
     if isinstance(location_or_locations, list):
         return _read_lines_multiple_files(
-            location_or_locations, path_in_archive, on_enter_location
+            location_or_locations, encoding, path_in_archive, on_enter_location
         )
 
-    return _read_lines_single_file(location_or_locations, path_in_archive, on_enter_location)
+    return _read_lines_single_file(
+        location_or_locations, encoding, path_in_archive, on_enter_location
+    )
 
 
 @contextmanager
-def write_lines(path: Path | str):
+def write_lines(path: Path | str, encoding="utf-8"):
     """
     A smart function to create a context to write lines to a file. It works on .zst, .gz, and
-    raw text files. It reads the extension to determine the file type.
+    raw text files. It reads the extension to determine the file type. If writing out a raw
+    text file, for instance a sample of a dataset that is just used for viewing, include a
+    "byte order mark" so that the browser can properly detect the encoding.
 
     with write_lines("output.txt.gz") as output:
         output.write("writing a line\n")
@@ -492,11 +501,11 @@ def write_lines(path: Path | str):
         if path.endswith(".zst"):
             file = stack.enter_context(open(path, "wb"))
             compressor = stack.enter_context(ZstdCompressor().stream_writer(file))
-            yield stack.enter_context(io.TextIOWrapper(compressor, encoding="utf-8"))
+            yield stack.enter_context(io.TextIOWrapper(compressor, encoding=encoding))
         elif path.endswith(".gz"):
-            yield stack.enter_context(gzip.open(path, "wt", encoding="utf-8"))
+            yield stack.enter_context(gzip.open(path, "wt", encoding=encoding))
         else:
-            yield stack.enter_context(open(path, "wt", encoding="utf-8"))
+            yield stack.enter_context(open(path, "wt", encoding=encoding))
 
     finally:
         stack.close()
