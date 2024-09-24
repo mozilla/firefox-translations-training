@@ -124,6 +124,7 @@ class DataDir:
         fetches_dir: Optional[str] = None,
         env: dict[str, str] = {},
         extra_args: List[str] = None,
+        replace_args: List[str] = None,
     ):
         """
         Runs a task from the taskgraph. See artifacts/full-task-graph.json after running a
@@ -162,6 +163,12 @@ class DataDir:
         for command_parts_split in split_on_ampersands_operator(command_parts):
             if extra_args:
                 command_parts_split.extend(extra_args)
+
+            if replace_args:
+                for arg_from, arg_to in replace_args:
+                    for index, arg in enumerate(command_parts_split):
+                        if arg == arg_from:
+                            command_parts_split[index] = arg_to
 
             final_env = {
                 # The following are set by the Taskcluster server.
