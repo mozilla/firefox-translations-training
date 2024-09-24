@@ -247,3 +247,8 @@ taskcluster:
   #   default: gcp-spot
   worker-classes:
     default: gcp-spot
+    # long-running tasks
+    alignments-original: gcp-standard
+    alignments-backtranslated: gcp-standard
+    alignments-student: gcp-standard
+    shortlist: gcp-standard
