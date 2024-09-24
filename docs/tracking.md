@@ -1,43 +1,76 @@
-# Metrics publication
+# Experiment tracking
 
-The tracking [module](/tracking) within handles parsing training logs to extract Marian metrics in real time.
+The [tracking module](/tracking) handles parsing training logs to extract [Marian](https://marian-nmt.github.io/) training metrics in real time.
 
-The parser supports reading logs from a Task Cluster environment, or a local directory containing multiple training data. It can publish metrics to an external dashboard, for example [Weight & Biases](https://wandb.ai/).
+The parser supports different sources:
+* Online publication from Taskcluster training or evaluation tasks.
+* Deferred publication from a Taskcluster task or group of tasks.
+* Deferred publication from a local directory containing archived training data.
 
-It actually supports logs from **Marian 1.10**. Above versions (even minor) will raise a warning as not supported.
+It actually supports logs from **Marian 1.10** and **Marian 1.12**. Above versions (even minor) will raise a warning and may result in missing data.
 
-## Install
+## Publication
 
-The parser can be built as a distinct package to make developments easier using pip.
-On a virtual environment, you can install the package in editable mode (i.e from the local folder):
+The parser supports writting metrics to [Weight & Biases](https://wandb.ai/) external storage, or produce local artifacts (CSV files).
+The publication is handled via the extensible module `translations_parser.publishers`.
+
+### Real time publication
+
+Publication is implemented within the training (`pipeline.train.train.get_log_parser_command`) and evaluation (`pipeline.eval.eval.main`). This is the prefered way to track metrics, as machine resource usage will also be published to Weight & Biases.
+
+Any new experiment will automatically be published to the [public Weight & Biases dashboard](https://wandb.ai/moz-translations/projects).
+
+Any new pull request will trigger publication to the `ci` project in Weight & Biases. You may want to edit a value in `taskcluster/configs/config.ci.yml` (e.g. the first `disp-freq` entry) to force a new publication, because of Taskcluster cache.
+
+### Deffered publication from Taskcluster
+
+It is possible to use the parser on Taskcluster's tasks that have finished.
+The parser supports reading training tasks directly from the Taskcluster API (no authentication).
+
+This method is useful to reupload data of past training and evaluation tasks.
+
+You can run the parser on a Taskcluster group by running:
 ```sh
-$ pip install -e ./tracking
+$ parse_tc_group <task_group_id>
+```
+By default, this command will fetch other traversal tasks (related experiments). You can avoid this behavior by using the `--no-recursive-lookup` option.
+
+You can also run the parser based on the logs of a single task:
+```sh
+parse_tc_logs ----input-file=live_backing.log
 ```
 
-## Behavior
+### Deffered publication from GCP archive
 
-Logs are extracted from [Marian](https://marian-nmt.github.io/) training tasks, usually running in a Task Cluster environment.
+The parser supports browsing a folder structure from a GCP archive of multiple training runs.
+This method is useful to reupload data of past training and evaluation tasks that are not available anymore from Taskcluster (expired) or when handling a large amount of data.
 
-The parser has 3 entry points:
-* Parsing logs from a file or process in real time
-* Reading a folder with multiple training data
-* Reading a Taskcluster group (and related experiments, mentioned as "traversal")
-
-Publication is handled via the extensible module `translations_parser.publishers`.
-It actually supports writting to local CSV files or puiblish metrics to [Weight & Biases](https://docs.wandb.ai/ref/python) (W&B).
-
-### Reading a folder
-
-The parser supports reading a folder containing multiple trainings with a structure like above example:
+The structure from experiments that ran on Taskcluster should look like this:
 ```
 .
 ├── logs
-│   └── en-sv
-│       └── opusmt-multimodel-test
-│           └── opusmt-multimodel-test
-│               ├── alignments.log
-│               ├── ce_filter.log
+│   └── en-hu
+│       └── baseline_enhu_aY25-4fXTcuJNuMcWXUYtQ
+│           └── student
+│               ├── train.log
 │               └── …
+└── models
+    └── en-hu
+        └── baseline_enhu_aY25-4fXTcuJNuMcWXUYtQ
+            └── evaluation
+                ├── speed
+                │   ├── sacrebleu_wmt09.metrics
+                │   └── …
+                └── student
+                    ├── flores_devtest.metrics
+                    └── …
+```
+
+The structure from older experiments that ran with Snakemake should look like this:
+```
+.
+├── logs
+│   └── …
 └── models
     └── en-sv
         └── opusmt-multimodel-test
@@ -51,22 +84,15 @@ The parser supports reading a folder containing multiple trainings with a struct
             └─ …
 ```
 
+## Development
 
-The following rules are applied:
-* `./models` sub-folders are projects (e.g. `en-sv`), corresponding to projects in W&B.
-* Projects contains multiple groups (e.g. `opusmt-multimodel-test`), each containing multiple runs (e.g. `student-finetuned`) and usually an `evaluation` folder.
-* For each run, `train.log` is parsed (`valid.log` results are usually contained in `train.log`) and published to W&B.
-* `.metrics` files in the `evaluation` are parsed (looking for one float value per line) and also published on the same run (e.g. `[metric] tc_Tatoeba-Challenge-v2021-08-07`).
-* Once all runs of a group have been published, a last group is pushed to W&B, named `group_logs`. That run contains no metrics but all experiment files published as artifacts.
+The parser can be built as a distinct package to make developments easier using pip.
 
-### Publish from Taskcluster
+### Installation
 
-The parser supports reading training tasks directly from the Taskcluster API (no authentication).
-The results are published the same way as for experiments folder.
-
-You can parse a group (with other traversal tasks) by running:
+On a virtual environment, you can install the package in editable mode (i.e from the local folder):
 ```sh
-$ parse_tc_group <task_group_id>
+$ pip install -e ./tracking
 ```
 
 ### Extend supported Marian metrics
