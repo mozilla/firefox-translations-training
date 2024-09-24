@@ -81,6 +81,7 @@ tasks:
                     --output_path=$TASK_WORKDIR/artifacts/mono.aln.zst
                     --output_tokenized
                     --tokenization=moses
+                    --chunk_lines=50000000
                     --priors_input_path=$MOZ_FETCHES_DIR/corpus.priors
 
         dependencies:
