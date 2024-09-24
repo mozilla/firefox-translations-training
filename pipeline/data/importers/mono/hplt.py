@@ -71,7 +71,7 @@ class FilteringStatistics(Statistics):
             "How many lines were actually written. Smaller lines will be combined together.",
         )
 
-    def count_shards_visited(self):
+    def count_shards_visited(self, *_args):
         self.shards.filtered -= 1
         self.shards.kept += 1
 
