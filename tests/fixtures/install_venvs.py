@@ -50,6 +50,7 @@ def get_python_dirs(requirements: Optional[str], data_path=DATA_PATH) -> Optiona
     # Create the venv only if it doesn't exist.
     if not os.path.exists(venv_dir):
         try:
+            print(f"{venv_dir} does not exist")
             print("Creating virtual environment for", requirements)
             subprocess.check_call(
                 # Give the virtual environment access to the system site packages, as these
