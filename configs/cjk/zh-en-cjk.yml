@@ -141,19 +141,15 @@ marian-args:
     precision: float16
   training-backward:
     early-stopping: '5'
-    dim-vocabs: '64000,64000'
   training-teacher:
     early-stopping: '20'
-    dim-vocabs: '64000,64000'
   training-student:
     early-stopping: '20'
-    dim-vocabs: '64000,64000'
   training-student-finetuned:
     early-stopping: '20'
-    dim-vocabs: '64000,64000'
 target-stage: all
-start-stage: collect-mono-trg
-previous_group_ids: ["E8S5g0hdSh-Hafz5pRBO8w"]
+start-stage: train-teacher
+previous_group_ids: ["eWiOC6jURM-GbO4UO66xpg"]
 existing_tasks: { "train-vocab-zh-en": "T9jhBqKQQrujPAtSfTcjaQ",
 #                  "collect-mono-trg-en": "JeeAKl3EQXuK8cl3bN8bVw",
                   "merge-mono-trg-zh": "KMmPM-HhSYGdXd2AihVfrg",
