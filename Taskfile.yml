@@ -81,6 +81,12 @@ tasks:
       - >-
           task docker-run -- ./inference-engine/scripts/build-local.sh
 
+  inference-engine-test:
+    desc: Run inference-engine tests.
+    cmds:
+      - >-
+          task docker-run -- ./inference-engine/scripts/unit-tests.sh
+
   lint-black:
     desc: Checks the styling of the Python code with Black.
     deps: [poetry-install-black]

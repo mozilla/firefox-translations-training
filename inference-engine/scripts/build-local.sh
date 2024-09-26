@@ -16,6 +16,16 @@ detect_cpus() {
   fi
 }
 
+# Parse command-line arguments for the --test flag
+COMPILE_TESTS=OFF
+while [[ "$#" -gt 0 ]]; do
+  case $1 in
+    "--test") COMPILE_TESTS=ON ;;
+    *) echo "Unknown parameter passed: $1"; exit 1 ;;
+  esac
+  shift
+done
+
 if [ ! -d "build-local" ]; then
   echo "Creating build-local directory..."
   mkdir build-local
@@ -25,8 +35,13 @@ fi
 
 cd build-local || exit
 
+# Run cmake with optional COMPILE_TESTS flag
 echo "Running cmake for build-local..."
-cmake ../
+if [ "$COMPILE_TESTS" = "ON" ]; then
+  cmake ../ -DCOMPILE_TESTS=ON
+else
+  cmake ../
+fi
 
 # Run make using the detected number of CPUs
 CPUS=$(detect_cpus)
