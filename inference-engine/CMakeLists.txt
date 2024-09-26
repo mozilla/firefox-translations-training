@@ -60,7 +60,7 @@ endif()
 if(MSVC)
   add_definitions(-DUSE_SSE2=1) # Supposed to fix something in the sse_mathfun.h but not sure it does
   set(INTRINSICS ${MSVC_BUILD_ARCH}) # ARCH we're targetting on win32. @TODO variable
-  
+
   set(CMAKE_CXX_FLAGS           "/EHsc /DWIN32 /D_WINDOWS /DUNICODE /D_UNICODE /D_CRT_NONSTDC_NO_WARNINGS /D_CRT_SECURE_NO_WARNINGS /bigobj")
   set(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS} /MT /O2 ${INTRINSICS} /MP /GL /DNDEBUG")
   set(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS} /MTd /Od /Ob0 ${INTRINSICS} /RTC1 /Zi /D_DEBUG")
@@ -179,8 +179,6 @@ add_subdirectory(src)
 
 if(COMPILE_WASM)
   add_subdirectory(wasm)
-else()
-  add_subdirectory(app)
 endif(COMPILE_WASM)
 
 option(COMPILE_PYTHON "Compile python bindings. Intended to be activated with setup.py" OFF)
