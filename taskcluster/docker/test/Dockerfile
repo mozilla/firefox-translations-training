@@ -1,4 +1,4 @@
-# %ARG DOCKER_IMAGE_PARENT
+ARG DOCKER_IMAGE_PARENT
 FROM $DOCKER_IMAGE_PARENT
 LABEL maintainer="Mozilla Release Engineering <release+docker@mozilla.com>"
 
