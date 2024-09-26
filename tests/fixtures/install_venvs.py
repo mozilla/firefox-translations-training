@@ -14,7 +14,7 @@ ROOT_PATH = os.path.abspath(os.path.join(FIXTURES_PATH, "../.."))
 VENV_PATH = os.path.abspath(os.path.join(ROOT_PATH, "../task-venvs"))
 
 
-def get_python_dirs(requirements: Optional[str], data_path=DATA_PATH) -> Optional[Tuple[str, str]]:
+def get_python_dirs(requirements: Optional[str], venv_path=VENV_PATH) -> Optional[Tuple[str, str]]:
     """
     Creates a virtual environment for each requirements file that a task needs. The virtual
     environment is hashed based on the requirements file contents, and the system details. This
@@ -40,7 +40,7 @@ def get_python_dirs(requirements: Optional[str], data_path=DATA_PATH) -> Optiona
     hash = md5.hexdigest()
 
     requirements_stem = Path(requirements).stem
-    venv_dir = os.path.abspath(os.path.join(VENV_PATH, f"{requirements_stem}-{hash}"))
+    venv_dir = os.path.abspath(os.path.join(venv_path, f"{requirements_stem}-{hash}"))
     python_bin_dir = os.path.join(venv_dir, "bin")
     python_bin = os.path.join(python_bin_dir, "python3")
 
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--requirements", type=str, help="The requirements file")
-    parser.add_argument("--output", type=str, help="The data folder")
+    parser.add_argument("--output", type=str, help="The virtual environment folder")
 
     args = parser.parse_args()
-    get_python_dirs(args.requirements, data_path=args.output)
+    get_python_dirs(args.requirements, venv_path=args.output)
