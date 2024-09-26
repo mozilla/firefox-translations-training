@@ -147,3 +147,6 @@ dmypy.json
 output
 wandb
 media
+
+# Building docker locally produces this artifact, which can be left behind. Just ignore it.
+taskcluster/docker/test/Dockerfile.fixed

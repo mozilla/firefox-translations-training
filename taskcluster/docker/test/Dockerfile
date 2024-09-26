@@ -64,7 +64,7 @@ RUN python3 install_venvs.py --output /builds/worker/checkouts/data --requiremen
 # %include pipeline/data/requirements/data.txt
 ADD topsrcdir/pipeline/data/requirements/data.txt              requirements
 RUN python3 install_venvs.py --output /builds/worker/checkouts/data --requirements requirements/data.txt
-# %include pipeline/data/requirements/eval.txt
+# %include pipeline/eval/requirements/eval.txt
 ADD topsrcdir/pipeline/eval/requirements/eval.txt              requirements
 RUN python3 install_venvs.py --output /builds/worker/checkouts/data --requirements requirements/eval.txt
 
