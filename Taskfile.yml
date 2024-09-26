@@ -75,6 +75,12 @@ tasks:
     cmds:
       - poetry run opuscleaner-server serve --host=0.0.0.0 --port=8000
 
+  inference-engine-clean:
+    desc: Clean build artifacts from the inference-engine directory.
+    cmds:
+      - >-
+          task docker-run -- ./inference-engine/scripts/clean.sh
+
   inference-engine-build:
     desc: Build inference engine.
     cmds:
