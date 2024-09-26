@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 set -e
-set -x
 
-# Run script from the context of the script-containing directory
-cd "$(dirname $0)"
+# Run script from the context of inference-engine directory
+cd "$(dirname $0)/.."
+
+# Ensure script is running within docker
+./scripts/detect-docker.sh inference-engine-build-wasm
+
+set -x
 
 # Prerequisite: Download and Install Emscripten using following instructions (unless the EMSDK env var is already set)
 if [ "$EMSDK" == "" ]; then

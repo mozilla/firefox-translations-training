@@ -93,6 +93,12 @@ tasks:
       - >-
           task docker-run -- ./inference-engine/scripts/unit-tests.sh
 
+  inference-engine-build-wasm:
+    desc: Build inference engine WASM.
+    cmds:
+      - >-
+          task docker-run -- ./inference-engine/scripts/build-wasm.sh
+
   lint-black:
     desc: Checks the styling of the Python code with Black.
     deps: [poetry-install-black]
