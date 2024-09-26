@@ -29,7 +29,7 @@ build_test_docker() {
   test_dockerfile="taskcluster/docker/test/Dockerfile"
   test_dockerfile_fixed="${test_dockerfile}.fixed"
 
-  # Remove the "topsrcdir"
+  # Remove the "topsrcdir/" from ADD calls.
   # e.g.
   #   ADD topsrcdir/pipeline/quantize/requirements/quantize.txt      requirements
   #   ADD pipeline/quantize/requirements/quantize.txt      requirements
@@ -39,6 +39,8 @@ build_test_docker() {
       --build-arg DOCKER_IMAGE_PARENT=ftt-base \
       --file "${test_dockerfile_fixed}" \
       --tag ftt-test .
+
+  rm "${test_dockerfile_fixed}"
 }
 
 build_test_docker

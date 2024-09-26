@@ -30,10 +30,10 @@ VOLUME /builds/worker/checkouts
 VOLUME /builds/worker/.cache
 
 # Install the test venvs
-RUN mkdir -p /builds/worker/checkouts/data/task-venvs
-RUN mkdir -p /builds/worker/checkouts/requirements
+RUN mkdir -p /builds/worker/checkouts/vcs/data/task-venvs
+RUN mkdir -p /builds/worker/checkouts/vcs/requirements
 
-WORKDIR /builds/worker/checkouts
+WORKDIR /builds/worker/checkouts/vcs
 # %include tests/fixtures/install_venvs.py
 ADD topsrcdir/tests/fixtures/install_venvs.py .
 
@@ -64,6 +64,9 @@ RUN python3 install_venvs.py --output /builds/worker/checkouts/data --requiremen
 # %include pipeline/data/requirements/data.txt
 ADD topsrcdir/pipeline/data/requirements/data.txt              requirements
 RUN python3 install_venvs.py --output /builds/worker/checkouts/data --requirements requirements/data.txt
+# %include pipeline/data/requirements/data.txt
+ADD topsrcdir/pipeline/eval/requirements/eval.txt              requirements
+RUN python3 install_venvs.py --output /builds/worker/checkouts/data --requirements requirements/eval.txt
 
 # This requirements file will only install if specific packages are built first. In Taskcluster
 # this is done through fetches. Skip this install for now.
