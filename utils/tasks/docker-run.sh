@@ -13,6 +13,6 @@ docker run \
   --interactive \
   --tty \
   --rm \
-  --volume $(pwd):/builds/worker/checkouts \
-  --workdir /builds/worker/checkouts \
+  --volume $(pwd):/builds/worker/checkouts/vcs \
+  --workdir /builds/worker/checkouts/vcs \
   ftt-local "$@"

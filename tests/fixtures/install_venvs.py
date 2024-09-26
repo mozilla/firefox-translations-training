@@ -10,8 +10,8 @@ from typing import Optional, Tuple
 
 FIXTURES_PATH = os.path.dirname(os.path.abspath(__file__))
 ROOT_PATH = os.path.abspath(os.path.join(FIXTURES_PATH, "../.."))
-DATA_PATH = os.path.abspath(os.path.join(ROOT_PATH, "data"))
-PIPELINE = os.path.abspath(os.path.join(ROOT_PATH, "data"))
+# Place the venvs in the directory above the VCS checkout.
+VENV_PATH = os.path.abspath(os.path.join(ROOT_PATH, "../task-venvs"))
 
 
 def get_python_dirs(requirements: Optional[str], data_path=DATA_PATH) -> Optional[Tuple[str, str]]:
@@ -40,9 +40,7 @@ def get_python_dirs(requirements: Optional[str], data_path=DATA_PATH) -> Optiona
     hash = md5.hexdigest()
 
     requirements_stem = Path(requirements).stem
-    venv_dir = os.path.abspath(
-        os.path.join(data_path, "task-venvs", f"{requirements_stem}-{hash}")
-    )
+    venv_dir = os.path.abspath(os.path.join(VENV_PATH, f"{requirements_stem}-{hash}"))
     python_bin_dir = os.path.join(venv_dir, "bin")
     python_bin = os.path.join(python_bin_dir, "python3")
 
