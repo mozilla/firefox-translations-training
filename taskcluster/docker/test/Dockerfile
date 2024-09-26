@@ -28,3 +28,42 @@ RUN curl -sSLf "https://github.com/go-task/task/releases/download/v3.35.1/task_l
 
 VOLUME /builds/worker/checkouts
 VOLUME /builds/worker/.cache
+
+# Install the test venvs
+RUN mkdir -p /builds/worker/checkouts/data/task-venvs
+RUN mkdir -p /builds/worker/checkouts/requirements
+
+WORKDIR /builds/worker/checkouts
+ADD tests/fixtures/install_venvs.py .
+
+# Doing the installs as individual steps makes it easier to cache each layer, and deal with
+# requirements that fail to load.
+
+ADD pipeline/quantize/requirements/quantize.txt      requirements
+RUN python3 install_venvs.py --output /builds/worker/checkouts/data --requirements requirements/quantize.txt
+ADD pipeline/translate/requirements/splitter.txt     requirements
+RUN python3 install_venvs.py --output /builds/worker/checkouts/data --requirements requirements/splitter.txt
+ADD pipeline/clean/requirements/merge-mono.txt       requirements
+RUN python3 install_venvs.py --output /builds/worker/checkouts/data --requirements requirements/merge-mono.txt
+ADD pipeline/clean/requirements/clean.txt            requirements
+RUN python3 install_venvs.py --output /builds/worker/checkouts/data --requirements requirements/clean.txt
+ADD pipeline/train/requirements/train.txt            requirements
+RUN python3 install_venvs.py --output /builds/worker/checkouts/data --requirements requirements/train.txt
+ADD pipeline/eval/requirements/eval.txt              requirements
+RUN python3 install_venvs.py --output /builds/worker/checkouts/data --requirements requirements/eval.txt
+ADD pipeline/alignments/requirements/alignments.txt  requirements
+RUN python3 install_venvs.py --output /builds/worker/checkouts/data --requirements requirements/alignments.txt
+ADD pipeline/data/requirements/analyze.txt           requirements
+RUN python3 install_venvs.py --output /builds/worker/checkouts/data --requirements requirements/analyze.txt
+ADD pipeline/data/requirements/data.txt              requirements
+RUN python3 install_venvs.py --output /builds/worker/checkouts/data --requirements requirements/data.txt
+
+# This requirements file will only install if specific packages are built first. In Taskcluster
+# this is done through fetches. Skip this install for now.
+#
+#    ADD pipeline/bicleaner/requirements/bicleaner-ai.txt requirements
+#    RUN python3 install_venvs.py --output /builds/worker/checkouts/data --requirements requirements/bicleaner-ai.txt
+
+# Clean up.
+RUN rm -rf /builds/worker/checkouts/requirements
+RUN rm install_venvs.py
