@@ -18,6 +18,7 @@ _deps
 
 wasm/test_page/node_modules
 /build
+/build-local
 /build-native
 /build-wasm
 /emsdk
