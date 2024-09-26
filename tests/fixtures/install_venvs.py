@@ -40,9 +40,8 @@ def get_python_dirs(requirements: Optional[str], data_path=DATA_PATH) -> Optiona
     hash = md5.hexdigest()
 
     requirements_stem = Path(requirements).stem
-    environment = "docker" if os.environ.get("IS_DOCKER") else "native"
     venv_dir = os.path.abspath(
-        os.path.join(data_path, "task-venvs", f"{environment}-{requirements_stem}-{hash}")
+        os.path.join(data_path, "task-venvs", f"{requirements_stem}-{hash}")
     )
     python_bin_dir = os.path.join(venv_dir, "bin")
     python_bin = os.path.join(python_bin_dir, "python3")
