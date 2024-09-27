@@ -69,8 +69,6 @@ class DeduplicateCorpus:
         src_outpath: Path,
         trg_outpath: Path,
         stats: FilteringStatistics,
-        max_lines: Optional[int],
-        total_corpus_bytes: int,
     ) -> None:
         self.datasets_src: list[Path] = datasets_src
         self.datasets_trg: list[Path] = datasets_trg
@@ -79,6 +77,12 @@ class DeduplicateCorpus:
         self.stats: FilteringStatistics = stats
         self.dataset_stats: FilteringStep = None
 
+    def run(
+        self,
+        total_corpus_bytes: int,
+        max_lines: Optional[int],
+    ):
+        stats = self.stats
         with ExitStack() as stack:
             src_outfile = stack.enter_context(write_lines(self.src_outpath))
             trg_outfile = stack.enter_context(write_lines(self.trg_outpath))
@@ -289,15 +293,15 @@ def main() -> None:
     if args.max_lines != "None":
         max_lines = int(args.max_lines)
 
-    DeduplicateCorpus(
-        datasets_src=datasets_src,
-        datasets_trg=datasets_trg,
-        src_outpath=src_outpath,
-        trg_outpath=trg_outpath,
-        max_lines=max_lines,
-        stats=stats,
-        total_corpus_bytes=total_corpus_bytes,
+    deduplicate_corpus = DeduplicateCorpus(
+        datasets_src,
+        datasets_trg,
+        src_outpath,
+        trg_outpath,
+        stats,
     )
+
+    deduplicate_corpus.run(total_corpus_bytes, max_lines)
 
     sample_corpus(
         artifacts=args.artifacts,
