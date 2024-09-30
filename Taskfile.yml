@@ -75,29 +75,29 @@ tasks:
     cmds:
       - poetry run opuscleaner-server serve --host=0.0.0.0 --port=8000
 
-  inference-engine-clean:
-    desc: Clean build artifacts from the inference-engine directory.
+  inference-clean:
+    desc: Clean build artifacts from the inference directory.
     cmds:
       - >-
-          task docker-run -- ./inference-engine/scripts/clean.sh
+          task docker-run -- ./inference/scripts/clean.sh
 
-  inference-engine-build:
+  inference-build:
     desc: Build inference engine.
     cmds:
       - >-
-          task docker-run -- ./inference-engine/scripts/build-local.sh
+          task docker-run -- ./inference/scripts/build-local.sh
 
-  inference-engine-test:
-    desc: Run inference-engine tests.
+  inference-test:
+    desc: Run inference tests.
     cmds:
       - >-
-          task docker-run -- ./inference-engine/scripts/unit-tests.sh
+          task docker-run -- ./inference/scripts/unit-tests.sh
 
-  inference-engine-build-wasm:
+  inference-build-wasm:
     desc: Build inference engine WASM.
     cmds:
       - >-
-          task docker-run -- ./inference-engine/scripts/build-wasm.sh
+          task docker-run -- ./inference/scripts/build-wasm.sh
 
   lint-black:
     desc: Checks the styling of the Python code with Black.

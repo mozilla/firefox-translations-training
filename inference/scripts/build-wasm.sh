@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -e
 
-# Run script from the context of inference-engine directory
+# Run script from the context of inference directory
 cd "$(dirname $0)/.."
 
 # Ensure script is running within docker
-./scripts/detect-docker.sh inference-engine-build-wasm
+./scripts/detect-docker.sh inference-build-wasm
 
 set -x
 

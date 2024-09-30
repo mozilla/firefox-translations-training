@@ -1,11 +1,11 @@
 #!/bin/bash
 set -e
 
-# Run script from the context of inference-engine directory
+# Run script from the context of inference directory
 cd "$(dirname $0)/.."
 
 # Ensure script is running within docker
-./scripts/detect-docker.sh inference-engine-clean
+./scripts/detect-docker.sh inference-clean
 
 # List of directories to clean
 dirs=("build-local" "build-wasm" "emsdk")
