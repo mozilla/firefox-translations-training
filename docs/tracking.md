@@ -9,7 +9,7 @@ The parser supports different sources:
 
 ## Parser
 
-The parser supports writting metrics to [Weight & Biases](https://wandb.ai/) external storage (see the [section above](#weight-&-biases-dashboard)), or produce local artifacts (CSV files).
+The parser supports writting metrics to [Weight & Biases](https://wandb.ai/) external storage (see the [section above](#weight--biases-dashboard)), or produce local artifacts (CSV files).
 
 It actually supports logs from **Marian 1.10** and **Marian 1.12**. Above versions (even minor) will raise a warning and may result in missing data.
 
@@ -36,7 +36,7 @@ By default, this command will fetch other traversal tasks (related experiments).
 
 You can also run the parser based on the logs of a single task:
 ```sh
-parse_tc_logs ----input-file=live_backing.log
+parse_tc_logs --input-file=live_backing.log
 ```
 
 ### Deffered publication from a GCP archive
@@ -83,13 +83,23 @@ The structure from older experiments that ran with Snakemake should look like th
             └─ …
 ```
 
+You can run the parser from a local GCP archive folder by running:
+```sh
+$ parse_experiment_dir --directory gcp_archive -mode taskcluster
+```
+
 ## Weight & Biases dashboard
 
 The publication is handled via the extensible module `translations_parser.publishers`.
 
 ### Structure
 
-Runs on Weight & Biases are groupped by expermient. The group is suffixed by the complete Taskcluster group ID, and each of its runs (train or evaluation) is prefixed by the first 5 characters. This is required to compare runs with similar name (e.g. `teacher-1`) among different groups.
+Runs on Weight & Biases are groupped by expermient. The group is suffixed by the complete Taskcluster group ID, and each of its runs is suffixed by the first 5 characters. This is required to compare runs with similar name among different groups.
+
+Examples of runs naming for Taskcluster group `dzijiL-PQ4ScKBB3oIjGQg`:
+* Training task: `teacher-1_dziji`
+* Evaluation task: `teacher-ensemble_dziji`
+* Experiment summary `group_logs_dziji` (See #group-logs)
 
 ### Training data
 
@@ -97,7 +107,15 @@ Metrics parsed in real time during the training are published in the **Charts** 
 
 ![Training charts](img/tracking/training_charts.png)
 
-Training runs have their Marian and Opustrainer configuration published to the **Overview** section in Weight & Biases.
+Training runs have their Marian and Opustrainer configuration published to the **Overview** section in Weight & Biases:
+
+* **arguments**: Full list of arguments used to run the `marian` command.
+* **marian**: Marian runtime configuration read from logs.
+* **model**: YAML configuration file passed to Marian as `configs/model/${model_type}.yml`.
+* **opustrainer**: OpusTrainer YAML configuration read from fixed path `config.opustrainer.yml`.
+* **training**: YAML configuration file passed to Marian as `configs/model/${model_type}.yml`.
+
+The categories we came up with (model, arguments, marian, opustrainer, training), what they mean and where those configs come from.
 
 ![Training config](img/tracking/run_config.png)
 
