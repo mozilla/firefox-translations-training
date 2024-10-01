@@ -271,6 +271,8 @@ marian-args:
   training-student-finetuned:
     early-stopping: '20'
 target-stage: all
+start-stage: alignments-student
+previous_group_ids: ["Fv23lalyTfSfbmGx0YxypA"]
 existing_tasks: {
         "build-docker-image-base": "BAvLUilqQ3SYqy6Ck55CUQ",
         "build-docker-image-test": "f0gbptvMTDaKODjqL9hlOw",
