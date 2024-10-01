@@ -209,6 +209,9 @@ def metric_from_tc_context(chrf: float, bleu: float, comet: float):
     task = queue.task(task_id)
     parsed = parse_task_label(task["tags"]["label"])
 
+    # Multiply comet metric by 100 to match other metrics percentage style
+    comet *= 100
+
     return Metric(
         importer=parsed.importer,
         dataset=parsed.dataset,
