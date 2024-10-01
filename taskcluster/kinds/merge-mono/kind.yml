@@ -26,7 +26,7 @@ task-defaults:
             type: merge-mono
             resources:
                 - pipeline/clean/merge-mono.py
-                - pipeline/clean/requirements/merge-mono.txt
+                - pipeline/clean/requirements/merge.txt
 
     task-context:
         from-parameters:
@@ -77,7 +77,7 @@ task-defaults:
             # 2) max_sentences
             # 3) datasets
             - >-
-                pip install -r $VCS_PATH/pipeline/clean/requirements/merge-mono.txt &&
+                pip install -r $VCS_PATH/pipeline/clean/requirements/merge.txt &&
                 export PYTHONPATH=$PYTHONPATH:$VCS_PATH &&
                 python3 $VCS_PATH/pipeline/clean/merge-mono.py
                 --parallel_corpus $MOZ_FETCHES_DIR/corpus/corpus.{locale}.zst
