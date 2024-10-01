@@ -46,12 +46,20 @@ And then use the URLs from:
 gs://releng-translations-dev/models/en-fi/opusmt/student
 ```
 
-This directory should contain the various `.npz` and `.decoder.yml` for the models, as well as the `vocab.spm`. If the `vocab.spm` is not present then run something like:
+This directory should contain the various `.npz` and `.decoder.yml` for the models, as well as the `vocab.spm`. If the `vocab.spm` is not present then add a file override to the config, for instance:
 
-```sh
-gsutil cp \
-  gs://releng-translations-dev/models/en-fi/opusmt/vocab/vocab.spm \
-  gs://releng-translations-dev/models/en-fi/opusmt/student/vocab.spm
+```yml
+experiment:
+  pretrained-models:
+    train-backwards:
+      urls:
+        - https://storage.googleapis.com/releng-translations-dev/models/en-fi/opusmt/student/
+      overrides:
+        - {
+          "vocab.spm": "https://storage.googleapis.com/releng-translations-dev/models/en-fi/opusmt/vocab/vocab.spm"
+        }
+      mode: use
+      type: default
 ```
 
 ### The URLs Key
