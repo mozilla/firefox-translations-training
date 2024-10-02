@@ -11,6 +11,7 @@ MOCK_REQUESTS = [
     {
         "substitute_digest": {
             "build-docker-image-base": "digest_base",
+            "build-docker-image-inference": "digest_inference",
             "build-docker-image-test": "digest_test",
             "build-docker-image-toolchain-build": "digest_toolchain",
             "build-docker-image-train": "digest_train",
@@ -24,6 +25,10 @@ MOCK_REQUESTS = [
                         {
                             "namespace": "translations.cache.level-3.docker-images.v2.base.hash.{digest_base}",
                             "taskId": "build-docker-image-base",
+                        },
+                        {
+                            "namespace": "translations.cache.level-3.docker-images.v2.inference.hash.{digest_inference}",
+                            "taskId": "build-docker-image-inference",
                         },
                         {
                             "namespace": "translations.cache.level-3.docker-images.v2.test.hash.{digest_test}",
@@ -56,6 +61,13 @@ MOCK_REQUESTS = [
                                 "expires": "3024-08-21T22:37:28.781Z",
                             },
                             "taskId": "build-docker-image-base",
+                        },
+                        {
+                            "status": {
+                                "state": "completed",
+                                "expires": "3024-08-21T22:37:28.781Z",
+                            },
+                            "taskId": "build-docker-image-inference",
                         },
                         {
                             "status": {
