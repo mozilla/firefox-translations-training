@@ -3,12 +3,16 @@ import io
 import json
 import os
 import time
+from contextlib import ExitStack, contextmanager
 from io import BufferedReader
-from typing import Generator, Optional
+from pathlib import Path
+from typing import Callable, Generator, Literal, Optional, Union
+from zipfile import ZipFile
 
 import requests
-import zstandard
+from zstandard import ZstdCompressor, ZstdDecompressor
 
+from pipeline.common import format_bytes
 from pipeline.common.logging import get_logger
 
 logger = get_logger(__file__)
@@ -54,6 +58,16 @@ def get_mocked_downloads_file_path(url: str) -> Optional[str]:
     logger.info(f"  file: {source_file}")
 
     return source_file
+
+
+def location_exists(location: str):
+    """
+    Checks if a location (url or file path) exists.
+    """
+    if location.startswith("http://") or location.startswith("https://"):
+        response = requests.head(location, allow_redirects=True)
+        return response.ok
+    return os.path.exists(location)
 
 
 def attempt_mocked_request(url: str) -> Optional[BufferedReader]:
@@ -109,8 +123,9 @@ class RemoteDecodingLineStreamer:
         self.decoding_stream.close()
         self.byte_chunk_stream.close()
 
-    def decode(self, byte_stream):
-        raise NotImplementedError("Decoding is not implemented")
+    def decode(self, byte_stream: BufferedReader):
+        # This byte stream requires no decoding, so just pass it on through.
+        return byte_stream
 
 
 class RemoteGzipLineStreamer(RemoteDecodingLineStreamer):
@@ -140,7 +155,7 @@ class RemoteZstdLineStreamer(RemoteDecodingLineStreamer):
     """
 
     def decode(self, byte_stream):
-        return zstandard.ZstdDecompressor().stream_reader(byte_stream)
+        return ZstdDecompressor().stream_reader(byte_stream)
 
 
 class DownloadChunkStreamer(io.IOBase):
@@ -239,6 +254,9 @@ class DownloadChunkStreamer(io.IOBase):
 
         return result
 
+    def readable(self):
+        return True
+
     def download_chunks(self) -> Generator[bytes, None, None]:
         """
         This method is the generator that is responsible for running the request, and retrying
@@ -267,7 +285,7 @@ class DownloadChunkStreamer(io.IOBase):
                 # Report the download size.
                 if not total_bytes and "content-length" in self.response.headers:
                     total_bytes = int(self.response.headers["content-length"])
-                    logger.info(f"Download size: {total_bytes} bytes")
+                    logger.info(f"Download size: {total_bytes:,} bytes")
 
                 for chunk in self.response.iter_content(chunk_size=self.chunk_bytes):
                     if not chunk:
@@ -299,12 +317,286 @@ class DownloadChunkStreamer(io.IOBase):
                 # the retries are done.
                 logger.error(f"A download error occurred: {error}")
 
-            self.close()
+            # Close out the response on an error. It will be recreated when retrying.
+            if self.response:
+                self.response.close()
+                self.response = None
+
             logger.info(f"Retrying in {self.wait_before_retry_sec} sec")
             time.sleep(self.wait_before_retry_sec)
 
+        self.close()
         raise Exception("The download failed.")
 
     def decode(self, byte_stream) -> Generator[bytes, None, None]:
         """Pass through the byte stream. This method can be specialized by child classes."""
         return byte_stream
+
+
+@contextmanager
+def _read_lines_multiple_files(
+    files: list[Union[str, Path]],
+    path_in_archive: Optional[str],
+    on_enter_location: Optional[Callable[[], None]] = None,
+) -> Generator[str, None, None]:
+    """
+    Iterates through each line in multiple files, combining it into a single stream.
+    """
+
+    def iter(stack: ExitStack):
+        for file_path in files:
+            logger.info(f"Reading lines from: {file_path}")
+            lines = stack.enter_context(read_lines(file_path, path_in_archive, on_enter_location))
+            yield from lines
+            stack.close()
+
+    try:
+        stack = ExitStack()
+        yield iter(stack)
+    finally:
+        stack.close()
+
+
+@contextmanager
+def _read_lines_single_file(
+    location: Union[Path, str],
+    path_in_archive: Optional[str] = None,
+    on_enter_location: Optional[Callable[[], None]] = None,
+):
+    """
+    A smart function to efficiently stream lines from a local or remote file.
+    The location can either be a URL or a local file system path.
+    It handles gzip, zst, and plain text files.
+
+    Args:
+        location - URL or file path
+        path_in_archive  - The path to a file in a zip archive
+        on_enter_location - A lambda for when a new location is entered
+    """
+    location = str(location)
+    if on_enter_location:
+        on_enter_location()
+
+    if location.startswith("http://") or location.startswith("https://"):
+        # If this is mocked for a test, use the locally mocked path.
+        mocked_location = get_mocked_downloads_file_path(location)
+        if mocked_location:
+            location = mocked_location
+
+    stack = ExitStack()
+
+    try:
+        if location.startswith("http://") or location.startswith("https://"):
+            # This is a remote file.
+
+            response = requests.head(location, allow_redirects=True)
+            content_type = response.headers.get("Content-Type")
+            if content_type == "application/gzip":
+                yield stack.enter_context(RemoteGzipLineStreamer(location))
+
+            elif content_type == "application/zstd":
+                yield stack.enter_context(RemoteZstdLineStreamer(location))
+
+            elif content_type == "application/zip":
+                raise Exception("Streaming a zip from a remote location is supported.")
+
+            elif content_type == "text/plain":
+                yield stack.enter_context(RemoteDecodingLineStreamer(location))
+
+            elif location.endswith(".gz") or location.endswith(".gzip"):
+                yield stack.enter_context(RemoteGzipLineStreamer(location))
+
+            elif location.endswith(".zst"):
+                yield stack.enter_context(RemoteZstdLineStreamer(location))
+            else:
+                # Treat as plain text.
+                yield stack.enter_context(RemoteDecodingLineStreamer(location))
+
+        else:  # noqa: PLR5501
+            # This is a local file.
+            if location.endswith(".gz") or location.endswith(".gzip"):
+                yield stack.enter_context(gzip.open(location, "rt", encoding="utf-8"))
+
+            elif location.endswith(".zst"):
+                input_file = stack.enter_context(open(location, "rb"))
+                zst_reader = stack.enter_context(ZstdDecompressor().stream_reader(input_file))
+                yield stack.enter_context(io.TextIOWrapper(zst_reader, encoding="utf-8"))
+
+            elif location.endswith(".zip"):
+                if not path_in_archive:
+                    raise Exception("Expected a path into the zip file.")
+                zip = stack.enter_context(ZipFile(location, "r"))
+                if path_in_archive not in zip.namelist():
+                    raise Exception(f"Path did not exist in the zip file: {path_in_archive}")
+                file = stack.enter_context(zip.open(path_in_archive, "r"))
+                yield stack.enter_context(io.TextIOWrapper(file, encoding="utf-8"))
+            else:
+                # Treat as plain text.
+                yield stack.enter_context(open(location, "rt", encoding="utf-8"))
+    finally:
+        stack.close()
+
+
+def read_lines(
+    location_or_locations: Union[Path, str, list[Union[str, Path]]],
+    path_in_archive: Optional[str] = None,
+    on_enter_location: Optional[Callable[[], None]] = None,
+) -> Generator[str, None, None]:
+    """
+    A smart function to efficiently stream lines from a local or remote file.
+    The location can either be a URL or a local file system path.
+    It handles gzip, zst, and plain text files.
+    It can also handle a list of files.
+
+    Args:
+        location_or_locations - A single URL or file path, or a list
+        path_in_archive  - The path to a file in a zip archive
+
+    Usage:
+        with read_lines("output.txt.gz") as lines:
+            for line in lines:
+                print(line)
+
+        paths = [
+            "http://example.com/file.txt.gz",
+            "path/to/file.txt.zst",
+        ]
+        with read_lines(paths) as lines:
+            for line in lines:
+                print(line)
+    """
+
+    if isinstance(location_or_locations, list):
+        return _read_lines_multiple_files(
+            location_or_locations, path_in_archive, on_enter_location
+        )
+
+    return _read_lines_single_file(location_or_locations, path_in_archive, on_enter_location)
+
+
+@contextmanager
+def write_lines(path: Path | str):
+    """
+    A smart function to create a context to write lines to a file. It works on .zst, .gz, and
+    raw text files. It reads the extension to determine the file type.
+
+    with write_lines("output.txt.gz") as output:
+        output.write("writing a line\n")
+        output.write("writing a second lines\n")
+    """
+
+    try:
+        path = str(path)
+        stack = ExitStack()
+
+        if path.endswith(".zst"):
+            file = stack.enter_context(open(path, "wb"))
+            compressor = stack.enter_context(ZstdCompressor().stream_writer(file))
+            yield stack.enter_context(io.TextIOWrapper(compressor, encoding="utf-8"))
+        elif path.endswith(".gz"):
+            yield stack.enter_context(gzip.open(path, "wt", encoding="utf-8"))
+        else:
+            yield stack.enter_context(open(path, "wt", encoding="utf-8"))
+
+    finally:
+        stack.close()
+
+
+def count_lines(path: Path | str) -> int:
+    """
+    Similar to wc -l, this counts the lines in a file. However, this command does so regardless
+    of the compression strategy used on the file.
+    """
+    with read_lines(path) as lines:
+        return sum(1 for _ in lines)
+
+
+def get_file_size(location: Union[Path, str]) -> int:
+    """Get the size of a file, whether it is remote or local."""
+    if str(location).startswith("http://") or str(location).startswith("https://"):
+        return get_download_size(location)
+    return os.path.getsize(location)
+
+
+def get_human_readable_file_size(location: Union[Path, str]) -> tuple[int, str]:
+    """Get the size of a file in a human-readable string, and the numeric bytes."""
+    bytes = get_file_size(location)
+    return format_bytes(bytes), bytes
+
+
+def compress_file(
+    path: Union[str, Path], keep_original: bool = True, compression: Literal["zst", "gz"] = "zst"
+) -> Path:
+    """
+    Compresses a file to .zst or .gz format. It returns the path of the compressed file.
+    "zst" is the preferred compression scheme.
+    """
+    path = Path(path)
+
+    if compression == "zst":
+        compressed_path = Path(str(path) + ".zst")
+        cctx = ZstdCompressor()
+        with open(path, "rb") as infile:
+            with open(compressed_path, "wb") as outfile:
+                outfile.write(cctx.compress(infile.read()))
+
+    elif compression == "gz":
+        compressed_path = Path(str(path) + ".gz")
+        with open(path, "rb") as infile:
+            with gzip.open(compressed_path, "wb") as outfile:
+                outfile.write(infile.read())
+
+    else:
+        raise ValueError(f"Unsupported compression format: {compression}")
+
+    if not keep_original:
+        # Delete the original file
+        path.unlink()
+
+    return compressed_path
+
+
+def decompress_file(
+    path: Union[str, Path],
+    keep_original: bool = True,
+    decompressed_path: Optional[Union[str, Path]] = None,
+) -> Path:
+    """
+    Decompresses a .gz or .zst file. It returns the path of the decompressed file.
+    """
+    path = Path(path)
+
+    if decompressed_path:
+        decompressed_path = Path(decompressed_path)
+    else:
+        # Remove the original suffix
+        decompressed_path = path.with_suffix("")
+
+    with ExitStack() as stack:
+        decompressed_file = stack.enter_context(decompressed_path.open("wb"))
+
+        if path.suffix == ".gz":
+            compressed_file = stack.enter_context(gzip.open(str(path), "rb"))
+            decompressed_file.write(compressed_file.read())
+            while True:
+                # Write the data out in chunks so that all of the it doesn't need to be
+                # into memory.
+                chunk = compressed_file.read(10_240)
+                if not chunk:
+                    break
+                decompressed_file.write(chunk)
+
+        elif path.suffix == ".zst":
+            compressed_file = stack.enter_context(open(path, "rb"))
+            for chunk in ZstdDecompressor().read_to_iter(compressed_file):
+                # Write the data out in chunks so that all of the it doesn't need to be
+                # into memory.
+                decompressed_file.write(chunk)
+        else:
+            raise ValueError(f"Unsupported file extension: {path.suffix}")
+
+    if not keep_original:
+        # Delete the original file
+        path.unlink()
+
+    return str(decompressed_path)

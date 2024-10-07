@@ -30,6 +30,7 @@ tasks:
                 src_locale: training_config.experiment.src
                 trg_locale: training_config.experiment.trg
                 wandb_publication: training_config.wandb-publication
+                owner: owner
             substitution-fields:
                 - description
                 - name
@@ -48,7 +49,7 @@ tasks:
                     - pipeline/train/configs/model/student.yml
                     - pipeline/train/configs/opustrainer/student.yml
                     - pipeline/train/configs/training/student.train.yml
-                    - pipeline/train/train.sh
+                    - pipeline/train/train.py
                     - taskcluster/scripts/pipeline/train_taskcluster.py
                     - taskcluster/scripts/pipeline/train-taskcluster.sh
                 from-parameters:
@@ -56,18 +57,16 @@ tasks:
         worker-type:
             by-tasks-for:
                 github-pull-request: b-largegpu-largedisk
-                default: b-largegpu-xlargedisk
+                default: b-largegpu-xxlargedisk
         worker:
             max-run-time: 2592000
             # train_taskcluster.py exits with 17 if a request to Taskcluster fails
             # 128 happens when cloning this repository fails
             retry-exit-status: [17, 128]
             env:
-                ARTIFACT_EXT: zst
-                COMPRESSION_CMD: zstdmt
-
                 # Weight & Biases trigger
                 WANDB_PUBLICATION: "{wandb_publication}"
+                WANDB_AUTHOR: "{owner}"
 
                 # Weight & Biases publication token is stored in that secret
                 TASKCLUSTER_SECRET: project/translations/level-1/weights-and-biases
@@ -99,6 +98,7 @@ tasks:
                     pip3 install $VCS_PATH/tracking &&
                     export PATH="$HOME/.local/bin:$PATH" &&
                     export MARIAN=$MOZ_FETCHES_DIR &&
+                    export PYTHONPATH=$PYTHONPATH:$VCS_PATH &&
                     $VCS_PATH/taskcluster/scripts/pipeline/train_taskcluster.py
                     student
                     train

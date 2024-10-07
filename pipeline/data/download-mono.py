@@ -21,15 +21,17 @@ Artifacts:
 
 import argparse
 import os
+from contextlib import ExitStack
+from pathlib import Path
 from typing import Optional
 
-import zstandard
+from importers.mono.hplt import download_hplt
 
 from pipeline.common.datasets import Dataset, shuffle_with_max_lines
 from pipeline.common.downloads import (
-    RemoteGzipLineStreamer,
-    RemoteZstdLineStreamer,
     get_download_size,
+    read_lines,
+    write_lines,
 )
 from pipeline.common.logging import get_logger
 
@@ -53,50 +55,69 @@ def main(args_list: Optional[list[str]] = None) -> None:
         "--max_sentences", type=int, help="The maximum number of sentences to retain"
     )
     parser.add_argument(
-        "--artifacts", type=str, help="The location where the dataset will be saved"
+        "--hlpt_min_fluency",
+        type=float,
+        help="The minimum fluency score to filter datasets that include this metric",
+        default=0.8,
+    )
+    parser.add_argument(
+        "--artifacts", type=Path, help="The location where the dataset will be saved"
     )
     args = parser.parse_args(args_list)
 
     dataset = Dataset(args.dataset)
 
-    file_destination = os.path.join(
-        args.artifacts, f"{dataset.file_safe_name()}.{args.language}.zst"
-    )
+    file_destination: Path = args.artifacts / f"{dataset.file_safe_name()}.{args.language}.zst"
 
     logger.info(f"Dataset: {args.dataset}")
     logger.info(f"Language: {args.language}")
     logger.info(f"Max Sentences: {args.max_sentences}")
+    logger.info(f"Mininmum Fluency Threshold: {args.hlpt_min_fluency}")
     logger.info(f"Artifacts: {args.artifacts}")
     logger.info(f"File Destination: {file_destination}")
 
     if not os.path.exists(args.artifacts):
         os.makedirs(args.artifacts)
 
-    line_streamer = None
+    if dataset.importer == "hplt":
+        download_hplt(
+            language=args.language,
+            hlpt_min_fluency=args.hlpt_min_fluency,
+            max_lines=args.max_sentences,
+            max_words_in_sentence=MAX_WORDS_IN_SENTENCE,
+            file_destination=file_destination,
+        )
+
+        return
+
     url = None
     if dataset.importer == "url":
-        dataset = Dataset(args.dataset)
         url = dataset.name
-        line_streamer = RemoteZstdLineStreamer(url)
     elif dataset.importer == "news-crawl":
         url = f"http://data.statmt.org/news-crawl/{args.language}/{dataset.name}.{args.language}.shuffled.deduped.gz"
         logger.info("Downloading WMT newscrawl monolingual data")
         logger.info(url)
-        line_streamer = RemoteGzipLineStreamer(url)
+    elif dataset.importer == "opus":
+        url = f"https://object.pouta.csc.fi/OPUS-{dataset.name}/mono/{args.language}.txt.gz"
+        logger.info("Downloading OPUS monolingual data")
+        logger.info(url)
     else:
         raise Exception(f'Unsupported importer "{dataset.importer}"')
 
     logger.info(f"URL: {url}")
 
-    with zstandard.open(file_destination, "wb") as zst_file, line_streamer as line_stream:
+    with ExitStack() as stack:
+        outfile = stack.enter_context(write_lines(file_destination))
+        lines = stack.enter_context(read_lines(url))
+
         for line in shuffle_with_max_lines(
-            line_stream=line_stream,
+            line_stream=lines,
             seed=dataset.name,
             max_lines=args.max_sentences,
-            max_words_in_sentence=100,
+            max_words_in_sentence=MAX_WORDS_IN_SENTENCE,
             total_byte_size=get_download_size(url),
         ):
-            zst_file.write(line.encode("utf-8"))
+            outfile.write(line)
 
 
 if __name__ == "__main__":

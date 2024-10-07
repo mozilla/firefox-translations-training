@@ -71,10 +71,9 @@ def test_teacher_original_alignments():
     env = {
         "TEST_ARTIFACTS": data_dir.path,
         "BIN": bin_dir,
-        "COMPRESSION_CMD": "zstd",
-        "ARTIFACT_EXT": "zst",
         "SRC": "en",
         "TRG": "ru",
+        "ALN_CHUNK_LINES": "3",
     }
 
     data_dir.run_task("alignments-original-en-ru", env=env)
@@ -91,10 +90,9 @@ def test_teacher_backtranslated_alignments():
     env = {
         "TEST_ARTIFACTS": data_dir.path,
         "BIN": bin_dir,
-        "COMPRESSION_CMD": "zstd",
-        "ARTIFACT_EXT": "zst",
         "SRC": "en",
         "TRG": "ru",
+        "ALN_CHUNK_LINES": "3",
     }
     # get priors using the "original" task
     data_dir.run_task("alignments-original-en-ru", env=env)
@@ -115,10 +113,9 @@ def test_student_alignments():
     env = {
         "TEST_ARTIFACTS": data_dir.path,
         "BIN": bin_dir,
-        "COMPRESSION_CMD": "zstd",
-        "ARTIFACT_EXT": "zst",
         "SRC": "en",
         "TRG": "ru",
+        "ALN_CHUNK_LINES": "3",
     }
     # get priors using the "original" task
     data_dir.run_task("alignments-original-en-ru", env=env)
@@ -137,16 +134,15 @@ def test_student_alignments():
 
 def test_shortlist():
     data_dir = DataDir("test_shortlist")
-    data_dir.create_zst("corpus.en.zst", en_sample),
-    data_dir.create_zst("corpus.ru.zst", ru_sample),
+    data_dir.create_zst("corpus.en.zst", en_sample)
+    data_dir.create_zst("corpus.ru.zst", ru_sample)
     env = {
         "TEST_ARTIFACTS": data_dir.path,
         "BIN": bin_dir,
         "MARIAN": marian_dir,
-        "COMPRESSION_CMD": "zstd",
-        "ARTIFACT_EXT": "zst",
         "SRC": "en",
         "TRG": "ru",
+        "ALN_CHUNK_LINES": "3",
     }
     shutil.copyfile("tests/data/vocab.spm", os.path.join(data_dir.path, "vocab.spm"))
 

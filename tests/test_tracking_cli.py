@@ -20,12 +20,17 @@ def tmp_dir():
     return Path(DataDir("test_tracking").path)
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def disable_wandb(tmp_dir):
     """Prevent publication on W&B"""
+    environ = os.environ.copy()
     os.environ["WANDB_API_KEY"] = "fake"
     os.environ["WANDB_MODE"] = "offline"
     os.environ["WANDB_DIR"] = str(tmp_dir / "wandb")
+    # Remove task ID to prevent publishing context data (training configuration, dataset)
+    os.environ.pop("TASK_ID", None)
+    yield
+    os.environ.update(environ)
 
 
 @pytest.fixture
@@ -44,7 +49,7 @@ def samples_dir():
         wandb_artifacts=None,
         wandb_group="group",
         wandb_publication=True,
-        wandb_run_name="run",
+        wandb_run_name="run_id",
         tags=[
             "unittest",
         ],
@@ -53,19 +58,39 @@ def samples_dir():
     ),
 )
 @patch("translations_parser.publishers.wandb")
-def test_taskcluster(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
+def test_taskcluster(wandb_mock, getargs_mock, disable_wandb, caplog, samples_dir, tmp_dir):
     caplog.set_level(logging.INFO)
     wandb_dir = tmp_dir / "wandb"
     wandb_dir.mkdir(parents=True)
     wandb_mock.init.return_value.dir = wandb_dir
+    wandb_mock.init.return_value.resumed = False
     tc_publish.main()
     assert [(level, message) for _module, level, message in caplog.record_tuples] == [
         (logging.INFO, "Reading logs stream."),
         (logging.INFO, "Detected Marian version 1.10"),
-        (logging.INFO, "Successfully parsed 588 lines"),
+        (logging.INFO, "Reading Marian command line arguments."),
+        (
+            logging.INFO,
+            "Extra configuration files can only be retrieved in Taskcluster context, skipping.",
+        ),
+        (logging.INFO, "Successfully parsed 1528 lines"),
         (logging.INFO, "Found 102 training entries"),
         (logging.INFO, "Found 34 validation entries"),
     ]
+
+    assert [
+        (
+            c.kwargs["project"],
+            c.kwargs["group"],
+            c.kwargs["name"],
+            c.kwargs["id"],
+            c.kwargs["config"].get("marian", {}).get("after"),
+        )
+        for c in wandb_mock.init.call_args_list
+    ] == [
+        ("test", "group", "run_id", "run_id", "2e"),
+    ]
+
     with (samples_dir / "taskcluster_wandb_calls.json").open("r") as f:
         assert list(wandb_mock.init.return_value.log.call_args_list) == [
             call(**entry) for entry in json.load(f)
@@ -74,14 +99,20 @@ def test_taskcluster(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
 
 @patch(
     "translations_parser.cli.experiments.get_args",
-    return_value=argparse.Namespace(directory=Path(__file__).parent / "data" / "experiments_1_10"),
+    return_value=argparse.Namespace(
+        directory=Path(__file__).parent / "data" / "experiments_1_10",
+        mode="snakemake",
+    ),
 )
 @patch("translations_parser.publishers.wandb")
-def test_experiments_marian_1_10(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
+def test_experiments_marian_1_10(
+    wandb_mock, getargs_mock, disable_wandb, caplog, samples_dir, tmp_dir
+):
     caplog.set_level(logging.INFO)
     wandb_dir = tmp_dir / "wandb"
     wandb_dir.mkdir(parents=True)
     wandb_mock.init.return_value.dir = wandb_dir
+    wandb_mock.init.return_value.resumed = False
     wandb_mock.plot.bar = lambda *args, **kwargs: (args, kwargs)
     wandb_mock.Table = lambda *args, **kwargs: (args, kwargs)
     experiments_publish.main()
@@ -89,32 +120,32 @@ def test_experiments_marian_1_10(wandb_mock, getargs_mock, caplog, samples_dir, 
     assert set([(level, message) for _module, level, message in caplog.record_tuples]) == set(
         [
             (logging.INFO, "Reading 3 train.log data"),
-            # student
             (
                 logging.INFO,
-                f"Parsing folder {samples_dir}/experiments_1_10/models/en-nl/prod/student",
+                f"Parsing folder {samples_dir}/experiments_1_10/models/en-nl/prod",
             ),
+            # student
+            (logging.INFO, "Handling training task student"),
             (logging.INFO, "Reading logs stream."),
             (logging.INFO, "Detected Marian version 1.10"),
-            (logging.INFO, "Successfully parsed 1002 lines"),
+            (logging.INFO, "Reading Marian command line arguments."),
+            (
+                logging.INFO,
+                "Extra configuration files can only be retrieved in Taskcluster context, skipping.",
+            ),
+            (logging.INFO, "Successfully parsed 1878 lines"),
             (logging.INFO, "Found 550 training entries"),
             (logging.INFO, "Found 108 validation entries"),
             # teacher-finetuned0
-            (
-                logging.INFO,
-                f"Parsing folder {samples_dir}/experiments_1_10/models/en-nl/prod/teacher-finetuned0",
-            ),
+            (logging.INFO, "Handling training task teacher-finetune-0"),
             (logging.INFO, "Reading logs stream."),
-            (logging.INFO, "Successfully parsed 993 lines"),
+            (logging.INFO, "Successfully parsed 1944 lines"),
             (logging.INFO, "Found 567 training entries"),
             (logging.INFO, "Found 189 validation entries"),
             # teacher-finetuned1
-            (
-                logging.INFO,
-                f"Parsing folder {samples_dir}/experiments_1_10/models/en-nl/prod/teacher-finetuned1",
-            ),
+            (logging.INFO, "Handling training task teacher-finetune-1"),
             (logging.INFO, "Reading logs stream."),
-            (logging.INFO, "Successfully parsed 1000 lines"),
+            (logging.INFO, "Successfully parsed 1963 lines"),
             (logging.INFO, "Found 573 training entries"),
             (logging.INFO, "Found 191 validation entries"),
             # Publish group files and quantized/evaluated metrics
@@ -132,6 +163,29 @@ def test_experiments_marian_1_10(wandb_mock, getargs_mock, caplog, samples_dir, 
             (logging.INFO, "Creating missing run teacher-ensemble with associated metrics"),
         ]
     )
+
+    assert [
+        (
+            c.kwargs["project"],
+            c.kwargs["group"],
+            c.kwargs["name"],
+            c.kwargs["id"],
+            c.kwargs["config"].get("marian", {}).get("after"),
+        )
+        for c in wandb_mock.init.call_args_list
+    ] == [
+        ("en-nl", "prod", "student_prod", "student_prod", "0e"),
+        ("en-nl", "prod", "teacher-finetune-0_prod", "teacher-finetune-0_prod", "0e"),
+        ("en-nl", "prod", "teacher-finetune-1_prod", "teacher-finetune-1_prod", "0e"),
+        ("en-nl", "prod", "quantized_prod", "quantized_prod", None),
+        ("en-nl", "prod", "backwards_prod", "backwards_prod", None),
+        ("en-nl", "prod", "student-finetune_prod", "student-finetune_prod", None),
+        ("en-nl", "prod", "teacher-base-0_prod", "teacher-base-0_prod", None),
+        ("en-nl", "prod", "teacher-base-1_prod", "teacher-base-1_prod", None),
+        ("en-nl", "prod", "teacher-ensemble_prod", "teacher-ensemble_prod", None),
+        ("en-nl", "prod", "group_logs_prod", "group_logs_prod", None),
+    ]
+
     log_calls, metrics_calls = [], []
     for log in wandb_mock.init.return_value.log.call_args_list:
         if log.args:
@@ -169,14 +223,20 @@ def test_experiments_marian_1_10(wandb_mock, getargs_mock, caplog, samples_dir, 
 
 @patch(
     "translations_parser.cli.experiments.get_args",
-    return_value=argparse.Namespace(directory=Path(__file__).parent / "data" / "experiments_1_12"),
+    return_value=argparse.Namespace(
+        directory=Path(__file__).parent / "data" / "experiments_1_12",
+        mode="snakemake",
+    ),
 )
 @patch("translations_parser.publishers.wandb")
-def test_experiments_marian_1_12(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
+def test_experiments_marian_1_12(
+    wandb_mock, getargs_mock, disable_wandb, caplog, samples_dir, tmp_dir
+):
     caplog.set_level(logging.INFO)
     wandb_dir = tmp_dir / "wandb"
     wandb_dir.mkdir(parents=True)
     wandb_mock.init.return_value.dir = wandb_dir
+    wandb_mock.init.return_value.resumed = False
     wandb_mock.plot.bar = lambda *args, **kwargs: (args, kwargs)
     wandb_mock.Table = lambda *args, **kwargs: (args, kwargs)
     experiments_publish.main()
@@ -186,18 +246,22 @@ def test_experiments_marian_1_12(wandb_mock, getargs_mock, caplog, samples_dir, 
             (logging.INFO, "Reading 2 train.log data"),
             (
                 logging.INFO,
-                f"Parsing folder {samples_dir}/experiments_1_12/models/fi-en/opusprod/student",
+                f"Parsing folder {samples_dir}/experiments_1_12/models/fi-en/opusprod",
             ),
-            (logging.INFO, "Reading logs stream."),
-            (logging.INFO, "Successfully parsed 786 lines"),
-            (logging.INFO, "Found 405 training entries"),
-            (logging.INFO, "Found 79 validation entries"),
+            (logging.INFO, "Detected Marian version 1.12"),
+            (logging.INFO, "Reading Marian command line arguments."),
             (
                 logging.INFO,
-                f"Parsing folder {samples_dir}/experiments_1_12/models/fi-en/opusprod/student-finetuned",
+                "Extra configuration files can only be retrieved in Taskcluster context, skipping.",
             ),
+            (logging.INFO, "Handling training task student"),
             (logging.INFO, "Reading logs stream."),
-            (logging.INFO, "Successfully parsed 660 lines"),
+            (logging.INFO, "Successfully parsed 1533 lines"),
+            (logging.INFO, "Found 405 training entries"),
+            (logging.INFO, "Found 79 validation entries"),
+            (logging.INFO, "Handling training task student-finetune"),
+            (logging.INFO, "Reading logs stream."),
+            (logging.INFO, "Successfully parsed 1174 lines"),
             (logging.INFO, "Found 330 training entries"),
             (logging.INFO, "Found 64 validation entries"),
             (
@@ -207,9 +271,25 @@ def test_experiments_marian_1_12(wandb_mock, getargs_mock, caplog, samples_dir, 
             (logging.INFO, "Found 4 quantized metrics from speed folder"),
             (logging.INFO, "Found 8 metrics from task logs"),
             (logging.INFO, "Creating missing run quantized with associated metrics"),
-            (logging.INFO, "Detected Marian version 1.12"),
         ]
     )
+
+    assert [
+        (
+            c.kwargs["project"],
+            c.kwargs["group"],
+            c.kwargs["name"],
+            c.kwargs["id"],
+            c.kwargs["config"].get("marian", {}).get("after"),
+        )
+        for c in wandb_mock.init.call_args_list
+    ] == [
+        ("fi-en", "opusprod", "student_opusprod", "student_opusprod", "0e"),
+        ("fi-en", "opusprod", "student-finetune_opusprod", "student-finetune_opusprod", "0e"),
+        ("fi-en", "opusprod", "quantized_opusprod", "quantized_opusprod", None),
+        ("fi-en", "opusprod", "group_logs_opusprod", "group_logs_opusprod", None),
+    ]
+
     log_calls, metrics_calls = [], []
     for log in wandb_mock.init.return_value.log.call_args_list:
         if log.args:
@@ -260,7 +340,7 @@ def test_experiments_marian_1_12(wandb_mock, getargs_mock, caplog, samples_dir, 
 )
 @patch("translations_parser.publishers.wandb")
 def test_taskcluster_wandb_initialization_failure(
-    wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir
+    wandb_mock, getargs_mock, disable_wandb, caplog, samples_dir, tmp_dir
 ):
     """
     Ensures tracking continues despite W&B initialization failure
@@ -271,11 +351,16 @@ def test_taskcluster_wandb_initialization_failure(
     assert [(level, message) for _module, level, message in caplog.record_tuples] == [
         (logging.INFO, "Reading logs stream."),
         (logging.INFO, "Detected Marian version 1.10"),
+        (logging.INFO, "Reading Marian command line arguments."),
+        (
+            logging.INFO,
+            "Extra configuration files can only be retrieved in Taskcluster context, skipping.",
+        ),
         (
             logging.ERROR,
             "WandB client could not be initialized: Invalid credentials. No data will be published.",
         ),
-        (logging.INFO, "Successfully parsed 588 lines"),
+        (logging.INFO, "Successfully parsed 1528 lines"),
         (logging.INFO, "Found 102 training entries"),
         (logging.INFO, "Found 34 validation entries"),
     ]
@@ -301,7 +386,9 @@ def test_taskcluster_wandb_initialization_failure(
     ),
 )
 @patch("translations_parser.publishers.wandb")
-def test_taskcluster_wandb_log_failures(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
+def test_taskcluster_wandb_log_failures(
+    wandb_mock, getargs_mock, disable_wandb, caplog, samples_dir, tmp_dir
+):
     """
     Ensures tracking continues despite potential W&B data log failures
     """
@@ -309,18 +396,24 @@ def test_taskcluster_wandb_log_failures(wandb_mock, getargs_mock, caplog, sample
     wandb_dir = tmp_dir / "wandb"
     wandb_dir.mkdir(parents=True)
     wandb_mock.init.return_value.dir = wandb_dir
+    wandb_mock.init.return_value.resumed = False
     wandb_mock.init.return_value.log.side_effect = Exception("Unexpected failure")
     tc_publish.main()
     assert [(level, message) for _module, level, message in caplog.record_tuples] == [
         (logging.INFO, "Reading logs stream."),
         (logging.INFO, "Detected Marian version 1.10"),
+        (logging.INFO, "Reading Marian command line arguments."),
+        (
+            logging.INFO,
+            "Extra configuration files can only be retrieved in Taskcluster context, skipping.",
+        ),
     ] + [
         (logging.ERROR, "Error publishing training epoch using WandB: Unexpected failure"),
         (logging.ERROR, "Error publishing training epoch using WandB: Unexpected failure"),
         (logging.ERROR, "Error publishing training epoch using WandB: Unexpected failure"),
         (logging.ERROR, "Error publishing validation epoch using WandB: Unexpected failure"),
     ] * 34 + [
-        (logging.INFO, "Successfully parsed 588 lines"),
+        (logging.INFO, "Successfully parsed 1528 lines"),
         (logging.INFO, "Found 102 training entries"),
         (logging.INFO, "Found 34 validation entries"),
     ]
@@ -346,7 +439,9 @@ def test_taskcluster_wandb_log_failures(wandb_mock, getargs_mock, caplog, sample
     ),
 )
 @patch("translations_parser.publishers.wandb")
-def test_taskcluster_wandb_disabled(wandb_mock, getargs_mock, caplog, samples_dir, tmp_dir):
+def test_taskcluster_wandb_disabled(
+    wandb_mock, getargs_mock, disable_wandb, caplog, samples_dir, tmp_dir
+):
     """
     Ensures tracking continues without Weight & Biases publication
     """
@@ -359,7 +454,12 @@ def test_taskcluster_wandb_disabled(wandb_mock, getargs_mock, caplog, samples_di
         ),
         (logging.INFO, "Reading logs stream."),
         (logging.INFO, "Detected Marian version 1.10"),
-        (logging.INFO, "Successfully parsed 588 lines"),
+        (logging.INFO, "Reading Marian command line arguments."),
+        (
+            logging.INFO,
+            "Extra configuration files can only be retrieved in Taskcluster context, skipping.",
+        ),
+        (logging.INFO, "Successfully parsed 1528 lines"),
         (logging.INFO, "Found 102 training entries"),
         (logging.INFO, "Found 34 validation entries"),
     ]

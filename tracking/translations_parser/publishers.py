@@ -1,6 +1,7 @@
 import csv
 import logging
 import os
+import sys
 from abc import ABC
 from collections import defaultdict
 from pathlib import Path
@@ -9,10 +10,12 @@ from typing import Sequence
 import wandb
 import yaml
 
-from translations_parser.data import Metric, TrainingEpoch, TrainingLog, ValidationEpoch
-from translations_parser.utils import parse_task_label
+from translations_parser.data import Metric, TrainingEpoch, ValidationEpoch
+from translations_parser.utils import parse_task_label, parse_gcp_metric, patch_model_name
 
 logger = logging.getLogger(__name__)
+
+METRIC_KEYS = sorted(set(Metric.__annotations__.keys()) - {"importer", "dataset", "augmentation"})
 
 
 class Publisher(ABC):
@@ -36,7 +39,7 @@ class Publisher(ABC):
     def handle_metrics(self, metrics: Sequence[Metric]) -> None:
         ...
 
-    def publish(self, log: TrainingLog) -> None:
+    def publish(self) -> None:
         ...
 
     def close(self) -> None:
@@ -45,9 +48,15 @@ class Publisher(ABC):
 
 class CSVExport(Publisher):
     def __init__(self, output_dir: Path) -> None:
+        from translations_parser.parser import TrainingParser
+
         if not output_dir.is_dir():
             raise ValueError("Output must be a valid directory for the CSV export")
         self.output_dir = output_dir
+        self.parser: TrainingParser | None = None
+
+    def open(self, parser=None) -> None:
+        self.parser = parser
 
     def write_data(
         self, output: Path, entries: Sequence[TrainingEpoch | ValidationEpoch], dataclass: type
@@ -60,7 +69,9 @@ class CSVExport(Publisher):
             for entry in entries:
                 writer.writerow(vars(entry))
 
-    def publish(self, training_log: TrainingLog) -> None:
+    def publish(self) -> None:
+        assert self.parser is not None, "Parser must be set to run CSV publication."
+        training_log = self.parser.output
         training_output = self.output_dir / "training.csv"
         if training_output.exists():
             logger.warning(f"Training output file {training_output} exists, skipping.")
@@ -77,7 +88,11 @@ class CSVExport(Publisher):
 class WandB(Publisher):
     def __init__(
         self,
+        *,
         project: str,
+        group: str,
+        name: str,
+        suffix: str = "",
         # Optional path to a directory containing training artifacts
         artifacts: Path | None = None,
         artifacts_name: str = "logs",
@@ -85,64 +100,85 @@ class WandB(Publisher):
     ):
         from translations_parser.parser import TrainingParser
 
+        # Set logging of wandb module to WARNING, so we output training logs instead
+        self.wandb_logger = logging.getLogger("wandb")
+        self.wandb_logger.setLevel(logging.ERROR)
+
         self.project = project
+        self.group = group
+        self.suffix = suffix
+        # Build a unique run identifier based on the passed suffix
+        # This ID is also used as display name on W&B, as the interface expects unique display names among runs
+        self.run = f"{name}{suffix}"
+
         self.artifacts = artifacts
         self.artifacts_name = artifacts_name
         self.extra_kwargs = extra_kwargs
         self.parser: TrainingParser | None = None
         self.wandb: wandb.sdk.wandb_run.Run | wandb.sdk.lib.disabled.RunDisabled | None = None
 
+    def close(self) -> None:
+        if self.wandb is None:
+            return
+
+        # Publish artifacts
+        if self.artifacts:
+            artifact = wandb.Artifact(name=self.artifacts_name, type=self.artifacts_name)
+            artifact.add_dir(local_path=str(self.artifacts.resolve()))
+            self.wandb.log_artifact(artifact)
+
+        if self.parser is not None:
+            # Store Marian logs as the main log artifact, instead of W&B client runtime.
+            # This will be overwritten in case an unhandled exception occurs.
+            for line in self.parser.parsed_logs:
+                sys.stdout.write(f"{line}\n")
+
+        self.wandb.finish()
+
     def open(self, parser=None, resume: bool = False) -> None:
         self.parser = parser
-        config = getattr(parser, "config", {})
+        config = getattr(parser, "config", {}).copy()
         config.update(self.extra_kwargs.pop("config", {}))
+        # Publish datasets stats directly in the dashboard
+        datasets = config.pop("datasets", None)
+
+        # Avoid overriding an existing run on a first training, this should not happen
+        if resume is False and int(os.environ.get("RUN_ID", 0)) > 0:
+            logger.warning(
+                "Training has been resumed but resume option has been set to False, skipping publication."
+            )
+            return
 
         try:
-            project = next(filter(lambda p: p.name == self.project, wandb.Api().projects()), None)
-            # Check if a W&B run already exists with this name
-            existing_runs = []
-            if project and (name := self.extra_kwargs.get("name")):
-                existing_runs = list(
-                    wandb.Api().runs(
-                        self.project,
-                        filters={"display_name": name, "group": self.extra_kwargs.get("group")},
-                    )
-                )
-            if len(existing_runs) == 0:
-                # Start a new W&B run
-                self.wandb = wandb.init(
-                    project=self.project,
-                    config=config,
-                    **self.extra_kwargs,
-                )
-                return
-            elif len(existing_runs) == 1:
-                run = existing_runs[0]
-                # Avoid overriding an existing run on a first training, this should not happen
-                if resume is False and int(os.environ.get("RUN_ID", 0)) < 1:
-                    logger.warning(
-                        f"A W&B run already exists with name '{name}': {run}. No data will be published."
-                    )
-                    return
-                # Resume an existing run
-                logger.info(
-                    f"Training has been resumed from an earlier run wit name '{name}', "
-                    f"continue W&B publication with run {run}."
-                )
-                self.wandb = wandb.init(
-                    project=self.project,
-                    config=config,
-                    id=run.id,
-                    resume="must",
-                    **self.extra_kwargs,
-                )
-            else:
-                logger.warning(
-                    f"Multiple W&B runs already exist with name '{name}': {existing_runs}. No data will be published."
-                )
-                return
+            self.wandb = wandb.init(
+                project=self.project,
+                group=self.group,
+                name=self.run,
+                id=self.run,
+                config=config,
+                resume=resume,
+                **self.extra_kwargs,
+            )
+            if self.wandb.resumed:
+                logger.info(f"W&B run is being resumed from existing run '{self.run}'.")
         except Exception as e:
             logger.error(f"WandB client could not be initialized: {e}. No data will be published.")
+
+        if datasets is not None:
+            # Log dataset sizes as a custom bar chart
+            self.wandb.log(
+                {
+                    "Datasets": wandb.plot.bar(
+                        wandb.Table(
+                            columns=["Name", "Count"],
+                            data=[[key, value] for key, value in datasets.items()],
+                        ),
+                        "Name",
+                        "Count",
+                        title="Datasets",
+                    )
+                }
+            )
 
     def generic_log(self, data: TrainingEpoch | ValidationEpoch) -> None:
         if self.wandb is None:
@@ -178,7 +214,7 @@ class WandB(Publisher):
                             columns=["Metric", "Value"],
                             data=[
                                 [key, getattr(metric, key)]
-                                for key in ("bleu_detok", "chrf", "comet")
+                                for key in METRIC_KEYS
                                 if getattr(metric, key) is not None
                             ],
                         ),
@@ -189,30 +225,16 @@ class WandB(Publisher):
                 }
             )
 
-    def close(self) -> None:
-        if self.wandb is None:
-            return
-        if self.parser is not None:
-            # Store runtime logs as the main log artifact
-            # This will be overwritten in case an unhandled exception occurs
-            with (Path(self.wandb.dir) / "output.log").open("w") as f:
-                f.write(self.parser.logs_str)
-
-        # Publish artifacts
-        if self.artifacts:
-            artifact = wandb.Artifact(name=self.artifacts_name, type=self.artifacts_name)
-            artifact.add_dir(local_path=str(self.artifacts.resolve()))
-            self.wandb.log_artifact(artifact)
-
-        self.wandb.finish()
-
     @classmethod
     def publish_group_logs(
         cls,
+        *,
         logs_parent_folder: list[str],
         project: str,
         group: str,
+        suffix: str,
         existing_runs: list[str] | None = None,
+        snakemake: bool = False,
     ) -> None:
         """
         Publish files within `logs_dir` to W&B artifacts for a specific group.
@@ -240,20 +262,33 @@ class WandB(Publisher):
                 logger.warning(f"Detection of a previous group_logs run failed: {e}")
 
         logs_dir = Path("/".join([*logs_parent_folder[:-1], "logs", project, group]))
+        models_dir = Path("/".join([*logs_parent_folder[:-1], "models", project, group]))
         # Old experiments use `speed` directory for quantized metrics
         quantized_metrics = sorted(
-            Path("/".join([*logs_parent_folder, project, group, "evaluation", "speed"])).glob(
-                "*.metrics"
-            )
+            Path(
+                "/".join(
+                    [*logs_parent_folder[:-1], "models", project, group, "evaluation", "speed"]
+                )
+            ).glob("*.metrics")
         )
         logs_metrics = sorted((logs_dir / "eval").glob("eval*.log"))
         direct_metrics = sorted((logs_dir / "metrics").glob("*.metrics"))
+
+        taskcluster_metrics = []
+        # Do not retrieve metrics from models directory for legacy Snakemake experiments
+        if snakemake is False:
+            taskcluster_metrics = sorted((models_dir).glob("**/*.metrics"))
+
         if quantized_metrics:
             logger.info(f"Found {len(quantized_metrics)} quantized metrics from speed folder")
         if logs_metrics:
             logger.info(f"Found {len(logs_metrics)} metrics from task logs")
         if direct_metrics:
-            logger.info(f"Found {len(logs_metrics)} metrics from .metrics artifacts")
+            logger.info(f"Found {len(direct_metrics)} Snakemake metrics from .metrics artifacts")
+        if taskcluster_metrics:
+            logger.info(
+                f"Found {len(taskcluster_metrics)} Taskcluster metrics from .metrics artifacts"
+            )
 
         # Store metrics by run name
         metrics = defaultdict(list)
@@ -263,10 +298,10 @@ class WandB(Publisher):
             metrics["quantized"].append(Metric.from_file(file, importer=importer, dataset=dataset))
         # Add metrics from tasks logs
         for file in logs_metrics:
-            model_name, importer, dataset, aug = parse_task_label(file.stem)
-            with file.open("r") as f:
-                lines = f.readlines()
             try:
+                model_name, importer, dataset, aug = parse_task_label(file.stem)
+                with file.open("r") as f:
+                    lines = f.readlines()
                 metrics[model_name].append(
                     Metric.from_tc_context(
                         importer=importer, dataset=dataset, lines=lines, augmentation=aug
@@ -274,12 +309,29 @@ class WandB(Publisher):
                 )
             except ValueError as e:
                 logger.error(f"Could not parse metrics from {file.resolve()}: {e}")
-        # Add metrics from .metrics files
+
+        # Add metrics from old SnakeMake .metrics files
         for file in direct_metrics:
             model_name, importer, dataset, aug = parse_task_label(file.stem)
             try:
                 metrics[model_name].append(
                     Metric.from_file(file, importer=importer, dataset=dataset, augmentation=aug)
+                )
+            except ValueError as e:
+                logger.error(f"Could not parse metrics from {file.resolve()}: {e}")
+
+        # Add metrics from new Taskcluster .metrics files
+        for file in taskcluster_metrics:
+            model_name = patch_model_name(file.parent.name)
+            try:
+                metric_attrs = parse_gcp_metric(file.stem)
+                metrics[model_name].append(
+                    Metric.from_file(
+                        file,
+                        importer=metric_attrs.importer,
+                        dataset=metric_attrs.dataset,
+                        augmentation=metric_attrs.augmentation,
+                    )
                 )
             except ValueError as e:
                 logger.error(f"Could not parse metrics from {file.resolve()}: {e}")
@@ -293,7 +345,12 @@ class WandB(Publisher):
 
         for model_name, model_metrics in missing_run_metrics.items():
             logger.info(f"Creating missing run {model_name} with associated metrics")
-            publisher = cls(project=project, name=model_name, group=group)
+            publisher = cls(
+                project=project,
+                group=group,
+                name=model_name,
+                suffix=suffix,
+            )
             publisher.open(TrainingParser(logs_iter=iter([]), publishers=[]))
             publisher.handle_metrics(model_metrics)
             publisher.close()
@@ -318,20 +375,23 @@ class WandB(Publisher):
             project=project,
             group=group,
             name="group_logs",
+            suffix=suffix,
         )
         publisher.wandb = wandb.init(
             project=project,
             group=group,
-            name="group_logs",
+            name=publisher.run,
+            id=publisher.run,
             config=config,
         )
 
         if metrics:
             # Publish all evaluation metrics to a table
             table = wandb.Table(
-                columns=["Group", "Model", "Dataset", "BLEU", "chrF"],
+                columns=["Group", "Model", "Importer", "Dataset", "Augmenation", *METRIC_KEYS],
                 data=[
-                    [group, run_name, metric.dataset, metric.bleu_detok, metric.chrf]
+                    [group, run_name, metric.importer, metric.dataset, metric.augmentation]
+                    + [getattr(metric, attr) for attr in METRIC_KEYS]
                     for run_name, run_metrics in metrics.items()
                     for metric in run_metrics
                 ],

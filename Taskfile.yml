@@ -59,11 +59,45 @@ tasks:
       - >-
           PYTHONPATH=$(pwd) poetry run python -W ignore utils/config_generator.py {{.CLI_ARGS}}
 
+  build-mono-nllb:
+    desc: Build a monolingual NLLB datasets.
+    summary: |
+      The dataset will be saved to: ./data/nllb/nllb-mono-{lang}.txt.gz
+      Example: `task build-mono-nllb -- sl`
+    deps: [poetry-install-utils]
+    cmds:
+      - >-
+          PYTHONPATH=$(pwd) poetry run python -W ignore utils/build-mono-nllb.py {{.CLI_ARGS}}
+
   opuscleaner:
     desc: Run the opuscleaner tool.
     deps: [poetry-install-opuscleaner]
     cmds:
       - poetry run opuscleaner-server serve --host=0.0.0.0 --port=8000
+
+  inference-clean:
+    desc: Clean build artifacts from the inference directory.
+    cmds:
+      - >-
+          task docker-run -- ./inference/scripts/clean.sh
+
+  inference-build:
+    desc: Build inference engine.
+    cmds:
+      - >-
+          task docker-run -- ./inference/scripts/build-local.sh
+
+  inference-test:
+    desc: Run inference tests.
+    cmds:
+      - >-
+          task docker-run -- ./inference/scripts/unit-tests.sh
+
+  inference-build-wasm:
+    desc: Build inference engine WASM.
+    cmds:
+      - >-
+          task docker-run -- ./inference/scripts/build-wasm.sh
 
   lint-black:
     desc: Checks the styling of the Python code with Black.
@@ -118,10 +152,31 @@ tasks:
       - poetry install --only tests --only utils --no-root
       - PYTHONPATH="$(pwd):$(pwd)/taskcluster/scripts/pipeline" poetry run pytest -vv {{.CLI_ARGS}}
 
+  test-fast:
+    desc: Re-run tests in a faster configuration.
+    summary: |
+      This command skips taskgraph generation and skips the poetry install in order to
+      re-run tests quickly. If the taskgraph or dependencies are out of date, then tests
+      may incorrectly fail. It also outputs the captured stdout.
+
+        task test-fast -- tests/test_alignments.py
+    cmds:
+      - >-
+        SKIP_TASKGRAPH=1 PYTHONPATH="$(pwd):$(pwd)/taskcluster/scripts/pipeline"
+        poetry run pytest -vv -s {{.CLI_ARGS}}
+
   test-docker:
     desc: Run the unit tests in the docker image. Some tests require the pre-built Linux executables.
     cmds:
       - task docker-run -- task test
+
+  train:
+    desc: Start a training run
+    summary: Open up the train task from the CLI based on your current branch.
+    deps: [poetry-install-utils, poetry-install-taskcluster]
+    cmds:
+      - >-
+          poetry run python -W ignore utils/train.py {{.CLI_ARGS}}
 
   docker:
     desc: Interactively run the local docker test image.
@@ -179,6 +234,13 @@ tasks:
         --parameters "taskcluster/test/params"
         --output-file "{{.OUTPUT_FILE}}"
         --diff "{{.BASE_REV}}"
+
+  taskgraph-test:
+    desc: Run tests and validations against task generation
+    cmds:
+      - >-
+        poetry run --directory taskgraph --
+        pytest taskcluster/test
 
   docs:
     desc: Run the GitHub pages Jekyll theme locally.

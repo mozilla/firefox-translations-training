@@ -52,8 +52,6 @@ task-defaults:
         env:
             SRC: "{src_locale}"
             TRG: "{trg_locale}"
-            COMPRESSION_CMD: zstdmt
-            ARTIFACT_EXT: zst
         # 128 happens when cloning this repository fails
         retry-exit-status: [128]
 
@@ -71,7 +69,7 @@ task-defaults:
             - >-
                 export BIN=$MOZ_FETCHES_DIR &&
                 $VCS_PATH/pipeline/clean/merge-corpus.sh
-                artifacts/{artifact_prefix}
+                $TASK_WORKDIR/artifacts/{artifact_prefix}
                 $MOZ_FETCHES_DIR/*.zst
     fetches:
         toolchain:

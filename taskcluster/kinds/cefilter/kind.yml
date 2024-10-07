@@ -40,7 +40,7 @@ tasks:
                 - dependencies
                 - fetches
                 - attributes
-        worker-type: b-cpu-largedisk
+        worker-type: b-cpu-xlargedisk-32-256
         worker:
             docker-image: {"in-tree": "train"}
             # 7 days
@@ -50,8 +50,6 @@ tasks:
                   path: /builds/worker/artifacts
                   type: directory
             env:
-                COMPRESSION_CMD: zstdmt
-                ARTIFACT_EXT: zst
                 SRC: "{src_locale}"
                 TRG: "{trg_locale}"
             # 128 happens when cloning this repository fails
@@ -68,7 +66,7 @@ tasks:
                 - >-
                     $VCS_PATH/pipeline/cefilter/ce-filter.sh
                     $MOZ_FETCHES_DIR/corpus
-                    /builds/worker/artifacts/corpus
+                    $TASK_WORKDIR/artifacts/corpus
                     $MOZ_FETCHES_DIR/scores.txt
 
         dependencies:

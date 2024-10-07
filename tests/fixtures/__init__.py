@@ -9,7 +9,7 @@ import subprocess
 import time
 from pathlib import Path
 from subprocess import CompletedProcess
-from typing import List, Optional, Union
+from typing import Iterable, List, Optional, Tuple, Union
 
 import zstandard as zstd
 
@@ -93,10 +93,13 @@ class DataDir:
 
         return zst_path
 
-    def create_file(self, name: str, contents: str) -> str:
+    def create_file(self, name: str, contents: Union[str, Iterable[str]]) -> str:
         """
         Creates a text file and returns the path to it.
         """
+        if not isinstance(contents, str):
+            contents = "\n".join(contents) + "\n"
+
         text_path = os.path.join(self.path, name)
         if not os.path.exists(self.path):
             raise Exception(f"Directory for the text file does not exist: {self.path}")
@@ -156,66 +159,86 @@ class DataDir:
         if not fetches_dir:
             fetches_dir = self.path
 
-        if extra_args:
-            command_parts.extend(extra_args)
+        for command_parts_split in split_on_ampersands_operator(command_parts):
+            if extra_args:
+                command_parts_split.extend(extra_args)
 
-        final_env = {
-            **os.environ,
-            **task_env,
-            "TASK_WORKDIR": work_dir,
-            "MOZ_FETCHES_DIR": fetches_dir,
-            "VCS_PATH": root_path,
-            **env,
-        }
+            final_env = {
+                # The following are set by the Taskcluster server.
+                "TASK_ID": "fake_id",
+                "RUN_ID": "0",
+                "TASKCLUSTER_ROOT_URL": "https://some.cluster",
+                **os.environ,
+                **task_env,
+                "TASK_WORKDIR": work_dir,
+                "MOZ_FETCHES_DIR": fetches_dir,
+                "VCS_PATH": root_path,
+                **env,
+            }
 
-        # Expand out environment variables in environment, for instance MARIAN=$MOZ_FETCHES_DIR
-        # and FETCHES=./fetches will be expanded to MARIAN=./fetches
-        for key, value in final_env.items():
-            if not isinstance(value, str):
-                continue
-            expanded_value = final_env.get(value[1:])
-            if value and value[0] == "$" and expanded_value:
-                final_env[key] = expanded_value
+            # Expand out environment variables in environment, for instance MARIAN=$MOZ_FETCHES_DIR
+            # and FETCHES=./fetches will be expanded to MARIAN=./fetches
+            for key, value in final_env.items():
+                if not isinstance(value, str):
+                    continue
+                expanded_value = final_env.get(value[1:])
+                if value and value[0] == "$" and expanded_value:
+                    final_env[key] = expanded_value
 
-        # Ensure the environment variables are sorted so that the longer variables get replaced first.
-        sorted_env = sorted(final_env.items(), key=lambda kv: kv[0])
-        sorted_env.reverse()
+            # Ensure the environment variables are sorted so that the longer variables get replaced first.
+            sorted_env = sorted(final_env.items(), key=lambda kv: kv[0])
+            sorted_env.reverse()
 
-        for index, p in enumerate(command_parts):
-            part = (
-                p.replace("$TASK_WORKDIR/$VCS_PATH", root_path)
-                .replace("$VCS_PATH", root_path)
-                .replace("$TASK_WORKDIR", work_dir)
-                .replace("$MOZ_FETCHES_DIR", fetches_dir)
+            for index, p in enumerate(command_parts_split):
+                part = (
+                    p.replace("$TASK_WORKDIR/$VCS_PATH", root_path)
+                    .replace("$VCS_PATH", root_path)
+                    .replace("$TASK_WORKDIR", work_dir)
+                    .replace("$MOZ_FETCHES_DIR", fetches_dir)
+                )
+
+                # Apply the task environment.
+                for key, value in sorted_env:
+                    env_var = f"${key}"
+                    if env_var in part:
+                        part = part.replace(env_var, value)
+
+                command_parts_split[index] = part
+
+            # If using a venv, prepend the binary directory to the path so it is used.
+            python_bin_dir, venv_dir = get_python_dirs(requirements)
+            if python_bin_dir:
+                final_env = {**final_env, "PATH": f'{python_bin_dir}:{os.environ.get("PATH", "")}'}
+                if command_parts_split[0].endswith(".py"):
+                    # This script is relying on a shebang, add the python3 from the executable instead.
+                    command_parts_split.insert(0, os.path.join(python_bin_dir, "python3"))
+            elif command_parts_split[0].endswith(".py"):
+                # This script does not require a virtual environment.
+                command_parts_split.insert(0, "python3")
+
+            # We have to set the path to the C++ lib before the process is started
+            # https://github.com/Helsinki-NLP/opus-fast-mosestokenizer/issues/6
+            with open(requirements) as f:
+                reqs_txt = f.read()
+            if "opus-fast-mosestokenizer" in reqs_txt:
+                lib_path = os.path.join(
+                    venv_dir, "lib/python3.10/site-packages/mosestokenizer/lib"
+                )
+                print(f"Setting LD_LIBRARY_PATH to {lib_path}")
+                final_env["LD_LIBRARY_PATH"] = lib_path
+
+            print("┌──────────────────────────────────────────────────────────")
+            print("│ run_task:", " ".join(command_parts_split))
+            print("└──────────────────────────────────────────────────────────")
+
+            result = subprocess.run(
+                command_parts_split,
+                env=final_env,
+                cwd=root_path,
+                check=False,
             )
 
-            # Apply the task environment.
-            for key, value in sorted_env:
-                env_var = f"${key}"
-                if env_var in part:
-                    part = part.replace(env_var, value)
-
-            command_parts[index] = part
-
-        # If using a venv, prepend the binary directory to the path so it is used.
-        python_bin_dir = get_python_bin_dir(requirements)
-        if python_bin_dir:
-            final_env = {**final_env, "PATH": f'{python_bin_dir}:{os.environ.get("PATH", "")}'}
-            if command_parts[0].endswith(".py"):
-                # This script is relying on a shebang, add the python3 from the executable instead.
-                command_parts.insert(0, os.path.join(python_bin_dir, "python3"))
-
-        print("┌──────────────────────────────────────────────────────────")
-        print("│ run_task:", " ".join(command_parts))
-        print("└──────────────────────────────────────────────────────────")
-
-        result = subprocess.run(
-            command_parts,
-            env=final_env,
-            cwd=root_path,
-            check=False,
-        )
-        fail_on_error(result)
+            fail_on_error(result)
 
     def print_tree(self):
         """
@@ -228,7 +251,12 @@ class DataDir:
         for root, dirs, files in os.walk(self.path):
             level = root.replace(self.path, "").count(os.sep)
             indent = " " * 4 * (level)
-            folder_text = f"│ {indent}{os.path.basename(root)}/"
+            if level == 0:
+                # For the root level, display the relative path to the data directory.
+                folder_text = root.replace(f"{ROOT_PATH}/", "")
+                folder_text = f"│ {folder_text}"
+            else:
+                folder_text = f"│ {indent}{os.path.basename(root)}/"
             print(f"{folder_text.ljust(span_len)} │")
             subindent = " " * 4 * (level + 1)
 
@@ -242,6 +270,23 @@ class DataDir:
                 print(f"{file_text.ljust(span_len - len(bytes))}{bytes} │")
 
         print(f"└{span}┘")
+
+
+def split_on_ampersands_operator(command_parts: list[str]) -> list[list[str]]:
+    """Splits a command with the bash && operator into multiple lists of commands."""
+    multiple_command_parts: list[list[str]] = []
+    sublist: list[str] = []
+    for part in command_parts:
+        if part.strip().startswith("&&"):
+            command_part = part.replace("&&", "").strip()
+            if len(command_part):
+                sublist.append(command_part)
+            multiple_command_parts.append(sublist)
+            sublist = []
+        else:
+            sublist.append(part)
+    multiple_command_parts.append(sublist)
+    return multiple_command_parts
 
 
 def fail_on_error(result: CompletedProcess[bytes]):
@@ -384,7 +429,7 @@ def find_requirements(commands: Commands) -> Optional[str]:
     return None
 
 
-def get_task_command_and_env(task_name: str) -> tuple[str, Optional[str], dict[str, str]]:
+def get_task_command_and_env(task_name: str) -> tuple[list[str], Optional[str], dict[str, str]]:
     """
     Extracts a task's command from the full taskgraph. This allows for testing
     the full taskcluster pipeline and the scripts that it generates.
@@ -451,11 +496,23 @@ def get_mocked_downloads() -> str:
                 get_path("pytest-dataset.en.zst"),
             "https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.ru.zst":
                 get_path("pytest-dataset.ru.zst"),
+            "https://data.hplt-project.org/one/monotext/cleaned/ru/ru_10.jsonl.zst":
+                get_path("hplt-ru_10.jsonl.zst"),
+            "https://data.hplt-project.org/one/monotext/cleaned/ru/ru_11.jsonl.zst":
+                get_path("hplt-ru_11.jsonl.zst"),
+            "https://data.hplt-project.org/one/monotext/cleaned/en/en_100.jsonl.zst":
+                get_path("hplt-en_100.jsonl.zst"),
+            "https://data.hplt-project.org/one/monotext/cleaned/en/en_101.jsonl.zst":
+                get_path("hplt-en_101.jsonl.zst"),
+            "https://data.hplt-project.org/one/monotext/cleaned/ru_map.txt":
+                get_path("hplt-ru_map.txt"),
+            "https://data.hplt-project.org/one/monotext/cleaned/en_map.txt":
+                get_path("hplt-en_map.txt"),
         }
     )  # fmt: skip
 
 
-def get_python_bin_dir(requirements: Optional[str]) -> Optional[str]:
+def get_python_dirs(requirements: Optional[str]) -> Optional[Tuple[str, str]]:
     """
     Creates a virtual environment for each requirements file that a task needs. The virtual
     environment is hashed based on the requirements file contents, and the system details. This
@@ -511,8 +568,9 @@ def get_python_bin_dir(requirements: Optional[str]) -> Optional[str]:
             print("Removing the venv due to an error in its creation.")
             shutil.rmtree(venv_dir)
             raise exception
+    print(f"Using virtual environment {venv_dir}")
 
-    return python_bin_dir
+    return python_bin_dir, venv_dir
 
 
 def hash_file(hash: any, path: str):

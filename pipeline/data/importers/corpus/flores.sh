@@ -14,8 +14,6 @@ trg=$2
 output_prefix=$3
 dataset=$4
 
-COMPRESSION_CMD="${COMPRESSION_CMD:-pigz}"
-ARTIFACT_EXT="${ARTIFACT_EXT:-gz}"
 WGET="${WGET:-wget}" # This can be overridden by tests.
 
 tmp="$(mktemp -d)/flores/${dataset}"
@@ -41,8 +39,8 @@ flores_code() {
 src_flores=$(flores_code "${src}")
 trg_flores=$(flores_code "${trg}")
 
-${COMPRESSION_CMD} -c "${tmp}/flores101_dataset/${dataset}/${src_flores}.${dataset}" > "${output_prefix}.${src}.${ARTIFACT_EXT}"
-${COMPRESSION_CMD} -c "${tmp}/flores101_dataset/${dataset}/${trg_flores}.${dataset}" > "${output_prefix}.${trg}.${ARTIFACT_EXT}"
+zstdmt -c "${tmp}/flores101_dataset/${dataset}/${src_flores}.${dataset}" > "${output_prefix}.${src}.zst"
+zstdmt -c "${tmp}/flores101_dataset/${dataset}/${trg_flores}.${dataset}" > "${output_prefix}.${trg}.zst"
 
 rm -rf "${tmp}"
 

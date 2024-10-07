@@ -1,20 +1,28 @@
 import logging
+import os
 import re
+import shlex
 import sys
 from collections import defaultdict
 from collections.abc import Iterable, Iterator, Sequence
 from datetime import datetime
 from itertools import tee
-from typing import Callable, DefaultDict
+from pathlib import Path
+from typing import Callable, DefaultDict, List
 
 import yaml
 
 from translations_parser.data import Metric, TrainingEpoch, TrainingLog, ValidationEpoch
 from translations_parser.publishers import Publisher
+from translations_parser.utils import get_lines_count
 
 logger = logging.getLogger(__name__)
 
 HEADER_RE = re.compile(r"(?<=\[)(?P<value>.+?)\] ")
+#                            \[               \]   Match square brackets
+#                        (?<=\[)                   This is a positive lookbehind, that looks for the first "[" in a line.
+#                                                  This line does not actually capture
+#                               (?P<value>.+?)     Non-greedily match the "value" inside of the square brackes.
 VALIDATION_RE = re.compile(
     r"Ep\.[ :]+(?P<ep>\d+)"
     r"[ :]+Up\.[ :]+(?P<up>\d+)"
@@ -36,6 +44,10 @@ TRAINING_RE = re.compile(
 # Expected version of Marian for a clean parsing
 SUPPORTED_MARIAN_VERSIONS = [(1, 10), (1, 12)]
 
+MARIAN_ARGS_REGEX = re.compile(r"command line:[\n ]+[\w\/-]+\/marian +(.*)")
+# Last Marian command line argument (not being part of training extra arguments)
+LAST_MARIAN_DECLARED_ARGUMENT = "seed"
+
 
 class TrainingParser:
     def __init__(
@@ -53,7 +65,7 @@ class TrainingParser:
         self._current_index = 0
         self.parsed = False
         self.config: dict = {}
-        self.indexed_logs: DefaultDict[str, list] = defaultdict(list)
+        self.parsed_logs: List[str] = []
         # Optional list of Metric published earlier to the parsing
         self.metrics = metrics
         self.training: list[TrainingEpoch] = []
@@ -116,9 +128,11 @@ class TrainingParser:
         values["sen"] = values["sen"].replace(",", "_")
         # Cast values to match output types
         casted_values = {
-            k: TrainingEpoch.__annotations__[k](v)
-            if callable(TrainingEpoch.__annotations__[k])
-            else float(v)
+            k: (
+                TrainingEpoch.__annotations__[k](v)
+                if callable(TrainingEpoch.__annotations__[k])
+                else float(v)
+            )
             for k, v in values.items()
         }
         training_epoch = TrainingEpoch(**casted_values)
@@ -195,21 +209,116 @@ class TrainingParser:
                 self.run_date = self.get_timestamp(headers)
             text = line[position:]
 
-            def _join(iterable):
-                if not iterable:
-                    return "_"
-                if isinstance(iterable[0], str):
-                    return "_".join(iterable)
-                return _join([_join(item) for item in iterable])
+            def _join(seq):
+                if not seq:
+                    return None
+                if isinstance(seq[0], str):
+                    return "_".join(seq)
+                return _join([_join(item) for item in seq])
 
             # Record logs depending on Marian headers
+            tag = None
             if len(headers) >= 2:
-                # First is task timestamp, second is marian timestamp
+                # The 2 first headers are ignored (task timestamp, then marian timestamp)
                 _, _, *marian_tags = headers
                 tag = _join(marian_tags)
-                self.indexed_logs[tag].append(text)
+            if tag:
+                self.parsed_logs.append(f"[tag] {text}")
+            else:
+                self.parsed_logs.append(text)
 
             yield headers, text
+
+    def get_extra_marian_config(self) -> dict:
+        """
+        Read extra configuration files (Marian, OpusTrainer, extra CLI arguments).
+        Publication outside of a Taskcluster context (offline mode) cannot access
+        the configuration files, only extra-args will be set in this case.
+        """
+        extra_config = {
+            "arguments": None,
+            "model": None,
+            "training": None,
+            "datasets": None,
+            "opustrainer": None,
+        }
+
+        if (
+            self.description is None
+            or (match := MARIAN_ARGS_REGEX.search(self.description)) is None
+        ):
+            logger.error(self.description)
+            logger.warning(
+                "Invalid Marian description, skipping Marian and OpusTrainer configuration detection."
+            )
+            return extra_config
+
+        logger.info("Reading Marian command line arguments.")
+        (arguments_str,) = match.groups()
+        # Build args from the command line input text
+        args = defaultdict(list)
+        key = None
+        for i in iter(shlex.split(arguments_str)):
+            if i.startswith("-"):
+                key = i.strip("-")
+                continue
+            args[key].append(i)
+
+        # Store arguments used to run Marian, flattening single values
+        def flatten(vals):
+            if not vals:
+                return ""
+            elif len(vals) == 1:
+                return vals[0]
+            return vals
+
+        extra_config["arguments"] = {k: flatten(v) for k, v in args.items()}
+
+        if os.environ.get("TASK_ID") is None:
+            logger.info(
+                "Extra configuration files can only be retrieved in Taskcluster context, skipping."
+            )
+            return extra_config
+
+        # Handle Marian model and training YAML configuration files (called as --config or -c)
+        for path in args.get("config", args["c"]):
+            if path.startswith("configs/training"):
+                key = "training"
+            elif path.startswith("configs/model"):
+                key = "model"
+            else:
+                continue
+            try:
+                with open(path, "r") as f:
+                    extra_config[key] = yaml.safe_load(f.read())
+            except Exception as e:
+                logger.warning(f"Impossible to parse Marian {key} config at {path}: {e}")
+
+        # Handle OpusTrainer configuration
+        (model_path,) = args.get("model", ("./model.npz",))
+        model_dir = Path(model_path).parent
+        train_conf_path = (model_dir / "config.opustrainer.yml").resolve()
+        if not train_conf_path.exists():
+            logger.warning(f"OpusTrainer configuration file does not exists at {train_conf_path}.")
+        else:
+            try:
+                with open(train_conf_path, "r") as f:
+                    extra_config["opustrainer"] = yaml.safe_load(f.read())
+            except Exception as e:
+                logger.warning(f"Impossible to parse OpusTrainer config at {train_conf_path}: {e}")
+            else:
+                logger.info("Reading datasets statistics from OpusTrainer configuration.")
+                try:
+                    dataset_conf = extra_config.get("opustrainer", {}).get("datasets", {})
+                    extra_config["datasets"] = {
+                        key: get_lines_count(path) for key, path in dataset_conf.items()
+                    }
+                except Exception as e:
+                    logger.warning(
+                        f"OpusTrainer configuration could not be read at {train_conf_path}: {e}."
+                    )
+
+        return extra_config
 
     def parse_marian_context(self, logs_iter: Iterator[tuple[list[tuple[str]], str]]) -> None:
         """
@@ -219,14 +328,18 @@ class TrainingParser:
         headers: list[tuple[str]] = []
         # Consume first lines until we get the Marian header
         while ("marian",) not in headers:
-            headers, text = next(logs_iter)
-            logger.debug(f"Marian header not found in: headers={headers} text={text.strip()}")
+            try:
+                headers, text = next(logs_iter)
+                logger.debug(f"Marian header not found in: headers={headers} text={text.strip()}")
+            except StopIteration:
+                raise ValueError("Could not find a [marian] entry in the training log.")
 
         logger.debug(f"Reading Marian version from text={text.strip()}")
         _, version, self.version_hash, self.release_date, *_ = text.split()
         version = version.rstrip(";")
         major, minor = map(int, version.lstrip("v").split(".")[:2])
         self.version = f"{major}.{minor}"
+        logger.info(f"Detected Marian version {self.version}")
         if (major, minor) not in SUPPORTED_MARIAN_VERSIONS:
             versions = ", ".join(f"{major}.{minor}" for major, minor in SUPPORTED_MARIAN_VERSIONS)
             logger.warning(
@@ -237,7 +350,8 @@ class TrainingParser:
         logger.debug("Reading Marian run description.")
         desc = []
         for headers, text in logs_iter:
-            if ("marian",) not in headers:
+            # Marian headers stops when dumping the configuration
+            if ("config",) in headers:
                 break
             desc.append(text)
         self.description = " ".join(desc)
@@ -253,11 +367,12 @@ class TrainingParser:
             config_yaml += f"{text}\n"
             headers, text = next(logs_iter)
         try:
-            self.config = yaml.safe_load(config_yaml)
+            self.config["marian"] = yaml.safe_load(config_yaml)
         except Exception as e:
-            raise Exception(f"Invalid config section: {e}")
+            logger.error(f"Impossible to parse Marian config YAML: {e}")
 
-        logger.info(f"Detected Marian version {self.version}")
+        # Try to read required extra configuration files when running online from Taskcluster
+        self.config.update(self.get_extra_marian_config())
 
     def parse_data(self, logs_iter: Iterator[tuple[list[tuple[str]], str]]) -> None:
         """
@@ -306,7 +421,7 @@ class TrainingParser:
         # Once all data has been parsed, call the final publication API
         for publisher in self.publishers:
             try:
-                publisher.publish(self.output)
+                publisher.publish()
                 # Publish optional metrics
                 if self.metrics:
                     publisher.handle_metrics(self.metrics)
@@ -317,13 +432,6 @@ class TrainingParser:
             publisher.close()
 
     @property
-    def logs_str(self) -> str:
-        return "\n".join(
-            "".join(f"[{key}] {val}\n" for val in values)
-            for key, values in self.indexed_logs.items()
-        )
-
-    @property
     def output(self) -> TrainingLog:
         if not self.parsed:
             raise Exception("Please run the parser before reading the output")
@@ -332,7 +440,7 @@ class TrainingParser:
             configuration=self.config,
             training=self.training,
             validation=list(self.validation),
-            logs=self.indexed_logs,
+            logs=self.parsed_logs,
         )
 
     def run(self) -> None:
@@ -340,10 +448,9 @@ class TrainingParser:
         try:
             self.parse()
         except StopIteration:
-            # A StopIteration can be raised if some required lines are never found.
-            raise ValueError("Logs file ended up unexpectedly")
+            raise ValueError("Not all required lines were found from the log file.")
 
-        count = sum(len(vals) for vals in self.indexed_logs.values())
+        count = len(self.parsed_logs)
         logger.info(f"Successfully parsed {count} lines")
         logger.info(f"Found {len(self.training)} training entries")
         logger.info(f"Found {len(self.validation)} validation entries")

@@ -42,8 +42,24 @@ experiment:
 #      opus_ParaCrawl/v9: 0.0                 # Example of disabled filtering (if the corpus is already filtered)
 
   # Limits the maximum sentences use in the monolingual data for both the source and target languages.
-  mono-max-sentences-src: 500_000_000          # Use all available data for distillation
-  mono-max-sentences-trg: 200_000_000          # Limit the number of back-translations
+  mono-max-sentences-src:
+    # More data for distallation is better for student quality.
+    total: 500_000_000
+    # Some datasets can be massive (like English NLLB mono has 3 trillion sentences)
+    # Limit the per-dataset to make sure there is good data diversity between datasets.
+    per-dataset: 200_000_000
+  mono-max-sentences-trg:
+    # Limit the number of back-translations
+    total: 200_000_000
+    per-dataset: 200_000_000
+
+  # HPLT provides a fluency score in the dataset, and we can filter based on it.
+  # 0.0 is worse and 1.0 is better.
+  min-fluency-threshold:
+    # Noiser data should be fine for distillation.
+    mono-src: 0.8
+    # Only retain the best sentences for back translations.
+    mono-trg: 0.9
 
   # How many bytes of the corpus are sampled to be used in SentencePiece
   # tokenization training.

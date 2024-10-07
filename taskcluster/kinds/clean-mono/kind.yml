@@ -63,9 +63,7 @@ task-defaults:
             - name: public/build
               path: /builds/worker/artifacts
               type: directory
-        env:
-            COMPRESSION_CMD: zstdmt
-            ARTIFACT_EXT: zst
+        env: {}
         # 128 happens when cloning this repository fails
         retry-exit-status: [128]
 
@@ -77,7 +75,7 @@ task-defaults:
         command:
             - bash
             - -c
-            - $VCS_PATH/pipeline/clean/clean-mono.sh {locale} $MOZ_FETCHES_DIR/{dataset_sanitized} /builds/worker/artifacts/{dataset_sanitized} auto {dataset}
+            - $VCS_PATH/pipeline/clean/clean-mono.sh {locale} $MOZ_FETCHES_DIR/{dataset_sanitized} $TASK_WORKDIR/artifacts/{dataset_sanitized} auto {dataset}
     dependencies:
         "{provider}-{locale}": dataset-{provider}-{dataset_sanitized}-{locale}
     fetches:

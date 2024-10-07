@@ -13,18 +13,19 @@ test -v WORKSPACE
 input=$1
 vocab=$2
 models=( "${@:3}" )
-
+output="${input}.out"
 
 cd "$(dirname "${0}")"
 
 "${MARIAN}/marian-decoder" \
-  -c decoder.yml \
-  -m "${models[@]}" \
-  -v "${vocab}" "${vocab}" \
-  -i "${input}" \
-  -o "${input}.out" \
+  --config decoder.yml \
+  --models "${models[@]}" \
+  --vocabs "${vocab}" "${vocab}" \
+  --input "${input}" \
+  --output "${output}" \
   --log "${input}.log" \
-  -d ${GPUS} \
-  -w "${WORKSPACE}"
+  --devices ${GPUS} \
+  --workspace "${WORKSPACE}"
 
-test "$(wc -l <"${input}")" == "$(wc -l <"${input}.out")"
+# Test that the input and output have the same number of sentences.
+test "$(wc -l <"${input}")" == "$(wc -l <"${output}")"

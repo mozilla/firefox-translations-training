@@ -1,10 +1,14 @@
+import json
 import os
 from pathlib import Path
+from typing import List
+
+import wandb
 
 import taskcluster
 from translations_parser.parser import logger
 from translations_parser.publishers import WandB
-from translations_parser.utils import build_task_name
+from translations_parser.utils import build_task_name, suffix_from_group
 
 
 def add_wandb_arguments(parser):
@@ -65,10 +69,12 @@ def get_wandb_token(secret_name):
         )
 
 
-def get_wandb_names():
+def get_wandb_names() -> tuple[str, str, str, str]:
     """
     Find the various names needed to publish on Weight & Biases using
-    the taskcluster task & group payloads
+    the taskcluster task & group payloads.
+
+    Returns project, group, run names and the task group ID.
     """
     task_id = os.environ.get("TASK_ID")
     if not task_id:
@@ -94,11 +100,17 @@ def get_wandb_names():
     else:
         experiment = config["experiment"]
 
-    # Build project, group and run names
+    # Publish experiments triggered from the CI to a specific "ci" project
+    if experiment["name"] == "ci":
+        project = "ci"
+    else:
+        project = f'{experiment["src"]}-{experiment["trg"]}'
+
     return (
-        f'{experiment["src"]}-{experiment["trg"]}',
+        project,
         f'{experiment["name"]}_{group_id}',
         task_name,
+        group_id,
     )
 
 
@@ -119,6 +131,7 @@ def get_wandb_publisher(
         return
 
     # Load secret from Taskcluster and auto-configure naming
+    suffix = ""
     if taskcluster_secret:
         assert os.environ.get(
             "TASKCLUSTER_PROXY_URL"
@@ -127,7 +140,8 @@ def get_wandb_publisher(
         # Weight and Biases client use environment variable to read the token
         os.environ.setdefault("WANDB_API_KEY", get_wandb_token(taskcluster_secret))
 
-        project_name, group_name, run_name = get_wandb_names()
+        project_name, group_name, run_name, task_group_id = get_wandb_names()
+        suffix = suffix_from_group(task_group_id)
 
     # Enable publication on weight and biases when project is set
     # But prevent running when explicitly disabled by operator
@@ -140,11 +154,39 @@ def get_wandb_publisher(
     if logs_file:
         config["logs_file"] = logs_file
 
+    # Automatically adds experiment owner to the tags
+    if author := os.environ.get("WANDB_AUTHOR"):
+        tags.append(f"author:{author}")
+
     return WandB(
         project=project_name,
         group=group_name,
         name=run_name,
+        suffix=suffix,
         artifacts=artifacts,
         tags=tags,
         config=config,
     )
+
+
+def list_existing_group_logs_metrics(
+    wandb_run: wandb.sdk.wandb_run.Run,
+) -> List[List[str | float]]:
+    """Retrieve the data from groups_logs metric table"""
+    if wandb_run.resumed is False:
+        return []
+    logger.info(f"Retrieving existing group logs metrics from group_logs ({wandb_run.id})")
+    api = wandb.Api()
+    run = api.run(f"{wandb_run.project}/{wandb_run.id}")
+    last = next(
+        (
+            artifact
+            for artifact in list(run.files())[::-1]
+            if artifact.name.startswith("media/table/metrics")
+        ),
+        None,
+    )
+    if not last:
+        return []
+    data = json.load(last.download(replace=True))
+    return data.get("data", [])

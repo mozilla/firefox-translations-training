@@ -62,8 +62,7 @@ tasks:
                 - name: public/build
                   path: /builds/worker/artifacts
                   type: directory
-            env:
-                COMPRESSION_CMD: zstdmt
+            env: {}
             # 128 happens when cloning this repository fails
             retry-exit-status: [128]
 
@@ -79,7 +78,7 @@ tasks:
                 - >-
                     $VCS_PATH/pipeline/translate/collect.sh
                     fetches
-                    artifacts/corpus.{trg_locale}.zst
+                    $TASK_WORKDIR/artifacts/corpus.{trg_locale}.zst
                     $MOZ_FETCHES_DIR/corpus.{trg_locale}.zst
 
         # Don't run unless explicitly scheduled

@@ -1,12 +1,19 @@
+from collections.abc import Iterable
 import hashlib
+import json
 import os
 import tempfile
-from collections import deque
+from dataclasses import dataclass
 from io import TextIOWrapper
 from pathlib import Path
 from random import Random
-from typing import Iterable, Iterator, Optional
+from typing import Callable, Iterator, Optional, Set, Union
 from urllib.parse import urlparse
+import unicodedata
+
+# We keep this relatively short because these datasets end up in task labels,
+# which end up in task cache routes, which need to be <= 256 characters.
+DATASET_NAME_MAX_LENGTH = 50
 
 
 class Dataset:
@@ -56,6 +63,16 @@ class Dataset:
             hash = md5.hexdigest()[:6]
 
             dataset = f"{hostname}_{file}_{hash}"
+        # Even non-URL datasets can be too long, for example:
+        # mtdata_ELRC-convention_against_torture_other_cruel_inhuman_or_degrading_treatment_or_punishment_united_nations-1-ell-eng
+        # We need to truncate and hash any that are over a certain length
+        elif len(dataset) > DATASET_NAME_MAX_LENGTH:
+            md5 = hashlib.md5()
+            md5.update(dataset.encode("utf-8"))
+            hash = md5.hexdigest()[:6]
+
+            truncated = dataset[:DATASET_NAME_MAX_LENGTH]
+            dataset = f"{truncated}_{hash}"
 
         return (
             dataset.replace("://", "_")
@@ -78,25 +95,37 @@ def shuffle_with_max_lines(
     seed: str,
     max_lines: int,
     max_words_in_sentence,
-    total_byte_size: int,
-) -> Iterable[str]:
+    total_byte_size: Optional[int] = None,
+    estimate_total_byte_size: Optional[Callable[[float], int]] = None,
+) -> list[str]:
     """
     Shuffle a line stream, but only retain up to a maximum number of lines in memory.
     Note that the final ordering is determined by the seed and the contents of the file. So
     running this multiple times on the same dataset will return the same result, but running
     it with the same seed and different content will create a different ordering.
 
-    Only run for monolingual data or where the parallel sentences are separated by a delimiter.
+    Only run for monolingual data or where the parallel sentences are in the same line and
+    separated by a delimiter.
 
     The distribution should be even unless the initial content is not representative of the
     general size of the sentences, in this case the distribution will be slightly biased. See
     the test cases for more in-depth examples.
+
+    These options are mutually exclusive, and one must be provided:
+    - total_byte_size - The byte size of the lines.
+    - estimate_total_byte_size - An estimate of the size of the corpus after max_lines have been
+                                 filled. The average bytes per line is provided
     """
-    lines = deque()
+    lines: list[str] = []
 
     random = Random(seed)  # Make this deterministic based on dataset key.
 
     total_bytes = 0
+
+    if total_byte_size is None:
+        assert (
+            estimate_total_byte_size
+        ), "Either total_byte_size or estimate_total_byte_size must be provided"
 
     # Fill up the lines up until the max, and measure the total bytes.
     for line in line_stream:
@@ -113,40 +142,38 @@ def shuffle_with_max_lines(
         if len(lines) == max_lines:
             break
 
-    # random.shuffle requires random access via indexing
-    # deque supports fast adding/removing from its ends with O(1)
-    # but indexing is O(N) which is too slow for shuffling large arrays
-    lines_list = list(lines)
-    lines = None
-    random.shuffle(lines_list)
+    if total_byte_size is None:
+        total_byte_size = estimate_total_byte_size(float(total_bytes) / float(max_lines))
+
+    line_index = len(lines)
+    random.shuffle(lines)
 
     # Consume the rest of the line stream, but sample based on the probability that adding
     # something to the collection will be representative.
-    i = 0
-    for line in line_stream:
-        i = i + 1
-        if lines is None:
-            lines = deque(lines_list)
-            lines_list = None
+
+    for i, line in enumerate(line_stream):
         # Continuously adjust this estimation in case the first sampled data is not representative.
         total_bytes = total_bytes + len(line.encode("utf-8"))
-        average_bytes_per_line = total_bytes / (max_lines + i)
+        average_bytes_per_line = total_bytes / (max_lines + i + 1)
         estimated_lines = total_byte_size / average_bytes_per_line
         line_sampling_probability = max_lines / estimated_lines
 
         if random.random() < line_sampling_probability:
-            # Shift the deque so the oldest line is shifted out, and this new sample is shifted in.
-            lines.popleft()
-            lines.append(line)
+            if len(lines) == max_lines:
+                # Treat the `lines` list as a ring buffer since we've reached the max lines. As new
+                # lines are randomly sampled, old randomly sampled lines roll out of the buffer.
+                lines[line_index % max_lines] = line
+                line_index += 1
+            else:
+                # Python throws "IndexError: list assignment index out of range" if you attempt
+                # to assign outside the existing range, so use an append here.
+                lines.append(line)
 
-    if i != 0:
-        # Do a final shuffle to ensure that the newly sampled lines are shuffled with the original
-        # set of shuffled lines.
-        lines_list = list(lines)
-        del lines
-        random.shuffle(lines_list)
+    # Do a final shuffle to ensure that the newly sampled lines are shuffled with the original
+    # set of shuffled lines.
+    random.shuffle(lines)
 
-    return lines_list
+    return lines
 
 
 def shuffle_in_temp_files(
@@ -255,3 +282,171 @@ def shuffle_in_temp_files(
             output.write(shuffled_line)
 
     print(f"Shuffled with {bucket_count} buckets.")
+
+
+class Statistics:
+    """
+    Base class for handling statistical data and JSON serialization in the pipeline. All
+    public data attributes in the implementing class will be saved as JSON. This class
+    standardizes how the JSON is generated, and where it is saved.
+
+    You can derive data at JSON generation time by providing an update_derived_data method.
+
+    For instance stats.save_json() for Statistics("nllb.en.zst") would produce "nllb.en.stats.json".
+    """
+
+    def __init__(self, dataset_path: Optional[Union[Path, str]] = None) -> None:
+        self._dataset_path = Path(dataset_path) if dataset_path else None
+
+    def save_json(self) -> Path:
+        """
+        Standardizes how the JSON is saved, based on the dataset.
+        """
+        if not self._dataset_path:
+            raise Exception("A dataset_path is required when saving to JSON.")
+
+        path = self._dataset_path.parent / f"{self._dataset_path.stem}.stats.json"
+        obj = self.as_json()
+        with open(path, "w", encoding="utf-8") as json_file:
+            json.dump(obj, json_file, indent=2)
+            json_file.write("\n")
+        return path
+
+    def _is_subclass(value: any):
+        """
+        Determine if a child object is a subclass or not.
+        """
+        try:
+            return issubclass(value.__class__, Statistics)
+        except AttributeError:
+            return False
+
+    def as_json(root: Union[int, str, float, list, "Statistics"]) -> Union[int, str, float, list]:
+        """
+        Recursively walk the data attributes of the statistics.
+        """
+        if Statistics._is_subclass(root):
+            stats: Statistics = root
+            stats.update_derived_data()
+            obj = {}
+            for key, value in stats.__dict__.items():
+                if key.startswith("_"):
+                    continue
+                obj[key] = Statistics.as_json(value)
+
+            return obj
+
+        if isinstance(root, list):
+            return [Statistics.as_json(item) for item in root]
+
+        if isinstance(root, dict):
+            root_dict: dict = root
+            return {key: Statistics.as_json(value) for key, value in root_dict.items()}
+
+        if isinstance(root, (float, int, str)):
+            return root
+
+        return str(root)
+
+    def update_derived_data(self):
+        """
+        Update any derived data in the sub values. Override this method if anything
+        needs to be derived.
+        """
+        pass
+
+
+class FilteringStep(Statistics):
+    """
+    For each step for filtering, store how many were kept or filtered.
+    """
+
+    def __init__(
+        self, description: str, filtered=0, kept=0, dataset_path: Optional[Path] = None
+    ) -> None:
+        super().__init__(dataset_path)
+        self.description = description
+        self.filtered = filtered
+        self.kept = kept
+        self.visited = 0
+
+    def update_derived_data(self):
+        super().update_derived_data()
+        # Only two of the values need to be kept up to date, the last can be computed.
+        if not self.visited:
+            self.visited = self.filtered + self.kept
+        elif self.filtered and not self.kept:
+            self.kept = self.visited - self.filtered
+            return
+        elif self.kept and not self.filtered:
+            self.filtered = self.visited - self.kept
+
+
+@dataclass
+class CountingStep(Statistics):
+    """
+    This is just a single value that is being counted.
+    """
+
+    value: int
+    description: str
+
+    def __init__(
+        self,
+        description: str,
+        value=0,
+        dataset_path: Optional[Path] = None,
+    ) -> None:
+        super().__init__(dataset_path)
+        self.description = description
+        self.value = value
+
+
+class WeakStringSet(Set):
+    """
+    A Set that weakly holds on to strings by storing a hashed `int`. Using this class
+    makes it easy to see if a string is duplicated across large datasets without holding
+    the entire set of strings in memory.
+
+    Usage:
+        unique_strings = WeakStringSet()
+        unique_strings.add("string a")
+        unique_strings.add("string b")
+
+        assert "string a" in unique_strings
+        assert "string b" in unique_strings
+        assert "string c" not in unique_strings
+    """
+
+    def __init__(self, iter: Optional[Iterable[str]] = None) -> None:
+        if iter:
+            super().__init__((WeakStringSet._hash_string(string) for string in iter))
+        else:
+            super().__init__()
+
+    def __contains__(self, string: str) -> bool:
+        return super().__contains__(WeakStringSet._hash_string(string))
+
+    def add(self, string: str) -> None:
+        """
+        Add a string to the weak set. The strings are stored uniquely based on their
+        contents with the whitespace surrounding them stripped.
+        """
+        super().add(WeakStringSet._hash_string(string))
+
+    def update(self, iter: Iterable[str]):
+        super().update((WeakStringSet._hash_string(string) for string in iter))
+
+    def remove(self, string: str):
+        super().remove(WeakStringSet._hash_string(string))
+
+    def discard(self, string: str):
+        super().discard(WeakStringSet._hash_string(string))
+
+    def _hash_string(string: str) -> int:
+        """
+        Return a hash of a line. The line has its whitespace stripped and text representation
+        normalized to ensure a consistent representation.
+        """
+        cleaned_line = unicodedata.normalize("NFC", string.strip())
+        return hash(cleaned_line)

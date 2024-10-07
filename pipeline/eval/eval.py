@@ -51,12 +51,19 @@ from typing import Optional
 from sacrebleu.metrics.bleu import BLEU, BLEUScore
 from sacrebleu.metrics.chrf import CHRF, CHRFScore
 
+from pipeline.common.downloads import decompress_file
 from pipeline.common.logging import get_logger
 
 logger = get_logger("eval")
 try:
+    import wandb
+    from translations_parser.publishers import METRIC_KEYS, WandB
     from translations_parser.utils import metric_from_tc_context
-    from translations_parser.wandb import add_wandb_arguments, get_wandb_publisher
+    from translations_parser.wandb import (
+        add_wandb_arguments,
+        get_wandb_publisher,
+        list_existing_group_logs_metrics,
+    )
 
     WANDB_AVAILABLE = True
 except ImportError as e:
@@ -82,11 +89,6 @@ def run_bash_oneliner(command: str):
     return subprocess.check_call(command, shell=True)
 
 
-# De-compresses files, and pipes the result as necessary.
-def decompress(path: str, compression_cmd: str, artifact_ext: str):
-    subprocess.check_call(f'{compression_cmd} -dc "{path}"')
-
-
 def main(args_list: Optional[list[str]] = None) -> None:
     parser = argparse.ArgumentParser(
         description=__doc__,
@@ -104,14 +106,6 @@ def main(args_list: Optional[list[str]] = None) -> None:
     parser.add_argument("--trg", type=str, help='The target language, e.g "ca".')
     parser.add_argument("--marian", type=str, help="The path the to marian binaries.")
     parser.add_argument("--marian_config", type=str, help="The marian yaml config for the model.")
-    parser.add_argument(
-        "--compression_cmd", default="pigz", help="The name of the compression command to use."
-    )
-    parser.add_argument(
-        "--artifact_ext",
-        default="gz",
-        help="The artifact extension for the compression",
-    )
     parser.add_argument(
         "--quantized",
         action="store_true",
@@ -157,9 +151,9 @@ def main(args_list: Optional[list[str]] = None) -> None:
     artifacts_prefix = args.artifacts_prefix
 
     artifacts_dir = os.path.dirname(artifacts_prefix)
-    source_file_compressed = f"{dataset_prefix}.{src}.{args.artifact_ext}"
+    source_file_compressed = f"{dataset_prefix}.{src}.zst"
     source_file = f"{artifacts_prefix}.{src}"
-    target_file_compressed = f"{dataset_prefix}.{trg}.{args.artifact_ext}"
+    target_file_compressed = f"{dataset_prefix}.{trg}.zst"
     target_file = f"{artifacts_prefix}.{trg}"
     target_ref_file = f"{artifacts_prefix}.{trg}.ref"
     marian_decoder = f'"{args.marian}"/marian-decoder'
@@ -209,16 +203,12 @@ def main(args_list: Optional[list[str]] = None) -> None:
 
     logger.info("Save the original target sentences to the artifacts")
 
-    run_bash_oneliner(
-        f"""
-        {args.compression_cmd} -dc "{target_file_compressed}" > "{target_ref_file}"
-        """
-    )
+    decompress_file(target_file_compressed, keep_original=False, decompressed_path=target_ref_file)
 
     run_bash_oneliner(
         f"""
-        # Decompress the source file, e.g. $fetches/wmt09.en.gz
-        {args.compression_cmd} -dc "{source_file_compressed}"
+        # Decompress the source file, e.g. $fetches/wmt09.en.zst
+        zstdmt -dc "{source_file_compressed}"
 
         # Tee the source file into the artifacts directory, e.g. $artifacts/wmt09.en
         | tee "{source_file}"
@@ -343,7 +333,11 @@ def main(args_list: Optional[list[str]] = None) -> None:
         file.write(f"{bleu_details['score']}\n" f"{chrf_details['score']}\n" f"{comet_score}\n")
 
     if WANDB_AVAILABLE:
-        wandb = get_wandb_publisher(  # noqa
+        metric = metric_from_tc_context(
+            chrf=chrf_details["score"], bleu=bleu_details["score"], comet=comet_score
+        )
+
+        run_client = get_wandb_publisher(  # noqa
             project_name=args.wandb_project,
             group_name=args.wandb_group,
             run_name=args.wandb_run_name,
@@ -351,16 +345,53 @@ def main(args_list: Optional[list[str]] = None) -> None:
             artifacts=args.wandb_artifacts,
             publication=args.wandb_publication,
         )
-        if wandb:
-            logger.info("Initializing Weight & Biases client")
-            # Allow publishing metrics as a table on existing runs (i.e. previous trainings)
-            wandb.open(resume=True)
-            logger.info(f"Publishing metrics to Weight & Biases ({wandb.extra_kwargs})")
-            metric = metric_from_tc_context(
-                chrf=chrf_details["score"], bleu=bleu_details["score"], comet=comet_score
-            )
-            wandb.handle_metrics(metrics=[metric])
-            wandb.close()
+        if run_client is None:
+            # W&B publication may be direclty disabled through WANDB_PUBLICATION
+            return
+
+        logger.info(f"Publishing metrics to Weight & Biases ({run_client.extra_kwargs})")
+        run_client.open(resume=True)
+        run_client.handle_metrics(metrics=[metric])
+        run_client.close()
+
+        # Publish an extra row on the group_logs summary run
+        group_logs_client = WandB(  # noqa
+            project=run_client.wandb.project,
+            group=run_client.wandb.group,
+            name="group_logs",
+            suffix=run_client.suffix,
+        )
+        logger.info("Adding metric row to the 'group_logs' run")
+        group_logs_client.open(resume=True)
+
+        # Restore existing metrics data
+        data = list_existing_group_logs_metrics(group_logs_client.wandb)
+        data.append(
+            [
+                run_client.wandb.group,
+                run_client.wandb.name,
+                metric.importer,
+                metric.dataset,
+                metric.augmentation,
+            ]
+            + [getattr(metric, attr) for attr in METRIC_KEYS]
+        )
+        group_logs_client.wandb.log(
+            {
+                "metrics": wandb.Table(
+                    columns=[
+                        "Group",
+                        "Model",
+                        "Importer",
+                        "Dataset",
+                        "Augmenation",
+                        *METRIC_KEYS,
+                    ],
+                    data=data,
+                )
+            }
+        )
+        group_logs_client.close()
 
 
 if __name__ == "__main__":

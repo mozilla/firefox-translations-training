@@ -8,37 +8,34 @@ parent: Orchestrators
 # Taskcluster
 
 [Taskcluster](https://taskcluster.net/) is a Mozilla task execution framework. It powers Firefox CI and
-provides access to the hybrid cloud workers (GCP or on-prem) 
-which increases scalability and observability compared to [Snakemake](snakemake.md). 
+provides access to the hybrid cloud workers (GCP or on-prem)
+which increases scalability and observability compared to [Snakemake](snakemake.md).
 
-We use [Taskcluster taskgraph](https://taskcluster-taskgraph.readthedocs.io/en/latest/) to define the DAG 
+We use [Taskcluster taskgraph](https://taskcluster-taskgraph.readthedocs.io/en/latest/) to define the DAG
 (Directly Acyclic Graph) of the pipeline steps.
+
+## Development
+
+When making changes to Taskcluster parts of the pipeline it is often necessary to run training before opening a pull request with the change. To do this, ensure that you push your change to a branch of `mozilla/firefox-translations-training` that begins with `dev`. (Only pushes to `main`, `dev*`, and `release*` will run Taskcluster tasks.)
 
 ## Running training
 
-1. Create a new branch in the git repo and push. 
-   It is useful to experiment with code and also not to get the caches invalidated if you need to restart training and some new changes were landed in the main branch.
-    
-2. Go to Github CI for the commit you want to run training for and find a Decision Task
+1. Create a new branch in your local git repo and push it to `mozilla/firefox-translations-training`.
 
-![Find CI](img/github-tc-ci.png)
+1. Prepare a config by automatically generating one with the config generator.
+   For example: `task config-generator -- en lt --name experiments-2024-H2`
+   Compare it against the [production config](https://github.com/mozilla/firefox-translations-training/tree/main/configs/tc.prod.yml) which has inline documentation and refer to the [model training guide](training-guide.md).
 
-3. Go to CI and press "View task in Taskcluster". 
-   Make sure you are authenticated in the TC interface. It is required to run tasks. 
-   However, already running tasks can be viewed without authentication.
+1. Run `task train -- --config path/to/config.yml`
 
-![Go to TC](img/github-view-task.png)
+1. Taskcluster will automatically open, and your config will be copied to your clipboard.
 
-4. In TC interface navigate to a parent Task Group
-
-![Go to TaskGroup](img/tc-task-group.png)
-
-5. Press "Train" in the 3-dot menu for actions
+1. Make sure you are logged into the Taskcluster interface and choose the "Train" action
+   in the 3-dot menu.
 
 ![Choose action](img/tc-train-action.png)
 
-6. Copy a config prepared in advance and press "train". See the example TC config [here](https://github.com/mozilla/firefox-translations-training/tree/main/configs/tc.prod.yml). 
-   You can find directions on how to configure training in the [Model training guide](training-guide.md).
+1. Paste the config into the box and begin training.
 
 ![Start training](img/tc-train.png)
 
@@ -48,11 +45,11 @@ We use [Taskcluster taskgraph](https://taskcluster-taskgraph.readthedocs.io/en/l
 
 ![Action tasks](img/tc-train-action-tasks.png)
 
-2. Press any task. Here you can look at the logs and artifacts produced by the task.
-   
+1. Press any task. Here you can look at the logs and artifacts produced by the task.
+
 ![A task](img/tc-task.png)
 
-3. Navigate to a parent Task Group again (it is a different one than for the Train Action). 
+3. Navigate to a parent Task Group again (it is a different one than for the Train Action).
    Here you can see all the scheduled tasks in a more convenient interface with filtering.
 
 ![All tasks](img/tc-all-tasks.png)
@@ -77,22 +74,22 @@ It is possible to manually cancel a task with the Cancel task action.
 
 ![Cancel](img/tc-cancel.png)
 
-After the fixes were implemented, push again and restart the pipeline with the same procedure 
+After the fixes were implemented, push again and restart the pipeline with the same procedure
 as described in the "Running training" section.
 
 ### Caching
 
-Some steps might be already cached from the previous run depending on the fixes. 
+Some steps might be already cached from the previous run depending on the fixes.
 For example if only a config setting that affects the last task was changed,
 or if nothing changed at all the pipeline might restart from the failed/cancelled step.
 
-Warning: even a slight refactoring of the upstream steps can invalidate caches for the whole pipeline completely, 
+Warning: even a slight refactoring of the upstream steps can invalidate caches for the whole pipeline completely,
 so it's better to be careful with that when experimenting with the later stages of the pipeleine.
 
 
 ## Running up to a specific step
 
-Change `target-stage: all` in the training config to a stage that corresponds to another TC step. 
+Change `target-stage: all` in the training config to a stage that corresponds to another TC step.
 For example, to download, clean and merge the training corpus use:
 ```
 target-stage: merge-corpus
@@ -121,6 +118,12 @@ previous_group_ids: ["SsGpi3TGShaDT-h93fHL-g"]
 ...will run `train-student` and all tasks _after_ it. All tasks upstream of `train-student` will be replaced with the tasks of the same name from the `SsGpi3TGShaDT-h93fHL-g` task group, or tasks that are upstream from one of those tasks. It is important that you provide a task group id that contains the task or tasks from the `start-stage` you've given, otherwise Taskgraph will be unable to correctly find the upstream tasks you want to re-use.
 
 Note: This feature should _never_ be used for production training, as it completely bypasses all caching mechanisms, and you will most likely end up with invalid or useless models.
+
+## Dealing with expired upstream tasks
+
+All tasks eventually expire, and have their artifacts and metadata deleted from Taskcluster, typically 1 year after creation. This can cause problems if it happens while partway through a training session. This happens most commonly with tasks that are shared across multiple training runs, such as `toolchain` and `docker-image` tasks. When this happens you can use the "Rebuild Docker Images and Toolchains" action to rebuild these, and add the task group they are rebuilt in to the `previous_group_ids` when kicking off a training run.
+
+You may also use this action directly prior to kicking off the start of a new lanugage pair training to ensure that it uses fresh toolchains and docker images, which will typically avoid this problem altogether.
 
 ## Interactive Tasks
 

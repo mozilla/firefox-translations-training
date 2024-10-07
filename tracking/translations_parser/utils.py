@@ -116,6 +116,35 @@ class ParsedTaskLabel(NamedTuple):
     augmentation: Optional[str]
 
 
+class ParsedGCPMetric(NamedTuple):
+    importer: str
+    augmentation: Optional[str]
+    dataset: Optional[str]
+
+
+def patch_model_name(model, suffix=None):
+    """Model Naming and suffix may be inconsistent between different sources"""
+    if suffix is None:
+        # Try to autodetect suffix based on name
+        re_match = re.search(r"(?P<end>-?(?P<suffix>\d+))$", model)
+        if re_match:
+            re_match = re_match.groupdict()
+            model = model[: -len(re_match["end"])]
+            suffix = re_match["suffix"]
+
+    model = model.replace("finetuned", "finetune")
+    if model == "backward":
+        model = "backwards"
+
+    if not suffix and model == "teacher":
+        # Keep the index on teacher runs for compatibility with legacy models
+        # https://github.com/mozilla/firefox-translations-training/issues/573
+        suffix = "1"
+    if suffix:
+        model = f"{model}-{suffix}"
+    return model
+
+
 def parse_task_label(task_label: str) -> ParsedTaskLabel:
     """
     Parse details out of train-* and evaluate-* task labels.
@@ -128,20 +157,10 @@ def parse_task_label(task_label: str) -> ParsedTaskLabel:
     if not match:
         raise ValueError(f"Label could not be parsed: {task_label}")
     groups = match.groupdict()
-    model = groups["model"]
+    model = patch_model_name(
+        groups["model"], suffix=groups.get("suffix") or groups.get("task_suffix")
+    )
 
-    # Naming may be inconsistent between train and evaluation tasks
-    model = model.replace("finetuned", "finetune")
-    if model == "backward":
-        model = "backwards"
-
-    suffix = groups.get("suffix") or groups.get("task_suffix")
-    if not suffix and model == "teacher":
-        # Keep the index on teacher runs for compatibility with legacy models
-        # https://github.com/mozilla/firefox-translations-training/issues/573
-        suffix = "1"
-    if suffix:
-        model = f"{model}-{suffix}"
     return ParsedTaskLabel(model, groups.get("importer"), groups.get("dataset"), groups.get("aug"))
 
 
@@ -190,6 +209,9 @@ def metric_from_tc_context(chrf: float, bleu: float, comet: float):
     task = queue.task(task_id)
     parsed = parse_task_label(task["tags"]["label"])
 
+    # Multiply comet metric by 100 to match other metrics percentage style
+    comet *= 100
+
     return Metric(
         importer=parsed.importer,
         dataset=parsed.dataset,
@@ -201,8 +223,10 @@ def metric_from_tc_context(chrf: float, bleu: float, comet: float):
 
 
 def publish_group_logs_from_tasks(
-    project: str | None = None,
-    group: str | None = None,
+    *,
+    project: str,
+    group: str,
+    suffix: str = "",
     metrics_tasks: dict[str, dict] = {},
     config: dict = {},
 ):
@@ -212,16 +236,11 @@ def publish_group_logs_from_tasks(
     `metrics_tasks` optionally contains finished evaluation tasks that will be published as new runs.
     """
     from translations_parser.publishers import WandB
-    from translations_parser.wandb import get_wandb_names
 
     message = "Handling group_logs publication"
     if metrics_tasks:
         message += f" with {len(metrics_tasks)} extra evaluation tasks"
     logger.info(message)
-
-    if project is None or group is None:
-        logger.info("Retrieving W&B names from taskcluster attributes")
-        project, group, _ = get_wandb_names()
 
     with tempfile.TemporaryDirectory() as temp_dir:
         logs_folder = Path(temp_dir) / "logs"
@@ -232,8 +251,8 @@ def publish_group_logs_from_tasks(
         for metric_task_id, metrics_task in metrics_tasks.items():
             filename = metrics_task["task"]["tags"]["label"]
             if re_match := MULTIPLE_TRAIN_SUFFIX.search(filename):
-                (suffix,) = re_match.groups()
-                filename = MULTIPLE_TRAIN_SUFFIX.sub(suffix, filename)
+                (train_suffix,) = re_match.groups()
+                filename = MULTIPLE_TRAIN_SUFFIX.sub(train_suffix, filename)
 
             metric_artifact = next(
                 (
@@ -263,4 +282,42 @@ def publish_group_logs_from_tasks(
             yaml.dump(config, config_file)
 
         parents = str(logs_folder.resolve()).strip().split("/")
-        WandB.publish_group_logs(parents, project, group, existing_runs=[])
+        WandB.publish_group_logs(
+            logs_parent_folder=parents,
+            project=project,
+            group=group,
+            suffix=suffix,
+            existing_runs=[],
+        )
+
+
+def suffix_from_group(task_group_id: str) -> str:
+    # Simply return the first 5 characters of the Taskcluster group ID as unique runs suffix
+    assert (
+        len(task_group_id) >= 5
+    ), f"Taskcluster group ID should contain more than 5 characters: {task_group_id}"
+    return f"_{task_group_id[:5]}"
+
+
+def get_lines_count(file_path: str) -> int:
+    with open(file_path, "r") as f:
+        return sum(1 for _ in f)
+
+
+def parse_gcp_metric(filename: str) -> tuple[str, str, str]:
+    importer, *extra_str = filename.split("_", 1)
+    if importer not in DATASET_KEYWORDS:
+        raise ValueError(f"Importer {importer} is not supported")
+
+    extra_args = {"dataset": None}
+    if extra_str:
+        (extra_str,) = extra_str
+        re_match = re.match(
+            r"(?P<augmentation>aug-[^_]+)?_?(?P<dataset>[-\w\d_]+(-[a-z]{3}-[a-z]{3})?)",
+            extra_str,
+        )
+        if not re_match:
+            raise ValueError(f"Could not detect augmentation nor dataset from {extra_str}")
+        extra_args.update(re_match.groupdict())
+
+    return ParsedGCPMetric(importer, **extra_args)

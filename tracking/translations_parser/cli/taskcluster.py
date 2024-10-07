@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Extract information from Marian execution on Task Cluster.
+Extract information from Marian execution on Taskcluster.
 
 Example with a local file:
-    parse_tc_logs -i ./tests/data/taskcluster.log
+    parse_tc_logs --input-file ./tests/data/taskcluster.log
 
 Example reading logs from a process:
-    ./tests/data/simulate_process.py | parse_tc_logs -s --verbose
+    ./tests/data/simulate_process.py | parse_tc_logs --from-stream --verbose
 
 Example publishing data to Weight & Biases:
-    parse_tc_logs -i ./tests/data/taskcluster.log --wandb-project <project> --wandb-group <group> --wandb-run-name <run>
+    parse_tc_logs --input-file ./tests/data/taskcluster.log --wandb-project <project> --wandb-group <group> --wandb-run-name <run>
 """
 
 import argparse
@@ -23,7 +23,11 @@ from pathlib import Path
 import taskcluster
 from translations_parser.parser import TrainingParser, logger
 from translations_parser.publishers import CSVExport, Publisher
-from translations_parser.utils import publish_group_logs_from_tasks, taskcluster_log_filter
+from translations_parser.utils import (
+    publish_group_logs_from_tasks,
+    suffix_from_group,
+    taskcluster_log_filter,
+)
 from translations_parser.wandb import add_wandb_arguments, get_wandb_publisher
 
 queue = taskcluster.Queue({"rootUrl": "https://firefox-ci-tc.services.mozilla.com"})
@@ -78,6 +82,24 @@ def get_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def is_running_in_ci():
+    """
+    Determine if this run is being done in CI.
+    """
+    task_id = os.environ.get("TASK_ID")
+    if not task_id:
+        return False
+
+    logger.info(f'Fetching the experiment for task "{task_id}" to check if this is running in CI.')
+    queue = taskcluster.Queue({"rootUrl": os.environ["TASKCLUSTER_PROXY_URL"]})
+    task = queue.task(task_id)
+    group_id = task["taskGroupId"]
+    task_group = queue.task(group_id)
+    # e.g,. "github-pull-request", "action", "github-push"
+    tasks_for = task_group.get("extra", {}).get("tasks_for")
+    return tasks_for != "action"
+
+
 def boot() -> None:
     args = get_args()
 
@@ -126,7 +148,12 @@ def boot() -> None:
         queue.getTaskGroup(group_id)
         task_group = queue.task(group_id)
         config = task_group.get("extra", {}).get("action", {}).get("context", {}).get("input")
-        publish_group_logs_from_tasks(config=config)
+        publish_group_logs_from_tasks(
+            project=wandb_publisher.project,
+            group=wandb_publisher.group,
+            config=config,
+            suffix=suffix_from_group(group_id),
+        )
 
     # Use log filtering when using non-stream (for uploading past experiments)
     log_filter = taskcluster_log_filter if not args.from_stream else None
@@ -145,10 +172,15 @@ def main() -> None:
     """
     try:
         boot()
-    except Exception:
-        logger.exception("Publication failed")
-        if os.environ.get("MOZ_AUTOMATION") is not None:
-            # Stop cleanly when in taskcluster
-            sys.exit(0)
+    except Exception as exception:
+        if os.environ.get("MOZ_AUTOMATION") is None:
+            logger.exception("Publication failed when running locally.")
+            raise exception
+        elif is_running_in_ci():
+            logger.exception("Publication failed when running in CI.")
+            raise exception
         else:
-            raise
+            logger.exception(
+                "Publication failed! The error is ignored to not break training, but it should be fixed."
+            )
+            sys.exit(0)

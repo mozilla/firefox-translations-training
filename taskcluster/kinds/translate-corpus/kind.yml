@@ -66,6 +66,7 @@ tasks:
                 train-teacher:
                     - artifact: final.model.npz.best-{best_model}.npz
                       dest: model{this_chunk}
+                      extract: false
                     - artifact: vocab.spm
                       extract: false
 

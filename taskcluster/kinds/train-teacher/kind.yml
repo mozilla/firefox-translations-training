@@ -50,6 +50,7 @@ tasks:
                 pretrained_teacher_mode: training_config.experiment.pretrained-models.train-teacher.mode
                 pretrained_teacher_type: training_config.experiment.pretrained-models.train-teacher.type
                 wandb_publication: training_config.wandb-publication
+                owner: owner
             substitution-fields:
                 - description
                 - name
@@ -71,7 +72,7 @@ tasks:
                     - pipeline/train/configs/opustrainer/teacher.one-stage.yml
                     - pipeline/train/configs/opustrainer/teacher.two-stage.yml
                     - pipeline/train/configs/training/teacher.train.yml
-                    - pipeline/train/train.sh
+                    - pipeline/train/train.py
                     - taskcluster/scripts/pipeline/train_taskcluster.py
                     - taskcluster/scripts/pipeline/train-taskcluster.sh
                 from-parameters:
@@ -88,11 +89,9 @@ tasks:
             # 128 happens when cloning this repository fails
             retry-exit-status: [17, 128]
             env:
-                ARTIFACT_EXT: zst
-                COMPRESSION_CMD: zstdmt
-
                 # Weight & Biases trigger
                 WANDB_PUBLICATION: "{wandb_publication}"
+                WANDB_AUTHOR: "{owner}"
 
                 # Weight & Biases publication token is stored in that secret
                 TASKCLUSTER_SECRET: project/translations/level-1/weights-and-biases
@@ -125,6 +124,7 @@ tasks:
                     pip3 install $VCS_PATH/tracking &&
                     export PATH="$HOME/.local/bin:$PATH" &&
                     export MARIAN=$MOZ_FETCHES_DIR &&
+                    export PYTHONPATH=$PYTHONPATH:$VCS_PATH &&
                     $VCS_PATH/taskcluster/scripts/pipeline/train_taskcluster.py
                     teacher
                     train

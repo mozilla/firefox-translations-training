@@ -111,6 +111,7 @@ tasks:
         - pipeline/**
         - tests/**
         - tracking/**
+        - taskcluster/**
         - poetry.*
         - Taskfile.yml
     fetches:
@@ -147,4 +148,4 @@ tasks:
       run:
           command: >-
               task taskgraph-diff BASE_REV={base_rev}
-              OUTPUT_FILE=/builds/worker/artifacts/taskgraph.diff
+              OUTPUT_FILE=$TASK_WORKDIR/artifacts/taskgraph.diff

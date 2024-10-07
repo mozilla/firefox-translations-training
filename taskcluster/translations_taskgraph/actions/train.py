@@ -1,6 +1,8 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+import json
+import logging
 
 from taskgraph.actions.registry import register_callback_action
 from taskgraph.decision import taskgraph_decision
@@ -8,7 +10,9 @@ from taskgraph.parameters import Parameters
 from taskgraph.taskgraph import TaskGraph
 from taskgraph.util.taskcluster import get_ancestors, get_artifact
 
-from translations_taskgraph.parameters import get_defaults
+from translations_taskgraph.parameters import get_ci_training_config
+
+logger = logging.getLogger(__name__)
 
 TRAIN_ON_PROJECTS = (
     "https://github.com/mozilla/firefox-translations-training",
@@ -30,7 +34,7 @@ def can_train(parameters):
     )
 
 
-defaults = get_defaults("")["training_config"]
+defaults = get_ci_training_config()["training_config"]
 
 
 def validate_pretrained_models(params):
@@ -59,7 +63,7 @@ def validate_pretrained_models(params):
     title="Train",
     symbol="train",
     description="Initiate part or all of the training pipeline",
-    generic=False,
+    cb_name="train",
     order=500,
     context=[],
     available=can_train,
@@ -127,12 +131,32 @@ which allows for specifying task group ids to fetch existing tasks from.""",
                         "default": "two-stage",
                     },
                     "mono-max-sentences-src": {
-                        "type": "number",
-                        "description": "limits per downloaded src dataset",
+                        "type": "object",
+                        "default": defaults["experiment"]["mono-max-sentences-src"],
+                        "properties": {
+                            "total": {
+                                "type": "number",
+                                "description": "limits for total src dataset",
+                            },
+                            "per-dataset": {
+                                "type": "number",
+                                "description": "limits per downloaded src dataset",
+                            },
+                        },
                     },
                     "mono-max-sentences-trg": {
-                        "type": "number",
-                        "description": "limits per downloaded trg dataset",
+                        "type": "object",
+                        "default": defaults["experiment"]["mono-max-sentences-trg"],
+                        "properties": {
+                            "total": {
+                                "type": "number",
+                                "description": "limits for total trg dataset",
+                            },
+                            "per-dataset": {
+                                "type": "number",
+                                "description": "limits per downloaded trg dataset",
+                            },
+                        },
                     },
                     "spm-sample-size": {
                         "type": "number",
@@ -397,6 +421,35 @@ def train_action(parameters, graph_config, input, task_group_id, task_id):
         # task ids, and will be used instead of scheduling new tasks for any tasks with
         # an identical name.
         parameters["existing_tasks"] = get_ancestors(start_task_ids)
+
+    # Override the `existing_tasks` explicitly provided in the action's input
+    existing_tasks = input.pop("existing_tasks", {})
+
+    # Find and log `overridden_existing_tasks`
+    overridden_existing_tasks = {
+        existing_task: parameters["existing_tasks"][existing_task]
+        for existing_task in existing_tasks.keys()
+        if existing_task in parameters["existing_tasks"]
+    }
+
+    if overridden_existing_tasks:
+        logger.info(
+            f"Old values for `overridden_existing_tasks`: {json.dumps(overridden_existing_tasks, indent=2)}"
+        )
+
+    # Do the override!
+    parameters["existing_tasks"].update(existing_tasks)
+
+    # Log the new values for the `overridden_existing_tasks`
+    new_values_for_overridden = {
+        existing_task: parameters["existing_tasks"][existing_task]
+        for existing_task in overridden_existing_tasks.keys()
+    }
+
+    if new_values_for_overridden:
+        logger.info(
+            f"New values for `overridden_existing_tasks`: {json.dumps(new_values_for_overridden, indent=2)}"
+        )
 
     parameters["target_tasks_method"] = "train-target-tasks"
     parameters["optimize_target_tasks"] = True

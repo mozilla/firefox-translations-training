@@ -14,17 +14,20 @@ input=$1
 vocab=$2
 models=( "${@:3}" )
 
+output="${input}.nbest"
+
 cd "$(dirname "${0}")"
 
 "${MARIAN}/marian-decoder" \
-  -c decoder.yml \
-  -m "${models[@]}" \
-  -v "${vocab}" "${vocab}" \
-  -i "${input}" \
-  -o "${input}.nbest" \
+  --config decoder.yml \
+  --models "${models[@]}" \
+  --vocabs "${vocab}" "${vocab}" \
+  --input "${input}" \
+  --output "${output}" \
   --log "${input}.log" \
   --n-best \
-  -d ${GPUS} \
-  -w "${WORKSPACE}"
+  --devices ${GPUS} \
+  --workspace "${WORKSPACE}"
 
-test "$(wc -l <"${input}.nbest")" -eq "$(( $(wc -l <"${input}") * 8 ))"
+# Test that the input and output have the same number of sentences.
+test "$(wc -l <"${output}")" -eq "$(( $(wc -l <"${input}") * 8 ))"
