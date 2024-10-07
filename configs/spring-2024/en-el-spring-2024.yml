@@ -17,14 +17,20 @@ experiment:
   mono-max-sentences-trg: 200_000_000
   spm-sample-size: 10_000_000
   spm-vocab-size: 32000
-  teacher-ensemble: 1
+  teacher-ensemble: 2
   teacher-mode: two-stage
-  pretrained-models: {}
+  pretrained-models:
+     train-backwards:
+      urls:
+        - "https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/OgijZQx8QLymdC5mWk8wSQ/artifacts/public/build"
+      mode: use
+      type: default
 datasets:
   devtest:
   - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-ell
   - flores_aug-mix_dev
-  - sacrebleu_aug-mix_mtedx/valid
+  # remove augmentation: https://github.com/mozilla/firefox-translations-training/issues/835
+  - sacrebleu_mtedx/valid
 
   test:
   - mtdata_Neulab-tedtalks_test-1-eng-ell
@@ -142,7 +148,6 @@ datasets:
   - opus_EUconst/v1 #                                         9,990 sentences
   # This was failing
   # - opus_SPC/v1 #                                             8,181 sentences
-  - opus_SPC/v1 #                                             8,181 sentences
   - opus_ELRC-3603-presscorner_covid/v1 #                     6,635 sentences
   - opus_ELRC-936-Prime_Minister_Helle/v1 #                   5,323 sentences
   - opus_ELRA-W0272/v1 #                                      5,322 sentences
@@ -169,37 +174,40 @@ datasets:
   - opus_ELRC-1065-PIO_Publication_Cypr/v1 #                  1,321 sentences
   - opus_Books/v1 #                                           1,285 sentences
   - opus_ELRC-419-Greek_legislation_An/v1 #                   1,070 sentences
-  - opus_ELRA-W0164/v1 #                                      1,069 sentences
-  - opus_ELRC-1986-Constitution_Greece/v1 #                   1,022 sentences
-  - opus_ELRC-3199-antibiotic/v1 #                              990 sentences
-  - opus_ELRC-5160-Press_Releases_PIO/v1 #                      955 sentences
-  - opus_ELRC-3290-EUROPARL_covid/v1 #                          692 sentences
-  - opus_ELRC-2735-vaccination/v1 #                             519 sentences
-  - opus_ELRC-vaccination/v1 #                                  519 sentences
-  - opus_ELRC-663-Memorandum_a_ESM/v1 #                         434 sentences
-  - opus_ELRA-W0210/v1 #                                        433 sentences
-  - opus_ELRC_2923/v1 #                                         420 sentences
-  - opus_ELRC-646-International_Judici/v1 #                     289 sentences
-  - opus_ELRA-W0307/v1 #                                        288 sentences
+#  - opus_ELRA-W0164/v1 #                                      1,069 sentences
+#  - opus_ELRC-1986-Constitution_Greece/v1 #                   1,022 sentences
+# remove to work around https://github.com/mozilla/firefox-translations-training/issues/653
+#  - opus_ELRC-3199-antibiotic/v1 #                              990 sentences
+#  - opus_ELRC-5160-Press_Releases_PIO/v1 #                      955 sentences
+#  - opus_ELRC-3290-EUROPARL_covid/v1 #                          692 sentences
+#  - opus_ELRC-2735-vaccination/v1 #                             519 sentences
+#  - opus_ELRC-vaccination/v1 #                                  519 sentences
+#  - opus_ELRC-663-Memorandum_a_ESM/v1 #                         434 sentences
+#  - opus_ELRA-W0210/v1 #                                        433 sentences
+#  - opus_ELRC_2923/v1 #                                         420 sentences
+#  - opus_ELRC-646-International_Judici/v1 #                     289 sentences
+#  - opus_ELRA-W0307/v1 #                                        288 sentences
   - mtdata_ELRC-swedish_social_security-1-ell-eng #        ~18,804 sentences (2.1 MB)
   - mtdata_ELRC-greek_legislation_anticorruption_plan-1-ell-eng # ~4,428 sentences (500.4 kB)
-  - mtdata_ELRC-convention_transfer_sentenced_persons-1-ell-eng # ~131 sentences (14.8 kB)
-  - mtdata_ELRC-international_judicial_cooperation_civil_matters-1-ell-eng # ~427 sentences (48.3 kB)
-  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-ell-eng # ~2,078 sentences (234.8 kB)
-  - mtdata_ELRC-macroeconomic_developments-1-ell-eng #        ~175 sentences (19.8 kB)
-  - mtdata_ELRC-methodological_reconciliation-1-ell-eng #      ~46 sentences (5.3 kB)
-  - mtdata_ELRC-memorandum_a_esm_programme-1-ell-eng #        ~861 sentences (97.3 kB)
-  - mtdata_ELRC-convention_against_torture_other_cruel_inhuman_or_degrading_treatment_or_punishment_united_nations-1-ell-eng # ~452 sentences (51.2 kB)
+#  - mtdata_ELRC-convention_transfer_sentenced_persons-1-ell-eng # ~131 sentences (14.8 kB)
+#  - mtdata_ELRC-international_judicial_cooperation_civil_matters-1-ell-eng # ~427 sentences (48.3 kB)
+#  - mtdata_ELRC-letter_rights_persons_arrested_or_detained-1-ell-eng # ~2,078 sentences (234.8 kB)
+#  - mtdata_ELRC-macroeconomic_developments-1-ell-eng #        ~175 sentences (19.8 kB)
+#  - mtdata_ELRC-methodological_reconciliation-1-ell-eng #      ~46 sentences (5.3 kB)
+#  - mtdata_ELRC-memorandum_a_esm_programme-1-ell-eng #        ~861 sentences (97.3 kB)
+# name too long
+#  - mtdata_ELRC-convention_against_torture_other_cruel_inhuman_or_degrading_treatment_or_punishment_united_nations-1-ell-eng # ~452 sentences (51.2 kB)
   - mtdata_ELRC-quarterly_reports_parliamentary_budget-1-ell-eng # ~11,396 sentences (1.3 MB)
   - mtdata_ELRC-collection_reports_greek_power_corporation-1-ell-eng # ~20,136 sentences (2.3 MB)
   - mtdata_ELRC-hellenic_foreign_affairs_announcements-1-ell-eng # ~4,783 sentences (540.5 kB)
   - mtdata_ELRC-prime_minister_hellenic-1-ell-eng #         ~7,167 sentences (810.0 kB)
-  - mtdata_ELRC-commitment_property_open-1-ell-eng #           ~36 sentences (4.1 kB)
-  - mtdata_ELRC-compulsory_expropriation_process_greece-1-ell-eng # ~76 sentences (8.7 kB)
-  - mtdata_ELRC-pio_publication_cyprus_has_always_been_europe_2017-1-ell-eng # ~2,018 sentences (228.1 kB)
+  - mtdata_ELRC-collection_about_cyprus_problem-1-ell-eng # ~2,396 sentences (270.8 kB)
+#  - mtdata_ELRC-commitment_property_open-1-ell-eng #           ~36 sentences (4.1 kB)
+#  - mtdata_ELRC-compulsory_expropriation_process_greece-1-ell-eng # ~76 sentences (8.7 kB)
+#  - mtdata_ELRC-pio_publication_cyprus_has_always_been_europe_2017-1-ell-eng # ~2,018 sentences (228.1 kB)
   - mtdata_ELRC-pio_publication_window_cyprus-1-ell-eng #   ~3,414 sentences (385.8 kB)
   - mtdata_ELRC-press_information_cyprus-1-ell-eng #        ~2,335 sentences (263.9 kB)
-  - mtdata_ELRC-governmental_about_migration_policy-1-ell-eng # ~1,473 sentences (166.6 kB)
+#  - mtdata_ELRC-governmental_about_migration_policy-1-ell-eng # ~1,473 sentences (166.6 kB)
   - mtdata_ELRC-eqf_referencing_report-1-ell-eng #          ~2,266 sentences (256.1 kB)
   - mtdata_ELRC-hellenic_gaming_commission-1-ell-eng #      ~3,866 sentences (437.0 kB)
   - mtdata_ELRC-eu_publications_medical_v2-1-ell-eng #     ~17,493 sentences (2.0 MB)
@@ -262,9 +270,42 @@ marian-args:
     early-stopping: '20'
   training-student-finetuned:
     early-stopping: '20'
-target-stage: evaluate-teacher
+target-stage: all
+start-stage: alignments-student
+previous_group_ids: ["Fv23lalyTfSfbmGx0YxypA"]
+existing_tasks: {
+        "build-docker-image-base": "BAvLUilqQ3SYqy6Ck55CUQ",
+        "build-docker-image-test": "f0gbptvMTDaKODjqL9hlOw",
+        "build-docker-image-toolchain-build": "LlZa8-L9TRemgyzQcAxuHw",
+        "build-docker-image-train": "fBMJa9R5SKaXd2wgWeD5yQ",
+        "fetch-browsermt-marian": "BRviRlEMTie8AUFf5prHvg",
+        "fetch-cuda": "Kc8iWZguSyeGMZKY7OxnTQ",
+        "fetch-cuda-11": "RjR9dsYTQhe0HQJPHNN4Tg",
+        "fetch-cyhunspell": "XNYpMzBvSraicoNKyUIwxA",
+        "fetch-extract-lex": "J2FS7TLLT4m2mjD0IGw91A",
+        "fetch-fast-align": "Tim8u7s-TAeTYG5VnzmXfA",
+        "fetch-hunspell": "Wn1pnCSQSpqKeRpCV52FqQ",
+        "fetch-kenlm": "J4U7RFz2TASaNNTTqoQ8sg",
+        "fetch-marian": "Sw_bpajdSgWxEDG3uW0-nQ",
+        "fetch-preprocess": "Scn2N5dLRXKCEU4T1JYE3A",
+        "toolchain-browsermt-marian": "aP5l3b05S9q3G25Nm85d6w",
+        "toolchain-cuda-toolkit": "UuUG70nvSj2pHcKt8JFbKw",
+        "toolchain-cuda-toolkit-11": "YhKI4TKlTFep-FpU7D2L7A",
+        "toolchain-cyhunspell": "DTvS_tZeSluSlAHkViW3lg",
+        "toolchain-extract-lex": "Xb7KAXA7TziSrxVQWS0Wmw",
+        "toolchain-fast-align": "Ia-7gLTQSJeCj_RLs7sg4w",
+        "toolchain-hunspell": "V84fX3jvQ-Knr4hZT9B8DQ",
+        "toolchain-kenlm": "X6SgAIzhQlyL7g_nIfE-YQ",
+        "toolchain-marian": "AoV-W4IzRo22lQBtJWsTxQ",
+        "toolchain-marian-cpu": "Za5VkFoyS6mauNnmEYxV7g",
+        "toolchain-preprocess": "ZozJMTdgQD-Bm9sSaG7soA"
+    }
 wandb-publication: true
 taskcluster:
   split-chunks: 20
   worker-classes:
     default: gcp-spot
+    alignments-original: gcp-standard
+    alignments-backtranslated: gcp-standard
+    alignments-student: gcp-standard
+    shortlist: gcp-standard
