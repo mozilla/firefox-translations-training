@@ -12,19 +12,19 @@ train:
 # Please refer to docs/opus-trainer.md for further details
 modifiers:
 # boost upper case a little as we see that the models underperform on upper case dataset on evaluation
-#- UpperCase: 0.07 # Apply randomly to 7% of sentences
-#- TitleCase: 0.05
-## Introduce artificial typos in the source text
-#- Typos: 0.05
-## Insert new sentences composed form Unicode noise
-#- Noise: 0.0005
-#  min_word_length: 2 # Minimum word length for each word in the noisy sentence
-#  max_word_length: 5 # Maximum word length for each word in the noisy sentence
-#  max_words: 6 # Maximum number of words in each noisy sentence
+- UpperCase: 0.07 # Apply randomly to 7% of sentences
+- TitleCase: 0.05
+# Introduce artificial typos in the source text
+- Typos: 0.05
+# Insert new sentences composed form Unicode noise
+- Noise: 0.0005
+  min_word_length: 2 # Minimum word length for each word in the noisy sentence
+  max_word_length: 5 # Maximum word length for each word in the noisy sentence
+  max_words: 6 # Maximum number of words in each noisy sentence
 # generates inline noise (emojis etc.) matching position in source and target using alignments
 # spm_vocab argument: retokenize alignments from spaces to Sentencepiece subwords and feed to Marian
 # Tags modifier has to be the last one to retokenize the alignments
-- Tags: 0.000001
+- Tags: 0.005
   augment: 1
   spm_vocab: <vocab>
 
