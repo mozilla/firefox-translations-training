@@ -23,13 +23,13 @@ kind-dependencies:
     - analyze-mono
 
 tasks:
-    all-pr:
+    all-pr-pipeline:
         description: Dummy task that ensures all parts of training pipeline will run
         attributes:
-            stage: all-pr
+            stage: all-pr-pipeline
             src_locale: "{src_locale}"
             trg_locale: "{trg_locale}"
-        
+
         task-context:
             from-parameters:
                 src_locale: training_config.experiment.src

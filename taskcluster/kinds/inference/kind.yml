@@ -1,0 +1,68 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+---
+
+loader: taskgraph.loader.transform:loader
+
+transforms:
+    - translations_taskgraph.transforms.skip_unless_inference_changed
+    - translations_taskgraph.transforms.worker_selection
+    - taskgraph.transforms.task_context
+    - taskgraph.transforms.run:transforms
+    - taskgraph.transforms.task:transforms
+
+kind-dependencies:
+    - toolchain
+
+task-defaults:
+  task-context:
+    from-parameters:
+      base_rev: base_rev
+    substitution-fields:
+      - run.command
+    worker:
+  run:
+    using: run-task
+    cwd: '{checkout}'
+  worker-type: b-cpu
+  worker:
+    max-run-time: 3600
+    docker-image: {in-tree: inference}
+    # 128 happens when cloning this repository fails
+    retry-exit-status: [128]
+
+tasks:
+  build-local:
+    description: "Build the inference engine locally"
+    run-on-tasks-for: ["github-push", "github-pull-request"]
+    run:
+      command:
+        - bash
+        - -c
+        - >-
+            task inference-build
+
+  test-local:
+    description: "Run local-build tests for the inference engine"
+    dependencies:
+      build: inference-build-local
+    run-on-tasks-for: ["github-pull-request"]
+    run:
+      command:
+        - bash
+        - -c
+        - >-
+            task inference-test
+
+  build-wasm:
+    description: "Build the wasm bindings for the inference engine"
+    dependencies:
+      build-local: inference-build-local
+    run-on-tasks-for: ["github-pull-request"]
+    run:
+      command:
+        - bash
+        - -c
+        - >-
+            task inference-build-wasm
