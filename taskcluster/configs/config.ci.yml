@@ -23,6 +23,7 @@ experiment:
   use-opuscleaner: "true"
   opuscleaner-mode: "custom"
   teacher-mode: "two-stage"
+  student-model: "tiny"
 
   bicleaner:
     default-threshold: 0.5
