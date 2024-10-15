@@ -308,7 +308,6 @@ class TrainCLI:
         else:
             model_name = self.model_type.value
 
-
         return [
             str(self.marian_bin),
             *apply_command_args(
