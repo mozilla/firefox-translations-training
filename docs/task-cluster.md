@@ -20,24 +20,19 @@ When making changes to Taskcluster parts of the pipeline it is often necessary t
 
 ## Running training
 
-1. Create a new branch in your local git repo and push it to `mozilla/firefox-translations-training`.
+1. Locally check out an up to date branch from the `mozilla/firefox-translations-training`, such as `release` or `main`, or create a local branch and push it up to `mozilla/firefox-translations-training`.
 
 1. Prepare a config by automatically generating one with the config generator.
    For example: `task config-generator -- en lt --name experiments-2024-H2`
    Compare it against the [production config](https://github.com/mozilla/firefox-translations-training/tree/main/configs/tc.prod.yml) which has inline documentation and refer to the [model training guide](training-guide.md).
 
-1. Run `task train -- --config path/to/config.yml`
+1. Run `task train -- --config path/to/config.yml`. For more configuration options on the script add `--help`.
 
-1. Taskcluster will automatically open, and your config will be copied to your clipboard.
+1. If you are not logged in, it will prompt you to run an `eval` script that will export the environment variables for a Taskcluster session.
 
-1. Make sure you are logged into the Taskcluster interface and choose the "Train" action
-   in the 3-dot menu.
+1. Visually verify the configuration, and confirm the training by entering `y`.
 
-![Choose action](img/tc-train-action.png)
-
-1. Paste the config into the box and begin training.
-
-![Start training](img/tc-train.png)
+1. It will print a URL to the triggered train action.
 
 ## Checking the status of training
 
