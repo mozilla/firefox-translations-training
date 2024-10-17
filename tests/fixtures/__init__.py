@@ -222,10 +222,7 @@ class DataDir:
                     }
                     if command_parts_split[0].endswith(".py"):
                         # This script is relying on a shebang, add the python3 from the executable instead.
-                        command_parts_split = [
-                            *[os.path.join(python_bin_dir, "python3"), "-m", "coverage", "run"],
-                            *command_parts_split,
-                        ]
+                        command_parts_split.insert(0, os.path.join(python_bin_dir, "python3"))
                 elif command_parts_split[0].endswith(".py"):
                     # This script does not require a virtual environment.
                     command_parts_split.insert(0, "python3")
@@ -245,9 +242,6 @@ class DataDir:
             print("│ run_task:", " ".join(command_parts_split))
             print("└──────────────────────────────────────────────────────────")
 
-            subprocess.run(
-                os.path.join(python_bin_dir, "python3"), "-m", "pip", "install", "coverage"
-            )
             result = subprocess.run(
                 command_parts_split,
                 env=final_env,
