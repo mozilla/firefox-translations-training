@@ -2,7 +2,7 @@
 # task config-generator -- en uk --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/6745aba3f298ba328d01125a09001a5cdc89ef61/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/firefox-translations-training/blob/001d15d5f2775e0e4c57717057a1906069e29dcc/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -17,16 +17,16 @@ experiment:
   mono-max-sentences-trg: 200_000_000
   spm-sample-size: 10_000_000
   spm-vocab-size: 32000
-  teacher-ensemble: 1
+  teacher-ensemble: 2
   teacher-mode: two-stage
   pretrained-models: {}
 datasets:
-  devtest:
-  - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-ukr
-  - flores_aug-mix_dev
 
+  # Skipped test/devtest datasets:
+  devtest:
+  - flores_aug-mix_dev
+  - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-ukr
   test:
-  - mtdata_Neulab-tedtalks_test-1-eng-ukr
   - flores_devtest
   - flores_aug-mix_devtest
   - flores_aug-title_devtest
@@ -34,10 +34,11 @@ datasets:
   - flores_aug-typos_devtest
   - flores_aug-noise_devtest
   - flores_aug-inline-noise_devtest
+  - mtdata_Neulab-tedtalks_test-1-eng-ukr
 
   # The training data contains:
   #   58,968,083 sentences
-  # 
+  #
   # Skipped datasets:
   #  - opus_CCMatrix/v1 - ignored datasets (20,240,171 sentences)
   #  - opus_MultiMaCoCu/v2 - ignored datasets (6,406,288 sentences)
@@ -80,43 +81,44 @@ datasets:
   - mtdata_Tilde-worldbank-1-eng-ukr #                      ~2,011 sentences (227.3 kB)
 
   # The monolingual data contains:
-  #   ~195,823,002 sentences
+  #   ~209,074,237 sentences
   mono-src:
-  - news-crawl_news.2007  #           ~1,557,522 sentences (176M)
-  - news-crawl_news.2008 #           ~5,389,380 sentences (609M)
-  - news-crawl_news.2009 #           ~6,557,522 sentences (741M)
-  - news-crawl_news.2010 #           ~3,247,787 sentences (367M)
-  - news-crawl_news.2011 #           ~6,318,584 sentences (714M)
-  - news-crawl_news.2012 #           ~6,407,079 sentences (724M)
-  - news-crawl_news.2013 #          ~10,619,469 sentences (1.2G)
-  - news-crawl_news.2014 #          ~10,619,469 sentences (1.2G)
-  - news-crawl_news.2015 #          ~10,619,469 sentences (1.2G)
-  - news-crawl_news.2016 #           ~7,982,300 sentences (902M)
-  - news-crawl_news.2017 #          ~11,504,424 sentences (1.3G)
-  - news-crawl_news.2018 #           ~7,920,353 sentences (895M)
-  - news-crawl_news.2019 #          ~17,699,115 sentences (2.0G)
-  - news-crawl_news.2020 #          ~22,123,893 sentences (2.5G)
-  - news-crawl_news.2021 #          ~21,238,938 sentences (2.4G)
-  - news-crawl_news.2022 #          ~23,008,849 sentences (2.6G)
-  - news-crawl_news.2023 #          ~23,008,849 sentences (2.6G)
+  - news-crawl_news.2007  #          ~1,630,834 sentences (184.3 MB)
+  - news-crawl_news.2008 #          ~5,648,654 sentences (638.3 MB)
+  - news-crawl_news.2009 #          ~6,879,522 sentences (777.4 MB)
+  - news-crawl_news.2010 #          ~3,406,380 sentences (384.9 MB)
+  - news-crawl_news.2011 #          ~6,628,308 sentences (749.0 MB)
+  - news-crawl_news.2012 #          ~6,715,609 sentences (758.9 MB)
+  - news-crawl_news.2013 #         ~11,050,614 sentences (1.2 GB)
+  - news-crawl_news.2014 #         ~11,026,051 sentences (1.2 GB)
+  - news-crawl_news.2015 #         ~11,182,484 sentences (1.3 GB)
+  - news-crawl_news.2016 #          ~8,366,518 sentences (945.4 MB)
+  - news-crawl_news.2017 #         ~12,276,499 sentences (1.4 GB)
+  - news-crawl_news.2018 #          ~8,303,432 sentences (938.3 MB)
+  - news-crawl_news.2019 #         ~19,386,668 sentences (2.2 GB)
+  - news-crawl_news.2020 #         ~24,070,652 sentences (2.7 GB)
+  - news-crawl_news.2021 #         ~23,139,914 sentences (2.6 GB)
+  - news-crawl_news.2022 #         ~24,900,055 sentences (2.8 GB)
+  - news-crawl_news.2023 #         ~24,462,043 sentences (2.8 GB)
 
   # The monolingual data contains:
-  #   ~106,560,823 sentences
+  #   ~1,940,719 sentences
   mono-trg:
-  - news-crawl_news.2008  #               ~6,070 sentences (686K)
-  - news-crawl_news.2009 #              ~30,088 sentences (3.4M)
-  - news-crawl_news.2010 #               ~6,504 sentences (735K)
-  - news-crawl_news.2011 #              ~58,407 sentences (6.6M)
-  - news-crawl_news.2012 #              ~68,141 sentences (7.7M)
-  - news-crawl_news.2013 #              ~82,300 sentences (9.3M)
-  - news-crawl_news.2014 #              ~87,610 sentences (9.9M)
-  - news-crawl_news.2016 #              ~39,823 sentences (4.5M)
-  - news-crawl_news.2018 #              ~84,955 sentences (9.6M)
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_uk_1.txt.zst # 34,928,072 sentences
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_uk_2.txt.zst # 22,365,095 sentences
-  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_uk_3.txt.zst # 1,894,735 sentences
-  # NLLB data might have lower quality, disable for back-translations
-#  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-uk.txt.zst # 46,909,023 sentences
+  - news-crawl_news.2008  #              ~6,213 sentences (702.1 kB)
+  - news-crawl_news.2009 #             ~31,947 sentences (3.6 MB)
+  - news-crawl_news.2010 #              ~6,663 sentences (753.0 kB)
+  - news-crawl_news.2011 #             ~61,690 sentences (7.0 MB)
+  - news-crawl_news.2012 #             ~71,172 sentences (8.0 MB)
+  - news-crawl_news.2013 #             ~86,086 sentences (9.7 MB)
+  - news-crawl_news.2014 #             ~92,031 sentences (10.4 MB)
+  - news-crawl_news.2015 #            ~106,485 sentences (12.0 MB)
+  - news-crawl_news.2016 #             ~41,342 sentences (4.7 MB)
+  - news-crawl_news.2018 #             ~88,962 sentences (10.1 MB)
+  - news-crawl_news.2019 #            ~203,060 sentences (22.9 MB)
+  - news-crawl_news.2020 #            ~221,669 sentences (25.0 MB)
+  - news-crawl_news.2021 #            ~220,114 sentences (24.9 MB)
+  - news-crawl_news.2022 #            ~247,965 sentences (28.0 MB)
+  - news-crawl_news.2023 #            ~455,320 sentences (51.5 MB)
 marian-args:
   decoding-backward:
     beam-size: '12'
@@ -130,11 +132,46 @@ marian-args:
     early-stopping: '20'
   training-student:
     early-stopping: '20'
+    mini-batch: '2000'
   training-student-finetuned:
     early-stopping: '20'
-target-stage: evaluate-teacher
+target-stage: all
+start-stage: train-student
+previous_group_ids: ["LYBo_BrUR8mkopI3Js2czQ"]
+existing_tasks: {
+        "build-docker-image-base": "BAvLUilqQ3SYqy6Ck55CUQ",
+        "build-docker-image-test": "f0gbptvMTDaKODjqL9hlOw",
+        "build-docker-image-toolchain-build": "LlZa8-L9TRemgyzQcAxuHw",
+        "build-docker-image-train": "fBMJa9R5SKaXd2wgWeD5yQ",
+        "fetch-browsermt-marian": "BRviRlEMTie8AUFf5prHvg",
+        "fetch-cuda": "Kc8iWZguSyeGMZKY7OxnTQ",
+        "fetch-cuda-11": "RjR9dsYTQhe0HQJPHNN4Tg",
+        "fetch-cyhunspell": "XNYpMzBvSraicoNKyUIwxA",
+        "fetch-extract-lex": "J2FS7TLLT4m2mjD0IGw91A",
+        "fetch-fast-align": "Tim8u7s-TAeTYG5VnzmXfA",
+        "fetch-hunspell": "Wn1pnCSQSpqKeRpCV52FqQ",
+        "fetch-kenlm": "J4U7RFz2TASaNNTTqoQ8sg",
+        "fetch-marian": "Sw_bpajdSgWxEDG3uW0-nQ",
+        "fetch-preprocess": "Scn2N5dLRXKCEU4T1JYE3A",
+        "toolchain-browsermt-marian": "aP5l3b05S9q3G25Nm85d6w",
+        "toolchain-cuda-toolkit": "UuUG70nvSj2pHcKt8JFbKw",
+        "toolchain-cuda-toolkit-11": "YhKI4TKlTFep-FpU7D2L7A",
+        "toolchain-cyhunspell": "DTvS_tZeSluSlAHkViW3lg",
+        "toolchain-extract-lex": "Xb7KAXA7TziSrxVQWS0Wmw",
+        "toolchain-fast-align": "Ia-7gLTQSJeCj_RLs7sg4w",
+        "toolchain-hunspell": "V84fX3jvQ-Knr4hZT9B8DQ",
+        "toolchain-kenlm": "X6SgAIzhQlyL7g_nIfE-YQ",
+        "toolchain-marian": "AoV-W4IzRo22lQBtJWsTxQ",
+        "toolchain-marian-cpu": "Za5VkFoyS6mauNnmEYxV7g",
+        "toolchain-preprocess": "ZozJMTdgQD-Bm9sSaG7soA"
+    }
 wandb-publication: true
 taskcluster:
   split-chunks: 20
   worker-classes:
     default: gcp-spot
+    alignments-original: gcp-standard
+    alignments-backtranslated: gcp-standard
+    alignments-student: gcp-standard
+    shortlist: gcp-standard
+    alignments-priors2: gcp-standard
