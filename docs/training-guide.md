@@ -154,6 +154,8 @@ for example [`teacher.train.yml`] and in the [`train.py`] script.
 student-model: tiny
 ```
 
+More details about the performed experiments are in [this issue](https://github.com/mozilla/firefox-translations-training/issues/174).
+
 #### Early stopping
 Early stopping can be increased to make sure that training converges.
 However, it depends on the language and might not bring much benefit but will make the training longer.
