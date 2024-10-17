@@ -103,7 +103,9 @@ def test_merge_mono(task: str):
 
         assert mono_lines != mono_lines_sorted, "The results are shuffled."
 
-    with read_lines(data_dir.join(f"artifacts/mono.{locale}.sample.txt")) as lines_iter:
+    with read_lines(
+        data_dir.join(f"artifacts/mono.{locale}.sample.txt"), encoding="utf-8-sig"
+    ) as lines_iter:
         samples = list(lines_iter)
         assert len(samples) == sample_size, "There are the expected number of samples"
         assert len(set(samples)) == sample_size, "All of the samples are are unique."

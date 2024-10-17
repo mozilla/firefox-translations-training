@@ -150,7 +150,12 @@ def filter_and_write_monolingual_data(
     log_memory(gc_collect=True)
     sample_path = output_path.parent / f"{output_path.stem}.sample.txt"
     logger.info(f"Write a 10,000 line sample of the final: {sample_path}")
-    with write_lines(sample_path) as outfile:
+    with write_lines(
+        sample_path,
+        # The browser won't know the encoding when viewing this sample without including
+        # a "byte order mark", which python can do via this encoding.
+        encoding="utf-8-sig",
+    ) as outfile:
         for line in shuffle_with_max_lines(
             line_stream=final_lines,
             seed=9834523434,
