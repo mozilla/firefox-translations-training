@@ -1,0 +1,171 @@
+experiment:
+  best-model: chrf
+  bicleaner:
+    dataset-thresholds: {}
+    default-threshold: 0.5
+  mono-max-sentences-src: 500000000
+  mono-max-sentences-trg: 200000000
+  name: mono_25_percent
+  opuscleaner-mode: defaults
+  pretrained-models: {}
+  spm-sample-size: 10000000
+  spm-vocab-size: 32000
+  src: da
+  teacher-ensemble: 2
+  teacher-mode: two-stage
+  trg: en
+  use-opuscleaner: 'true'
+datasets:
+  devtest:
+  - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-dan
+  - flores_aug-mix_dev
+  mono-src:
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_da_1.txt.zst
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/08/hplt_filtered_da_2.txt.zst
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-da.txt.zst
+  mono-trg:
+  - news-crawl_news.2007
+  - news-crawl_news.2008
+  - news-crawl_news.2009
+  - news-crawl_news.2010
+  - news-crawl_news.2011
+  - news-crawl_news.2012
+  - news-crawl_news.2013
+  - news-crawl_news.2014
+  - news-crawl_news.2015
+  - news-crawl_news.2016
+  - news-crawl_news.2017
+  - news-crawl_news.2018
+  - news-crawl_news.2019
+  - news-crawl_news.2020
+  - news-crawl_news.2021
+  - news-crawl_news.2022
+  - news-crawl_news.2023
+  test:
+  - mtdata_Neulab-tedtalks_test-1-eng-dan
+  - flores_devtest
+  - flores_aug-mix_devtest
+  - flores_aug-title_devtest
+  - flores_aug-upper_devtest
+  - flores_aug-typos_devtest
+  - flores_aug-noise_devtest
+  - flores_aug-inline-noise_devtest
+  train:
+  - opus_NLLB/v1
+  - opus_ParaCrawl/v9
+  - opus_OpenSubtitles/v2018
+  - opus_ELRC-4248-NTEU_TierA/v1
+  - opus_ELRC-EMEA/v1
+  - opus_CCAligned/v1
+  - opus_DGT/v2019
+  - opus_EUbookshop/v2
+  - opus_LinguaTools-WikiTitles/v2014
+  - opus_XLEnt/v1.2
+  - opus_Europarl/v8
+  - opus_EMEA/v3
+  - opus_JRC-Acquis/v3.0
+  - opus_ELRC-2716-EMEA/v1
+  - opus_ELRC_2682/v1
+  - opus_WikiMatrix/v1
+  - opus_KDE4/v2
+  - opus_QED/v2.0a
+  - opus_ELRC-presscorner_covid/v1
+  - opus_ECB/v1
+  - opus_ELITR-ECA/v1
+  - opus_TED2020/v1
+  - opus_wikimedia/v20230407
+  - opus_bible-uedin/v1
+  - opus_NeuLab-TedTalks/v1
+  - opus_ELRC-847-mst.dk/v1
+  - opus_ELRC-730-www.norden.org/v1
+  - opus_ELRC-www.norden.org/v1
+  - opus_Tatoeba/v2023-04-12
+  - opus_ELRC-850-www.dst.dk/v1
+  - opus_ELRC-848-laegemiddelstyrelsen/v1
+  - opus_ELRC-3567-EUR_LEX_covid/v1
+  - opus_ELRC-EUR_LEX/v1
+  - opus_ELRC-2013-EUIPO_2017/v1
+  - opus_ELRC-EUIPO_2017/v1
+  - opus_ELRA-W0214/v1
+  - opus_ELRC-antibiotic/v1
+  - opus_ELRC-2877-EU_publications_medi/v1
+  - opus_ELRC-EU_publications/v1
+  - opus_ELRC-851-www.vikingeskibsmuse/v1
+  - opus_ELRC-EUROPARL_covid/v1
+  - opus_ELRC-849-ufm.dk/v1
+  - opus_EUconst/v1
+  - opus_ELRC-1062-rigsrevisionen.dk/v1
+  - opus_GlobalVoices/v2018q4
+  - opus_ELRC-904-uk.fm.dk/v1
+  - opus_ELRC-3608-presscorner_covid/v1
+  - opus_ELRC-892-slks.dk/v1
+  - opus_ELRC-885-www.aarhus2017.dk/v1
+  - opus_TildeMODEL/v2018
+  - opus_ELRC-397-Danish_Higher_Educat/v1
+  - opus_ELRA-W0157/v1
+  - opus_ELRC-439-Danish_Higher_Educat/v1
+  - opus_ELRC-893-natmus.dk/v1
+  - opus_ELRC-394-Danish_Higher_Educat/v1
+  - opus_ELRC_3382/v1
+  - opus_ELRC-905-spillemyndigheden.dk/v1
+  - opus_ELRC-856-naturstyrelsen.dk/v1
+  - opus_ELRC-859-um.dk/v1
+  - opus_ELRC-857-www.trm.dk/v1
+  - opus_ELRC-852-www.dma.dk/v1
+  - opus_ELRC-3466-EC_EUROPA_covid/v1
+  - opus_ELRC-EC_EUROPA/v1
+  - opus_ECDC/v2016-03-16
+  - opus_ELRC-897-Denmark_Space_Instit/v1
+  - opus_ELRC-899-Danish_FSA/v1
+  - opus_ELRC-426-Danish_Higher_Educat/v1
+  - opus_ELRC-854-www.geus.dk/v1
+  - opus_ELRC-891-www.visitdenmark.dk/v1
+  - opus_ELRC-895-Royal_Danish_Library/v1
+  - opus_ELRC-889-www.visitvejle.com/v1
+  - opus_ELRC-886-www.odense.dk/v1
+  - opus_ELRC-901-Denmark_Prosecution_/v1
+  - opus_ELRC-900-Danish_Working_Envir/v1
+  - opus_ELRC-890-Holstebro_Kunstmuseu/v1
+  - mtdata_ELRC-danish_higher_education_science_3-1-dan-eng
+  - mtdata_ELRC-danish_higher_education_science_2-1-dan-eng
+  - mtdata_ELRC-danish_higher_education_science-1-dan-eng
+  - mtdata_ELRC-danish_higher_education_science_4-1-dan-eng
+  - mtdata_ELRC-laegemiddelstyrelsen.dk-1-dan-eng
+  - mtdata_ELRC-www.vikingeskibsmuseet.dk-1-dan-eng
+  - mtdata_ELRC-holstebro_kunstmuseum-1-dan-eng
+  - mtdata_ELRC-denmark_space_institute-1-dan-eng
+  - mtdata_ELRC-danish_working_environment_authority-1-dan-eng
+  - mtdata_ELRC-denmark_prosecution_service-1-dan-eng
+  - mtdata_ELRC-eu_publications_medical_v2-1-dan-eng
+  - mtdata_ELRC-nteu_tierb-1-dan-eng
+  - mtdata_EU-eac_forms-1-dan-eng
+  - mtdata_EU-eac_reference-1-dan-eng
+  - mtdata_EU-dcep-1-dan-eng
+  - mtdata_Tilde-eesc-2017-dan-eng
+  - mtdata_Tilde-ema-2016-dan-eng
+  - mtdata_Tilde-rapid-2016-dan-eng
+marian-args:
+  decoding-backward:
+    beam-size: '12'
+    mini-batch-words: '2000'
+  decoding-teacher:
+    mini-batch-words: '4000'
+    precision: float16
+  training-backward:
+    early-stopping: '5'
+  training-student:
+    early-stopping: '20'
+  training-student-finetuned:
+    early-stopping: '20'
+  training-teacher:
+    early-stopping: '20'
+target-stage: evaluate-student
+taskcluster:
+  split-chunks: 20
+  worker-classes:
+    alignments-backtranslated: gcp-standard
+    alignments-original: gcp-standard
+    alignments-student: gcp-standard
+    default: gcp-spot
+    shortlist: gcp-standard
+wandb-publication: true
