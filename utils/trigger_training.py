@@ -175,18 +175,18 @@ def write_to_log(config_path: Path, config: dict, action_task_id: str, branch: s
     git_hash = run(["git", "rev-parse", "--short", branch]).strip()
 
     with open(training_log, "a") as file:
-        file.writelines(
-            [
-                f"time: {datetime.datetime.now()}",
-                f"config: {config_path}",
-                f"name: {experiment['name']}",
-                f"langpair: {experiment['src']}-{experiment['trg']}",
-                f"train action: {ROOT_URL}/tasks/{action_task_id}",
-                f"branch: {branch}",
-                f"hash: {git_hash}",
-                "",
-            ]
-        )
+        lines = [
+            "",
+            f"config: {config_path}",
+            f"name: {experiment['name']}",
+            f"langpair: {experiment['src']}-{experiment['trg']}",
+            f"time: {datetime.datetime.now()}",
+            f"train action: {ROOT_URL}/tasks/{action_task_id}",
+            f"branch: {branch}",
+            f"hash: {git_hash}",
+        ]
+        for line in lines:
+            file.write(line + "\n")
 
 
 def main() -> None:
