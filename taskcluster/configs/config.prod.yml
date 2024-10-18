@@ -65,6 +65,7 @@ experiment:
   # tokenization training.
   spm-sample-size: 10_000_000
   # The size of the vocabulary
+  #TODO: this does not change the vocab size in Marian configurations now, only in sentencepiece
   spm-vocab-size: 32000
 
   # Determine how many teachers to train.
@@ -73,6 +74,9 @@ experiment:
   # Switch to "one-stage" training if back-translations are produced by a high quality model or
   # the model stops too early on the fine-tuning stage
   teacher-mode: "two-stage"
+  # Two student training configurations from Bergamot are supported: "tiny" and "base"
+  # "base" model is twice slower and larger but adds ~2 COMET points in quality (see  https://github.com/mozilla/firefox-translations-training/issues/174)
+  student-model: "tiny"
 
   # Training continuation options, see docs/using-pretrained-models.md
   pretrained-models:
