@@ -1,5 +1,5 @@
 experiment:
-  name: mono_75_percent
+  name: mono_50_percent
   src: da
   trg: en
   best-model: chrf
