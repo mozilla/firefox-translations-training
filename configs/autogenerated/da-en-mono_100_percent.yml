@@ -1,5 +1,5 @@
 experiment:
-  name: mono_75_percent
+  name: mono_100_percent
   src: da
   trg: en
   best-model: chrf
@@ -168,7 +168,6 @@ marian-args:
   training-teacher:
     early-stopping: '20'
 target-stage: evaluate-student
-start-stage: train-student
 previous_group_ids:
   - Q49vTgTOStWGio7axf-Gfg
 wandb-publication: true
