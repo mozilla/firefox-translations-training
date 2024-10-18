@@ -142,6 +142,8 @@ def log_config_info(config_path: Path, config: dict):
     config_details.append(("experiment.name", experiment["name"]))
     config_details.append(("experiment.src", experiment["src"]))
     config_details.append(("experiment.trg", experiment["trg"]))
+    if config.get("start-stage"):
+        config_details.append(("start-stage", config["start-stage"]))
     config_details.append(("target-stage", config["target-stage"]))
 
     previous_group_ids = config.get("previous_group_ids")
@@ -228,7 +230,7 @@ def main() -> None:
                 break
             elif decision_task.status == "queued":
                 print(f"Decision task is queued, trying again in {timeout} seconds")
-            elif decision_task.status == "inprogress":
+            elif decision_task.status == "in_progress":
                 print(f"Decision task is in progress, trying again in {timeout} seconds")
             else:
                 # The task failed.
