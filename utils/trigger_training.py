@@ -197,6 +197,10 @@ def main() -> None:
         branch = run(["git", "branch", "--show-current"])
         print(f"Using current branch: {branch}")
 
+    if branch != "main" and not branch.startswith("dev") and not branch.startswith("release"):
+        print(f'The git branch "{branch}" must be "main", or start with "dev" or "release"')
+        sys.exit(1)
+
     if check_if_pushed(branch):
         print(f"Branch '{branch}' is up to date with origin.")
     elif args.force:
