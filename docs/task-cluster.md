@@ -20,7 +20,7 @@ When making changes to Taskcluster parts of the pipeline it is often necessary t
 
 ## Running training
 
-1. Locally check out an up to date branch from the `mozilla/firefox-translations-training`, such as `release` or `main`, or create a local branch and push it up to `mozilla/firefox-translations-training`.
+1. Locally check out an up to date branch from the `mozilla/firefox-translations-training`, such as `release` or `main`, or create a local branch prefixed with `dev` and push it up to `mozilla/firefox-translations-training`.
 
 1. Prepare a config by automatically generating one with the config generator.
    For example: `task config-generator -- en lt --name experiments-2024-H2`
