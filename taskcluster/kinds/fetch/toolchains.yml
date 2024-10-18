@@ -46,9 +46,9 @@ cuda:
     description: CUDA 12.1.0 Source
     fetch:
         type: static-url
-        url: https://developer.download.nvidia.com/compute/cuda/12.1.0/local_installers/cuda_12.1.0_530.30.02_linux.run  # yamllint disable-line rule:line-length
-        sha256: 68699036c12d71adb9ad2799dce2ff070270fab4488b90920b9756ab3f52c41c
-        size: 4245586997
+        url: https://developer.download.nvidia.com/compute/cuda/12.6.2/local_installers/cuda_12.6.2_560.35.03_linux.run # yamllint disable-line rule:line-length
+        sha256: 3729a89cb58f7ca6a46719cff110d6292aec7577585a8d71340f0dbac54fb237
+        size: 4446677374
         artifact-name: cuda-source.run
 
 

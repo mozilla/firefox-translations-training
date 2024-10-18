@@ -26,7 +26,7 @@ experiment:
   corpus-max-sentences: 1000
 
   bicleaner:
-    default-threshold: 0.5
+    default-threshold: 0.4
     dataset-thresholds:
       opus_ada83/v1: 0.0
       opus_ELRC-3075-wikipedia_health/v1: 0.6
