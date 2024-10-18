@@ -9,6 +9,9 @@ transforms:
 tasks:
     base:
         symbol: Base
+    inference:
+        parent: base
+        symbol: Inference
     test:
         parent: base
         symbol: Test

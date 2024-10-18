@@ -45,6 +45,9 @@ RUN pip install zstandard
 
 # %include-run-task
 
+# Allow scripts to detect if they are running in docker
+ENV IS_DOCKER 1
+
 ENV SHELL=/bin/bash \
     HOME=/builds/worker \
     PATH="/builds/worker/.local/bin:$PATH" \

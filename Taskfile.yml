@@ -79,25 +79,25 @@ tasks:
     desc: Clean build artifacts from the inference directory.
     cmds:
       - >-
-          task docker-run -- ./inference/scripts/clean.sh
+          ./inference/scripts/clean.sh
 
   inference-build:
     desc: Build inference engine.
     cmds:
       - >-
-          task docker-run -- ./inference/scripts/build-local.sh
+          ./inference/scripts/build-local.sh
 
   inference-test:
     desc: Run inference tests.
     cmds:
       - >-
-          task docker-run -- ./inference/scripts/unit-tests.sh
+          ./inference/scripts/unit-tests.sh
 
   inference-build-wasm:
     desc: Build inference engine WASM.
     cmds:
       - >-
-          task docker-run -- ./inference/scripts/build-wasm.sh
+          ./inference/scripts/build-wasm.sh
 
   lint-black:
     desc: Checks the styling of the Python code with Black.
