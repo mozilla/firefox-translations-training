@@ -90,7 +90,7 @@ workers:
             implementation: docker-worker
             os: linux
             worker-type: b-linux-large-gcp-1tb-64-512-std-d2g
-        b-linux-v100-gpu:
+        b-linux-v100-gpu-issue149:
             provisioner: '{trust-domain}-{level}'
             implementation: generic-worker
             os: linux
@@ -161,36 +161,41 @@ local-worker-aliases:
     # Use for quick tasks that need a GPU, eg: evaluate
     b-gpu:
         by-worker-class:
-            gcp-standard: 'b-linux-v100-gpu'
-            default: 'b-linux-v100-gpu'
+            gcp-standard: 'b-linux-v100-gpu-issue149'
+            default: 'b-linux-v100-gpu-issue149'
     # Use for tasks that need lots of GPU power, but not lots of disk space
     # eg: translation & scoring
     b-largegpu:
         by-worker-class:
-            gcp-standard: 'b-linux-v100-gpu-4'
-            default: 'b-linux-v100-gpu-4'
+            gcp-standard: 'b-linux-v100-gpu-issue149'
+            default: 'b-linux-v100-gpu-issue149'
     # Use for tasks that needs lots of GPU power and increased disk space
     # eg: bicleaner
     b-largegpu-largedisk:
         by-worker-class:
-            gcp-standard: 'b-linux-v100-gpu-4-300gb-standard'
-            default: 'b-linux-v100-gpu-4-300gb'
+            gcp-standard: 'b-linux-v100-gpu-issue149'
+            default: 'b-linux-v100-gpu-issue149'
     # Use for tasks that need lots of GPU power and immensive amounts of disk space
     # eg: training
     b-largegpu-xlargedisk:
         by-worker-class:
-            gcp-standard: 'b-linux-v100-gpu-4-1tb-standard'
-            default: 'b-linux-v100-gpu-4-1tb'
+            gcp-standard: 'b-linux-v100-gpu-issue149'
+            default: 'b-linux-v100-gpu-issue149'
     # Use for student training, see https://github.com/mozilla/firefox-translations-training/issues/774
     b-largegpu-xxlargedisk:
         by-worker-class:
-            gcp-standard: 'b-linux-v100-gpu-4-2tb'
-            default: 'b-linux-v100-gpu-4-2tb'
+            gcp-standard: 'b-linux-v100-gpu-issue149'
+            default: 'b-linux-v100-gpu-issue149'
 
 
 # Keys are worker type, and align with the `worker-type` entries in the
 # `worker.aliases` above.
 worker-configuration:
+    b-linux-v100-gpu-issue149:
+        env:
+            GPUS: "0"
+            WORKSPACE: "12000"
+
     b-linux-v100-gpu:
         env:
             GPUS: "0"
