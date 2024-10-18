@@ -50,7 +50,7 @@ tasks:
                     - pipeline/train/configs/model/student.{student_model}.yml
                     - pipeline/train/configs/opustrainer/student.yml
                     - pipeline/train/configs/training/student.train.yml
-                    - pipeline/train/train.py
+                    - pipeline/train/truncate.sh
                     - taskcluster/scripts/pipeline/train_taskcluster.py
                     - taskcluster/scripts/pipeline/train-taskcluster.sh
                 from-parameters:
@@ -100,6 +100,8 @@ tasks:
                     export PATH="$HOME/.local/bin:$PATH" &&
                     export MARIAN=$MOZ_FETCHES_DIR &&
                     export PYTHONPATH=$PYTHONPATH:$VCS_PATH &&
+                    $VCS_PATH/pipeline/train/truncate.sh $MOZ_FETCHES_DIR/corpus.{src_locale}.zst &&
+                    $VCS_PATH/pipeline/train/truncate.sh $MOZ_FETCHES_DIR/corpus.{trg_locale}.zst &&
                     $VCS_PATH/taskcluster/scripts/pipeline/train_taskcluster.py
                     student
                     train
