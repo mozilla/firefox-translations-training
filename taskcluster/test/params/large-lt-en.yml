@@ -150,7 +150,7 @@ training_config:
     src: lt
     teacher-ensemble: 2
     teacher-mode: 'two-stage'
-    student-model: 'tiny'
+    student-model: 'base'
     trg: en
     use-opuscleaner: 'false'
     vocab: NOT-YET-SUPPORTED
