@@ -1,5 +1,5 @@
 experiment:
-  name: mono_75_percent
+  name: mono_100_percent
   src: da
   trg: en
   best-model: chrf
@@ -21,6 +21,7 @@ experiment:
   spm-vocab-size: 32000
   teacher-ensemble: 2
   teacher-mode: two-stage
+  student-model: tiny
   pretrained-models: {}
 datasets:
   devtest:
@@ -167,12 +168,8 @@ marian-args:
   training-teacher:
     early-stopping: '20'
 target-stage: evaluate-student
-start-stage: train-student
 previous_group_ids:
   - Q49vTgTOStWGio7axf-Gfg
-  - ZOWT1aQsQrqvHQ24x3anGA
-  - aV89TBTaTtiG0M39A5i04Q
-  - ZOWT1aQsQrqvHQ24x3anGA
 wandb-publication: true
 taskcluster:
   split-chunks: 20

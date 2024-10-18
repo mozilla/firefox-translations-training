@@ -147,3 +147,4 @@ dmypy.json
 output
 wandb
 media
+trigger-training.log
