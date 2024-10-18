@@ -10,11 +10,11 @@ experiment:
   teacher-ensemble: 1
 
   mono-max-sentences-src:
-    total: 10000
-    per-dataset: 10000
+    total: 1000
+    per-dataset: 500
   mono-max-sentences-trg:
-    total: 10000
-    per-dataset: 10000
+    total: 1000
+    per-dataset: 500
   spm-sample-size: 1000
   spm-vocab-size: 1000
 
@@ -23,6 +23,7 @@ experiment:
   use-opuscleaner: "true"
   opuscleaner-mode: "custom"
   teacher-mode: "two-stage"
+  corpus-max-sentences: 1000
   student-model: "tiny"
 
   bicleaner:

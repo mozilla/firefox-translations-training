@@ -124,6 +124,7 @@ class DataDir:
         fetches_dir: Optional[str] = None,
         env: dict[str, str] = {},
         extra_args: List[str] = None,
+        replace_args: List[str] = None,
     ):
         """
         Runs a task from the taskgraph. See artifacts/full-task-graph.json after running a
@@ -162,6 +163,12 @@ class DataDir:
         for command_parts_split in split_on_ampersands_operator(command_parts):
             if extra_args:
                 command_parts_split.extend(extra_args)
+
+            if replace_args:
+                for arg_from, arg_to in replace_args:
+                    for index, arg in enumerate(command_parts_split):
+                        if arg == arg_from:
+                            command_parts_split[index] = arg_to
 
             final_env = {
                 # The following are set by the Taskcluster server.
@@ -206,26 +213,30 @@ class DataDir:
                 command_parts_split[index] = part
 
             # If using a venv, prepend the binary directory to the path so it is used.
-            python_bin_dir, venv_dir = get_python_dirs(requirements)
-            if python_bin_dir:
-                final_env = {**final_env, "PATH": f'{python_bin_dir}:{os.environ.get("PATH", "")}'}
-                if command_parts_split[0].endswith(".py"):
-                    # This script is relying on a shebang, add the python3 from the executable instead.
-                    command_parts_split.insert(0, os.path.join(python_bin_dir, "python3"))
-            elif command_parts_split[0].endswith(".py"):
-                # This script does not require a virtual environment.
-                command_parts_split.insert(0, "python3")
+            if requirements:
+                python_bin_dir, venv_dir = get_python_dirs(requirements)
+                if python_bin_dir:
+                    final_env = {
+                        **final_env,
+                        "PATH": f'{python_bin_dir}:{os.environ.get("PATH", "")}',
+                    }
+                    if command_parts_split[0].endswith(".py"):
+                        # This script is relying on a shebang, add the python3 from the executable instead.
+                        command_parts_split.insert(0, os.path.join(python_bin_dir, "python3"))
+                elif command_parts_split[0].endswith(".py"):
+                    # This script does not require a virtual environment.
+                    command_parts_split.insert(0, "python3")
 
-            # We have to set the path to the C++ lib before the process is started
-            # https://github.com/Helsinki-NLP/opus-fast-mosestokenizer/issues/6
-            with open(requirements) as f:
-                reqs_txt = f.read()
-            if "opus-fast-mosestokenizer" in reqs_txt:
-                lib_path = os.path.join(
-                    venv_dir, "lib/python3.10/site-packages/mosestokenizer/lib"
-                )
-                print(f"Setting LD_LIBRARY_PATH to {lib_path}")
-                final_env["LD_LIBRARY_PATH"] = lib_path
+                # We have to set the path to the C++ lib before the process is started
+                # https://github.com/Helsinki-NLP/opus-fast-mosestokenizer/issues/6
+                with open(requirements) as f:
+                    reqs_txt = f.read()
+                if venv_dir and "opus-fast-mosestokenizer" in reqs_txt:
+                    lib_path = os.path.join(
+                        venv_dir, "lib/python3.10/site-packages/mosestokenizer/lib"
+                    )
+                    print(f"Setting LD_LIBRARY_PATH to {lib_path}")
+                    final_env["LD_LIBRARY_PATH"] = lib_path
 
             print("┌──────────────────────────────────────────────────────────")
             print("│ run_task:", " ".join(command_parts_split))
@@ -512,14 +523,12 @@ def get_mocked_downloads() -> str:
     )  # fmt: skip
 
 
-def get_python_dirs(requirements: Optional[str]) -> Optional[Tuple[str, str]]:
+def get_python_dirs(requirements: str) -> Tuple[str, str]:
     """
     Creates a virtual environment for each requirements file that a task needs. The virtual
     environment is hashed based on the requirements file contents, and the system details. This
     way a virtual environment will be re-used between docker environments.
     """
-    if not requirements:
-        return None
 
     system_details = "-".join(
         [
