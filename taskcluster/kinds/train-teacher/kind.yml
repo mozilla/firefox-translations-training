@@ -137,6 +137,7 @@ tasks:
                     $MOZ_FETCHES_DIR/corpus.aln.zst,$MOZ_FETCHES_DIR/mono.aln.zst
                     {{this_chunk}}
                     {teacher_mode}
+                    None
                     {pretrained_teacher_mode}
                     {pretrained_teacher_type}
                     {marian_args}

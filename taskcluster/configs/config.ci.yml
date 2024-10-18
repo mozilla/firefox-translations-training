@@ -24,6 +24,7 @@ experiment:
   opuscleaner-mode: "custom"
   teacher-mode: "two-stage"
   corpus-max-sentences: 1000
+  student-model: "tiny"
 
   bicleaner:
     default-threshold: 0.5

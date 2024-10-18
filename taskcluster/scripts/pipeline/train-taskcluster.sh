@@ -23,9 +23,10 @@ best_model_metric=$8
 alignments=$9
 seed=${10}
 teacher_mode=${11}
-pretrained_model_mode=${12}
-pretrained_model_type=${13}
-extra_marian_args=( "${@:14}" )
+student_model=${12}
+pretrained_model_mode=${13}
+pretrained_model_type=${14}
+extra_marian_args=( "${@:15}" )
 
 if [ "$pretrained_model_mode" != "use" ]; then
     # MOZ_FETCHES_DIR is not required for the "use" pretrained model mode
@@ -53,6 +54,7 @@ case "$pretrained_model_mode" in
         fi
         python3 $VCS_ROOT/pipeline/train/train.py \
         --model_type "$model_type" \
+        --student_model "$student_model" \
         --training_type "$training_type" \
         --src "$src" \
         --trg "$trg" \

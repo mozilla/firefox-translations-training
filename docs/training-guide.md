@@ -27,7 +27,7 @@ Considerations:
 Copy the [example config](https://github.com/mozilla/firefox-translations-training/tree/main/configs/tc.prod.yml) from the `/configs` directory to modify.
 
 Then change the language pair and the name of the experiment:
-```
+```yaml
 experiment:
   name: test-quality
   src: ru
@@ -56,7 +56,7 @@ task find-corpus.py -- en ru --importer mtdata
    If the versions are the same I prefer OPUS ones as a more stable resource.
 
 Copy the datasets in the training config:
-```
+```yaml
 datasets:
   train:
     - opus_ada83/v1
@@ -79,7 +79,7 @@ python utils/find-corpus.py en ru sacrebleu
 - Some OPUS and mtdata datasets provide dev and devtest versions, so it's a good idea to add them to evaluation.
 - Make sure that training, validation and evaluation datasets are different.
 
-```
+```yaml
   # datasets to merge for validation while training
   devtest:
     - flores_dev
@@ -106,7 +106,7 @@ The only limitation is probably available computational resources.
 Find monolingual data and add it to `datasets.mono-src` and `datasets.mono-trg`. 
 Using [News Crawl](https://data.statmt.org/news-crawl/) datasets from statmt is preferable
 because they are relatively clean, and the pipeline supports automatic downloading for them.
-```
+```yaml
   # to be translated by the ensemble of teacher models
   mono-src:
     - news-crawl_news.2020
@@ -128,7 +128,7 @@ Find more details about the supported dataset importers [here](data.md).
 ## 3. Configure data cleaning
 
 To use the default data cleaning pipeline set:
-```
+```yaml
   use-opuscleaner: false
 ```
 
@@ -146,11 +146,21 @@ for example [`teacher.train.yml`] and in the [`train.py`] script.
 
 ### Model training
 
+#### Student architecture
+
+"base" or "tiny" based on [Bergamot configurations](https://github.com/browsermt/students/tree/master/train-student/models).
+"tiny" is smaller and faster. "base" produces translations of higher quality.
+```yaml
+student-model: tiny
+```
+
+More details about the performed experiments are in [this issue](https://github.com/mozilla/firefox-translations-training/issues/174).
+
 #### Early stopping
 Early stopping can be increased to make sure that training converges.
 However, it depends on the language and might not bring much benefit but will make the training longer.
 So, you can start with `early-stopping: 20`, monitor the training and increase it if the model stops training too early.
-```
+```yaml
 marian-args:
 # these configs override pipeline/train/configs
   training-backward:
@@ -183,7 +193,7 @@ More details:
 
 `mini-batch-words` can be set depending on available GPU memory and the number of teachers.
 It affects the batch size and decoding speed for the `translate` steps.
-```
+```yaml
 marian-args:
 ...
   decoding-backward:
@@ -198,7 +208,7 @@ marian-args:
 
 Make sure to use it only for teacher models and on GPUs that support it.
 It speeds up decoding but can slightly decrease quality.
-```
+```yaml
 marian-args:
 ...
   decoding-teacher:
