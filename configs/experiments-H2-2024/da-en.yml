@@ -171,6 +171,9 @@ target-stage: evaluate-student
 start-stage: train-student
 previous_group_ids:
   - Q49vTgTOStWGio7axf-Gfg
+  - ZOWT1aQsQrqvHQ24x3anGA
+  - aV89TBTaTtiG0M39A5i04Q
+  - ZOWT1aQsQrqvHQ24x3anGA
 wandb-publication: true
 taskcluster:
   split-chunks: 20

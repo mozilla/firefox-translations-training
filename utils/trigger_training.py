@@ -7,6 +7,7 @@ For example:
 """
 
 import argparse
+import datetime
 from pathlib import Path
 import subprocess
 import sys
@@ -105,6 +106,8 @@ def trigger_training(decision_task_id: str, config: dict[str, any]):
 
     print(f"Train action triggered: {ROOT_URL}/tasks/{action_task_id}")
 
+    return action_task_id
+
 
 def validate_taskcluster_credentials():
     try:
@@ -161,6 +164,29 @@ def log_config_info(config_path: Path, config: dict):
 
     for key, value in config_details:
         print(f"{key.rjust(key_len + 4, " ")}: {value}")
+
+
+def write_to_log(config_path: Path, config: dict, action_task_id: str, branch: str):
+    """
+    Persist the training log to disk.
+    """
+    training_log = Path(__file__).parent / "../trigger-training.log"
+    experiment = config["experiment"]
+    git_hash = run(["git", "rev-parse", "--short", branch]).strip()
+
+    with open(training_log, "a") as file:
+        file.writelines(
+            [
+                f"time: {datetime.datetime.now()}",
+                f"config: {config_path}",
+                f"name: {experiment['name']}",
+                f"langpair: {experiment['src']}-{experiment['trg']}",
+                f"train action: {ROOT_URL}/tasks/{action_task_id}",
+                f"branch: {branch}",
+                f"hash: {git_hash}",
+                "",
+            ]
+        )
 
 
 def main() -> None:
@@ -220,7 +246,7 @@ def main() -> None:
             f"Branch must be `main` or start with `dev` or `release` for training to run. Detected branch was {branch}"
         )
 
-    timeout = 10
+    timeout = 20
     while True:
         decision_task = get_decision_task_push(branch)
 
@@ -249,7 +275,8 @@ def main() -> None:
         config: dict = yaml.safe_load(file)
 
     log_config_info(args.config, config)
-    trigger_training(decision_task_id, config)
+    action_task_id = trigger_training(decision_task_id, config)
+    write_to_log(args.config, config, action_task_id, branch)
 
 
 if __name__ == "__main__":
