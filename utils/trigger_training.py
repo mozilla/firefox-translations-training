@@ -7,6 +7,7 @@ For example:
 """
 
 import argparse
+import datetime
 from pathlib import Path
 import subprocess
 import sys
@@ -105,6 +106,8 @@ def trigger_training(decision_task_id: str, config: dict[str, any]):
 
     print(f"Train action triggered: {ROOT_URL}/tasks/{action_task_id}")
 
+    return action_task_id
+
 
 def validate_taskcluster_credentials():
     try:
@@ -142,6 +145,8 @@ def log_config_info(config_path: Path, config: dict):
     config_details.append(("experiment.name", experiment["name"]))
     config_details.append(("experiment.src", experiment["src"]))
     config_details.append(("experiment.trg", experiment["trg"]))
+    if config.get("start-stage"):
+        config_details.append(("start-stage", config["start-stage"]))
     config_details.append(("target-stage", config["target-stage"]))
 
     previous_group_ids = config.get("previous_group_ids")
@@ -159,6 +164,29 @@ def log_config_info(config_path: Path, config: dict):
 
     for key, value in config_details:
         print(f"{key.rjust(key_len + 4, " ")}: {value}")
+
+
+def write_to_log(config_path: Path, config: dict, action_task_id: str, branch: str):
+    """
+    Persist the training log to disk.
+    """
+    training_log = Path(__file__).parent / "../trigger-training.log"
+    experiment = config["experiment"]
+    git_hash = run(["git", "rev-parse", "--short", branch]).strip()
+
+    with open(training_log, "a") as file:
+        lines = [
+            "",
+            f"config: {config_path}",
+            f"name: {experiment['name']}",
+            f"langpair: {experiment['src']}-{experiment['trg']}",
+            f"time: {datetime.datetime.now()}",
+            f"train action: {ROOT_URL}/tasks/{action_task_id}",
+            f"branch: {branch}",
+            f"hash: {git_hash}",
+        ]
+        for line in lines:
+            file.write(line + "\n")
 
 
 def main() -> None:
@@ -197,8 +225,8 @@ def main() -> None:
         branch = run(["git", "branch", "--show-current"])
         print(f"Using current branch: {branch}")
 
-    if branch != "main" or not branch.startswith("dev") or not branch.startswith("release"):
-        print('A training branch must be "main", or start with "dev" or "release"')
+    if branch != "main" and not branch.startswith("dev") and not branch.startswith("release"):
+        print(f'The git branch "{branch}" must be "main", or start with "dev" or "release"')
         sys.exit(1)
 
     if check_if_pushed(branch):
@@ -218,7 +246,7 @@ def main() -> None:
             f"Branch must be `main` or start with `dev` or `release` for training to run. Detected branch was {branch}"
         )
 
-    timeout = 10
+    timeout = 20
     while True:
         decision_task = get_decision_task_push(branch)
 
@@ -228,7 +256,7 @@ def main() -> None:
                 break
             elif decision_task.status == "queued":
                 print(f"Decision task is queued, trying again in {timeout} seconds")
-            elif decision_task.status == "inprogress":
+            elif decision_task.status == "in_progress":
                 print(f"Decision task is in progress, trying again in {timeout} seconds")
             else:
                 # The task failed.
@@ -247,7 +275,8 @@ def main() -> None:
         config: dict = yaml.safe_load(file)
 
     log_config_info(args.config, config)
-    trigger_training(decision_task_id, config)
+    action_task_id = trigger_training(decision_task_id, config)
+    write_to_log(args.config, config, action_task_id, branch)
 
 
 if __name__ == "__main__":
