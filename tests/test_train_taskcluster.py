@@ -26,7 +26,7 @@ TRAIN_TASKCLUSTER_SH = os.path.normpath(
         pytest.param(
             [
                 "model_type",
-                "type",
+                "training_type",
                 "src",
                 "trg",
                 "train_set_prefix",
@@ -35,14 +35,15 @@ TRAIN_TASKCLUSTER_SH = os.path.normpath(
                 "best_model_metric",
                 "alignments",
                 "seed",
-                "mode",
+                "teacher_mode",
+                "student_model",
             ],
             id="required_only",
         ),
         pytest.param(
             [
                 "model_type",
-                "type",
+                "training_type",
                 "src",
                 "trg",
                 "train_set_prefix",
@@ -51,7 +52,8 @@ TRAIN_TASKCLUSTER_SH = os.path.normpath(
                 "best_model_metric",
                 "alignments",
                 "seed",
-                "mode",
+                "teacher_mode",
+                "student_model",
                 "pretrained_model_mode",
                 "pretrained_model_type",
             ],
@@ -60,7 +62,7 @@ TRAIN_TASKCLUSTER_SH = os.path.normpath(
         pytest.param(
             [
                 "model_type",
-                "type",
+                "training_type",
                 "src",
                 "trg",
                 "train_set_prefix",
@@ -69,7 +71,8 @@ TRAIN_TASKCLUSTER_SH = os.path.normpath(
                 "best_model_metric",
                 "alignments",
                 "seed",
-                "mode",
+                "teacher_mode",
+                "student_model",
                 "pretrained_model_mode",
                 "pretrained_model_type",
                 "--foo",
@@ -281,17 +284,18 @@ def test_autocontinue(
             model_dir = DataDir("test_train_taskcluster").path
             train_taskcluster.main(
                 [
-                    "model-type",
-                    "training-type",
+                    "model_type",
+                    "training_type",
                     "src",
                     "trg",
                     "train-set-prefix",
                     "valid-set-prefix",
                     model_dir,
                     "best-model-metric",
-                    "alignents",
+                    "alignments",
                     "seed",
-                    "mode",
+                    "teacher_mode",
+                    "student_model",
                     orig_pretrained_model_mode,
                 ]
             )
@@ -346,10 +350,10 @@ def test_autocontinue(
                 assert tt_mock["requests"].get.call_args_list == calls
 
             assert tt_mock["subprocess"].run.call_count == 1
-            # pretrained model mode is the 12th arg to the training script, but subprocess
+            # pretrained model mode is the 13th arg to the training script, but subprocess
             # is also given the script name - so we look for the expected pretrained model mode
             # in the 13th arg of the subprocess.run call
             assert (
-                tt_mock["subprocess"].run.call_args_list[0][0][0][12]
+                tt_mock["subprocess"].run.call_args_list[0][0][0][13]
                 == expected_pretrained_model_mode
             )
