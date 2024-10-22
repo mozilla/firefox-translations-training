@@ -13,9 +13,10 @@ import argparse
 import os
 import random
 import re
+import shutil
 import subprocess
 import sys
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable, List, Optional
 
 from opustrainer.modifiers.noise import NoiseModifier
 from opustrainer.modifiers.placeholders import PlaceholderTagModifier
@@ -24,10 +25,7 @@ from opustrainer.modifiers.typos import TypoModifier
 from opustrainer.types import Modifier
 
 from pipeline.common.downloads import compress_file, decompress_file
-
-# these envs are standard across the pipeline
-SRC = os.environ["SRC"]
-TRG = os.environ["TRG"]
+from pipeline.data.cjk import ChineseConverter, ChineseType
 
 random.seed(1111)
 
@@ -196,8 +194,17 @@ def write_modified(modified: List[str], uncompressed_src: str, uncompressed_trg:
     compress_file(uncompressed_trg, keep_original=False)
 
 
-def run_import(type: str, dataset: str, output_prefix: str):
+def run_import(
+    type: str,
+    dataset: str,
+    output_prefix: str,
+    src: Optional[str] = None,
+    trg: Optional[str] = None,
+):
     current_dir = os.path.dirname(os.path.abspath(__file__))
+    # these envs are standard across the pipeline
+    src_lang = src or os.environ["SRC"]
+    trg_lang = trg or os.environ["TRG"]
 
     if type == "corpus":
         # Parse a dataset identifier to extract importer, augmentation type and dataset name
@@ -221,7 +228,25 @@ def run_import(type: str, dataset: str, output_prefix: str):
         no_aug_id = f"{importer}_{name}"
 
         print("Downloading parallel dataset")
-        run_cmd([os.path.join(current_dir, "download-corpus.sh"), no_aug_id, output_prefix])
+        run_cmd(
+            [os.path.join(current_dir, "download-corpus.sh"), no_aug_id, output_prefix],
+            env={"SRC": src_lang, "TRG": trg_lang},
+        )
+
+        # TODO: convert everything to Chinese simplified for now
+        # TODO: https://github.com/mozilla/firefox-translations-training/issues/896
+        for lang in (src_lang, trg_lang):
+            if lang == "zh":
+                print("Converting the output file to Chinese Simplified")
+                chinese_converter = ChineseConverter()
+                count = chinese_converter.convert_file(
+                    f"{output_prefix}.{lang}.zst",
+                    f"{output_prefix}.converted.{lang}.zst",
+                    ChineseType.simplified,
+                )
+                shutil.move(f"{output_prefix}.converted.{lang}.zst", f"{output_prefix}.{lang}.zst")
+                print(f"Converted {count} lines to Chinese Simplified")
+
         if aug_modifer:
             print("Running augmentation")
             augment(output_prefix, aug_modifer)
