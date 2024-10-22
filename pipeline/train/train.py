@@ -271,7 +271,7 @@ class TrainCLI:
                 {
                     "config": self.opustrainer_config,
                     "log-file": self.artifacts / "opustrainer.log",
-                    "log-level": "INFO",
+                    "log-level": "ERROR",
                 }
             ),
         ]
