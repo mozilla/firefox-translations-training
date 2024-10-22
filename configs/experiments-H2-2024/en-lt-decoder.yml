@@ -1,0 +1,211 @@
+# The initial configuration was generated using:
+# task config-generator -- en lt --name decoder_size
+#
+# The documentation for this config can be found here:
+# https://github.com/mozilla/firefox-translations-training/blob/b0b5f25d0289a90619a12e645683cfd671332a85/taskcluster/configs/config.prod.yml
+experiment:
+  name: decoder-tiny
+  src: en
+  trg: lt
+  best-model: chrf
+  use-opuscleaner: 'true'
+  opuscleaner-mode: defaults
+  bicleaner:
+    default-threshold: 0.5
+    dataset-thresholds: {}
+  mono-max-sentences-src:
+    total: 500_000_000
+    per-dataset: 200_000_000
+  mono-max-sentences-trg:
+    total: 200_000_000
+    per-dataset: 200_000_000
+  min-fluency-threshold:
+    mono-src: 0.8
+    mono-trg: 0.9
+  spm-sample-size: 10_000_000
+  spm-vocab-size: 32000
+  teacher-ensemble: 2
+  teacher-mode: two-stage
+  pretrained-models: {}
+
+# Copied from: configs/spring-2024/en-lt-spring-2024.yml
+datasets:
+  devtest:
+  - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-lit
+  - flores_aug-mix_dev
+  - sacrebleu_aug-mix_wmt19/dev
+  test:
+  - mtdata_Neulab-tedtalks_test-1-eng-lit
+  - flores_devtest
+  - flores_aug-mix_devtest
+  - flores_aug-title_devtest
+  - flores_aug-upper_devtest
+  - flores_aug-typos_devtest
+  - flores_aug-noise_devtest
+  - flores_aug-inline-noise_devtest
+  - sacrebleu_wmt19
+
+  # The training data contains:
+  #   76,643,900 sentences
+  # 
+  # Skipped datasets:
+  #  - opus_CCMatrix/v1 - ignored datasets (23,298,470 sentences)
+  #  - opus_ELRC-3069-wikipedia_health/v1 - not enough data  (136 sentences)
+  #  - opus_ELRC-wikipedia_health/v1 - not enough data  (136 sentences)
+  #  - opus_ELRC_2922/v1 - not enough data  (135 sentences)
+  #  - opus_Ubuntu/v14.10 - not enough data  (0 sentences)
+  #  - mtdata_ELRC-president_lithuania-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-www.lrs.lt-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-www.lb.lt-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-kam.lt-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-euipo_2017-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-emea-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-vaccination-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-wikipedia_health-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-antibiotic-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-europarl_covid-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-ec_europa_covid-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-eur_lex_covid-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-presscorner_covid-1-eng-lit - duplicate with opus
+  #  - mtdata_ELRC-nteu_tiera-1-eng-lit - duplicate with opus
+  #  - mtdata_EU-ecdc-1-eng-lit - duplicate with opus
+  #  - mtdata_Facebook-wikimatrix-1-eng-lit - duplicate with opus
+  #  - mtdata_Neulab-tedtalks_train-1-eng-lit - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-3-eng-lit - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-6-eng-lit - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-7.1-eng-lit - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-8-eng-lit - duplicate with opus
+  #  - mtdata_ParaCrawl-paracrawl-9-eng-lit - duplicate with opus
+  #  - mtdata_Statmt-europarl-9-lit-eng - duplicate with opus
+  #  - mtdata_Statmt-europarl-7-lit-eng - duplicate with opus
+  #  - mtdata_Statmt-europarl-10-lit-eng - duplicate with opus
+  #  - mtdata_Statmt-ccaligned-1-eng-lit_LT - duplicate with opus
+  #  - mtdata_Tilde-ecb-2017-eng-lit - duplicate with opus
+  train:
+  - opus_NLLB/v1  #                                       23,298,470 sentences
+  - opus_ParaCrawl/v9 #                                  13,192,237 sentences
+  - opus_ELRC-EMEA/v1 #                                  11,487,359 sentences
+  - opus_ELRC-4270-NTEU_TierA/v1 #                        8,061,918 sentences
+  - opus_CCAligned/v1 #                                   5,215,271 sentences
+  - opus_DGT/v2019 #                                      5,061,918 sentences
+  - opus_TildeMODEL/v2018 #                               2,084,002 sentences
+  - opus_XLEnt/v1.2 #                                     1,642,943 sentences
+  - opus_OpenSubtitles/v2018 #                            1,415,961 sentences
+  - opus_EMEA/v3 #                                        1,042,425 sentences
+  - opus_JRC-Acquis/v3.0 #                                  790,475 sentences
+  - opus_ELRC-2717-EMEA/v1 #                                764,031 sentences
+  - opus_Europarl/v8 #                                      634,284 sentences
+  - opus_EUbookshop/v2 #                                    445,813 sentences
+  - opus_ELRC-5067-SciPar/v1 #                              177,437 sentences
+  - opus_WikiMatrix/v1 #                                    157,526 sentences
+  - opus_ELITR-ECA/v1 #                                     147,678 sentences
+  - opus_ELRC-425-Lithuanian_legislati/v1 #                 130,549 sentences
+  - opus_ELRC-presscorner_covid/v1 #                        117,054 sentences
+  - opus_KDE4/v2 #                                          104,044 sentences
+  - opus_QED/v2.0a #                                         85,435 sentences
+  - opus_TED2020/v1 #                                        75,484 sentences
+  - opus_ECB/v1 #                                            69,805 sentences
+  - opus_bible-uedin/v1 #                                    62,187 sentences
+  - opus_GNOME/v1 #                                          59,776 sentences
+  - opus_NeuLab-TedTalks/v1 #                                45,963 sentences
+  - opus_ELRC-591-www.lb.lt/v1 #                             33,261 sentences
+  - opus_ELRC-3568-EUR_LEX_covid/v1 #                        21,390 sentences
+  - opus_ELRC-EUR_LEX/v1 #                                   21,390 sentences
+  - opus_ELRC-405-President_Lithuania/v1 #                   21,225 sentences
+  - opus_ELRA-W0160/v1 #                                     21,224 sentences
+  - opus_ELRC-2021-EUIPO_2017/v1 #                           17,133 sentences
+  - opus_ELRC-EUIPO_2017/v1 #                                17,133 sentences
+  - opus_wikimedia/v20230407 #                               14,454 sentences
+  - opus_ELRC-EUROPARL_covid/v1 #                            13,851 sentences
+  - opus_ELRC-antibiotic/v1 #                                12,602 sentences
+  - opus_ELRC-2878-EU_publications_medi/v1 #                 12,581 sentences
+  - opus_ELRC-EU_publications/v1 #                           12,581 sentences
+  - opus_EUconst/v1 #                                        10,171 sentences
+  - opus_ELRC-592-kam.lt/v1 #                                 8,531 sentences
+  - opus_Tatoeba/v2023-04-12 #                                8,236 sentences
+  - opus_ELRC-3609-presscorner_covid/v1 #                     6,462 sentences
+  - opus_WMT-News/v2019 #                                     5,998 sentences
+  - opus_ELRC_3382/v1 #                                       3,587 sentences
+  - opus_ECDC/v2016-03-16 #                                   2,546 sentences
+  - opus_ELRC-3467-EC_EUROPA_covid/v1 #                       2,438 sentences
+  - opus_ELRC-EC_EUROPA/v1 #                                  2,438 sentences
+  - opus_ELRC-590-www.lrs.lt/v1 #                             1,771 sentences
+  - opus_ELRC-3205-antibiotic/v1 #                              823 sentences
+  - opus_ELRC-3296-EUROPARL_covid/v1 #                          553 sentences
+  - opus_ELRC-2740-vaccination/v1 #                             546 sentences
+  - opus_ELRC-vaccination/v1 #                                  546 sentences
+  - opus_ELRC_2923/v1 #                                         384 sentences
+# fails
+#  - mtdata_ELRC-lithuanian_legislation_seimas_lithuania-1-eng-lit # ~611,715 sentences (69.1 MB)
+  - mtdata_ELRC-eu_publications_medical_v2-1-eng-lit #     ~13,874 sentences (1.6 MB)
+  - mtdata_ELRC-nteu_tierb-1-eng-lit #                  ~6,946,588 sentences (785.0 MB)
+  - mtdata_EU-eac_forms-1-eng-lit #                        ~31,162 sentences (3.5 MB)
+  - mtdata_EU-eac_reference-1-eng-lit #                    ~31,162 sentences (3.5 MB)
+  - mtdata_EU-dcep-1-eng-lit #                            ~510,025 sentences (57.6 MB)
+  - mtdata_Statmt-wiki_titles-1-lit-eng #                  ~15,267 sentences (1.7 MB)
+  - mtdata_Statmt-newsdev_enlt-2019-eng-lit #             ~402,756 sentences (45.5 MB)
+  - mtdata_Statmt-newsdev_lten-2019-lit-eng #             ~402,756 sentences (45.5 MB)
+  - mtdata_Tilde-eesc-2017-eng-lit #                    ~1,149,015 sentences (129.8 MB)
+  - mtdata_Tilde-ema-2016-eng-lit #                       ~228,287 sentences (25.8 MB)
+  - mtdata_Tilde-airbaltic-1-eng-lit #                        ~962 sentences (108.7 kB)
+  - mtdata_Tilde-rapid-2016-eng-lit #                     ~180,798 sentences (20.4 MB)
+
+  # The monolingual data contains:
+  #   ~195,823,002 sentences
+  mono-src:
+  - news-crawl_news.2007  #           ~1,557,522 sentences (176M)
+  - news-crawl_news.2008 #           ~5,389,380 sentences (609M)
+  - news-crawl_news.2009 #           ~6,557,522 sentences (741M)
+  - news-crawl_news.2010 #           ~3,247,787 sentences (367M)
+  - news-crawl_news.2011 #           ~6,318,584 sentences (714M)
+  - news-crawl_news.2012 #           ~6,407,079 sentences (724M)
+  - news-crawl_news.2013 #          ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2014 #          ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2015 #          ~10,619,469 sentences (1.2G)
+  - news-crawl_news.2016 #           ~7,982,300 sentences (902M)
+  - news-crawl_news.2017 #          ~11,504,424 sentences (1.3G)
+  - news-crawl_news.2018 #           ~7,920,353 sentences (895M)
+  - news-crawl_news.2019 #          ~17,699,115 sentences (2.0G)
+  - news-crawl_news.2020 #          ~22,123,893 sentences (2.5G)
+  - news-crawl_news.2021 #          ~21,238,938 sentences (2.4G)
+  - news-crawl_news.2022 #          ~23,008,849 sentences (2.6G)
+  - news-crawl_news.2023 #          ~23,008,849 sentences (2.6G)
+
+  # The monolingual data contains:
+  #   ~49,804,627 sentences
+  mono-trg:
+  - news-crawl_news.2019  #           ~1,079,646 sentences (122M)
+  - news-crawl_news.2020 #           ~1,088,495 sentences (123M)
+  - news-crawl_news.2021 #           ~1,008,849 sentences (114M)
+  - news-crawl_news.2022 #           ~1,079,646 sentences (122M)
+  - news-crawl_news.2023 #           ~1,185,840 sentences (134M)
+  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-hplt/09/hplt_filtered_lt_1.txt.zst # 10,522,866 sentences
+  # NLLB data might have lower quality, disable for back-translations
+#  - url_https://storage.googleapis.com/releng-translations-dev/data/mono-nllb/nllb-mono-lt.txt.zst # 33,839,285 sentences
+
+marian-args:
+  decoding-backward:
+    beam-size: '12'
+    mini-batch-words: '2000'
+  decoding-teacher:
+    mini-batch-words: '4000'
+    precision: float16
+  training-backward:
+    early-stopping: '5'
+  training-teacher:
+    early-stopping: '20'
+  training-student:
+    early-stopping: '20'
+  training-student-finetuned:
+    early-stopping: '20'
+wandb-publication: true
+taskcluster:
+  split-chunks: 20
+  worker-classes:
+    default: gcp-spot
+
+target-stage: all
+start-stage: train-student
+previous_group_ids:
+  - e6HrD2nFT8S-Hckt18pxlQ
+  - WDNdtYFhTG6gh7c1wnAEyw
