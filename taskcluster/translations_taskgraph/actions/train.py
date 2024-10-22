@@ -130,12 +130,6 @@ which allows for specifying task group ids to fetch existing tasks from.""",
                         "enum": ["one-stage", "two-stage"],
                         "default": "two-stage",
                     },
-                    "student-model": {
-                        "type": "string",
-                        "description": "Student model configuration",
-                        "enum": ["tiny", "base"],
-                        "default": "tiny",
-                    },
                     "mono-max-sentences-src": {
                         "type": "object",
                         "default": defaults["experiment"]["mono-max-sentences-src"],

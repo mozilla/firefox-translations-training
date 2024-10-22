@@ -31,12 +31,6 @@ class TrainingType(Enum):
     train = "train"
 
 
-class StudentModel(Enum):
-    none = "None"
-    tiny = "tiny"
-    base = "base"
-
-
 class TeacherMode(Enum):
     none = "None"
     one_stage = "one-stage"
@@ -157,7 +151,6 @@ class TrainCLI:
         self.validation_set_prefix: str = args.validation_set_prefix
         self.artifacts: Path = args.artifacts
         self.model_type: ModelType = args.model_type
-        self.student_model: StudentModel = args.student_model
         self.teacher_mode: TeacherMode = args.teacher_mode
         self.training_type: TrainingType = args.training_type
         self.best_model_metric: BestModelMetric = args.best_model_metric
@@ -185,7 +178,6 @@ class TrainCLI:
         logger.info(f" - validation_set_prefix: {self.validation_set_prefix}")
         logger.info(f" - artifacts: {self.artifacts}")
         logger.info(f" - model_type: {self.model_type.value}")
-        logger.info(f" - student_model: {self.student_model.value}")
         logger.info(f" - teacher_mode: {self.teacher_mode.value}")
         logger.info(f" - training_type: {self.training_type.value}")
         logger.info(f" - best_model_metric: {self.best_model_metric}")
@@ -301,20 +293,13 @@ class TrainCLI:
             extra_args.append("--sharding")
             extra_args.append("local")
 
-        if self.model_type == ModelType.student:
-            if self.student_model == StudentModel.none:
-                raise ValueError("Student configuration is not provided")
-            model_name = f"student.{self.student_model.value}"
-        else:
-            model_name = self.model_type.value
-
         return [
             str(self.marian_bin),
             *apply_command_args(
                 {
                     "model": self.artifacts / "model.npz",
                     "config": [
-                        train_dir / f"configs/model/{model_name}.yml",
+                        train_dir / f"configs/model/{self.model_type.value}.yml",
                         train_dir
                         / f"configs/training/{self.model_type.value}.{self.training_type.value}.yml",
                     ],
@@ -384,14 +369,6 @@ def main() -> None:
         choices=ModelType,
         required=True,
         help="The type of model to train",
-    )
-    parser.add_argument(
-        "--student_model",
-        type=StudentModel,
-        choices=StudentModel,
-        required=False,
-        default=StudentModel.tiny,
-        help="Type of student model",
     )
     parser.add_argument(
         "--training_type",

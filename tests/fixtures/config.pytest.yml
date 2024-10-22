@@ -21,7 +21,6 @@ experiment:
   spm-sample-size: 10_000_000
   teacher-ensemble: 2
   teacher-mode: "two-stage"
-  student-model: "tiny"
   backward-model: NOT-YET-SUPPORTED
   vocab: NOT-YET-SUPPORTED
 datasets:

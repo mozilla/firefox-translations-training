@@ -29,7 +29,6 @@ tasks:
                 best_model: training_config.experiment.best-model
                 src_locale: training_config.experiment.src
                 trg_locale: training_config.experiment.trg
-                student_model: training_config.experiment.student-model
                 wandb_publication: training_config.wandb-publication
                 owner: owner
             substitution-fields:
@@ -47,7 +46,7 @@ tasks:
             cache:
                 type: train-student
                 resources:
-                    - pipeline/train/configs/model/student.{student_model}.yml
+                    - pipeline/train/configs/model/student.yml
                     - pipeline/train/configs/opustrainer/student.yml
                     - pipeline/train/configs/training/student.train.yml
                     - pipeline/train/train.py
@@ -112,7 +111,6 @@ tasks:
                     $MOZ_FETCHES_DIR/corpus.aln.zst
                     0
                     None
-                    {student_model}
                     None
                     None
                     {marian_args}
