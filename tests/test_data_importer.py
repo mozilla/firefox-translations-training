@@ -4,16 +4,12 @@ import os
 import pytest
 import zstandard as zstd
 from fixtures import DataDir, en_sample, get_mocked_downloads, ru_sample
+from pipeline.data import dataset_importer
+from pipeline.data.dataset_importer import run_import
 
 SRC = "ru"
 TRG = "en"
 CURRENT_FOLDER = os.path.dirname(os.path.abspath(__file__))
-
-os.environ["SRC"] = SRC
-os.environ["TRG"] = TRG
-
-from pipeline.data import dataset_importer
-from pipeline.data.dataset_importer import run_import
 
 
 def add_fake_alignments(corpus):
@@ -297,9 +293,9 @@ def test_specific_augmentation(params, data_dir):
     output_trg = f"{prefix_aug}.{TRG}.zst"
     original_src = f"{prefix_original}.{SRC}.zst"
     original_trg = f"{prefix_original}.{TRG}.zst"
-    run_import("corpus", original_dataset, prefix_original)
+    run_import("corpus", original_dataset, prefix_original, src=SRC, trg=TRG)
 
-    run_import("corpus", dataset, prefix_aug)
+    run_import("corpus", dataset, prefix_aug, src=SRC, trg=TRG)
 
     data_dir.print_tree()
     assert os.path.exists(output_src)
@@ -332,9 +328,53 @@ def test_augmentation_mix(data_dir):
     output_trg = f"{prefix}.{TRG}.zst"
     original_src = f"{prefix_original}.{SRC}.zst"
     original_trg = f"{prefix_original}.{TRG}.zst"
-    run_import("corpus", original_dataset, prefix_original)
+    run_import("corpus", original_dataset, prefix_original, src=SRC, trg=TRG)
 
-    run_import("corpus", dataset, prefix)
+    run_import("corpus", dataset, prefix, src=SRC, trg=TRG)
+
+    AUG_MAX_RATE = 0.35
+    AUG_MIN_RATE = 0.01
+    data_dir.print_tree()
+    assert os.path.exists(output_src)
+    assert os.path.exists(output_trg)
+    src, trg, aug_src, aug_trg = (
+        read_lines(original_src),
+        read_lines(original_trg),
+        read_lines(output_src),
+        read_lines(output_trg),
+    )
+    len_noise_src = len(aug_src) - len(src)
+    len_noise_trg = len(aug_trg) - len(trg)
+    # check noise rate
+    for noise, original in [(len_noise_src, len(src)), (len_noise_trg, len(trg))]:
+        noise_rate = noise / original
+        assert noise_rate > AUG_MIN_RATE
+        assert noise_rate < AUG_MAX_RATE
+
+    # check augmentation rate without noise
+    for aug, original in [(aug_src, src), (aug_trg, trg)]:
+        len_unchanged = len(set(aug).intersection(set(original)))
+        len_original = len(original)
+        aug_rate = (len_original - len_unchanged) / len(original)
+        assert aug_rate > AUG_MIN_RATE
+        assert aug_rate < AUG_MAX_RATE
+
+
+def test_augmentation_mix_zh(data_dir):
+    SRC = "zh"
+    TRG = "en"
+
+    dataset = "sacrebleu_aug-mix-cjk_wmt19"
+    original_dataset = "sacrebleu_wmt19"
+    prefix = data_dir.join(dataset)
+    prefix_original = data_dir.join(original_dataset)
+    output_src = f"{prefix}.{SRC}.zst"
+    output_trg = f"{prefix}.{TRG}.zst"
+    original_src = f"{prefix_original}.{SRC}.zst"
+    original_trg = f"{prefix_original}.{TRG}.zst"
+    run_import("corpus", original_dataset, prefix_original, src=SRC, trg=TRG)
+
+    run_import("corpus", dataset, prefix, src=SRC, trg=TRG)
 
     AUG_MAX_RATE = 0.35
     AUG_MIN_RATE = 0.01
