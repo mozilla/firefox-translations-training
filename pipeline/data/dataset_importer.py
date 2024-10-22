@@ -77,11 +77,20 @@ modifier_map = {
             PlaceholderTagModifier(NOISE_MIX_PROB, augment=1),
         ]
     ),
+    "aug-mix-cjk": lambda: CompositeModifier(
+        [
+            NoiseModifier(MIX_PROB),
+            PlaceholderTagModifier(NOISE_MIX_PROB, augment=1),
+        ]
+    ),
 }
 
 
-def run_cmd(cmd: List[str]):
+def run_cmd(cmd: List[str], env: Dict[str, str]):
     result = None
+    # make sure to preserve the current process env vars
+    env_vars = dict(os.environ)
+    env_vars.update(env)
     try:
         result = subprocess.run(
             cmd,
@@ -89,6 +98,7 @@ def run_cmd(cmd: List[str]):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             check=False,
+            env=env_vars,
         )
         result.check_returncode()
     except:
@@ -123,7 +133,7 @@ def add_alignments(corpus: List[str]) -> List[str]:
 
 
 # we plan to use it only for small evaluation datasets
-def augment(output_prefix: str, aug_modifer: str):
+def augment(output_prefix: str, aug_modifer: str, src: str, trg: str):
     """
     Augment corpus on disk using the OpusTrainer modifier
     """
@@ -131,14 +141,14 @@ def augment(output_prefix: str, aug_modifer: str):
         raise ValueError(f"Invalid modifier {aug_modifer}. Allowed values: {modifier_map.keys()}")
 
     # file paths for compressed and uncompressed corpus
-    uncompressed_src = f"{output_prefix}.{SRC}"
-    uncompressed_trg = f"{output_prefix}.{TRG}"
-    compressed_src = f"{output_prefix}.{SRC}.zst"
-    compressed_trg = f"{output_prefix}.{TRG}.zst"
+    uncompressed_src = f"{output_prefix}.{src}"
+    uncompressed_trg = f"{output_prefix}.{trg}"
+    compressed_src = f"{output_prefix}.{src}.zst"
+    compressed_trg = f"{output_prefix}.{trg}.zst"
 
     corpus = read_corpus_tsv(compressed_src, compressed_trg, uncompressed_src, uncompressed_trg)
 
-    if aug_modifer in ("aug-mix", "aug-inline-noise"):
+    if aug_modifer in ("aug-mix", "aug-inline-noise", "aug-mix-cjk"):
         # add alignments for inline noise
         # Tags modifier will remove them after processing
         corpus = add_alignments(corpus)
@@ -249,7 +259,7 @@ def run_import(
 
         if aug_modifer:
             print("Running augmentation")
-            augment(output_prefix, aug_modifer)
+            augment(output_prefix, aug_modifer, src=src_lang, trg=trg_lang)
 
     elif type == "mono":
         raise ValueError("Downloading mono data is not supported yet")
