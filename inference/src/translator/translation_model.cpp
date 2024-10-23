@@ -59,7 +59,7 @@ void TranslationModel::loadBackend(size_t idx) {
   graph->setDefaultElementType(typeFromString(prec[0]));
   graph->setDevice(device_);
   graph->getBackend()->configureDevice(options_);
-  graph->reserveWorkspaceMB(options_->get<size_t>("workspace"));
+  graph->reserveWorkspaceMB(5);
 
   // if memory_.models is populated, then all models were of binary format
   if (memory_.models.size() >= 1) {
