@@ -97,7 +97,7 @@ tasks:
     desc: Build inference engine WASM.
     cmds:
       - >-
-          ./inference/scripts/build-wasm.sh
+          ./inference/scripts/build-wasm.py {{.CLI_ARGS}}
 
   lint-black:
     desc: Checks the styling of the Python code with Black.
