@@ -74,12 +74,12 @@ def git_clone_update(name: str, repo_path: str, repo_url: str, revision: str):
 
     if local_head != revision:
         print(f"The head ({local_head}) and revision ({revision}) don't match.")
-        print(f"\n🔎 Fetching the latest from {name}.\n")
-        run(["git", "fetch", "--recurse-submodules"])
+        print(f"\n🔎 Fetching revision {revision} from {name}.\n")
+        run(["git", "fetch", "--recurse-submodules", "origin", revision])
 
         print(f"🛒 Checking out the revision {revision}")
         run(["git", "checkout", revision])
-        run(["git", "submodule", "update", "--init", "--recursive"])
+        run(["git", "submodule", "update", "--init", "--checkout", "--recursive"])
 
 
 def install_and_activate_emscripten(args: ArgNamespace):
