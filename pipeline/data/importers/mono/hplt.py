@@ -68,7 +68,7 @@ class FilteringStatistics(Statistics):
             "Of the collected lines, this counts how many were duplicates and discarded.",
         )
         self.final_lines = CountingStep(
-            "How many lines were actually written. Smaller lines will be combined together.",
+            "How many lines were actually written.",
         )
 
     def count_shards_visited(self, *_args):
@@ -95,6 +95,7 @@ def load_shuffled_shard_urls(language: str) -> list[str]:
     https://data.hplt-project.org/one/monotext/cleaned/en/en_110.jsonl.zst
     """
 
+    # TODO: migrate to HPLT 2.0: https://hplt-project.org/datasets/v2.0, https://github.com/mozilla/firefox-translations-training/issues/884
     url = f"https://data.hplt-project.org/one/monotext/cleaned/{language}_map.txt"
     logger.info(f"Downloading shard list: {url}")
 
@@ -114,7 +115,6 @@ def download_hplt(
     language: str,
     hlpt_min_fluency: float,
     max_lines: int,
-    max_words_in_sentence,
     file_destination: Path,
 ):
     """
@@ -129,7 +129,6 @@ def download_hplt(
      - language: The BCP 47 language code to filter the documents.
      - hlpt_min_fluency: The minimum score a sentence must have to be included in the final dataset.
      - max_lines: The maximum number of lines to include in the final dataset.
-     - max_words_in_sentence: The maximum number of words allowed in each sentence.
      - file_destination: The destination path where the final dataset will be written.
     """
 
@@ -156,6 +155,7 @@ def download_hplt(
         cumulative_word_count = 0
         visited_lines = 0
 
+        # TODO: figure out what's happening here. We shouldn't modify the dataset by default
         def maybe_write_accumulated_text():
             """
             Since the loop below is building up paragraphs of text, we only want to write
@@ -187,28 +187,12 @@ def download_hplt(
 
                 # Check for the fluency scores.
                 if lang_item == language and score >= hlpt_min_fluency:
-                    # TODO(CJK) - Issue #424
-                    word_count = len(line.split())
-
-                    if word_count > max_words_in_sentence:
-                        # This sentence is too long.
-                        maybe_write_accumulated_text()
+                    stats.visited_lines.kept += 1
+                    # Collect this line to write.
+                    if accumulated_text:
+                        accumulated_text = f"{accumulated_text} {line}"
                     else:
-                        stats.visited_lines.kept += 1
-
-                        # Determine if this sentence should be added to the previous one or
-                        # written out as a new line. Only concurrent sentences that meet
-                        # the fluency requirement will be combined together.
-                        if cumulative_word_count + word_count > max_words_in_sentence:
-                            # This line would be too long, write it out.
-                            maybe_write_accumulated_text()
-
-                        cumulative_word_count += word_count
-                        # Collect this line to write.
-                        if accumulated_text:
-                            accumulated_text = f"{accumulated_text} {line}"
-                        else:
-                            accumulated_text = line
+                        accumulated_text = line
                 else:
                     maybe_write_accumulated_text()
 

@@ -95,7 +95,6 @@ def build_dataset_sample(output_gzip_path: Path, sample_path: Path, dataset_name
                 line_stream=line_stream,
                 seed=dataset_name,
                 max_lines=1000,
-                max_words_in_sentence=100,
                 total_byte_size=byte_size,
             ):
                 output.write(line)
