@@ -30,9 +30,6 @@ from pipeline.common.logging import get_logger
 
 logger = get_logger(__file__)
 
-# TODO(CJK) - Issue #424
-MAX_WORDS_IN_SENTENCE = 100
-
 
 class FilteringStatistics(Statistics):
     """
@@ -92,7 +89,6 @@ class DeduplicateCorpus:
                     line_stream=self.yield_lines_string(stack),
                     seed=38540735095,
                     max_lines=max_lines,
-                    max_words_in_sentence=MAX_WORDS_IN_SENTENCE,
                     total_byte_size=total_corpus_bytes,
                 ):
                     src_line, trg_line = line.split("\t")
@@ -199,7 +195,6 @@ def sample_corpus(
             line_stream=join_src_trg(),
             seed=9834523434,
             max_lines=sample_size,
-            max_words_in_sentence=MAX_WORDS_IN_SENTENCE,
             total_byte_size=total_byte_size,
         ):
             sample_outfile.write(line)

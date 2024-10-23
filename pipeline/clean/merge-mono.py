@@ -23,9 +23,6 @@ from pipeline.common.memory import log_memory
 
 logger = get_logger(__file__)
 
-# TODO(CJK) - Issue #424
-MAX_WORDS_IN_SENTENCE = 100
-
 
 @dataclass
 class FilteringStatistics(Statistics):
@@ -133,7 +130,6 @@ def filter_and_write_monolingual_data(
             ),
             seed=347489345,
             max_lines=max_lines,
-            max_words_in_sentence=MAX_WORDS_IN_SENTENCE,
             total_byte_size=byte_size_estimate,
         )
 
@@ -160,7 +156,6 @@ def filter_and_write_monolingual_data(
             line_stream=final_lines,
             seed=9834523434,
             max_lines=sample_size,
-            max_words_in_sentence=MAX_WORDS_IN_SENTENCE,
             total_byte_size=os.path.getsize(output_path),
         ):
             outfile.write(line)
