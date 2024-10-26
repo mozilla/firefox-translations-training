@@ -41,6 +41,16 @@ ru_sample = """Маленькая девочка, увидев, что поте�
 «Мне действительно очень жаль», — сказала Дороти, которая была по-настоящему напугана, увидев, что Ведьма тает, как коричневый сахар, у нее на глазах.
 """
 
+zh_sample = """小女孩看到自己丢了一只漂亮的鞋子，生气了，对女巫说：“把我的鞋子还给我！”
+“我不会的，”女巫反驳道，“因为现在是我的鞋子，不是你的。”
+“你是个坏女人！”多萝西喊道。“你无权夺走我的鞋子。”
+“我会把它留着的，”女巫笑着说，“总有一天我也会从你那里得到另一只。”
+这让多萝西非常生气，她拿起旁边的一桶水，泼在女巫身上，把她从头到脚都淋湿了。
+恶毒的女人立刻发出一声恐惧的尖叫，然后，当多萝西惊奇地看着她时，女巫开始缩小并倒下。
+“看看你做了什么！”她尖叫道。“我马上就会融化。”
+“我真的很抱歉，”多萝西说，她真的很害怕看到女巫真的像红糖一样在她眼前融化。
+"""
+
 
 class DataDir:
     """
@@ -125,9 +135,10 @@ class DataDir:
         env: dict[str, str] = {},
         extra_args: List[str] = None,
         replace_args: List[str] = None,
+        config: Optional[str] = None,
     ):
         """
-        Runs a task from the taskgraph. See artifacts/full-task-graph.json after running a
+        Runs a task from the taskgraph. See data_dir/full-task-graph.json after running a
         test for the full list of task names
 
         Arguments:
@@ -142,9 +153,14 @@ class DataDir:
         fetches_dir - The MOZ_FETCHES_DIR, generally set as the test's DataDir.
 
         env - Any environment variable overrides.
+
+        extra_args - Extra Marian arguments
+
+        config - A path to a Taskcluster config file
+
         """
 
-        command_parts, requirements, task_env = get_task_command_and_env(task_name)
+        command_parts, requirements, task_env = get_task_command_and_env(task_name, config=config)
 
         # There are some non-string environment variables that involve taskcluster references
         # Remove these.
@@ -310,35 +326,40 @@ def fail_on_error(result: CompletedProcess[bytes]):
 _full_taskgraph: Optional[dict[str, object]] = None
 
 
-def get_full_taskgraph():
+def get_full_taskgraph(config: Optional[str] = None):
     """
     Generates the full taskgraph and stores it for re-use. It uses the config.pytest.yml
     in this directory.
+
+    config - A path to a Taskcluster config
     """
+    current_folder = os.path.dirname(os.path.abspath(__file__))
+    if not config:
+        config = os.path.join(current_folder, "config.pytest.yml")
+
     global _full_taskgraph
-    if _full_taskgraph:
-        return _full_taskgraph
+    if not _full_taskgraph:
+        _full_taskgraph = {}
+    if config in _full_taskgraph:
+        return _full_taskgraph[config]
 
     start = time.time()
-
-    current_folder = os.path.dirname(os.path.abspath(__file__))
     task_graph_json = os.path.join(current_folder, "../../artifacts/full-task-graph.json")
-    config = os.path.join(current_folder, "config.pytest.yml")
 
     if os.environ.get("SKIP_TASKGRAPH"):
         print("Using existing taskgraph generation.")
     else:
         print(
-            "Generating the full taskgraph, this can take a second. Set SKIP_TASKGRAPH=1 to skip this step."
+            f"Generating the full taskgraph with config {config}, this can take a second. Set SKIP_TASKGRAPH=1 to skip this step."
         )
         run_taskgraph(config, get_taskgraph_parameters())
 
     with open(task_graph_json, "rb") as file:
-        _full_taskgraph = json.load(file)
+        _full_taskgraph[config] = json.load(file)
 
     elapsed_sec = time.time() - start
     print(f"Taskgraph generated in {elapsed_sec:.2f} seconds.")
-    return _full_taskgraph
+    return _full_taskgraph[config]
 
 
 # Taskcluster commands can either be a single list of commands, or a nested list.
@@ -440,7 +461,9 @@ def find_requirements(commands: Commands) -> Optional[str]:
     return None
 
 
-def get_task_command_and_env(task_name: str) -> tuple[list[str], Optional[str], dict[str, str]]:
+def get_task_command_and_env(
+    task_name: str, config: Optional[str]
+) -> tuple[list[str], Optional[str], dict[str, str]]:
     """
     Extracts a task's command from the full taskgraph. This allows for testing
     the full taskcluster pipeline and the scripts that it generates.
@@ -448,8 +471,10 @@ def get_task_command_and_env(task_name: str) -> tuple[list[str], Optional[str], 
 
     task_name - The full task name like "split-mono-src-en"
         or "evaluate-backward-sacrebleu-wmt09-en-ru".
+
+    config - A path to a Taskcluster config
     """
-    full_taskgraph = get_full_taskgraph()
+    full_taskgraph = get_full_taskgraph(config)
     task = full_taskgraph.get(task_name)
     if not task:
         print("Available tasks:")
