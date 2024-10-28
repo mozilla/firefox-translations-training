@@ -41,8 +41,13 @@ parser.add_argument(
     action="store_true",
     help="Build with debug symbols, useful for profiling",
 )
+parser.add_argument(
+    "-j",
+    type=int,
+    help="Number of cores to use for building (default: all available cores)",
+)
 
-ArgNamespace = namedtuple("ArgNamespace", ["clobber", "debug"])
+ArgNamespace = namedtuple("ArgNamespace", ["clobber", "debug", "j"])
 
 
 def ensure_docker():
@@ -158,8 +163,16 @@ def build_bergamot(args: ArgNamespace):
         print("\n🏃 Running CMake for Bergamot\n")
         run_shell(f"emcmake cmake -DCOMPILE_WASM=on -DWORMHOLE=off {flags} {INFERENCE_PATH}")
 
-        print("\n🏃 Building Bergamot with emmake\n")
-        run_shell(f"emmake make -j {multiprocessing.cpu_count()}")
+        cores = args.j if args.j else multiprocessing.cpu_count()
+        print(f"\n🏃 Building Bergamot with emmake using {cores} cores\n")
+
+        try:
+            run_shell(f"emmake make -j {cores}")
+        except:
+            print(f"❌ Build failed with {cores} cores.")
+            print("This has been known to occur on macOS AArch64.\n")
+            print("Please try running again with -j 1.")
+            raise
 
         print("\n🪚 Patching Bergamot for gemm support\n")
         subprocess.check_call(["bash", GEMM_SCRIPT, BUILD_PATH])
@@ -180,6 +193,7 @@ def build_bergamot(args: ArgNamespace):
         )
         print(f"  Uncompressed wasm size: {to_human_readable(wasm_size)}")
         print(f"  Compressed wasm size: {to_human_readable(gzip_size)}")
+
     finally:
         print("\n🖌️ Reverting the source code patches\n")
         for repo_path, patch_path in patches[::-1]:
