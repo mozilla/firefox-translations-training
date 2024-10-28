@@ -107,6 +107,15 @@ def to_human_readable(size):
     return f"{size_in_mb:.2f}M ({size} bytes)"
 
 
+def ensure_git_submodules():
+    print("\n🔄 Initializing and updating Git submodules recursively.\n")
+    subprocess.run(
+        ["git", "submodule", "update", "--init", "--checkout", "--recursive"],
+        cwd=PROJECT_ROOT_PATH,
+        check=True,
+    )
+
+
 def apply_git_patch(repo_path, patch_path):
     print(f"Applying patch {patch_path} to {os.path.basename(repo_path)}")
     subprocess.check_call(["git", "apply", "--reject", patch_path], cwd=PROJECT_ROOT_PATH)
@@ -184,6 +193,8 @@ def main():
         os.mkdir(THIRD_PARTY_PATH)
 
     ensure_docker()
+
+    ensure_git_submodules()
 
     install_and_activate_emscripten(args)
 
