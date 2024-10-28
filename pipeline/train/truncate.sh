@@ -21,6 +21,7 @@ num_lines=92218925
 num_lines=61479283
 num_lines=30739641
 num_lines=1000000
+num_lines=10000
 
 temp_file="${input_file%.zst}_sampled.zst"
 
