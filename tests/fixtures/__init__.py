@@ -138,7 +138,7 @@ class DataDir:
         config: Optional[str] = None,
     ):
         """
-        Runs a task from the taskgraph. See data_dir/full-task-graph.json after running a
+        Runs a task from the taskgraph. See artifacts/full-task-graph.json after running a
         test for the full list of task names
 
         Arguments:
