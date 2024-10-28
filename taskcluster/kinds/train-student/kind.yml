@@ -101,6 +101,7 @@ tasks:
                     export PYTHONPATH=$PYTHONPATH:$VCS_PATH &&
                     $VCS_PATH/pipeline/train/truncate.sh $MOZ_FETCHES_DIR/corpus.{src_locale}.zst &&
                     $VCS_PATH/pipeline/train/truncate.sh $MOZ_FETCHES_DIR/corpus.{trg_locale}.zst &&
+                    $VCS_PATH/pipeline/train/truncate.sh $MOZ_FETCHES_DIR/corpus.aln.zst &&
                     $VCS_PATH/taskcluster/scripts/pipeline/train_taskcluster.py
                     student
                     train
