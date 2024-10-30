@@ -31,7 +31,7 @@ tasks:
             cache:
                 type: extract-best
                 resources:
-                    - pipeline/translate/bestbleu.py --metric chrf
+                    - pipeline/translate/bestbleu.py
 
         task-context:
             from-parameters:
@@ -85,7 +85,7 @@ tasks:
                     -i "$MOZ_FETCHES_DIR/file.{this_chunk}.nbest"
                     -r "$MOZ_FETCHES_DIR/file.{this_chunk}.ref"
                     -o $TASK_WORKDIR/artifacts/file.{this_chunk}.nbest.out
-                    -m bleu
+                    -m chrf
 
         dependencies:
             # double curly braces are used for the chunk substitutions because
