@@ -31,7 +31,7 @@ tasks:
             cache:
                 type: extract-best
                 resources:
-                    - pipeline/translate/bestbleu.py
+                    - pipeline/translate/bestbleu.py --metric chrf
 
         task-context:
             from-parameters:
