@@ -16,13 +16,13 @@ CTestTestfile.cmake
 _deps
 
 
-wasm/test_page/node_modules
+**/*/emsdk
 /build
 /build-local
 /build-native
 /build-wasm
-/emsdk
 models
+wasm/test_page/node_modules
 wasm/module/worker/bergamot-translator-worker.*
 wasm/module/browsermt-bergamot-translator-*.tgz
 
