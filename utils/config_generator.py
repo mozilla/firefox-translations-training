@@ -49,7 +49,9 @@ skip_datasets = [
     "flores101_dev",
     "flores101_devtest",
     "flores200_dev",
-    "flores200_devtest"
+    "flores200_devtest",
+    # Skip OPUS WMT news test sets
+    "WMT-News",
 ]
 
 # Do not include small datasets. This works around #508, and minimizes dataset tasks that
