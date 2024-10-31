@@ -102,7 +102,10 @@ def trigger_training(decision_task_id: str, config: dict[str, any]):
     # https://docs.taskcluster.net/docs/reference/core/hooks/api#triggerHook
     response = hooks.triggerHook(train_action["hookGroupId"], train_action["hookId"], hook_payload)
 
-    action_task_id = response["status"]["taskId"]
+    action_task_id = response.get("status", {}).get("taskId")
+    if not action_task_id:
+        print(response)
+        raise Exception("Could not find the taskId")
 
     print(f"Train action triggered: {ROOT_URL}/tasks/{action_task_id}")
 

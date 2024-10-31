@@ -204,8 +204,9 @@ taskcluster:
   worker-classes:
     default: gcp-spot
 
-target-stage: all
+target-stage: all-pipeline
 start-stage: train-student
 previous_group_ids:
+  - K4R17MTOQJ-rYSI5KaUmNA
   - e6HrD2nFT8S-Hckt18pxlQ
   - WDNdtYFhTG6gh7c1wnAEyw
