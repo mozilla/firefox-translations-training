@@ -48,6 +48,8 @@ skip_datasets = [
     # MTdata duplicates Flores that we pull directly
     "flores101_dev",
     "flores101_devtest",
+    "flores200_dev",
+    "flores200_devtest"
 ]
 
 # Do not include small datasets. This works around #508, and minimizes dataset tasks that
