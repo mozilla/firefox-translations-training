@@ -45,6 +45,9 @@ skip_datasets = [
     "lithuanian_legislation_seimas_lithuania",
     # Fails to load from OPUS.
     "SPC",
+    # MTdata duplicates Flores that we pull directly
+    "flores101_dev",
+    "flores101_devtest",
 ]
 
 # Do not include small datasets. This works around #508, and minimizes dataset tasks that
@@ -185,6 +188,8 @@ def add_train_data(
     entries = fetch_mtdata(source, target)
 
     for corpus_key, entry in entries.items():
+        if entry.did.name in skip_datasets:
+            continue
         # mtdata can have test and devtest data as well.
         if entry.did.name.endswith("test"):
             dataset = datasets["test"]
