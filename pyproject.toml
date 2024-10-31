@@ -9,7 +9,7 @@ readme = "README.md"
 python = "^3.10"
 pip-tools = "^7.3.0"
 zstandard = "^0.22.0"
-# https://github.com/mozilla/firefox-translations-training/issues/689
+# https://github.com/mozilla/translations/issues/689
 numpy = "<2"
 
 [tool.poetry.group.black.dependencies]

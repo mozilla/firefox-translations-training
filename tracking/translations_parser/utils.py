@@ -138,7 +138,7 @@ def patch_model_name(model, suffix=None):
 
     if not suffix and model == "teacher":
         # Keep the index on teacher runs for compatibility with legacy models
-        # https://github.com/mozilla/firefox-translations-training/issues/573
+        # https://github.com/mozilla/translations/issues/573
         suffix = "1"
     if suffix:
         model = f"{model}-{suffix}"

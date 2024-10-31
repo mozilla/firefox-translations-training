@@ -71,7 +71,7 @@ def get_taskgraph_parameters() -> Parameters:
     # Example parameters:
     # {
     #   'base_ref': '',
-    #   'base_repository': 'git@github.com:mozilla/firefox-translations-training.git',
+    #   'base_repository': 'git@github.com:mozilla/translations.git',
     #   'base_rev': '',
     #   'build_date': 1704894563,
     #   'build_number': 1,
@@ -80,7 +80,7 @@ def get_taskgraph_parameters() -> Parameters:
     #   'existing_tasks': {},
     #   'filters': ['target_tasks_method'],
     #   'head_ref': 'main',
-    #   'head_repository': 'git@github.com:mozilla/firefox-translations-training.git',
+    #   'head_repository': 'git@github.com:mozilla/translations.git',
     #   'head_rev': 'e48440fc2c52da770d0f652a32583eae3450766f',
     #   'head_tag': '',
     #   'level': '3',

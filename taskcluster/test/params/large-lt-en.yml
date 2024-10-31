@@ -1,5 +1,5 @@
 base_ref: origin/main
-base_repository: https://github.com/mozilla/firefox-translations-training
+base_repository: https://github.com/mozilla/translations
 base_rev: 4f473253edd61a39505ca001262e518b68b5d0b7
 build_date: 1699579179
 build_number: 1
@@ -9,7 +9,7 @@ existing_tasks: {}
 filters:
 - target_tasks_method
 head_ref: refs/heads/opustrainer
-head_repository: https://github.com/mozilla/firefox-translations-training
+head_repository: https://github.com/mozilla/translations
 head_rev: 22c54949df5e53079e0aecb8585ce3b6b60f87aa
 head_tag: ''
 level: '1'
