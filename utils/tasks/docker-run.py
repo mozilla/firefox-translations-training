@@ -43,7 +43,7 @@ def main():
             docker_command.extend(["--volume", volume])
 
     # Specify the Docker image
-    docker_command.append("ftt-local")
+    docker_command.append("translations-local")
 
     # Append any additional args
     if args.other_args:
