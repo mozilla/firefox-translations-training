@@ -14,7 +14,7 @@ experiment:
     default-threshold: 0.5
     dataset-thresholds: {}
   mono-max-sentences-src:
-    total: 500_000_000
+    total: 50_000_000
     per-dataset: 200_000_000
   mono-max-sentences-trg:
     total: 200_000_000
@@ -207,6 +207,7 @@ taskcluster:
 target-stage: all-pipeline
 start-stage: train-student
 previous_group_ids:
-  - K4R17MTOQJ-rYSI5KaUmNA
-  - e6HrD2nFT8S-Hckt18pxlQ
-  - WDNdtYFhTG6gh7c1wnAEyw
+  - YxrSV7eHR62FHcMmWmsZ6w # New kick off. Contains a non-expired base run.
+  - LtiIriAwSpeT1-GCYqd9Iw # spring-2024 Evaluate only
+  - e6HrD2nFT8S-Hckt18pxlQ # Train teacher 1
+  - WDNdtYFhTG6gh7c1wnAEyw # Train teacher 2
