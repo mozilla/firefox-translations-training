@@ -2,7 +2,7 @@
 # task config-generator -- en sv --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/6745aba3f298ba328d01125a09001a5cdc89ef61/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/translations/blob/6745aba3f298ba328d01125a09001a5cdc89ef61/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: en
@@ -161,7 +161,7 @@ datasets:
   - opus_ELRC-416-Swedish_Social_Secur/v1 #                   1,447 sentences
   - opus_ELRC-416-Swedish_Social_Secur/v1 #                   1,446 sentences
   - opus_ELRC-436-Swedish_Food/v1 #                           1,147 sentences
-# remove to work around https://github.com/mozilla/firefox-translations-training/issues/653
+# remove to work around https://github.com/mozilla/translations/issues/653
 #  - opus_ELRA-W0305/v1 #                                      1,146 sentences
 #  - opus_ELRC-406-Swedish_Labour_Part1/v1 #                   1,011 sentences
 #  - opus_ELRC-3213-antibiotic/v1 #                              953 sentences

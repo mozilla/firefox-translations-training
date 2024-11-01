@@ -29,7 +29,7 @@ task-defaults:
     retry-exit-status: [128]
 
 tasks:
-  # See issue: https://github.com/mozilla/firefox-translations-training/issues/363
+  # See issue: https://github.com/mozilla/translations/issues/363
   #  snakemake-dry-run:
 #    # Ensure that the snakemake workflow is still executing correctly, even though
 #    # taskcluster is the preferred execution environment.

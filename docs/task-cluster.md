@@ -16,15 +16,15 @@ We use [Taskcluster taskgraph](https://taskcluster-taskgraph.readthedocs.io/en/l
 
 ## Development
 
-When making changes to Taskcluster parts of the pipeline it is often necessary to run training before opening a pull request with the change. To do this, ensure that you push your change to a branch of `mozilla/firefox-translations-training` that begins with `dev`. (Only pushes to `main`, `dev*`, and `release*` will run Taskcluster tasks.)
+When making changes to Taskcluster parts of the pipeline it is often necessary to run training before opening a pull request with the change. To do this, ensure that you push your change to a branch of `mozilla/translations` that begins with `dev`. (Only pushes to `main`, `dev*`, and `release*` will run Taskcluster tasks.)
 
 ## Running training
 
-1. Locally check out an up to date branch from the `mozilla/firefox-translations-training`, such as `release` or `main`, or create a local branch prefixed with `dev` and push it up to `mozilla/firefox-translations-training`.
+1. Locally check out an up to date branch from the `mozilla/translations`, such as `release` or `main`, or create a local branch prefixed with `dev` and push it up to `mozilla/translations`.
 
 1. Prepare a config by automatically generating one with the config generator.
    For example: `task config-generator -- en lt --name experiments-2024-H2`
-   Compare it against the [production config](https://github.com/mozilla/firefox-translations-training/tree/main/configs/tc.prod.yml) which has inline documentation and refer to the [model training guide](training-guide.md).
+   Compare it against the [production config](https://github.com/mozilla/translations/tree/main/configs/tc.prod.yml) which has inline documentation and refer to the [model training guide](training-guide.md).
 
 1. Run `task train -- --config path/to/config.yml`. For more configuration options on the script add `--help`.
 
@@ -89,7 +89,7 @@ For example, to download, clean and merge the training corpus use:
 ```
 target-stage: merge-corpus
 ```
-that corresponds to `stage: merge-corpus` in [/taskcluster/ci/merge-corpus/kind.yml](https://github.com/mozilla/firefox-translations-training/taskcluster/ci/merge-corpus/kind.yml):
+that corresponds to `stage: merge-corpus` in [/taskcluster/ci/merge-corpus/kind.yml](https://github.com/mozilla/translations/taskcluster/ci/merge-corpus/kind.yml):
 ```
 tasks:
     merge-corpus:
