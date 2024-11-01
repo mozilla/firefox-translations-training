@@ -26,7 +26,13 @@ experiment:
   spm-vocab-size: 32000
   teacher-ensemble: 2
   teacher-mode: two-stage
-  pretrained-models: {}
+  pretrained-models:
+    train-teacher:
+      urls:
+        - https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/FmL_NEMqQ9qHVZd9tdvbfw/artifacts/public/build/
+        - https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/biiW0pGaQ_uWBw-1GLwDgA/artifacts/public/build/
+      mode: use
+      type: default
 
 # Copied from: configs/spring-2024/en-lt-spring-2024.yml
 datasets:
