@@ -18,7 +18,7 @@ next_version: null
 optimize_strategies: null
 optimize_target_tasks: true
 owner: pavlov89@gmail.com
-project: firefox-translations-training
+project: translations
 pushdate: 0
 pushlog_id: '0'
 repository_type: git

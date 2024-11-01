@@ -70,7 +70,7 @@ It is also possible to deploy Slurm cluster in the cloud. For example, using [Sl
 0. Clone the repo:
 ``` 
 git clone https://github.com/mozilla/translations.git
-cd firefox-translations-training
+cd translations
 ```
 1. Choose a [Snakemake profile](https://github.com/Snakemake-Profiles) from `profiles/` or create a new one 
 2. Adjust paths in the `Makefile` if needed and set `PROFILE` variable to the name of your profile

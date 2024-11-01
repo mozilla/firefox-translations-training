@@ -89,7 +89,7 @@ def get_taskgraph_parameters() -> Parameters:
     #   'optimize_strategies': None,
     #   'optimize_target_tasks': True,
     #   'owner': 'nobody@mozilla.com',
-    #   'project': 'firefox-translations-training',
+    #   'project': 'translations',
     #   'pushdate': 1704894563,
     #   'pushlog_id': '0',
     #   'repository_type': 'git',
@@ -265,7 +265,7 @@ def pretty_print_cmd(command: Optional[Union[list[str], list[list[str]]]]):
 
     # Many commands are invoked by bash. Hide that in the output.
     # Example:
-    #  ['/usr/local/bin/run-task', '--firefox_translations_training-checkout=/builds/worker/checkouts/vcs/',
+    #  ['/usr/local/bin/run-task', '--translations-checkout=/builds/worker/checkouts/vcs/',
     #   '--task-cwd', '/builds/worker/checkouts/vcs', '--', 'bash', '-cx', 'make validate-taskgraph']
     try:
         index = command.index("bash")

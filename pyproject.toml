@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "firefox-translations-training"
+name = "firefox-translations"
 version = "0.1.0"
 description = ""
 authors = []
