@@ -91,7 +91,7 @@ datasets:
 
 # Publishes to the "ci" project.
 wandb-publication: true
-target-stage: all
+target-stage: all-pr-pipeline
 taskcluster:
   split-chunks: 2
   worker-classes:
