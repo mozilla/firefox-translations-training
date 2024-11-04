@@ -7,14 +7,14 @@ source utils/tasks/docker-setup.sh
 
 docker build \
   --file taskcluster/docker/base/Dockerfile \
-  --tag ftt-base .
+  --tag translations-base .
 
 docker build \
-  --build-arg DOCKER_IMAGE_PARENT=ftt-base \
+  --build-arg DOCKER_IMAGE_PARENT=translations-base \
   --file taskcluster/docker/test/Dockerfile \
-  --tag ftt-test .
+  --tag translations-test .
 
 docker build \
-  --build-arg DOCKER_IMAGE_PARENT=ftt-test \
+  --build-arg DOCKER_IMAGE_PARENT=translations-test \
   --file docker/Dockerfile \
-  --tag ftt-local .
+  --tag translations-local .

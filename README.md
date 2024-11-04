@@ -1,5 +1,6 @@
-# Firefox Translations training
-Training pipelines for Firefox Translations machine translation models.
+# Firefox Translations
+
+Training pipelines and the inference engine for Firefox Translations machine translation models.
 
 The trained models are hosted in [firefox-translations-models](https://github.com/mozilla/firefox-translations-models/) repository,
 compatible with [bergamot-translator](https://github.com/mozilla/bergamot-translator) and 
@@ -7,7 +8,7 @@ power the Firefox web page translation starting with version 118.
 
 The pipeline was originally developed as a part of [Bergamot](https://browser.mt/) project  that focuses on improving client-side machine translation in a web browser.
 
-[Documentation](https://mozilla.github.io/firefox-translations-training/)
+[Documentation](https://mozilla.github.io/translations/)
 
 ## Pipeline
 
