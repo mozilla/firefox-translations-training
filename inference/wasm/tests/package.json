@@ -1,0 +1,17 @@
+{
+  "name": "wasm-tests",
+  "version": "1.0.0",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "vitest --run",
+    "test:watch": "vitest"
+  },
+  "keywords": [],
+  "license": "MPL-2.0",
+  "description": "WASM tests for the inference engine.",
+  "devDependencies": {
+    "vitest": "^2.1.4"
+  }
+}
