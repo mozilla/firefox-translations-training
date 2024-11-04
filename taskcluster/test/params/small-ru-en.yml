@@ -1,5 +1,5 @@
 base_ref: origin/main
-base_repository: https://github.com/mozilla/firefox-translations-training
+base_repository: https://github.com/mozilla/translations
 base_rev: fd3125862741e231e5b4a43e2bde715e1ee05482
 build_date: 1700603004
 build_number: 1
@@ -9,7 +9,7 @@ existing_tasks: {}
 filters:
 - target_tasks_method
 head_ref: refs/heads/main
-head_repository: https://github.com/mozilla/firefox-translations-training
+head_repository: https://github.com/mozilla/translations
 head_rev: fd3125862741e231e5b4a43e2bde715e1ee05482
 head_tag: ''
 level: '1'

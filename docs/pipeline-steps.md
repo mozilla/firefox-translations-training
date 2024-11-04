@@ -37,7 +37,7 @@ For example a distribution of sentence length in a dataset.
 Basic preprocessing, dataset specific, language specific, rule based and other attempts to clean noisy data in parallel
 and monolingual datasets.
 Good parallelization across CPU cores. To make cleaning of a new language more efficient add it
-to [clean_parallel.py](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/clean/tools/clean_parallel.py).
+to [clean_parallel.py](https://github.com/mozilla/translations/tree/main/pipeline/clean/tools/clean_parallel.py).
 
 Alternatively use [OpusCleaner](cleaning.md#opuscleaner).
 
@@ -161,4 +161,3 @@ format.
  Quantizaiton                        | CPU            
  Evaluation                          | GPU            
  Export                              |                                                                 
-

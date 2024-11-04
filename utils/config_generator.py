@@ -45,6 +45,13 @@ skip_datasets = [
     "lithuanian_legislation_seimas_lithuania",
     # Fails to load from OPUS.
     "SPC",
+    # MTdata duplicates Flores that we pull directly
+    "flores101_dev",
+    "flores101_devtest",
+    "flores200_dev",
+    "flores200_devtest",
+    # Skip OPUS WMT news test sets. They are used in our evaluation and shouldn't be used for training
+    "WMT-News",
 ]
 
 # Do not include small datasets. This works around #508, and minimizes dataset tasks that
@@ -185,6 +192,8 @@ def add_train_data(
     entries = fetch_mtdata(source, target)
 
     for corpus_key, entry in entries.items():
+        if entry.did.name in skip_datasets:
+            continue
         # mtdata can have test and devtest data as well.
         if entry.did.name.endswith("test"):
             dataset = datasets["test"]
@@ -441,7 +450,7 @@ def apply_comments_to_yaml_string(yaml, prod_config, comment_section, remote_bra
             f"# task config-generator -- {script_args}",
             "#",
             "# The documentation for this config can be found here:",
-            f"# https://github.com/mozilla/firefox-translations-training/blob/{get_git_revision_hash(remote_branch)}/taskcluster/configs/config.prod.yml",
+            f"# https://github.com/mozilla/translations/blob/{get_git_revision_hash(remote_branch)}/taskcluster/configs/config.prod.yml",
             yaml_string,
         ]
     )

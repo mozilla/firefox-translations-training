@@ -6,7 +6,7 @@ nav_order: 4
 
 # Dataset importers
 
-Dataset importers can be used in `datasets` sections of the [training config](https://github.com/mozilla/firefox-translations-training/tree/main/configs/config.test.yml).
+Dataset importers can be used in `datasets` sections of the [training config](https://github.com/mozilla/translations/tree/main/configs/config.test.yml).
 
 Example:
 ```
@@ -27,7 +27,7 @@ Custom parallel | url | `https://storage.googleapis.com/releng-translations-dev/
 [Common crawl](https://commoncrawl.org/) | commoncrawl | wmt16 | mono | Huge web crawl datasets. The links are posted on [WMT21](https://www.statmt.org/wmt21/translation-task.html)
 Custom mono | url | `https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.ru.zst` | mono | A custom zst compressed monolingual dataset, for instance uploaded to GCS.
 
-You can also use [find-corpus](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/utils/find-corpus.py) tool to find all datasets for an importer and get them formatted to use in config.
+You can also use [find-corpus](https://github.com/mozilla/translations/tree/main/pipeline/utils/find-corpus.py) tool to find all datasets for an importer and get them formatted to use in config.
 
 Set up a local [poetry](https://python-poetry.org/) environment.
 ```
@@ -37,5 +37,5 @@ Make sure to check licenses of the datasets before using them.
 
 ## Adding a new importer
 
-Just add a shell script to [corpus](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/data/importers/corpus) or [mono](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/data/importers/mono) which is named as `<prefix>.sh` 
+Just add a shell script to [corpus](https://github.com/mozilla/translations/tree/main/pipeline/data/importers/corpus) or [mono](https://github.com/mozilla/translations/tree/main/pipeline/data/importers/mono) which is named as `<prefix>.sh` 
 and accepts the same parameters as the other scripts from the same folder.

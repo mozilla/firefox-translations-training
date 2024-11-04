@@ -41,7 +41,7 @@ def check_if_pushed(branch: str) -> bool:
 
 def get_decision_task_push(branch: str):
     g = Github()
-    repo_name = "mozilla/firefox-translations-training"
+    repo_name = "mozilla/translations"
     print(f'Looking up "{repo_name}"')
     repo = g.get_repo(repo_name)
     ref = f"heads/{branch}"

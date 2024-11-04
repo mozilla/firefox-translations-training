@@ -365,14 +365,14 @@ def find_pipeline_script(commands: Commands) -> str:
     Commands take the form:
     [
        ['chmod', '+x', 'run-task'],
-       ['./run-task', '--firefox_translations_training-checkout=./checkouts/vcs/', '--', 'bash', '-c', "full command"]
+       ['./run-task', '--translations-checkout=./checkouts/vcs/', '--', 'bash', '-c', "full command"]
     ]
 
     or
 
     [
           "/usr/local/bin/run-task",
-          "--firefox_translations_training-checkout=/builds/worker/checkouts/vcs/",
+          "--translations-checkout=/builds/worker/checkouts/vcs/",
           "--", "bash", "-c",
           "full command"
     ]
