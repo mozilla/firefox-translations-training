@@ -6,6 +6,10 @@ import shutil
 import subprocess
 from typing import Optional
 
+# The emsdk git submodule is set to revision 2346baa7bb44a4a0571cc75f1986ab9aaa35aa03 which
+# corresponds to version 3.1.8. The latest version of emsdk had errors building sentencepiece.
+EMSDK_VERSION = "3.1.8"
+
 SCRIPTS_PATH = os.path.realpath(os.path.dirname(__file__))
 INFERENCE_PATH = os.path.dirname(SCRIPTS_PATH)
 PROJECT_ROOT_PATH = os.path.dirname(INFERENCE_PATH)
@@ -20,10 +24,6 @@ PATCHES_PATH = os.path.join(INFERENCE_PATH, "patches")
 BUILD_DIRECTORY = os.path.join(INFERENCE_PATH, "build-wasm")
 GEMM_SCRIPT = os.path.join(INFERENCE_PATH, "wasm", "patch-artifacts-import-gemm-module.sh")
 DETECT_DOCKER_SCRIPT = os.path.join(SCRIPTS_PATH, "detect-docker.sh")
-
-# 3.1.47 had an error compiling sentencepiece.
-EMSDK_VERSION = "3.1.8"
-EMSDK_REVISION = "2346baa7bb44a4a0571cc75f1986ab9aaa35aa03"
 
 patches = [
     (MARIAN_PATH, os.path.join(PATCHES_PATH, "01-marian-fstream-for-macos.patch")),
@@ -58,41 +58,7 @@ def ensure_docker():
     )
 
 
-def git_clone_update(name: str, repo_path: str, repo_url: str, revision: str):
-    if not os.path.exists(repo_path):
-        print(f"\n⬇️ Clone the {name} repo into {repo_path}\n")
-        subprocess.check_call(
-            ["git", "clone", repo_url],
-            cwd=THIRD_PARTY_PATH,
-        )
-
-    local_head = subprocess.check_output(
-        ["git", "rev-parse", "HEAD"],
-        cwd=repo_path,
-        text=True,
-    ).strip()
-
-    def run(command):
-        return subprocess.check_call(command, cwd=repo_path)
-
-    if local_head != revision:
-        print(f"The head ({local_head}) and revision ({revision}) don't match.")
-        print(f"\n🔎 Fetching revision {revision} from {name}.\n")
-        run(["git", "fetch", "--recurse-submodules", "origin", revision])
-
-        print(f"🛒 Checking out the revision {revision}")
-        run(["git", "checkout", revision])
-        run(["git", "submodule", "update", "--init", "--checkout", "--recursive"])
-
-
-def install_and_activate_emscripten(args: ArgNamespace):
-    git_clone_update(
-        name="emsdk",
-        repo_path=EMSDK_PATH,
-        repo_url="https://github.com/emscripten-core/emsdk.git",
-        revision=EMSDK_REVISION,
-    )
-
+def install_and_activate_emscripten():
     # Run these commands in the shell so that the configuration is saved.
     def run_shell(command):
         return subprocess.run(command, cwd=EMSDK_PATH, shell=True, check=True)
