@@ -85,10 +85,10 @@ tasks:
                     pip install --upgrade pip &&
                     pip install -r $VCS_PATH/pipeline/translate/requirements/extract_best.txt &&
                     python3 $VCS_PATH/pipeline/translate/extract_best.py
-                    -i "$MOZ_FETCHES_DIR/file.{this_chunk}.nbest"
-                    -r "$MOZ_FETCHES_DIR/file.{this_chunk}.ref"
-                    -o $TASK_WORKDIR/artifacts/file.{this_chunk}.nbest.out
-                    -m chrf
+                    --nbest "$MOZ_FETCHES_DIR/file.{this_chunk}.nbest"
+                    --references "$MOZ_FETCHES_DIR/file.{this_chunk}.ref"
+                    --output $TASK_WORKDIR/artifacts/file.{this_chunk}.nbest.out
+                    --metric chrf
 
         dependencies:
             # double curly braces are used for the chunk substitutions because
