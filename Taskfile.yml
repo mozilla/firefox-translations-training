@@ -87,8 +87,8 @@ tasks:
       - >-
           ./inference/scripts/build-local.sh
 
-  inference-test:
-    desc: Run inference tests.
+  inference-test-local:
+    desc: Run inference build-local C++ tests.
     cmds:
       - >-
           ./inference/scripts/unit-tests.sh
