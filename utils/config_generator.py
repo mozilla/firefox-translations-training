@@ -450,7 +450,7 @@ def apply_comments_to_yaml_string(yaml, prod_config, comment_section, remote_bra
             f"# task config-generator -- {script_args}",
             "#",
             "# The documentation for this config can be found here:",
-            f"# https://github.com/mozilla/firefox-translations-training/blob/{get_git_revision_hash(remote_branch)}/taskcluster/configs/config.prod.yml",
+            f"# https://github.com/mozilla/translations/blob/{get_git_revision_hash(remote_branch)}/taskcluster/configs/config.prod.yml",
             yaml_string,
         ]
     )
