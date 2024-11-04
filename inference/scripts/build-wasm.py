@@ -4,7 +4,7 @@ import multiprocessing
 import os
 import shutil
 import subprocess
-from collections import namedtuple
+from typing import Optional
 
 SCRIPTS_PATH = os.path.realpath(os.path.dirname(__file__))
 INFERENCE_PATH = os.path.dirname(SCRIPTS_PATH)
@@ -46,8 +46,6 @@ parser.add_argument(
     type=int,
     help="Number of cores to use for building (default: all available cores)",
 )
-
-ArgNamespace = namedtuple("ArgNamespace", ["clobber", "debug", "j"])
 
 
 def ensure_docker():
@@ -100,10 +98,10 @@ def install_and_activate_emscripten(args: ArgNamespace):
         return subprocess.run(command, cwd=EMSDK_PATH, shell=True, check=True)
 
     print(f"\n🛠️ Installing EMSDK version {EMSDK_VERSION}\n")
-    run_shell("./emsdk install " + EMSDK_VERSION)
+    run_shell(f"./emsdk install {EMSDK_VERSION}")
 
     print("\n🛠️ Activating emsdk\n")
-    run_shell("./emsdk activate " + EMSDK_VERSION)
+    run_shell(f"./emsdk activate {EMSDK_VERSION}")
 
 
 def to_human_readable(size):
@@ -131,7 +129,7 @@ def revert_git_patch(repo_path, patch_path):
     subprocess.check_call(["git", "apply", "-R", "--reject", patch_path], cwd=PROJECT_ROOT_PATH)
 
 
-def build_bergamot(args: ArgNamespace):
+def build_bergamot(args: Optional[list[str]]):
     if args.clobber and os.path.exists(BUILD_PATH):
         shutil.rmtree(BUILD_PATH)
 
@@ -201,7 +199,7 @@ def build_bergamot(args: ArgNamespace):
 
 
 def main():
-    args: ArgNamespace = parser.parse_args()
+    args = parser.parse_args()
 
     if not os.path.exists(THIRD_PARTY_PATH):
         os.mkdir(THIRD_PARTY_PATH)
@@ -210,7 +208,7 @@ def main():
 
     ensure_git_submodules()
 
-    install_and_activate_emscripten(args)
+    install_and_activate_emscripten()
 
     build_bergamot(args)
 
