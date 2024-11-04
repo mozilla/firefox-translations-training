@@ -50,7 +50,7 @@ skip_datasets = [
     "flores101_devtest",
     "flores200_dev",
     "flores200_devtest",
-    # Skip OPUS WMT news test sets
+    # Skip OPUS WMT news test sets. They are used in our evaluation and shouldn't be used for training
     "WMT-News",
 ]
 
