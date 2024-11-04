@@ -31,8 +31,8 @@ tasks:
             cache:
                 type: extract-best
                 resources:
-                    - pipeline/translate/bestbleu.py
-                    - pipeline/translate/requirements/bestbleu.txt
+                    - pipeline/translate/extract_best.py
+                    - pipeline/translate/requirements/extract_best.txt
 
         task-context:
             from-parameters:
@@ -83,8 +83,8 @@ tasks:
                     zstd -d --rm $MOZ_FETCHES_DIR/*.zst &&
                     export PYTHONPATH=$PYTHONPATH:$VCS_PATH &&
                     pip install --upgrade pip &&
-                    pip install -r $VCS_PATH/pipeline/translate/requirements/bestbleu.txt &&
-                    python3 $VCS_PATH/pipeline/translate/bestbleu.py
+                    pip install -r $VCS_PATH/pipeline/translate/requirements/extract_best.txt &&
+                    python3 $VCS_PATH/pipeline/translate/extract_best.py
                     -i "$MOZ_FETCHES_DIR/file.{this_chunk}.nbest"
                     -r "$MOZ_FETCHES_DIR/file.{this_chunk}.ref"
                     -o $TASK_WORKDIR/artifacts/file.{this_chunk}.nbest.out
