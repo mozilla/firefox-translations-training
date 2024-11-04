@@ -25,6 +25,8 @@ fsspec==2024.6.1
     # via
     #   huggingface-hub
     #   torch
+hanzidentifier==1.2.0
+    # via -r pipeline/data/requirements/data.in
 huggingface-hub==0.23.4
     # via
     #   tokenizers
@@ -58,6 +60,8 @@ numpy==1.26.4
     #   scipy
     #   simalign
     #   transformers
+opencc==1.1.9
+    # via -r pipeline/data/requirements/data.in
 opustrainer @ git+https://github.com/hplt-project/OpusTrainer.git@c966d7b353d6b3c6a09d9573f1ab6ba3221c1d21
     # via -r pipeline/data/requirements/data.in
 packaging==24.1
@@ -142,3 +146,5 @@ urllib3==2.2.2
     # via requests
 wcwidth==0.2.13
     # via blessed
+zhon==2.0.2
+    # via hanzidentifier
