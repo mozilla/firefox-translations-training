@@ -58,7 +58,7 @@ tasks:
   build-wasm:
     description: "Build the wasm bindings for the inference engine"
     dependencies:
-      build-local: inference-test-local
+      build-local: inference-build-local
     run-on-tasks-for: ["github-pull-request"]
     run:
       command:
@@ -66,3 +66,15 @@ tasks:
         - -c
         - >-
             task inference-build-wasm
+
+  test-wasm:
+    description: "Run build-wasm JS tests for the inference engine"
+    dependencies:
+      build-local: inference-build-wasm
+    run-on-tasks-for: ["github-pull-request"]
+    run:
+      command:
+        - bash
+        - -c
+        - >-
+            task inference-test-wasm

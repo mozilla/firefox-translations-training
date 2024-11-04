@@ -87,17 +87,24 @@ tasks:
       - >-
           ./inference/scripts/build-local.sh
 
+  inference-build-wasm:
+    desc: Build inference engine WASM.
+    cmds:
+      - >-
+          ./inference/scripts/build-wasm.py {{.CLI_ARGS}}
+
   inference-test-local:
     desc: Run inference build-local C++ tests.
     cmds:
       - >-
           ./inference/scripts/unit-tests.sh
 
-  inference-build-wasm:
-    desc: Build inference engine WASM.
+  inference-test-wasm:
+    desc: Run inference build-wasm JS tests.
+    deps: [inference-build-wasm]
     cmds:
       - >-
-          ./inference/scripts/build-wasm.py {{.CLI_ARGS}}
+          cd inference/wasm/tests && npm install && npm run test
 
   lint-black:
     desc: Checks the styling of the Python code with Black.
