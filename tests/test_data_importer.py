@@ -318,62 +318,20 @@ def test_specific_augmentation(params, data_dir):
         assert rate <= max_rate
 
 
-def test_augmentation_mix(data_dir):
-    dataset = "sacrebleu_aug-mix_wmt19"
+@pytest.mark.parametrize("params", [("ru", "aug-mix"), ("zh", "aug-mix-cjk")])
+def test_augmentation_mix(data_dir, params):
+    src_lang, modifier = params
+    dataset = f"sacrebleu_{modifier}_wmt19"
     original_dataset = "sacrebleu_wmt19"
     prefix = data_dir.join(dataset)
     prefix_original = data_dir.join(original_dataset)
-    output_src = f"{prefix}.{SRC}.zst"
+    output_src = f"{prefix}.{src_lang}.zst"
     output_trg = f"{prefix}.{TRG}.zst"
-    original_src = f"{prefix_original}.{SRC}.zst"
+    original_src = f"{prefix_original}.{src_lang}.zst"
     original_trg = f"{prefix_original}.{TRG}.zst"
-    run_import("corpus", original_dataset, prefix_original, src=SRC, trg=TRG)
+    run_import("corpus", original_dataset, prefix_original, src=src_lang, trg=TRG)
 
-    run_import("corpus", dataset, prefix, src=SRC, trg=TRG)
-
-    AUG_MAX_RATE = 0.35
-    AUG_MIN_RATE = 0.01
-    data_dir.print_tree()
-    assert os.path.exists(output_src)
-    assert os.path.exists(output_trg)
-    src, trg, aug_src, aug_trg = (
-        read_lines(original_src),
-        read_lines(original_trg),
-        read_lines(output_src),
-        read_lines(output_trg),
-    )
-    len_noise_src = len(aug_src) - len(src)
-    len_noise_trg = len(aug_trg) - len(trg)
-    # check noise rate
-    for noise, original in [(len_noise_src, len(src)), (len_noise_trg, len(trg))]:
-        noise_rate = noise / original
-        assert noise_rate > AUG_MIN_RATE
-        assert noise_rate < AUG_MAX_RATE
-
-    # check augmentation rate without noise
-    for aug, original in [(aug_src, src), (aug_trg, trg)]:
-        len_unchanged = len(set(aug).intersection(set(original)))
-        len_original = len(original)
-        aug_rate = (len_original - len_unchanged) / len(original)
-        assert aug_rate > AUG_MIN_RATE
-        assert aug_rate < AUG_MAX_RATE
-
-
-def test_augmentation_mix_zh(data_dir):
-    SRC = "zh"
-    TRG = "en"
-
-    dataset = "sacrebleu_aug-mix-cjk_wmt19"
-    original_dataset = "sacrebleu_wmt19"
-    prefix = data_dir.join(dataset)
-    prefix_original = data_dir.join(original_dataset)
-    output_src = f"{prefix}.{SRC}.zst"
-    output_trg = f"{prefix}.{TRG}.zst"
-    original_src = f"{prefix_original}.{SRC}.zst"
-    original_trg = f"{prefix_original}.{TRG}.zst"
-    run_import("corpus", original_dataset, prefix_original, src=SRC, trg=TRG)
-
-    run_import("corpus", dataset, prefix, src=SRC, trg=TRG)
+    run_import("corpus", dataset, prefix, src=src_lang, trg=TRG)
 
     AUG_MAX_RATE = 0.35
     AUG_MIN_RATE = 0.01
