@@ -72,6 +72,8 @@ tasks:
                     --type corpus
                     --dataset {dataset}
                     --output_prefix $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    --src {src_locale}
+                    --trg {trg_locale}
 
     sacrebleu:
         description: Fetch sacrebleu dataset
