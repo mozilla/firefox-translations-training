@@ -3,7 +3,7 @@ import os
 
 import pytest
 import zstandard as zstd
-from fixtures import DataDir, en_sample, get_mocked_downloads, ru_sample
+from fixtures import DataDir, en_sample, get_mocked_downloads, ru_sample, zh_sample
 from pipeline.data import dataset_importer
 from pipeline.data.dataset_importer import run_import
 
@@ -164,18 +164,20 @@ def data_dir():
 
 
 @pytest.mark.parametrize(
-    "importer,dataset",
+    "importer,trg_lang,dataset",
     [
-        ("mtdata", "Neulab-tedtalks_test-1-eng-rus"),
-        ("opus", "ELRC-3075-wikipedia_health_v1"),
-        ("flores", "dev"),
-        ("sacrebleu", "wmt19"),
-        ("url", "gcp_pytest-dataset_a0017e"),
+        ("mtdata", "ru", "Neulab-tedtalks_test-1-eng-rus"),
+        ("opus", "ru", "ELRC-3075-wikipedia_health_v1"),
+        ("flores", "ru", "dev"),
+        # TODO: enabling this test requires landing zh test config in https://github.com/mozilla/translations/pull/904/files
+        # ("flores", "zh", "dev"),
+        ("sacrebleu", "ru", "wmt19"),
+        ("url", "ru", "gcp_pytest-dataset_a0017e"),
     ],
 )
-def test_basic_corpus_import(importer, dataset, data_dir):
+def test_basic_corpus_import(importer, trg_lang, dataset, data_dir):
     data_dir.run_task(
-        f"dataset-{importer}-{dataset}-en-ru",
+        f"dataset-{importer}-{dataset}-en-{trg_lang}",
         env={
             "WGET": os.path.join(CURRENT_FOLDER, "fixtures/wget"),
             "MOCKED_DOWNLOADS": get_mocked_downloads(),
@@ -183,8 +185,8 @@ def test_basic_corpus_import(importer, dataset, data_dir):
     )
 
     prefix = data_dir.join(f"artifacts/{dataset}")
-    output_src = f"{prefix}.ru.zst"
-    output_trg = f"{prefix}.en.zst"
+    output_src = f"{prefix}.en.zst"
+    output_trg = f"{prefix}.{trg_lang}.zst"
 
     assert os.path.exists(output_src)
     assert os.path.exists(output_trg)
@@ -195,6 +197,8 @@ def test_basic_corpus_import(importer, dataset, data_dir):
 mono_params = [
     ("news-crawl", "en", "news_2021",                    [0, 1, 4, 6, 3, 7, 5, 2]),
     ("news-crawl", "ru", "news_2021",                    [0, 1, 4, 6, 3, 7, 5, 2]),
+    # TODO: enabling this test requires landing zh test config in https://github.com/mozilla/translations/pull/904/files
+    # ("news-crawl", "zh", "news_2021",                    [5, 7, 9, 10, 4, 6, 0, 3, 12, 11, 1, 8, 2]),
     ("url",        "en", "gcp_pytest-dataset_en_cdd0d7", [2, 1, 5, 4, 0, 7, 6, 3]),
     ("url",        "ru", "gcp_pytest-dataset_ru_be3263", [5, 4, 2, 0, 7, 1, 3, 6]),
 ]  # fmt: skip
@@ -219,10 +223,7 @@ def test_mono_source_import(importer, language, dataset, sort_order, data_dir):
 
     data_dir.print_tree()
 
-    sample = {
-        "en": en_sample,
-        "ru": ru_sample,
-    }
+    sample = {"en": en_sample, "ru": ru_sample, "zh": zh_sample}
 
     sample_lines = sample[language].splitlines(keepends=True)
 
