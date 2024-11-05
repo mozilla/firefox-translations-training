@@ -79,9 +79,9 @@ class DataDir:
         os.makedirs(self.path)
         print("Tests are using the subdirectory:", self.path)
 
-    def join(self, name: str):
+    def join(self, *paths: str):
         """Create a folder or file name by joining it to the test directory."""
-        return os.path.join(self.path, name)
+        return os.path.join(self.path, *paths)
 
     def load(self, name: str):
         """Load a text file"""
