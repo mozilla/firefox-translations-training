@@ -69,7 +69,6 @@ zstdmt -dc "${merged_corpus_trg}" >"${vocab_dir}/data.trg.txt"
 # https://github.com/hplt-project/OpusTrainer/tree/main#generating-vocabulary-and-tags-before-training
 # byte_fallback - decomposes unknown pieces into UTF-8 bytes
 # user_defined_symbols - placeholders
-# character_coverage - CJK is recommended to have 0.9995, vocab languages probably you want 1
 "${MARIAN}/spm_train" \
   --bos_id=-1 \
   --eos_id=0 \
@@ -81,7 +80,6 @@ zstdmt -dc "${merged_corpus_trg}" >"${vocab_dir}/data.trg.txt"
   --input_sentence_size="${sample_size}" \
   --shuffle_input_sentence=true \
   --byte_fallback \
-  --character_coverage=1.0 \
   --num_threads "${num_threads}"
 
 rm "${vocab_dir}/data.src.txt" "${vocab_dir}/data.trg.txt"
