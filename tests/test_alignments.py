@@ -51,8 +51,8 @@ def verify_alignments(data_dir, dataset, src_corpus, trg_corpus):
     with open(aln_path[:-4], "r") as f:
         aln_lines = f.readlines()
 
-    src_tokenized_path = os.path.join(data_dir.path, "artifacts", f"{dataset}.moses.{SRC}.zst")
-    trg_tokenized_path = os.path.join(data_dir.path, "artifacts", f"{dataset}.moses.{TRG}.zst")
+    src_tokenized_path = os.path.join(data_dir.path, "artifacts", f"{dataset}.tok-moses.{SRC}.zst")
+    trg_tokenized_path = os.path.join(data_dir.path, "artifacts", f"{dataset}.tok-moses.{TRG}.zst")
 
     sh.zstd("-d", src_tokenized_path, trg_tokenized_path)
 

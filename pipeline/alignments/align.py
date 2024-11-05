@@ -63,12 +63,12 @@ def run(
     corpus_src = decompress(corpus_src)
     corpus_trg = decompress(corpus_trg)
 
-    if tokenization == Tokenization.moses:
+    if tokenization == Tokenization.tok-moses:
         tokenized_src = (
-            corpus_src[: corpus_src.rfind(".")] + ".moses" + corpus_src[corpus_src.rfind(".") :]
+            corpus_src[: corpus_src.rfind(".")] + ".tok-moses" + corpus_src[corpus_src.rfind(".") :]
         )
         tokenized_trg = (
-            corpus_trg[: corpus_trg.rfind(".")] + ".moses" + corpus_trg[corpus_trg.rfind(".") :]
+            corpus_trg[: corpus_trg.rfind(".")] + ".tok-moses" + corpus_trg[corpus_trg.rfind(".") :]
         )
         output_aln = os.path.join(tmp_dir, "aln")
         # C++ tokenizer can process 100k sentences per second on a single core,
@@ -97,7 +97,7 @@ def run(
             priors_output_path=priors_output_path,
         )
 
-    if tokenization == Tokenization.moses:
+    if tokenization == Tokenization.tok-moses:
         if output_tokenized:
             logger.info("Saving tokenized corpus")
             # Copy tokenized corpus to output directory
