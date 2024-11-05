@@ -3,6 +3,7 @@
 import argparse
 import subprocess
 import os
+import platform
 import sys
 
 
@@ -42,6 +43,10 @@ def main():
         "--workdir",
         "/builds/worker/checkouts",
     ]
+
+    # Export the host operating system as an environment variable within the container.
+    host_os = platform.system()
+    docker_command.extend(["--env", f"HOST_OS={host_os}"])
 
     # Add additional volumes if provided
     if args.volume:

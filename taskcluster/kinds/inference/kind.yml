@@ -70,7 +70,7 @@ tasks:
   test-wasm:
     description: "Run build-wasm JS tests for the inference engine"
     dependencies:
-      build-local: inference-build-wasm
+      build-wasm: inference-build-wasm
     run-on-tasks-for: ["github-pull-request"]
     run:
       command:
