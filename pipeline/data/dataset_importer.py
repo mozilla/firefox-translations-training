@@ -3,10 +3,12 @@
 Downloads a dataset and runs augmentation if needed
 
 Example:
-    SRC=ru TRG=en python pipeline/data/dataset_importer.py \
+    python pipeline/data/dataset_importer.py \
         --type=corpus \
         --dataset=sacrebleu_aug-mix_wmt19 \
-        --output_prefix=$(pwd)/test_data/augtest
+        --output_prefix=$(pwd)/test_data/augtest \
+        --src=ru \
+        --trg=en
 """
 
 import argparse
@@ -16,7 +18,8 @@ import re
 import shutil
 import subprocess
 import sys
-from typing import Dict, Iterable, List, Optional
+from pathlib import Path
+from typing import Dict, Iterable, List
 
 from opustrainer.modifiers.noise import NoiseModifier
 from opustrainer.modifiers.placeholders import PlaceholderTagModifier
@@ -208,13 +211,11 @@ def run_import(
     type: str,
     dataset: str,
     output_prefix: str,
-    src: Optional[str] = None,
-    trg: Optional[str] = None,
+    src: str,
+    trg: str,
 ):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     # these envs are standard across the pipeline
-    src_lang = src or os.environ["SRC"]
-    trg_lang = trg or os.environ["TRG"]
 
     if type == "corpus":
         # Parse a dataset identifier to extract importer, augmentation type and dataset name
@@ -240,26 +241,29 @@ def run_import(
         print("Downloading parallel dataset")
         run_cmd(
             [os.path.join(current_dir, "download-corpus.sh"), no_aug_id, output_prefix],
-            env={"SRC": src_lang, "TRG": trg_lang},
+            env={"SRC": src, "TRG": trg},
         )
 
         # TODO: convert everything to Chinese simplified for now
         # TODO: https://github.com/mozilla/firefox-translations-training/issues/896
-        for lang in (src_lang, trg_lang):
+        for lang in (src, trg):
             if lang == "zh":
                 print("Converting the output file to Chinese Simplified")
                 chinese_converter = ChineseConverter()
-                count = chinese_converter.convert_file(
-                    f"{output_prefix}.{lang}.zst",
-                    f"{output_prefix}.converted.{lang}.zst",
+                stats = chinese_converter.convert_file(
+                    Path(f"{output_prefix}.{lang}.zst"),
+                    Path(f"{output_prefix}.converted.{lang}.zst"),
                     ChineseType.simplified,
                 )
                 shutil.move(f"{output_prefix}.converted.{lang}.zst", f"{output_prefix}.{lang}.zst")
-                print(f"Converted {count} lines to Chinese Simplified")
+                print(
+                    f"Converted {stats.script_conversion.converted} lines from {stats.script_conversion.visited} to Chinese Simplified"
+                )
+                stats.save_json()
 
         if aug_modifer:
             print("Running augmentation")
-            augment(output_prefix, aug_modifer, src=src_lang, trg=trg_lang)
+            augment(output_prefix, aug_modifer, src=src, trg=trg)
 
     elif type == "mono":
         raise ValueError("Downloading mono data is not supported yet")
@@ -277,6 +281,18 @@ def main() -> None:
 
     parser.add_argument("--type", metavar="TYPE", type=str, help="Dataset type: mono or corpus")
     parser.add_argument(
+        "--src",
+        metavar="SRC",
+        type=str,
+        help="Source language",
+    )
+    parser.add_argument(
+        "--trg",
+        metavar="TRG",
+        type=str,
+        help="Target language",
+    )
+    parser.add_argument(
         "--dataset",
         metavar="DATASET",
         type=str,
@@ -291,7 +307,7 @@ def main() -> None:
 
     args = parser.parse_args()
     print("Starting dataset import and augmentation.")
-    run_import(args.type, args.dataset, args.output_prefix)
+    run_import(args.type, args.dataset, args.output_prefix, args.src, args.trg)
     print("Finished dataset import and augmentation.")
 
 

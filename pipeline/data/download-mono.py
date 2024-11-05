@@ -126,11 +126,15 @@ def main(args_list: Optional[list[str]] = None) -> None:
     if args.language == "zh":
         logger.info("Converting the output file to Chinese Simplified")
         chinese_converter = ChineseConverter()
-        count = chinese_converter.convert_file(
-            file_destination, file_destination + ".converted.zst", ChineseType.simplified
+        converted_path = file_destination.with_suffix(".converted.zst")
+        stats = chinese_converter.convert_file(
+            file_destination, converted_path, ChineseType.simplified
         )
-        shutil.move(file_destination + ".converted.zst", file_destination)
-        logger.info(f"Converted {count} lines to Chinese Simplified")
+        shutil.move(converted_path, file_destination)
+        print(
+            f"Converted {stats.script_conversion.converted} lines from {stats.script_conversion.visited} to Chinese Simplified"
+        )
+        stats.save_json()
 
 
 if __name__ == "__main__":

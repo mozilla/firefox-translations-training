@@ -15,7 +15,7 @@ from translations_taskgraph.parameters import get_ci_training_config
 logger = logging.getLogger(__name__)
 
 TRAIN_ON_PROJECTS = (
-    "https://github.com/mozilla/firefox-translations-training",
+    "https://github.com/mozilla/translations",
     "https://github.com/mozilla-releng/staging-firefox-translations-training",
 )
 

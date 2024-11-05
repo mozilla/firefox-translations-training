@@ -562,7 +562,7 @@ rule extract_best:
     #group 'translate_corpus'
     input: nbest=f"{translated}/corpus/file.{{part}}.nbest", ref=f"{translated}/corpus/file.{{part}}.ref"
     output: f"{translated}/corpus/file.{{part}}.nbest.out"
-    shell: 'python pipeline/translate/bestbleu.py -i {input.nbest} -r {input.ref} -m bleu -o {output} >> {log} 2>&1'
+    shell: 'python pipeline/translate/extract_best.py -i {input.nbest} -r {input.ref} -m bleu -o {output} >> {log} 2>&1'
 
 rule collect_corpus:
     message: "Collecting translated corpus"

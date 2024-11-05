@@ -60,12 +60,13 @@ def test_convert_file(text: str, expected: str, type: ChineseType, data_dir: Dat
     out_path = data_dir.join("cjk_test_out.txt")
     converter = ChineseConverter()
 
-    count = converter.convert_file(in_path, out_path, type)
+    stats = converter.convert_file(in_path, out_path, type)
 
     with open(out_path, "r") as f:
         out_text = f.read()
     assert out_text
-    assert count == (3 if all_text != out_text else 0)
+    assert stats.script_conversion.visited == 3
+    assert stats.script_conversion.converted == (3 if all_text != out_text else 0)
     out_texts = out_text.split("\n")
     assert len(out_texts) == 3
     assert out_texts[0] == out_texts[1] == out_texts[2]
