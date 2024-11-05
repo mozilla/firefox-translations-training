@@ -18,6 +18,7 @@ import re
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 from typing import Dict, Iterable, List
 
 from opustrainer.modifiers.noise import NoiseModifier
@@ -249,13 +250,16 @@ def run_import(
             if lang == "zh":
                 print("Converting the output file to Chinese Simplified")
                 chinese_converter = ChineseConverter()
-                count = chinese_converter.convert_file(
-                    f"{output_prefix}.{lang}.zst",
-                    f"{output_prefix}.converted.{lang}.zst",
+                stats = chinese_converter.convert_file(
+                    Path(f"{output_prefix}.{lang}.zst"),
+                    Path(f"{output_prefix}.converted.{lang}.zst"),
                     ChineseType.simplified,
                 )
                 shutil.move(f"{output_prefix}.converted.{lang}.zst", f"{output_prefix}.{lang}.zst")
-                print(f"Converted {count} lines to Chinese Simplified")
+                print(
+                    f"Converted {stats.script_conversion.converted} lines from {stats.script_conversion.visited} to Chinese Simplified"
+                )
+                stats.save_json()
 
         if aug_modifer:
             print("Running augmentation")
