@@ -4,7 +4,7 @@ Tokenizes a text file with line separated sentences using Moses tokenizer.
 
 Example:
   python pipeline/alignments/tokenizer.py --input_path=data/datasets/news.2023.en.shuffled.deduped \
-    --output_path=data/datasets/news.2023.en.shuffled.deduped.moses --lang=en --chunk_size=500000
+    --output_path=data/datasets/news.2023.en.shuffled.deduped.tok-moses --lang=en --chunk_size=500000
 
 Using C++ opus-fast-mosestokenizer sometimes requires specifying LD_LIBRARY_PATH before starting the Python process
 see https://github.com/Helsinki-NLP/opus-fast-mosestokenizer/issues/6

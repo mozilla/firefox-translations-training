@@ -41,19 +41,14 @@ ru_sample = """Маленькая девочка, увидев, что поте�
 «Мне действительно очень жаль», — сказала Дороти, которая была по-настоящему напугана, увидев, что Ведьма тает, как коричневый сахар, у нее на глазах.
 """
 
-zh_sample = """他补充道：“我们现在有 4 个月大没有糖尿病的老鼠，但它们曾经得过该病。”
-埃胡德·乌尔博士（新斯科舍省哈利法克斯市达尔豪西大学医学教授，加拿大糖尿病协会临床与科学部门教授）提醒，这项研究仍处在早期阶段。
-和其他一些专家一样，他对糖尿病能否治愈持怀疑态度。他指出，这些发现与已患有 1 型糖尿病的人无关。
-周一，瑞典学院诺贝尔文学委员会常务秘书萨拉·丹尼尔斯在瑞典广播电台的一档节目中向公众宣布，委员会因无法直接联系到鲍勃·迪伦，通知他获得了 2016 年诺贝尔文学奖，已经放弃了与他联系的尝试。
-达尼厄斯说道：“目前我们保持按兵不动。我给他关系最好的合作者打过电话并发送了电子邮件，而且收到了对方非常友好的回复。就目前而言，这足够了。”
-此前，铃声 (Ring) 公司 CEO 杰米·西米诺夫曾表示，公司成立之初，他在位于车库的工作室里是听不到门铃响声的。
-他称，他制作了一个 WiFi 门铃。
-西米诺夫说，2013 年他在《创智赢家》节目中露面后，公司的销售额大增，当时节目组拒绝向这家初创公司投资。
-2017 年年末，西米诺夫出现在 QVC 电视销售频道。
-铃声 (Ring) 公司还与竞争对手 ADT 安保公司在一起官司中达成了庭外和解。
-虽然有一种实验性疫苗看似能够降低埃博拉病毒的死亡率，但迄今为止，还没明确证明任何药物适合治疗现有的感染。
-一种名为 ZMapp 的“抗体鸡尾酒”（多抗体联合）最初有望在该领域发挥作用，但正式研究表明，它在预防死亡方面的效果有些不尽人意。
-在 PALM 实验中，ZMapp 用作参照。也就是科学家将其作为基线，把其他三种治疗方法与之作比较。
+zh_sample = """小女孩看到自己丢了一只漂亮的鞋子，生气了，对女巫说：“把我的鞋子还给我！”
+“我不会的，”女巫反驳道，“因为现在是我的鞋子，不是你的。”
+“你是个坏女人！”多萝西喊道。“你无权夺走我的鞋子。”
+“我会把它留着的，”女巫笑着说，“总有一天我也会从你那里得到另一只。”
+这让多萝西非常生气，她拿起旁边的一桶水，泼在女巫身上，把她从头到脚都淋湿了。
+恶毒的女人立刻发出一声恐惧的尖叫，然后，当多萝西惊奇地看着她时，女巫开始缩小并倒下。
+“看看你做了什么！”她尖叫道。“我马上就会融化。”
+“我真的很抱歉，”多萝西说，她真的很害怕看到女巫真的像红糖一样在她眼前融化。
 """
 
 
@@ -79,9 +74,9 @@ class DataDir:
         os.makedirs(self.path)
         print("Tests are using the subdirectory:", self.path)
 
-    def join(self, name: str):
+    def join(self, *paths: str):
         """Create a folder or file name by joining it to the test directory."""
-        return os.path.join(self.path, name)
+        return os.path.join(self.path, *paths)
 
     def load(self, name: str):
         """Load a text file"""
@@ -140,6 +135,7 @@ class DataDir:
         env: dict[str, str] = {},
         extra_args: List[str] = None,
         replace_args: List[str] = None,
+        config: Optional[str] = None,
     ):
         """
         Runs a task from the taskgraph. See artifacts/full-task-graph.json after running a
@@ -157,9 +153,14 @@ class DataDir:
         fetches_dir - The MOZ_FETCHES_DIR, generally set as the test's DataDir.
 
         env - Any environment variable overrides.
+
+        extra_args - Extra Marian arguments
+
+        config - A path to a Taskcluster config file
+
         """
 
-        command_parts, requirements, task_env = get_task_command_and_env(task_name)
+        command_parts, requirements, task_env = get_task_command_and_env(task_name, config=config)
 
         # There are some non-string environment variables that involve taskcluster references
         # Remove these.
@@ -325,35 +326,40 @@ def fail_on_error(result: CompletedProcess[bytes]):
 _full_taskgraph: Optional[dict[str, object]] = None
 
 
-def get_full_taskgraph():
+def get_full_taskgraph(config: Optional[str] = None):
     """
     Generates the full taskgraph and stores it for re-use. It uses the config.pytest.yml
     in this directory.
+
+    config - A path to a Taskcluster config
     """
+    current_folder = os.path.dirname(os.path.abspath(__file__))
+    if not config:
+        config = os.path.join(current_folder, "config.pytest.yml")
+
     global _full_taskgraph
-    if _full_taskgraph:
-        return _full_taskgraph
+    if not _full_taskgraph:
+        _full_taskgraph = {}
+    if config in _full_taskgraph:
+        return _full_taskgraph[config]
 
     start = time.time()
-
-    current_folder = os.path.dirname(os.path.abspath(__file__))
     task_graph_json = os.path.join(current_folder, "../../artifacts/full-task-graph.json")
-    config = os.path.join(current_folder, "config.pytest.yml")
 
     if os.environ.get("SKIP_TASKGRAPH"):
         print("Using existing taskgraph generation.")
     else:
         print(
-            "Generating the full taskgraph, this can take a second. Set SKIP_TASKGRAPH=1 to skip this step."
+            f"Generating the full taskgraph with config {config}, this can take a second. Set SKIP_TASKGRAPH=1 to skip this step."
         )
         run_taskgraph(config, get_taskgraph_parameters())
 
     with open(task_graph_json, "rb") as file:
-        _full_taskgraph = json.load(file)
+        _full_taskgraph[config] = json.load(file)
 
     elapsed_sec = time.time() - start
     print(f"Taskgraph generated in {elapsed_sec:.2f} seconds.")
-    return _full_taskgraph
+    return _full_taskgraph[config]
 
 
 # Taskcluster commands can either be a single list of commands, or a nested list.
@@ -455,7 +461,9 @@ def find_requirements(commands: Commands) -> Optional[str]:
     return None
 
 
-def get_task_command_and_env(task_name: str) -> tuple[list[str], Optional[str], dict[str, str]]:
+def get_task_command_and_env(
+    task_name: str, config: Optional[str]
+) -> tuple[list[str], Optional[str], dict[str, str]]:
     """
     Extracts a task's command from the full taskgraph. This allows for testing
     the full taskcluster pipeline and the scripts that it generates.
@@ -463,8 +471,10 @@ def get_task_command_and_env(task_name: str) -> tuple[list[str], Optional[str], 
 
     task_name - The full task name like "split-mono-src-en"
         or "evaluate-backward-sacrebleu-wmt09-en-ru".
+
+    config - A path to a Taskcluster config
     """
-    full_taskgraph = get_full_taskgraph()
+    full_taskgraph = get_full_taskgraph(config)
     task = full_taskgraph.get(task_name)
     if not task:
         print("Available tasks:")
