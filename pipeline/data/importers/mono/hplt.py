@@ -114,6 +114,7 @@ def load_shuffled_shard_urls(language: str) -> list[str]:
 def download_hplt(
     language: str,
     hlpt_min_fluency: float,
+    max_characters: int,
     max_lines: int,
     file_destination: Path,
 ):
@@ -128,6 +129,7 @@ def download_hplt(
     Parameters:
      - language: The BCP 47 language code to filter the documents.
      - hlpt_min_fluency: The minimum score a sentence must have to be included in the final dataset.
+     - max_characters: The maximum number of characters to merge sentences in the document before writing. 0 - preserve the lines as in the dataset
      - max_lines: The maximum number of lines to include in the final dataset.
      - file_destination: The destination path where the final dataset will be written.
     """
@@ -152,10 +154,9 @@ def download_hplt(
 
         strings_seen = WeakStringSet()
         accumulated_text: str = ""
-        cumulative_word_count = 0
+        cumulative_char_count = 0
         visited_lines = 0
 
-        # TODO: figure out what's happening here. We shouldn't modify the dataset by default
         def maybe_write_accumulated_text():
             """
             Since the loop below is building up paragraphs of text, we only want to write
@@ -163,8 +164,8 @@ def download_hplt(
             written out when either the text gets too long, or the next line is discarded.
             """
             nonlocal accumulated_text
-            nonlocal cumulative_word_count
-            cumulative_word_count = 0
+            nonlocal cumulative_char_count
+            cumulative_char_count = 0
             if accumulated_text:
                 if accumulated_text in strings_seen:
                     stats.duplicate_lines.value += 1
@@ -187,12 +188,27 @@ def download_hplt(
 
                 # Check for the fluency scores.
                 if lang_item == language and score >= hlpt_min_fluency:
-                    stats.visited_lines.kept += 1
-                    # Collect this line to write.
-                    if accumulated_text:
-                        accumulated_text = f"{accumulated_text} {line}"
+                    char_count = len(line)
+
+                    if char_count > max_characters:
+                        # This sentence is too long.
+                        maybe_write_accumulated_text()
                     else:
-                        accumulated_text = line
+                        stats.visited_lines.kept += 1
+
+                        # Determine if this sentence should be added to the previous one or
+                        # written out as a new line. Only concurrent sentences that meet
+                        # the fluency requirement will be combined together.
+                        if cumulative_char_count + char_count > max_characters:
+                            # This line would be too long, write it out.
+                            maybe_write_accumulated_text()
+
+                        cumulative_char_count += char_count
+                        # Collect this line to write.
+                        if accumulated_text:
+                            accumulated_text = f"{accumulated_text} {line}"
+                        else:
+                            accumulated_text = line
                 else:
                     maybe_write_accumulated_text()
 
