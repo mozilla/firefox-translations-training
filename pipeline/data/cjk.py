@@ -1,3 +1,6 @@
+"""
+Chinese, Japanese, Korean (CJK) specific data importing code
+"""
 from enum import Flag
 from pathlib import Path
 from typing import Optional
