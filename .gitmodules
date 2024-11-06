@@ -42,3 +42,6 @@
 [submodule "inference/3rd_party/browsermt-marian-dev"]
 	path = inference/3rd_party/browsermt-marian-dev
 	url = https://github.com/browsermt/marian-dev
+[submodule "inference/3rd_party/emsdk"]
+	path = inference/3rd_party/emsdk
+	url = https://github.com/emscripten-core/emsdk.git
