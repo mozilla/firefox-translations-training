@@ -84,6 +84,7 @@ bad_mtdata_sizes = {
 # evaluation/validation data augmentation modifier. It depends on a language pair
 aug_mix_modifier = None
 
+
 def is_cjk(source: str, target: str) -> bool:
     return source in CJK_LANGS or target in CJK_LANGS
 
@@ -291,8 +292,6 @@ def normalize_corpus_name(corpus_name: str):
     corpus_name = re.sub(r"train$", "", corpus_name)
 
     return corpus_name
-
-
 
 
 def add_test_data(
