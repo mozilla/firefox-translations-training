@@ -3,18 +3,22 @@
 Downloads a dataset and runs augmentation if needed
 
 Example:
-    SRC=ru TRG=en python pipeline/data/dataset_importer.py \
+    python pipeline/data/dataset_importer.py \
         --type=corpus \
         --dataset=sacrebleu_aug-mix_wmt19 \
-        --output_prefix=$(pwd)/test_data/augtest
+        --output_prefix=$(pwd)/test_data/augtest \
+        --src=ru \
+        --trg=en
 """
 
 import argparse
 import os
 import random
 import re
+import shutil
 import subprocess
 import sys
+from pathlib import Path
 from typing import Dict, Iterable, List
 
 from opustrainer.modifiers.noise import NoiseModifier
@@ -24,10 +28,7 @@ from opustrainer.modifiers.typos import TypoModifier
 from opustrainer.types import Modifier
 
 from pipeline.common.downloads import compress_file, decompress_file
-
-# these envs are standard across the pipeline
-SRC = os.environ["SRC"]
-TRG = os.environ["TRG"]
+from pipeline.data.cjk import ChineseConverter, ChineseType
 
 random.seed(1111)
 
@@ -64,6 +65,7 @@ def get_typos_probs() -> Dict[str, float]:
     return probs
 
 
+# See documentation for the modifiers in https://github.com/mozilla/translations/blob/main/docs/opus-trainer.md#supported-modifiers
 modifier_map = {
     "aug-typos": lambda: TypoModifier(PROB_1, **get_typos_probs()),
     "aug-title": lambda: TitleCaseModifier(PROB_1),
@@ -79,11 +81,20 @@ modifier_map = {
             PlaceholderTagModifier(NOISE_MIX_PROB, augment=1),
         ]
     ),
+    "aug-mix-cjk": lambda: CompositeModifier(
+        [
+            NoiseModifier(MIX_PROB),
+            PlaceholderTagModifier(NOISE_MIX_PROB, augment=1),
+        ]
+    ),
 }
 
 
-def run_cmd(cmd: List[str]):
+def run_cmd(cmd: List[str], env: Dict[str, str]):
     result = None
+    # make sure to preserve the current process env vars
+    env_vars = dict(os.environ)
+    env_vars.update(env)
     try:
         result = subprocess.run(
             cmd,
@@ -91,6 +102,7 @@ def run_cmd(cmd: List[str]):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             check=False,
+            env=env_vars,
         )
         result.check_returncode()
     except:
@@ -125,7 +137,7 @@ def add_alignments(corpus: List[str]) -> List[str]:
 
 
 # we plan to use it only for small evaluation datasets
-def augment(output_prefix: str, aug_modifer: str):
+def augment(output_prefix: str, aug_modifer: str, src: str, trg: str):
     """
     Augment corpus on disk using the OpusTrainer modifier
     """
@@ -133,14 +145,14 @@ def augment(output_prefix: str, aug_modifer: str):
         raise ValueError(f"Invalid modifier {aug_modifer}. Allowed values: {modifier_map.keys()}")
 
     # file paths for compressed and uncompressed corpus
-    uncompressed_src = f"{output_prefix}.{SRC}"
-    uncompressed_trg = f"{output_prefix}.{TRG}"
-    compressed_src = f"{output_prefix}.{SRC}.zst"
-    compressed_trg = f"{output_prefix}.{TRG}.zst"
+    uncompressed_src = f"{output_prefix}.{src}"
+    uncompressed_trg = f"{output_prefix}.{trg}"
+    compressed_src = f"{output_prefix}.{src}.zst"
+    compressed_trg = f"{output_prefix}.{trg}.zst"
 
     corpus = read_corpus_tsv(compressed_src, compressed_trg, uncompressed_src, uncompressed_trg)
 
-    if aug_modifer in ("aug-mix", "aug-inline-noise"):
+    if aug_modifer in ("aug-mix", "aug-inline-noise", "aug-mix-cjk"):
         # add alignments for inline noise
         # Tags modifier will remove them after processing
         corpus = add_alignments(corpus)
@@ -196,8 +208,15 @@ def write_modified(modified: List[str], uncompressed_src: str, uncompressed_trg:
     compress_file(uncompressed_trg, keep_original=False)
 
 
-def run_import(type: str, dataset: str, output_prefix: str):
+def run_import(
+    type: str,
+    dataset: str,
+    output_prefix: str,
+    src: str,
+    trg: str,
+):
     current_dir = os.path.dirname(os.path.abspath(__file__))
+    # these envs are standard across the pipeline
 
     if type == "corpus":
         # Parse a dataset identifier to extract importer, augmentation type and dataset name
@@ -221,10 +240,31 @@ def run_import(type: str, dataset: str, output_prefix: str):
         no_aug_id = f"{importer}_{name}"
 
         print("Downloading parallel dataset")
-        run_cmd([os.path.join(current_dir, "download-corpus.sh"), no_aug_id, output_prefix])
+        run_cmd(
+            [os.path.join(current_dir, "download-corpus.sh"), no_aug_id, output_prefix],
+            env={"SRC": src, "TRG": trg},
+        )
+
+        # TODO: convert everything to Chinese simplified for now
+        # TODO: https://github.com/mozilla/firefox-translations-training/issues/896
+        for lang in (src, trg):
+            if lang == "zh":
+                print("Converting the output file to Chinese Simplified")
+                chinese_converter = ChineseConverter()
+                stats = chinese_converter.convert_file(
+                    Path(f"{output_prefix}.{lang}.zst"),
+                    Path(f"{output_prefix}.converted.{lang}.zst"),
+                    ChineseType.simplified,
+                )
+                shutil.move(f"{output_prefix}.converted.{lang}.zst", f"{output_prefix}.{lang}.zst")
+                print(
+                    f"Converted {stats.script_conversion.converted} lines from {stats.script_conversion.visited} to Chinese Simplified"
+                )
+                stats.save_json()
+
         if aug_modifer:
             print("Running augmentation")
-            augment(output_prefix, aug_modifer)
+            augment(output_prefix, aug_modifer, src=src, trg=trg)
 
     elif type == "mono":
         raise ValueError("Downloading mono data is not supported yet")
@@ -242,6 +282,18 @@ def main() -> None:
 
     parser.add_argument("--type", metavar="TYPE", type=str, help="Dataset type: mono or corpus")
     parser.add_argument(
+        "--src",
+        metavar="SRC",
+        type=str,
+        help="Source language",
+    )
+    parser.add_argument(
+        "--trg",
+        metavar="TRG",
+        type=str,
+        help="Target language",
+    )
+    parser.add_argument(
         "--dataset",
         metavar="DATASET",
         type=str,
@@ -256,7 +308,7 @@ def main() -> None:
 
     args = parser.parse_args()
     print("Starting dataset import and augmentation.")
-    run_import(args.type, args.dataset, args.output_prefix)
+    run_import(args.type, args.dataset, args.output_prefix, args.src, args.trg)
     print("Finished dataset import and augmentation.")
 
 

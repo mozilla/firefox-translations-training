@@ -3,157 +3,13 @@ import os
 
 import pytest
 import zstandard as zstd
-from fixtures import DataDir, en_sample, get_mocked_downloads, ru_sample
+from fixtures import DataDir, en_sample, get_mocked_downloads, ru_sample, zh_sample
+from pipeline.data import dataset_importer
+from pipeline.data.dataset_importer import run_import
 
 SRC = "ru"
 TRG = "en"
 CURRENT_FOLDER = os.path.dirname(os.path.abspath(__file__))
-
-os.environ["SRC"] = SRC
-os.environ["TRG"] = TRG
-
-from pipeline.data import dataset_importer
-from pipeline.data.dataset_importer import run_import
-
-
-def add_fake_alignments(corpus):
-    corpus_and_aln = []
-    for line in corpus:
-        parts = line.split("\t")
-        src_sent, trg_sent = parts[0], parts[1]
-        min_len = min(len(src_sent.split()), len(trg_sent.split()))
-        aln = " ".join([f"{idx}-{idx}" for idx in range(min_len)])
-        corpus_and_aln.append(f"{line}\t{aln}")
-
-    return corpus_and_aln
-
-
-# it's very slow to download and run BERT on 2000 lines
-dataset_importer.add_alignments = add_fake_alignments
-
-
-def read_lines(path):
-    with zstd.open(path, "rt") as f:
-        return f.readlines()
-
-
-def is_title_case(text):
-    return all((word[0].isupper() or not word.isalpha()) for word in text.split())
-
-
-def is_title_lines(src_l, trg_l, aug_src_l, aug_trg_l):
-    return is_title_case(aug_src_l) and is_title_case(aug_trg_l)
-
-
-def is_upper_case(text):
-    return all((word.isupper() or not word.isalpha()) for word in text.split())
-
-
-def is_upper_lines(src_l, trg_l, aug_src_l, aug_trg_l):
-    return is_upper_case(aug_src_l) and is_upper_case(aug_trg_l)
-
-
-def only_src_is_different(src_l, trg_l, aug_src_l, aug_trg_l):
-    return src_l != aug_src_l and trg_l == aug_trg_l
-
-
-def src_and_trg_are_different(src_l, trg_l, aug_src_l, aug_trg_l):
-    return src_l != aug_src_l and trg_l != aug_trg_l
-
-
-def aug_lines_are_not_too_long(src_l, trg_l, aug_src_l, aug_trg_l):
-    return (
-        len(src_l) <= len(aug_src_l)
-        and len(trg_l) <= len(aug_trg_l)
-        # when Tags modifier is enabled with 1.0 probability it generates too many noise insertions in each sentence
-        # the length ratio can still be high for one word sentences
-        and len(aug_src_l) < len(src_l) * 4
-        and len(aug_trg_l) < len(trg_l) * 4
-    )
-
-
-def all_len_equal(*items):
-    return len(set(items)) == 1
-
-
-def twice_longer(src, trg, aug_src, aug_trg):
-    return src * 2 == aug_src and trg * 2 == aug_trg
-
-
-@pytest.fixture(scope="function")
-def data_dir():
-    return DataDir("test_data_importer")
-
-
-@pytest.mark.parametrize(
-    "importer,dataset",
-    [
-        ("mtdata", "Neulab-tedtalks_test-1-eng-rus"),
-        ("opus", "ELRC-3075-wikipedia_health_v1"),
-        ("flores", "dev"),
-        ("sacrebleu", "wmt19"),
-        ("url", "gcp_pytest-dataset_a0017e"),
-    ],
-)
-def test_basic_corpus_import(importer, dataset, data_dir):
-    data_dir.run_task(
-        f"dataset-{importer}-{dataset}-en-ru",
-        env={
-            "WGET": os.path.join(CURRENT_FOLDER, "fixtures/wget"),
-            "MOCKED_DOWNLOADS": get_mocked_downloads(),
-        },
-    )
-
-    prefix = data_dir.join(f"artifacts/{dataset}")
-    output_src = f"{prefix}.ru.zst"
-    output_trg = f"{prefix}.en.zst"
-
-    assert os.path.exists(output_src)
-    assert os.path.exists(output_trg)
-    assert len(read_lines(output_src)) > 0
-    assert len(read_lines(output_trg)) > 0
-
-
-mono_params = [
-    ("news-crawl", "en", "news_2021",                    [0, 1, 4, 6, 3, 7, 5, 2]),
-    ("news-crawl", "ru", "news_2021",                    [0, 1, 4, 6, 3, 7, 5, 2]),
-    ("url",        "en", "gcp_pytest-dataset_en_cdd0d7", [2, 1, 5, 4, 0, 7, 6, 3]),
-    ("url",        "ru", "gcp_pytest-dataset_ru_be3263", [5, 4, 2, 0, 7, 1, 3, 6]),
-]  # fmt: skip
-
-
-@pytest.mark.parametrize(
-    "importer,language,dataset,sort_order",
-    mono_params,
-    ids=[f"{d[0]}-{d[1]}" for d in mono_params],
-)
-def test_mono_source_import(importer, language, dataset, sort_order, data_dir):
-    data_dir.run_task(
-        f"dataset-{importer}-{dataset}-{language}",
-        env={
-            "WGET": os.path.join(CURRENT_FOLDER, "fixtures/wget"),
-            "MOCKED_DOWNLOADS": get_mocked_downloads(),
-        },
-    )
-
-    prefix = data_dir.join(f"artifacts/{dataset}")
-    mono_data = f"{prefix}.{language}.zst"
-
-    data_dir.print_tree()
-
-    sample = {
-        "en": en_sample,
-        "ru": ru_sample,
-    }
-
-    sample_lines = sample[language].splitlines(keepends=True)
-
-    assert os.path.exists(mono_data)
-    source_lines = list(read_lines(mono_data))
-    assert [
-        source_lines.index(line) for line in sample_lines
-    ] == sort_order, "The data is shuffled."
-
 
 hplt_translations = {
     "en": [
@@ -238,6 +94,146 @@ hplt_stats = {
 }
 
 
+def add_fake_alignments(corpus):
+    corpus_and_aln = []
+    for line in corpus:
+        parts = line.split("\t")
+        src_sent, trg_sent = parts[0], parts[1]
+        min_len = min(len(src_sent.split()), len(trg_sent.split()))
+        aln = " ".join([f"{idx}-{idx}" for idx in range(min_len)])
+        corpus_and_aln.append(f"{line}\t{aln}")
+
+    return corpus_and_aln
+
+
+# it's very slow to download and run BERT on 2000 lines
+dataset_importer.add_alignments = add_fake_alignments
+
+
+def read_lines(path):
+    with zstd.open(path, "rt") as f:
+        return f.readlines()
+
+
+def is_title_case(text):
+    return all((word[0].isupper() or not word.isalpha()) for word in text.split())
+
+
+def is_title_lines(src_l, trg_l, aug_src_l, aug_trg_l):
+    return is_title_case(aug_src_l) and is_title_case(aug_trg_l)
+
+
+def is_upper_case(text):
+    return all((word.isupper() or not word.isalpha()) for word in text.split())
+
+
+def is_upper_lines(src_l, trg_l, aug_src_l, aug_trg_l):
+    return is_upper_case(aug_src_l) and is_upper_case(aug_trg_l)
+
+
+def only_src_is_different(src_l, trg_l, aug_src_l, aug_trg_l):
+    return src_l != aug_src_l and trg_l == aug_trg_l
+
+
+def src_and_trg_are_different(src_l, trg_l, aug_src_l, aug_trg_l):
+    return src_l != aug_src_l and trg_l != aug_trg_l
+
+
+def aug_lines_are_not_too_long(src_l, trg_l, aug_src_l, aug_trg_l):
+    return (
+        len(src_l) <= len(aug_src_l)
+        and len(trg_l) <= len(aug_trg_l)
+        # when Tags modifier is enabled with 1.0 probability it generates too many noise insertions in each sentence
+        # the length ratio can still be high for one word sentences
+        and len(aug_src_l) < len(src_l) * 4
+        and len(aug_trg_l) < len(trg_l) * 4
+    )
+
+
+def all_len_equal(*items):
+    return len(set(items)) == 1
+
+
+def twice_longer(src, trg, aug_src, aug_trg):
+    return src * 2 == aug_src and trg * 2 == aug_trg
+
+
+@pytest.fixture(scope="function")
+def data_dir():
+    return DataDir("test_data_importer")
+
+
+@pytest.mark.parametrize(
+    "importer,trg_lang,dataset",
+    [
+        ("mtdata", "ru", "Neulab-tedtalks_test-1-eng-rus"),
+        ("opus", "ru", "ELRC-3075-wikipedia_health_v1"),
+        ("flores", "ru", "dev"),
+        # TODO: enabling this test requires landing zh test config in https://github.com/mozilla/translations/pull/904/files
+        # ("flores", "zh", "dev"),
+        ("sacrebleu", "ru", "wmt19"),
+        ("url", "ru", "gcp_pytest-dataset_a0017e"),
+    ],
+)
+def test_basic_corpus_import(importer, trg_lang, dataset, data_dir):
+    data_dir.run_task(
+        f"dataset-{importer}-{dataset}-en-{trg_lang}",
+        env={
+            "WGET": os.path.join(CURRENT_FOLDER, "fixtures/wget"),
+            "MOCKED_DOWNLOADS": get_mocked_downloads(),
+        },
+    )
+
+    prefix = data_dir.join(f"artifacts/{dataset}")
+    output_src = f"{prefix}.en.zst"
+    output_trg = f"{prefix}.{trg_lang}.zst"
+
+    assert os.path.exists(output_src)
+    assert os.path.exists(output_trg)
+    assert len(read_lines(output_src)) > 0
+    assert len(read_lines(output_trg)) > 0
+
+
+mono_params = [
+    ("news-crawl", "en", "news_2021",                    [0, 1, 4, 6, 3, 7, 5, 2]),
+    ("news-crawl", "ru", "news_2021",                    [0, 1, 4, 6, 3, 7, 5, 2]),
+    # TODO: enabling this test requires landing zh test config in https://github.com/mozilla/translations/pull/904/files
+    # ("news-crawl", "zh", "news_2021",                    [5, 7, 9, 10, 4, 6, 0, 3, 12, 11, 1, 8, 2]),
+    ("url",        "en", "gcp_pytest-dataset_en_cdd0d7", [2, 1, 5, 4, 0, 7, 6, 3]),
+    ("url",        "ru", "gcp_pytest-dataset_ru_be3263", [5, 4, 2, 0, 7, 1, 3, 6]),
+]  # fmt: skip
+
+
+@pytest.mark.parametrize(
+    "importer,language,dataset,sort_order",
+    mono_params,
+    ids=[f"{d[0]}-{d[1]}" for d in mono_params],
+)
+def test_mono_source_import(importer, language, dataset, sort_order, data_dir):
+    data_dir.run_task(
+        f"dataset-{importer}-{dataset}-{language}",
+        env={
+            "WGET": os.path.join(CURRENT_FOLDER, "fixtures/wget"),
+            "MOCKED_DOWNLOADS": get_mocked_downloads(),
+        },
+    )
+
+    prefix = data_dir.join(f"artifacts/{dataset}")
+    mono_data = f"{prefix}.{language}.zst"
+
+    data_dir.print_tree()
+
+    sample = {"en": en_sample, "ru": ru_sample, "zh": zh_sample}
+
+    sample_lines = sample[language].splitlines(keepends=True)
+
+    assert os.path.exists(mono_data)
+    source_lines = list(read_lines(mono_data))
+    assert [
+        source_lines.index(line) for line in sample_lines
+    ] == sort_order, "The data is shuffled."
+
+
 @pytest.mark.parametrize(
     "language",
     ["ru", "en"],
@@ -297,9 +293,9 @@ def test_specific_augmentation(params, data_dir):
     output_trg = f"{prefix_aug}.{TRG}.zst"
     original_src = f"{prefix_original}.{SRC}.zst"
     original_trg = f"{prefix_original}.{TRG}.zst"
-    run_import("corpus", original_dataset, prefix_original)
+    run_import("corpus", original_dataset, prefix_original, src=SRC, trg=TRG)
 
-    run_import("corpus", dataset, prefix_aug)
+    run_import("corpus", dataset, prefix_aug, src=SRC, trg=TRG)
 
     data_dir.print_tree()
     assert os.path.exists(output_src)
@@ -323,18 +319,20 @@ def test_specific_augmentation(params, data_dir):
         assert rate <= max_rate
 
 
-def test_augmentation_mix(data_dir):
-    dataset = "sacrebleu_aug-mix_wmt19"
+@pytest.mark.parametrize("params", [("ru", "aug-mix"), ("zh", "aug-mix-cjk")])
+def test_augmentation_mix(data_dir, params):
+    src_lang, modifier = params
+    dataset = f"sacrebleu_{modifier}_wmt19"
     original_dataset = "sacrebleu_wmt19"
     prefix = data_dir.join(dataset)
     prefix_original = data_dir.join(original_dataset)
-    output_src = f"{prefix}.{SRC}.zst"
+    output_src = f"{prefix}.{src_lang}.zst"
     output_trg = f"{prefix}.{TRG}.zst"
-    original_src = f"{prefix_original}.{SRC}.zst"
+    original_src = f"{prefix_original}.{src_lang}.zst"
     original_trg = f"{prefix_original}.{TRG}.zst"
-    run_import("corpus", original_dataset, prefix_original)
+    run_import("corpus", original_dataset, prefix_original, src=src_lang, trg=TRG)
 
-    run_import("corpus", dataset, prefix)
+    run_import("corpus", dataset, prefix, src=src_lang, trg=TRG)
 
     AUG_MAX_RATE = 0.35
     AUG_MIN_RATE = 0.01

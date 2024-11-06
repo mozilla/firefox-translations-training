@@ -151,6 +151,8 @@ so it should only be used on small evaluation datasets.
 
 `aug-mix` - applies all the existing modifiers with 0.05 probability each
 
+`aug-mix-cjk` - applies only the modifiers applicable to CJK languages (noise ones)
+
 ### Example training config
 ```yaml
   # datasets for validation while training

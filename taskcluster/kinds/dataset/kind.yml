@@ -59,6 +59,7 @@ tasks:
                     - pipeline/data/download-corpus.sh
                     - pipeline/data/dataset_importer.py
                     - pipeline/data/requirements/data.txt
+                    - pipeline/data/cjk.py
         run:
             command:
                 - bash
@@ -71,6 +72,8 @@ tasks:
                     --type corpus
                     --dataset {dataset}
                     --output_prefix $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    --src {src_locale}
+                    --trg {trg_locale}
 
     sacrebleu:
         description: Fetch sacrebleu dataset
@@ -84,6 +87,7 @@ tasks:
                     - pipeline/data/download-corpus.sh
                     - pipeline/data/dataset_importer.py
                     - pipeline/data/requirements/data.txt
+                    - pipeline/data/cjk.py
         run:
             command:
                 - bash
@@ -95,7 +99,9 @@ tasks:
                     python3 -u $VCS_PATH/pipeline/data/dataset_importer.py
                     --type corpus
                     --dataset {dataset}
-                    --output_prefix $TASK_WORKDIR/artifacts/{dataset_sanitized} 2>&1
+                    --output_prefix $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    --src {src_locale}
+                    --trg {trg_locale}
 
     opus:
         description: Fetch opus dataset
@@ -110,6 +116,7 @@ tasks:
                     - pipeline/data/download-corpus.sh
                     - pipeline/data/dataset_importer.py
                     - pipeline/data/requirements/data.txt
+                    - pipeline/data/cjk.py
         run:
             command:
                 - bash
@@ -122,6 +129,8 @@ tasks:
                     --type corpus
                     --dataset {dataset}
                     --output_prefix $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    --src {src_locale}
+                    --trg {trg_locale}
 
     url:
         description: Fetch a parallel corpus from a URL
@@ -136,6 +145,7 @@ tasks:
                     - pipeline/data/download-corpus.sh
                     - pipeline/data/dataset_importer.py
                     - pipeline/data/requirements/data.txt
+                    - pipeline/data/cjk.py
         run:
             command:
                 - bash
@@ -148,6 +158,8 @@ tasks:
                     --type corpus
                     --dataset {dataset}
                     --output_prefix $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    --src {src_locale}
+                    --trg {trg_locale}
 
     url-{src_locale}:
         description: Fetch a monolingual corpus from a URL for {src_locale}
@@ -159,6 +171,7 @@ tasks:
             cache:
                 resources:
                     - pipeline/data/download-mono.py
+                    - pipeline/data/cjk.py
                 from-parameters:
                     max_sentences:
                         - training_config.experiment.mono-max-sentences-src.per-dataset
@@ -370,6 +383,7 @@ tasks:
                     - pipeline/data/download-corpus.sh
                     - pipeline/data/dataset_importer.py
                     - pipeline/data/requirements/data.txt
+                    - pipeline/data/cjk.py
         run:
             command:
                 - bash
@@ -382,6 +396,8 @@ tasks:
                     --type corpus
                     --dataset {dataset}
                     --output_prefix $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    --src {src_locale}
+                    --trg {trg_locale}
 
     news-crawl-{src_locale}:
         description: Fetch news-crawl dataset for {src_locale}
@@ -393,6 +409,7 @@ tasks:
             cache:
                 resources:
                     - pipeline/data/download-mono.py
+                    - pipeline/data/cjk.py
                 from-parameters:
                     max_sentences:
                         - training_config.experiment.mono-max-sentences-src.per-dataset
@@ -426,6 +443,7 @@ tasks:
             cache:
                 resources:
                     - pipeline/data/download-mono.py
+                    - pipeline/data/cjk.py
                 from-parameters:
                     max_sentences:
                         - training_config.experiment.mono-max-sentences-trg.per-dataset
