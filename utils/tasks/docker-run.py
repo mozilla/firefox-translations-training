@@ -16,6 +16,12 @@ def get_args():
         metavar="VOLUME",
     )
 
+    parser.add_argument(
+        "--run-as-user",
+        action="store_true",
+        help="Run the Docker container as the current user's UID and GID.",
+    )
+
     args, other_args = parser.parse_known_args()
     args.other_args = other_args
 
@@ -41,6 +47,12 @@ def main():
     if args.volume:
         for volume in args.volume:
             docker_command.extend(["--volume", volume])
+
+    # Run Docker with the current user's UID and GID if --run-as-user is specified
+    if args.run_as_user:
+        uid = os.getuid()
+        gid = os.getgid()
+        docker_command.extend(["--user", f"{uid}:{gid}"])
 
     # Specify the Docker image
     docker_command.append("translations-local")
