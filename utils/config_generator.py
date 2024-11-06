@@ -118,6 +118,9 @@ def update_config(
     else:
         experiment["pretrained-models"] = {}
 
+    if source in CJK_LANGS or target in CJK_LANGS:
+        experiment["opuscleaner-mode"] = "custom"
+
     datasets = prod_config["datasets"]
 
     # Clear out the base config.

@@ -16,7 +16,6 @@ CTestTestfile.cmake
 _deps
 
 
-**/*/emsdk
 /build
 /build-local
 /build-native

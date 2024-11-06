@@ -63,6 +63,13 @@ def main(args_list: Optional[list[str]] = None) -> None:
         default=0.8,
     )
     parser.add_argument(
+        "--hlpt_max_characters",
+        type=int,
+        help="The maximum number of characters to merge lines in a document before writing. "
+        "0 - preserve original lines of HPLT dataset",
+        default=0,
+    )
+    parser.add_argument(
         "--artifacts", type=Path, help="The location where the dataset will be saved"
     )
     args = parser.parse_args(args_list)
@@ -85,8 +92,8 @@ def main(args_list: Optional[list[str]] = None) -> None:
         download_hplt(
             language=args.language,
             hlpt_min_fluency=args.hlpt_min_fluency,
+            max_characters=args.hlpt_max_characters,
             max_lines=args.max_sentences,
-            max_words_in_sentence=MAX_WORDS_IN_SENTENCE,
             file_destination=file_destination,
         )
 
@@ -116,7 +123,6 @@ def main(args_list: Optional[list[str]] = None) -> None:
             line_stream=lines,
             seed=dataset.name,
             max_lines=args.max_sentences,
-            max_words_in_sentence=MAX_WORDS_IN_SENTENCE,
             total_byte_size=get_download_size(url),
         ):
             outfile.write(line)
