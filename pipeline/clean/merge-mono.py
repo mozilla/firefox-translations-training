@@ -245,7 +245,12 @@ def main() -> None:
     stats = FilteringStatistics(output_path)
 
     filter_and_write_monolingual_data(
-        mono_dataset_paths, output_path, line_hashes, max_sentences, args.sample_size, stats
+        mono_datasets=mono_dataset_paths,
+        output_path=output_path,
+        parallel_hashes=line_hashes,
+        max_lines=max_sentences,
+        sample_size=args.sample_size,
+        stats=stats,
     )
 
     logger.info("Done: Merging monolingual datasets")
