@@ -74,9 +74,9 @@ class DataDir:
         os.makedirs(self.path)
         print("Tests are using the subdirectory:", self.path)
 
-    def join(self, name: str):
+    def join(self, *paths: str):
         """Create a folder or file name by joining it to the test directory."""
-        return os.path.join(self.path, name)
+        return os.path.join(self.path, *paths)
 
     def load(self, name: str):
         """Load a text file"""
@@ -386,14 +386,14 @@ def find_pipeline_script(commands: Commands) -> str:
     Commands take the form:
     [
        ['chmod', '+x', 'run-task'],
-       ['./run-task', '--firefox_translations_training-checkout=./checkouts/vcs/', '--', 'bash', '-c', "full command"]
+       ['./run-task', '--translations-checkout=./checkouts/vcs/', '--', 'bash', '-c', "full command"]
     ]
 
     or
 
     [
           "/usr/local/bin/run-task",
-          "--firefox_translations_training-checkout=/builds/worker/checkouts/vcs/",
+          "--translations-checkout=/builds/worker/checkouts/vcs/",
           "--", "bash", "-c",
           "full command"
     ]
@@ -528,6 +528,8 @@ def get_mocked_downloads() -> str:
                 get_path("pytest-dataset.en.gz"),
             "http://data.statmt.org/news-crawl/ru/news.2021.ru.shuffled.deduped.gz":
                 get_path("pytest-dataset.ru.gz"),
+            "http://data.statmt.org/news-crawl/zh/news.2021.zh.shuffled.deduped.gz":
+                get_path("pytest-dataset.zh.gz"),
             "https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.en.zst":
                 get_path("pytest-dataset.en.zst"),
             "https://storage.googleapis.com/releng-translations-dev/data/en-ru/pytest-dataset.ru.zst":

@@ -65,10 +65,14 @@ def run(
 
     if tokenization == Tokenization.moses:
         tokenized_src = (
-            corpus_src[: corpus_src.rfind(".")] + ".moses" + corpus_src[corpus_src.rfind(".") :]
+            corpus_src[: corpus_src.rfind(".")]
+            + ".tok-moses"
+            + corpus_src[corpus_src.rfind(".") :]
         )
         tokenized_trg = (
-            corpus_trg[: corpus_trg.rfind(".")] + ".moses" + corpus_trg[corpus_trg.rfind(".") :]
+            corpus_trg[: corpus_trg.rfind(".")]
+            + ".tok-moses"
+            + corpus_trg[corpus_trg.rfind(".") :]
         )
         output_aln = os.path.join(tmp_dir, "aln")
         # C++ tokenizer can process 100k sentences per second on a single core,

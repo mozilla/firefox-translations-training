@@ -98,7 +98,6 @@ def test_shuffle_with_max_lines(params):
         line_stream,
         seed="test",
         max_lines=MAX_LINES,
-        max_words_in_sentence=100,
         total_byte_size=get_total_byte_size(line_stream),
     )
 

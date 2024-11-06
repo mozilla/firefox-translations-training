@@ -45,7 +45,7 @@ class Dataset:
     # Important! Keep in sync with dataset_helpers.py.
     def _escape(dataset: str) -> str:
         # URLs can be too large when used as Taskcluster labels. Create a nice identifier for them.
-        # See https://github.com/mozilla/firefox-translations-training/issues/527
+        # See https://github.com/mozilla/translations/issues/527
         if dataset.startswith("https://") or dataset.startswith("http://"):
             url = urlparse(dataset)
 
@@ -94,7 +94,6 @@ def shuffle_with_max_lines(
     line_stream: Iterator[str],
     seed: str,
     max_lines: int,
-    max_words_in_sentence,
     total_byte_size: Optional[int] = None,
     estimate_total_byte_size: Optional[Callable[[float], int]] = None,
 ) -> list[str]:
@@ -131,11 +130,6 @@ def shuffle_with_max_lines(
     for line in line_stream:
         # Encoding returns the underlying byte representation which is then measured.
         total_bytes = total_bytes + len(line.encode("utf-8"))
-
-        if len(line.split()) > max_words_in_sentence:
-            # TODO(CJK) - Issue #424
-            # This sentence is too long.
-            continue
 
         lines.append(line)
 

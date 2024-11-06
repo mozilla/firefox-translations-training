@@ -9,8 +9,8 @@ from typing import Literal, Union
 import ruamel.yaml
 
 from pipeline.common.downloads import get_download_size, location_exists
+from pipeline.data.cjk import CJK_LANGS
 from pipeline.data.importers.mono.hplt import language_has_hplt_support
-from pipeline.train.train import CJK_LANGS
 from utils.find_corpus import (
     fetch_mtdata,
     fetch_news_crawl,
@@ -46,6 +46,13 @@ skip_datasets = [
     "lithuanian_legislation_seimas_lithuania",
     # Fails to load from OPUS.
     "SPC",
+    # MTdata duplicates Flores that we pull directly
+    "flores101_dev",
+    "flores101_devtest",
+    "flores200_dev",
+    "flores200_devtest",
+    # Skip OPUS WMT news test sets. They are used in our evaluation and shouldn't be used for training
+    "WMT-News",
 ]
 
 # Do not include small datasets. This works around #508, and minimizes dataset tasks that
@@ -73,6 +80,12 @@ bad_mtdata_sizes = {
     "tedtalks_test",
     "tedtalks_dev",
 }
+
+# evaluation/validation data augmentation modifier. It depends on a language pair
+aug_mix_modifier = None
+
+def is_cjk(source: str, target: str) -> bool:
+    return source in CJK_LANGS or target in CJK_LANGS
 
 
 def get_git_revision_hash(remote_branch: str) -> str:
@@ -108,8 +121,9 @@ def update_config(
     else:
         experiment["pretrained-models"] = {}
 
-    if source in CJK_LANGS or target in CJK_LANGS:
+    if is_cjk(source, target):
         experiment["spm-vocab-size"] = 64000
+        experiment["opuscleaner-mode"] = "custom"
 
     datasets = prod_config["datasets"]
 
@@ -189,6 +203,8 @@ def add_train_data(
     entries = fetch_mtdata(source, target)
 
     for corpus_key, entry in entries.items():
+        if entry.did.name in skip_datasets:
+            continue
         # mtdata can have test and devtest data as well.
         if entry.did.name.endswith("test"):
             dataset = datasets["test"]
@@ -277,6 +293,8 @@ def normalize_corpus_name(corpus_name: str):
     return corpus_name
 
 
+
+
 def add_test_data(
     source: str,
     target: str,
@@ -290,14 +308,14 @@ def add_test_data(
         test_datasets.append("flores_devtest")
 
         # Add augmented datasets to check performance for the specific cases
-        test_datasets.append("flores_aug-mix_devtest")
-        test_datasets.append("flores_aug-title_devtest")
-        test_datasets.append("flores_aug-upper_devtest")
-        test_datasets.append("flores_aug-typos_devtest")
+        devtest_datasets.append(f"flores_{aug_mix_modifier}_dev")
+        test_datasets.append(f"flores_{aug_mix_modifier}_devtest")
         test_datasets.append("flores_aug-noise_devtest")
         test_datasets.append("flores_aug-inline-noise_devtest")
-
-        devtest_datasets.append("flores_aug-mix_dev")
+        if not is_cjk(source, target):
+            test_datasets.append("flores_aug-title_devtest")
+            test_datasets.append("flores_aug-upper_devtest")
+            test_datasets.append("flores_aug-typos_devtest")
 
     is_test = True  # Flip between devtest and test.
     print("Fetching sacrebleu")
@@ -314,7 +332,7 @@ def add_test_data(
             if is_test:
                 test_datasets.append(f"sacrebleu_{dataset_name}")
             else:
-                devtest_datasets.append(f"sacrebleu_aug-mix_{dataset_name}")
+                devtest_datasets.append(f"sacrebleu_{aug_mix_modifier}_{dataset_name}")
             is_test = not is_test
 
     if skipped_datasets:
@@ -445,7 +463,7 @@ def apply_comments_to_yaml_string(yaml, prod_config, comment_section, remote_bra
             f"# task config-generator -- {script_args}",
             "#",
             "# The documentation for this config can be found here:",
-            f"# https://github.com/mozilla/firefox-translations-training/blob/{get_git_revision_hash(remote_branch)}/taskcluster/configs/config.prod.yml",
+            f"# https://github.com/mozilla/translations/blob/{get_git_revision_hash(remote_branch)}/taskcluster/configs/config.prod.yml",
             yaml_string,
         ]
     )
@@ -518,6 +536,9 @@ def main() -> None:
         yaml_string = f.read()
     yaml_string = strip_comments(yaml_string)
     prod_config = yaml.load(StringIO(yaml_string))
+
+    global aug_mix_modifier
+    aug_mix_modifier = "aug-mix-cjk" if is_cjk(args.source, args.target) else "aug-mix"
 
     comment_section = update_config(prod_config, args.name, args.source, args.target, args.fast)
     final_config = apply_comments_to_yaml_string(

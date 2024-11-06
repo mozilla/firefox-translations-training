@@ -72,6 +72,8 @@ tasks:
                     --type corpus
                     --dataset {dataset}
                     --output_prefix $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    --src {src_locale}
+                    --trg {trg_locale}
 
     sacrebleu:
         description: Fetch sacrebleu dataset
@@ -97,7 +99,9 @@ tasks:
                     python3 -u $VCS_PATH/pipeline/data/dataset_importer.py
                     --type corpus
                     --dataset {dataset}
-                    --output_prefix $TASK_WORKDIR/artifacts/{dataset_sanitized} 2>&1
+                    --output_prefix $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    --src {src_locale}
+                    --trg {trg_locale}
 
     opus:
         description: Fetch opus dataset
@@ -125,6 +129,8 @@ tasks:
                     --type corpus
                     --dataset {dataset}
                     --output_prefix $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    --src {src_locale}
+                    --trg {trg_locale}
 
     url:
         description: Fetch a parallel corpus from a URL
@@ -152,6 +158,8 @@ tasks:
                     --type corpus
                     --dataset {dataset}
                     --output_prefix $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    --src {src_locale}
+                    --trg {trg_locale}
 
     url-{src_locale}:
         description: Fetch a monolingual corpus from a URL for {src_locale}
@@ -388,6 +396,8 @@ tasks:
                     --type corpus
                     --dataset {dataset}
                     --output_prefix $TASK_WORKDIR/artifacts/{dataset_sanitized}
+                    --src {src_locale}
+                    --trg {trg_locale}
 
     news-crawl-{src_locale}:
         description: Fetch news-crawl dataset for {src_locale}

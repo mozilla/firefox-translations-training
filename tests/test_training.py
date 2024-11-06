@@ -59,10 +59,9 @@ def config(trg_lang):
 @pytest.fixture()
 def vocab(data_dir, trg_lang):
     output_path = data_dir.join("vocab.spm")
-    if trg_lang == "ru":
-        shutil.copyfile("tests/data/vocab.spm", output_path)
-    else:
-        shutil.copyfile("tests/data/vocab.zhen.spm", output_path)
+    vocab_path = "tests/data/vocab.spm" if trg_lang == "ru" else "tests/data/vocab.zhen.spm"
+    shutil.copyfile(vocab_path, output_path)
+    print(f"Using vocab {vocab_path}")
 
     return output_path
 
@@ -90,17 +89,17 @@ def alignments(data_dir, vocab, corpus, trg_lang, config):
     for task, corpus in [("original", "corpus"), ("backtranslated", "mono")]:
         data_dir.run_task(f"alignments-{task}-en-{trg_lang}", env=env, config=config)
         shutil.copyfile(
-            os.path.join(data_dir.path, "artifacts", f"{corpus}.aln.zst"),
+            data_dir.join("artifacts", f"{corpus}.aln.zst"),
             data_dir.join(f"{corpus}.aln.zst"),
         )
         for lang in ["en", trg_lang]:
             shutil.copyfile(
-                os.path.join(data_dir.path, "artifacts", f"{corpus}.moses.{lang}.zst"),
-                data_dir.join(f"{corpus}.moses.{lang}.zst"),
+                data_dir.join("artifacts", f"{corpus}.tok-moses.{lang}.zst"),
+                data_dir.join(f"{corpus}.tok-moses.{lang}.zst"),
             )
         if task == "original":
             shutil.copyfile(
-                os.path.join(data_dir.path, "artifacts", "corpus.priors"),
+                data_dir.join("artifacts", "corpus.priors"),
                 data_dir.join("corpus.priors"),
             )
     # recreate corpus
@@ -126,12 +125,8 @@ def test_train_student_mocked(alignments, data_dir, trg_lang, vocab, config):
     data_dir.run_task(f"train-student-en-{trg_lang}", env=env, config=config)
     data_dir.print_tree()
 
-    assert os.path.isfile(
-        os.path.join(data_dir.path, "artifacts", "final.model.npz.best-chrf.npz")
-    )
-    assert os.path.isfile(
-        os.path.join(data_dir.path, "artifacts", "model.npz.best-chrf.npz.decoder.yml")
-    )
+    assert os.path.isfile(data_dir.join("artifacts", "final.model.npz.best-chrf.npz"))
+    assert os.path.isfile(data_dir.join("artifacts", "model.npz.best-chrf.npz.decoder.yml"))
     validate_alignments(data_dir.join("marian.input.txt"), vocab)
 
 
@@ -165,12 +160,8 @@ def test_train_student(alignments, data_dir, trg_lang, config):
     )
     data_dir.print_tree()
 
-    assert os.path.isfile(
-        os.path.join(data_dir.path, "artifacts", "final.model.npz.best-chrf.npz")
-    )
-    assert os.path.isfile(
-        os.path.join(data_dir.path, "artifacts", "model.npz.best-chrf.npz.decoder.yml")
-    )
+    assert os.path.isfile(data_dir.join("artifacts", "final.model.npz.best-chrf.npz"))
+    assert os.path.isfile(data_dir.join("artifacts", "model.npz.best-chrf.npz.decoder.yml"))
 
 
 def test_train_teacher(alignments, data_dir, trg_lang, config):
@@ -210,12 +201,8 @@ def test_train_teacher(alignments, data_dir, trg_lang, config):
         f"train-teacher-en-{trg_lang}-1", env=env, extra_args=marian_args, config=config
     )
 
-    assert os.path.isfile(
-        os.path.join(data_dir.path, "artifacts", "final.model.npz.best-chrf.npz")
-    )
-    assert os.path.isfile(
-        os.path.join(data_dir.path, "artifacts", "model.npz.best-chrf.npz.decoder.yml")
-    )
+    assert os.path.isfile(data_dir.join("artifacts", "final.model.npz.best-chrf.npz"))
+    assert os.path.isfile(data_dir.join("artifacts", "model.npz.best-chrf.npz.decoder.yml"))
 
 
 def test_train_backwards(corpus, vocab, data_dir, trg_lang, config):
@@ -252,12 +239,8 @@ def test_train_backwards(corpus, vocab, data_dir, trg_lang, config):
         f"train-backwards-en-{trg_lang}", env=env, extra_args=marian_args, config=config
     )
 
-    assert os.path.isfile(
-        os.path.join(data_dir.path, "artifacts", "final.model.npz.best-chrf.npz")
-    )
-    assert os.path.isfile(
-        os.path.join(data_dir.path, "artifacts", "model.npz.best-chrf.npz.decoder.yml")
-    )
+    assert os.path.isfile(data_dir.join("artifacts", "final.model.npz.best-chrf.npz"))
+    assert os.path.isfile(data_dir.join("artifacts", "model.npz.best-chrf.npz.decoder.yml"))
 
 
 def test_train_backwards_mocked(data_dir, vocab, corpus, trg_lang, config):
@@ -276,12 +259,8 @@ def test_train_backwards_mocked(data_dir, vocab, corpus, trg_lang, config):
     data_dir.run_task(f"train-backwards-en-{trg_lang}", env=env, config=config)
     data_dir.print_tree()
 
-    assert os.path.isfile(
-        os.path.join(data_dir.path, "artifacts", "final.model.npz.best-chrf.npz")
-    )
-    assert os.path.isfile(
-        os.path.join(data_dir.path, "artifacts", "model.npz.best-chrf.npz.decoder.yml")
-    )
+    assert os.path.isfile(data_dir.join("artifacts", "final.model.npz.best-chrf.npz"))
+    assert os.path.isfile(data_dir.join("artifacts", "model.npz.best-chrf.npz.decoder.yml"))
 
 
 def test_train_teacher_mocked(alignments, data_dir, trg_lang, config):
@@ -305,6 +284,4 @@ def test_train_teacher_mocked(alignments, data_dir, trg_lang, config):
     data_dir.run_task(f"train-teacher-en-{trg_lang}-1", env=env, config=config)
     data_dir.print_tree()
 
-    assert os.path.isfile(
-        os.path.join(data_dir.path, "artifacts", "final.model.npz.best-chrf.npz")
-    )
+    assert os.path.isfile(data_dir.join("artifacts", "final.model.npz.best-chrf.npz"))

@@ -49,12 +49,6 @@ else
     export scol=2
     export tcol=1
   fi
-  # disable hard rules for multilingual model
-  if [ ${model_source_lang} == "xx" ] || [ ${model_target_lang} == "xx" ]; then
-    export hardrules="--disable_hardrules"
-  else
-    export hardrules=""
-  fi
 
   #Export cuda visible devices if empty or not set
   if [ -z "${CUDA_VISIBLE_DEVICES:-}" ]; then
@@ -76,7 +70,7 @@ else
                # to operate on the CPU very slowly. To guard against this wasting expensive
                # GPU time, always check that it can find GPUs.
                python3 -c "import tensorflow; exit(0) if tensorflow.config.list_physical_devices('GPU') else exit(9001)"
-               bicleaner-ai-classify ${hardrules} --scol ${scol} --tcol ${tcol} - - $1
+               bicleaner-ai-classify --disable_hardrules --scol ${scol} --tcol ${tcol} - - $1
        }
        export -f biclean
        # {%} is a 1-indexed job slot number from GNU parallel.  We use that as the 1-indexed offset in CUDA_VISIBLE_ARRAY
@@ -86,7 +80,7 @@ else
   else
    export BICLEANER_AI_THREADS=${threads}
    paste <(zstdmt -dc "${corpus_prefix}.${SRC}.zst") <(zstdmt -dc "${corpus_prefix}.${TRG}.zst") |
-     bicleaner-ai-classify ${hardrules} --scol ${scol} --tcol ${tcol} "${threads}"  - - "${pack_dir}"/*.yaml |
+     bicleaner-ai-classify --disable_hardrules --scol ${scol} --tcol ${tcol} "${threads}"  - - "${pack_dir}"/*.yaml |
      zstdmt >"${output_prefix}.scored.zst"
   fi
 

@@ -11,7 +11,7 @@ Utilizing pretrained models can reduce training time and resource usage.
 
 ## Configuration Parameters
 
-To download and use models from previous training runs or external sources, use the `pretrained-models` parameter in the training config. The keys in this parameter correspond to the training task `kinds` capable of using pretrained models. This is currently `train-teacher` and `train-backwards`. See [#515](https://github.com/mozilla/firefox-translations-training/issues/515) for `train-student` support.
+To download and use models from previous training runs or external sources, use the `pretrained-models` parameter in the training config. The keys in this parameter correspond to the training task `kinds` capable of using pretrained models. This is currently `train-teacher` and `train-backwards`. See [#515](https://github.com/mozilla/translations/issues/515) for `train-student` support.
 
 ```yaml
 experiment:

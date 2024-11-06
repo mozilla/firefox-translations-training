@@ -49,7 +49,7 @@ if [ "$vocab_size" == "None" ]; then
 fi
 
 if (( vocab_size % 8 != 0 )); then
-  echo "Error: vocab_size must be a multiple of 8 (https://github.com/mozilla/firefox-translations-training/issues/249)"
+  echo "Error: vocab_size must be a multiple of 8 (https://github.com/mozilla/translations/issues/249)"
   exit 1
 fi
 
