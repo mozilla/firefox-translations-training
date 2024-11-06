@@ -45,7 +45,7 @@ class Dataset:
     # Important! Keep in sync with dataset_helpers.py.
     def _escape(dataset: str) -> str:
         # URLs can be too large when used as Taskcluster labels. Create a nice identifier for them.
-        # See https://github.com/mozilla/firefox-translations-training/issues/527
+        # See https://github.com/mozilla/translations/issues/527
         if dataset.startswith("https://") or dataset.startswith("http://"):
             url = urlparse(dataset)
 

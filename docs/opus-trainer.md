@@ -42,9 +42,9 @@ Ability to split training into multiple stages. Each stage is configurable to us
 
 We use it to pretrain the teacher model on the augmented dataset that includes the original parallel corpus and 
 back-translations and then continue training on the original parallel corpus only
-(see [teacher config](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/opustrainer/teacher.two-stage.yml)).
+(see [teacher config](https://github.com/mozilla/translations/tree/main/pipeline/train/configs/opustrainer/teacher.two-stage.yml)).
 
-To switch to a [one stage](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/opustrainer/teacher.one-stage.yml) training
+To switch to a [one stage](https://github.com/mozilla/translations/tree/main/pipeline/train/configs/opustrainer/teacher.one-stage.yml) training
 use a config option:
 
 ```yaml
@@ -58,7 +58,7 @@ It likely will be the case when using a pre-trained student model as a backward 
 ## Configuration
 
 OpusTrainer configuration files for the trained models are located in 
-the [/pipeline/train/configs/opustrainer/](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/opustrainer/) directory.
+the [/pipeline/train/configs/opustrainer/](https://github.com/mozilla/translations/tree/main/pipeline/train/configs/opustrainer/) directory.
 
 `{dataset0}`, `{dataset1}` and `{vocab}` will be replaced by the training datasets and a path to Sentencepiece `vocab.spm` passed in `pipeline/train/train.py` script.
 
@@ -150,6 +150,8 @@ It uses unsupervised aligner [SimAlign](https://github.com/cisnlp/simalign) whic
 so it should only be used on small evaluation datasets.
 
 `aug-mix` - applies all the existing modifiers with 0.05 probability each
+
+`aug-mix-cjk` - applies only the modifiers applicable to CJK languages (noise ones)
 
 ### Example training config
 ```yaml

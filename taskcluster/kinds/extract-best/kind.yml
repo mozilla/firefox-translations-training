@@ -31,7 +31,8 @@ tasks:
             cache:
                 type: extract-best
                 resources:
-                    - pipeline/translate/bestbleu.py
+                    - pipeline/translate/extract_best.py
+                    - pipeline/translate/requirements/extract_best.txt
 
         task-context:
             from-parameters:
@@ -81,11 +82,13 @@ tasks:
                 - >-
                     zstd -d --rm $MOZ_FETCHES_DIR/*.zst &&
                     export PYTHONPATH=$PYTHONPATH:$VCS_PATH &&
-                    python3 $VCS_PATH/pipeline/translate/bestbleu.py
-                    -i "$MOZ_FETCHES_DIR/file.{this_chunk}.nbest"
-                    -r "$MOZ_FETCHES_DIR/file.{this_chunk}.ref"
-                    -o $TASK_WORKDIR/artifacts/file.{this_chunk}.nbest.out
-                    -m bleu
+                    pip install --upgrade pip &&
+                    pip install -r $VCS_PATH/pipeline/translate/requirements/extract_best.txt &&
+                    python3 $VCS_PATH/pipeline/translate/extract_best.py
+                    --nbest "$MOZ_FETCHES_DIR/file.{this_chunk}.nbest"
+                    --references "$MOZ_FETCHES_DIR/file.{this_chunk}.ref"
+                    --output $TASK_WORKDIR/artifacts/file.{this_chunk}.nbest.out
+                    --metric chrf
 
         dependencies:
             # double curly braces are used for the chunk substitutions because

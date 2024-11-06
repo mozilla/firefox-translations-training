@@ -2,7 +2,7 @@
 # task config-generator -- sv en --name spring-2024
 #
 # The documentation for this config can be found here:
-# https://github.com/mozilla/firefox-translations-training/blob/50d5507202f316d24097fe0efd1b3dfbadb6906f/taskcluster/configs/config.prod.yml
+# https://github.com/mozilla/translations/blob/50d5507202f316d24097fe0efd1b3dfbadb6906f/taskcluster/configs/config.prod.yml
 experiment:
   name: spring-2024
   src: sv

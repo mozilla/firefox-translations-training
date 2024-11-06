@@ -11,7 +11,7 @@ DATASET_NAME_MAX_LENGTH = 50
 # Important! Keep in sync with `Dataset._escape` in pipeline/common/datasets.py.
 def sanitize_dataset_name(dataset: str) -> str:
     # URLs can be too large when used as Taskcluster labels. Create a nice identifier for them.
-    # See https://github.com/mozilla/firefox-translations-training/issues/527
+    # See https://github.com/mozilla/translations/issues/527
     if dataset.startswith("https://") or dataset.startswith("http://"):
         url = urlparse(dataset)
 

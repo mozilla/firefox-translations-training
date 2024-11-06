@@ -33,7 +33,7 @@ CONTINUATION_ARTIFACTS = {
 ARTIFACTS_URL = "{root_url}/api/queue/v1/task/{task_id}/runs/{run_id}/artifacts"
 ARTIFACT_URL = "{root_url}/api/queue/v1/task/{task_id}/runs/{run_id}/artifacts/{artifact_name}"
 # TODO: consolidate everything in train.py or at least do not rely on the argument names and the number of them in the Taskcluster part
-# TODO: https://github.com/mozilla/firefox-translations-training/issues/607
+# TODO: https://github.com/mozilla/translations/issues/607
 # The argument number where pretrained model mode is expected.
 # This is 1-indexed, not 0-indexed, so it should line up with the argument
 # number this is fetched in in train-taskcluster.sh

@@ -10,8 +10,8 @@ A step-by-step guide on how to train a translation model.
 
 The configuration of the training run happens mostly in the training configuration file.
 Look at the examples of the full production configs for
-[Taskcluster](https://github.com/mozilla/firefox-translations-training/tree/main/configs/tc.prod.yml) and
-[Snakemake](https://github.com/mozilla/firefox-translations-training/tree/main/configs/config.prod.yml).
+[Taskcluster](https://github.com/mozilla/translations/tree/main/configs/tc.prod.yml) and
+[Snakemake](https://github.com/mozilla/translations/tree/main/configs/config.prod.yml).
 
 ## 1. Choose a language
 
@@ -24,7 +24,7 @@ Considerations:
 - Availability of [bicleaner-ai models](https://github.com/bitextor/bicleaner-ai-data/releases)
 
 
-Copy the [example config](https://github.com/mozilla/firefox-translations-training/tree/main/configs/tc.prod.yml) from the `/configs` directory to modify.
+Copy the [example config](https://github.com/mozilla/translations/tree/main/configs/tc.prod.yml) from the `/configs` directory to modify.
 
 Then change the language pair and the name of the experiment:
 ```yaml
@@ -41,7 +41,7 @@ experiment:
 2. Go to [statmt22](https://www.statmt.org/wmt22/translation-task.html), [statmt21](https://www.statmt.org/wmt21/translation-task.html) etc.
    and check if the language pair participated in a competition.
    If yes, there's a good chance some extra data is available for training.
-3. Use [find-corpus](https://github.com/mozilla/firefox-translations-training/tree/main/utils/find-corpus.py) tool to get OPUS datasets.
+3. Use [find-corpus](https://github.com/mozilla/translations/tree/main/utils/find-corpus.py) tool to get OPUS datasets.
 Install [poetry](https://python-poetry.org/) first, then run:
 ```
 task find-corpus -- en ru --importer opus
@@ -132,7 +132,7 @@ To use the default data cleaning pipeline set:
   use-opuscleaner: false
 ```
 
-Make sure the language is present in [clean_parallel](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/clean/tools/clean_parallel.py#L19) script.
+Make sure the language is present in [clean_parallel](https://github.com/mozilla/translations/tree/main/pipeline/clean/tools/clean_parallel.py#L19) script.
 
 For more details on data cleaning see the documents on [Data cleaning](cleaning.md) [Bicleaner](bicleaner.md).
 
@@ -141,8 +141,8 @@ For more details on data cleaning see the documents on [Data cleaning](cleaning.
 The pipeline supports overriding the default [Marian settings](https://marian-nmt.github.io/docs/cmd/marian/) in the training config. The default settings are in the `pipeline/train/configs` directory,
 for example [`teacher.train.yml`] and in the [`train.py`] script.
 
-[teacher.train.yml]: https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/training/teacher.train.yml
-[train.py]: https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/train.py
+[teacher.train.yml]: https://github.com/mozilla/translations/tree/main/pipeline/train/configs/training/teacher.train.yml
+[train.py]: https://github.com/mozilla/translations/tree/main/pipeline/train/train.py
 
 ### Model training
 
@@ -154,7 +154,7 @@ for example [`teacher.train.yml`] and in the [`train.py`] script.
 student-model: tiny
 ```
 
-More details about the performed experiments are in [this issue](https://github.com/mozilla/firefox-translations-training/issues/174).
+More details about the performed experiments are in [this issue](https://github.com/mozilla/translations/issues/174).
 
 #### Early stopping
 Early stopping can be increased to make sure that training converges.
@@ -220,7 +220,7 @@ marian-args:
 
 You can adjust data augmentation settings to increase robustness of the translation and
 tune how to mix back-translated corpus with the original one in the
-[OpusTrainer configs](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/configs/opustrainer/).
+[OpusTrainer configs](https://github.com/mozilla/translations/tree/main/pipeline/train/configs/opustrainer/).
 
 See [OpusTrainer docs](opus-trainer.md) for more details.
 
@@ -234,7 +234,7 @@ Find the full description of the pipeline steps [here](pipeline-steps.md).
 ### Cluster specific configuaiton
 
 The Marian workspace is usually safe to set to about 3/4 of available GPU memory 
-(in a [profile for Snakemake](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/train.py) and throughout the ci steps in Task cluster).
+(in a [profile for Snakemake](https://github.com/mozilla/translations/tree/main/pipeline/train/train.py) and throughout the ci steps in Task cluster).
 Setting a higher value speeds up training but might lead to out of GPU memory error.
 
 ### Taskcluster
@@ -260,7 +260,7 @@ Find more details in the [Snakemake doc](snakemake.md).
 
 #### Mozilla Slurm cluster
 
-I usually set just one GPU partition per run in the [cluster config](https://github.com/mozilla/firefox-translations-training/tree/main/profiles/slurm-moz/config.cluster.yaml). It simplifies configuration and monitoring.
+I usually set just one GPU partition per run in the [cluster config](https://github.com/mozilla/translations/tree/main/profiles/slurm-moz/config.cluster.yaml). It simplifies configuration and monitoring.
 
 Make sure to not set `precision: float16` on `txp` partition.
 
@@ -329,9 +329,9 @@ Taskcluster retries automatically.
 
 Usually, by the time we train the student, it's so much data that it might not fit in 128 GB of RAM. 
 For very high-resource languages like French it can happen even earlier, on the backward/teacher training stage. 
-The workaround is to remove `--shuffle-in-ram` from the [training script](https://github.com/mozilla/firefox-translations-training/tree/main/pipeline/train/train.py) 
+The workaround is to remove `--shuffle-in-ram` from the [training script](https://github.com/mozilla/translations/tree/main/pipeline/train/train.py) 
 and add `--shuffle batches`  instead.
-More details in the [issue](https://github.com/mozilla/firefox-translations-training/issues/21).
+More details in the [issue](https://github.com/mozilla/translations/issues/21).
 
 
 ### Out of GPU memory
