@@ -85,6 +85,10 @@ bad_mtdata_sizes = {
 aug_mix_modifier = None
 
 
+def is_cjk(source: str, target: str) -> bool:
+    return source in CJK_LANGS or target in CJK_LANGS
+
+
 def get_git_revision_hash(remote_branch: str) -> str:
     """
     The git hash should be something that will always be around. Check the main branch for the
@@ -118,7 +122,8 @@ def update_config(
     else:
         experiment["pretrained-models"] = {}
 
-    if source in CJK_LANGS or target in CJK_LANGS:
+    if is_cjk(source, target):
+        experiment["spm-vocab-size"] = 64000
         experiment["opuscleaner-mode"] = "custom"
 
     datasets = prod_config["datasets"]
@@ -287,10 +292,6 @@ def normalize_corpus_name(corpus_name: str):
     corpus_name = re.sub(r"train$", "", corpus_name)
 
     return corpus_name
-
-
-def is_cjk(source: str, target: str) -> bool:
-    return source in CJK_LANGS or target in CJK_LANGS
 
 
 def add_test_data(
