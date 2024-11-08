@@ -5,7 +5,7 @@ set -e
 cd "$(dirname $0)/.."
 
 # Ensure script is running within docker
-./scripts/detect-docker.sh inference-test
+./scripts/detect-docker.sh inference-test-local
 
 # Check if build-local/src/tests/units directory exists
 if [ ! -d "build-local/src/tests/units" ]; then

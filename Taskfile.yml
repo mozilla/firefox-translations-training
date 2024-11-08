@@ -87,17 +87,30 @@ tasks:
       - >-
           ./inference/scripts/build-local.sh
 
-  inference-test:
-    desc: Run inference tests.
-    cmds:
-      - >-
-          ./inference/scripts/unit-tests.sh
-
   inference-build-wasm:
     desc: Build inference engine WASM.
     cmds:
       - >-
           ./inference/scripts/build-wasm.py {{.CLI_ARGS}}
+
+  inference-test-local:
+    desc: Run inference build-local C++ tests.
+    cmds:
+      - >-
+          ./inference/scripts/unit-tests.sh
+
+  inference-test-wasm:
+    desc: Run inference build-wasm JS tests.
+    deps:
+      - task: inference-build-wasm
+        vars:
+          # When the host system is macOS, the WASM build fails when
+          # building with multiple threads in the Docker container.
+          # If the host system is macOS, pass -j 1.
+          CLI_ARGS: '{{if eq (env "HOST_OS") "Darwin"}}-j 1{{end}}'
+    cmds:
+      - >-
+          cd inference/wasm/tests && npm install && npm run test
 
   lint-black:
     desc: Checks the styling of the Python code with Black.
