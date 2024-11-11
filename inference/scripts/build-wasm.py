@@ -127,7 +127,18 @@ def build_bergamot(args: Optional[list[str]]):
         print("\n🏃 Running CMake for Bergamot\n")
         run_shell(f"emcmake cmake -DCOMPILE_WASM=on -DWORMHOLE=off {flags} {INFERENCE_PATH}")
 
-        cores = args.j if args.j else multiprocessing.cpu_count()
+        if args.j:
+            # If -j is specified explicitly, use it.
+            cores = args.j
+        elif os.getenv("HOST_OS") == "Darwin":
+            # There is an issue building with multiple cores when the Linux Docker container is
+            # running on a macOS host system. If the Docker container was created with HOST_OS
+            # set to Darwin, we should use only 1 core to build.
+            cores = 1
+        else:
+            # Otherwise, build with as many cores as we have.
+            cores = multiprocessing.cpu_count()
+
         print(f"\n🏃 Building Bergamot with emmake using {cores} cores\n")
 
         try:
