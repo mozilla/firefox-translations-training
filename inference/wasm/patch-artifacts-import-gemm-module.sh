@@ -23,7 +23,7 @@ if [ "$#" -eq 1 ]; then
     ARTIFACTS_FOLDER="$1"
 fi
 
-ARTIFACT="$ARTIFACTS_FOLDER/bergamot-translator-worker.js"
+ARTIFACT="$ARTIFACTS_FOLDER/bergamot-translator.js"
 if [ ! -e "$ARTIFACT" ]; then
     echo "Error: Artifact \"$ARTIFACT\" doesn't exist"
     exit
