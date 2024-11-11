@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
+import shutil
 import subprocess
 import sys
 
@@ -9,7 +10,10 @@ INFERENCE_PATH = os.path.dirname(SCRIPTS_PATH)
 BUILD_PATH = os.path.join(INFERENCE_PATH, "build-wasm")
 WASM_PATH = os.path.join(INFERENCE_PATH, "wasm")
 WASM_TESTS_PATH = os.path.join(WASM_PATH, "tests")
+GENERATED_PATH = os.path.join(WASM_TESTS_PATH, "generated")
 MODELS_PATH = os.path.join(WASM_TESTS_PATH, "models")
+WASM_ARTIFACT = os.path.join(BUILD_PATH, "bergamot-translator.wasm")
+JS_ARTIFACT = os.path.join(BUILD_PATH, "bergamot-translator.js")
 
 
 def main():
@@ -46,6 +50,16 @@ def main():
     print("\n📥 Pulling translations model files with git lfs\n")
     subprocess.run(["git", "lfs", "pull"], cwd=MODELS_PATH, check=True)
     print(f"   Pulled all files in {MODELS_PATH}")
+
+    print("\n📁 Copying generated build artifacts to the WASM test directory\n")
+
+    os.makedirs(GENERATED_PATH, exist_ok=True)
+    shutil.copy2(WASM_ARTIFACT, GENERATED_PATH)
+    shutil.copy2(JS_ARTIFACT, GENERATED_PATH)
+
+    print(f"   Copied the following artifacts to {GENERATED_PATH}:")
+    print(f"     - {JS_ARTIFACT}")
+    print(f"     - {WASM_ARTIFACT}")
 
     print("\n📂 Decompressing model files required for WASM testing\n")
     subprocess.run(["gzip", "-dkrf", MODELS_PATH], check=True)

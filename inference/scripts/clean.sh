@@ -18,6 +18,9 @@ for dir in "${dirs[@]}"; do
     fi
 done
 
+echo "Removing generated wasm artifacts..."
+rm -rf wasm/tests/generated/*.js
+rm -rf wasm/tests/generated/*.wasm
 
 echo "Removing extracted model files..."
 rm -rf wasm/tests/models/**/*.bin
