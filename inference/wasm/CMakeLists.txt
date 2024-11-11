@@ -9,7 +9,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/project_version.js.in
                ${CMAKE_CURRENT_BINARY_DIR}/project_version.js @ONLY)
 
 # This header inclusion needs to go away later as path to public headers of bergamot
-# translator should be directly available from "bergamot-translator" target
+# translator should be directly available from "bergamot-translator-source" target
 target_include_directories(bergamot-translator-worker
     PRIVATE ${CMAKE_SOURCE_DIR}/src/translator
     PRIVATE ${CMAKE_SOURCE_DIR}
@@ -26,4 +26,4 @@ set_target_properties(bergamot-translator-worker PROPERTIES
                         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
                       )
 
-target_link_libraries(bergamot-translator-worker bergamot-translator)
+target_link_libraries(bergamot-translator-worker bergamot-translator-source)

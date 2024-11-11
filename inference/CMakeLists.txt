@@ -162,7 +162,7 @@ if(COMPILE_WASM)
     -sEXPORTED_FUNCTIONS=[_int8PrepareAFallback,_int8PrepareBFallback,_int8PrepareBFromTransposedFallback,_int8PrepareBFromQuantizedTransposedFallback,_int8PrepareBiasFallback,_int8MultiplyAndAddBiasFallback,_int8SelectColumnsOfBFallback]
     # Necessary for mozintgemm linking. This prepares the `wasmMemory` variable ahead of time as
     # opposed to delegating that task to the wasm binary itself. This way we can link MozIntGEMM
-    # module to the same memory as the main bergamot-translator module.
+    # module to the same memory as the main bergamot-translator-source module.
     -sIMPORTED_MEMORY=1
     # Dynamic execution is either frowned upon or blocked inside browser extensions
     -sDYNAMIC_EXECUTION=0
