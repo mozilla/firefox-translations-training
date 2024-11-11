@@ -21,6 +21,7 @@ done
 echo "Removing generated wasm artifacts..."
 rm -rf wasm/tests/generated/*.js
 rm -rf wasm/tests/generated/*.wasm
+rm -rf wasm/tests/generated/*.sha256
 
 echo "Removing extracted model files..."
 rm -rf wasm/tests/models/**/*.bin

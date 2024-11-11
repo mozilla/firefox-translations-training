@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import hashlib
 import os
 import shutil
 import subprocess
@@ -14,6 +15,15 @@ GENERATED_PATH = os.path.join(WASM_TESTS_PATH, "generated")
 MODELS_PATH = os.path.join(WASM_TESTS_PATH, "models")
 WASM_ARTIFACT = os.path.join(BUILD_PATH, "bergamot-translator.wasm")
 JS_ARTIFACT = os.path.join(BUILD_PATH, "bergamot-translator.js")
+JS_ARTIFACT_HASH = os.path.join(GENERATED_PATH, "bergamot-translator.js.sha256")
+
+
+def calculate_sha256(file_path):
+    sha256_hash = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
 
 
 def main():
@@ -60,6 +70,13 @@ def main():
     print(f"   Copied the following artifacts to {GENERATED_PATH}:")
     print(f"     - {JS_ARTIFACT}")
     print(f"     - {WASM_ARTIFACT}")
+
+    print(f"\n🔑 Calculating SHA-256 hash of {JS_ARTIFACT}\n")
+    hash_value = calculate_sha256(JS_ARTIFACT)
+    with open(JS_ARTIFACT_HASH, "w") as hash_file:
+        hash_file.write(f"{hash_value}  {os.path.basename(JS_ARTIFACT)}\n")
+    print(f"   Hash of {JS_ARTIFACT} written to")
+    print(f"   {JS_ARTIFACT_HASH}")
 
     print("\n📂 Decompressing model files required for WASM testing\n")
     subprocess.run(["gzip", "-dkrf", MODELS_PATH], check=True)
