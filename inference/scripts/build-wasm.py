@@ -18,11 +18,12 @@ THIRD_PARTY_PATH = os.path.join(INFERENCE_PATH, "3rd_party")
 MARIAN_PATH = os.path.join(THIRD_PARTY_PATH, "browsermt-marian-dev")
 EMSDK_PATH = os.path.join(THIRD_PARTY_PATH, "emsdk")
 EMSDK_ENV_PATH = os.path.join(EMSDK_PATH, "emsdk_env.sh")
-WASM_PATH = os.path.join(BUILD_PATH, "bergamot-translator-worker.wasm")
-JS_PATH = os.path.join(BUILD_PATH, "bergamot-translator-worker.js")
+WASM_ARTIFACT = os.path.join(BUILD_PATH, "bergamot-translator.wasm")
+JS_ARTIFACT = os.path.join(BUILD_PATH, "bergamot-translator.js")
 PATCHES_PATH = os.path.join(INFERENCE_PATH, "patches")
 BUILD_DIRECTORY = os.path.join(INFERENCE_PATH, "build-wasm")
-GEMM_SCRIPT = os.path.join(INFERENCE_PATH, "wasm", "patch-artifacts-import-gemm-module.sh")
+WASM_PATH = os.path.join(INFERENCE_PATH, "wasm")
+GEMM_SCRIPT = os.path.join(WASM_PATH, "patch-artifacts-import-gemm-module.sh")
 DETECT_DOCKER_SCRIPT = os.path.join(SCRIPTS_PATH, "detect-docker.sh")
 
 patches = [
@@ -95,6 +96,56 @@ def revert_git_patch(repo_path, patch_path):
     subprocess.check_call(["git", "apply", "-R", "--reject", patch_path], cwd=PROJECT_ROOT_PATH)
 
 
+def prepare_js_artifact():
+    """
+    Prepares the Bergamot JS artifact for use in Gecko by adding the proper license header
+    to the file, including helpful memory-growth logging, and wrapping the generated code
+    in a single function that both takes and returns the Bergamot WASM module.
+    """
+    # Start with the license header and function wrapper
+    source = (
+        "\n".join(
+            [
+                "/* This Source Code Form is subject to the terms of the Mozilla Public",
+                " * License, v. 2.0. If a copy of the MPL was not distributed with this",
+                " * file, You can obtain one at http://mozilla.org/MPL/2.0/. */",
+                "",
+                "function loadBergamot(Module) {",
+                "",
+            ]
+        )
+        + "\n"
+    )
+
+    # Read the original JS file and indent its content
+    with open(JS_ARTIFACT, "r", encoding="utf8") as file:
+        for line in file:
+            source += "  " + line
+
+    # Close the function wrapper
+    source += "\n  return Module;\n}"
+
+    # Use the Module's printing
+    source = source.replace("console.log(", "Module.print(")
+
+    # Add instrumentation to log memory size information
+    source = source.replace(
+        "function updateGlobalBufferAndViews(buf) {",
+        """
+          function updateGlobalBufferAndViews(buf) {
+            const mb = (buf.byteLength / 1_000_000).toFixed();
+            Module.print(
+              `Growing wasm buffer to ${mb}MB (${buf.byteLength} bytes).`
+            );
+        """,
+    )
+
+    print(f"\n📄 Updating {JS_ARTIFACT} in place")
+    # Write the modified content back to the original file
+    with open(JS_ARTIFACT, "w", encoding="utf8") as file:
+        file.write(source)
+
+
 def build_bergamot(args: Optional[list[str]]):
     if args.clobber and os.path.exists(BUILD_PATH):
         shutil.rmtree(BUILD_PATH)
@@ -153,14 +204,14 @@ def build_bergamot(args: Optional[list[str]]):
         subprocess.check_call(["bash", GEMM_SCRIPT, BUILD_PATH])
 
         print("\n✅ Build complete\n")
-        print("  " + JS_PATH)
-        print("  " + WASM_PATH)
+        print("  " + JS_ARTIFACT)
+        print("  " + WASM_ARTIFACT)
 
         # Get the sizes of the build artifacts.
-        wasm_size = os.path.getsize(WASM_PATH)
+        wasm_size = os.path.getsize(WASM_ARTIFACT)
         gzip_size = int(
             subprocess.run(
-                f"gzip -c {WASM_PATH} | wc -c",
+                f"gzip -c {WASM_ARTIFACT} | wc -c",
                 check=True,
                 shell=True,
                 capture_output=True,
@@ -168,6 +219,8 @@ def build_bergamot(args: Optional[list[str]]):
         )
         print(f"  Uncompressed wasm size: {to_human_readable(wasm_size)}")
         print(f"  Compressed wasm size: {to_human_readable(gzip_size)}")
+
+        prepare_js_artifact()
 
     finally:
         print("\n🖌️ Reverting the source code patches\n")
@@ -177,6 +230,16 @@ def build_bergamot(args: Optional[list[str]]):
 
 def main():
     args = parser.parse_args()
+
+    if (
+        os.path.exists(BUILD_PATH)
+        and os.path.isdir(BUILD_PATH)
+        and os.listdir(BUILD_PATH)
+        and not args.clobber
+    ):
+        print(f"\n🏗️  Build directory {BUILD_PATH} already exists and is non-empty.\n")
+        print("   Pass the --clobber flag to rebuild if desired.")
+        return
 
     if not os.path.exists(THIRD_PARTY_PATH):
         os.mkdir(THIRD_PARTY_PATH)
