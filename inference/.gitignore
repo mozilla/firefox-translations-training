@@ -22,6 +22,8 @@ build-native
 build-wasm
 
 # WASM
+wasm/tests/models/**/*.bin
+wasm/tests/models/**/*.spm
 wasm/tests/node_modules
 wasm/tests/.vitest-reports
 

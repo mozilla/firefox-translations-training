@@ -9,6 +9,7 @@ INFERENCE_PATH = os.path.dirname(SCRIPTS_PATH)
 BUILD_PATH = os.path.join(INFERENCE_PATH, "build-wasm")
 WASM_PATH = os.path.join(INFERENCE_PATH, "wasm")
 WASM_TESTS_PATH = os.path.join(WASM_PATH, "tests")
+MODELS_PATH = os.path.join(WASM_TESTS_PATH, "models")
 
 
 def main():
@@ -41,6 +42,14 @@ def main():
 
     print("\n🚀 Starting build-wasm.py")
     subprocess.run(build_command, check=True)
+
+    print("\n📥 Pulling translations model files with git lfs\n")
+    subprocess.run(["git", "lfs", "pull"], cwd=MODELS_PATH, check=True)
+    print(f"   Pulled all files in {MODELS_PATH}")
+
+    print("\n📂 Decompressing model files required for WASM testing\n")
+    subprocess.run(["gzip", "-dkrf", MODELS_PATH], check=True)
+    print(f"   Decompressed models in {MODELS_PATH}\n")
 
     print("\n🔧 Installing npm dependencies for WASM JS tests\n")
     subprocess.run(["npm", "install"], cwd=WASM_TESTS_PATH, check=True)

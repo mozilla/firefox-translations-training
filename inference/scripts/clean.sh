@@ -10,20 +10,17 @@ cd "$(dirname $0)/.."
 # List of directories to clean
 dirs=("build-local" "build-wasm" "emsdk")
 
-# Flag to track if any directories were cleaned
-cleaned=false
-
 # Check and remove directories
 for dir in "${dirs[@]}"; do
     if [ -d "$dir" ]; then
         echo "Removing $dir..."
         rm -rf "$dir"
-        cleaned=true
     fi
 done
 
-# If no directories were cleaned, print a message
-if [ "$cleaned" = false ]; then
-    echo "Nothing to clean"
-fi
 
+echo "Removing extracted model files..."
+rm -rf wasm/tests/models/**/*.bin
+rm -rf wasm/tests/models/**/*.spm
+
+echo
