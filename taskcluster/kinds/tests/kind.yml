@@ -63,7 +63,21 @@ tasks:
 #          make dry-run                                                      &&
 #          make test-dry-run
 
-  black:
+  lint-eslint:
+    # Runs the eslint linter, which lints JavaScript files.
+    worker-type: b-cpu
+    worker:
+      max-run-time: 3600
+      docker-image: {in-tree: inference}
+    run:
+      command:
+        - bash
+        - -c
+        - >-
+            task lint-eslint
+    run-on-tasks-for: ["github-push", "github-pull-request"]
+
+  lint-black:
     # Run python's black formatter, which formats python files.
     worker-type: b-cpu
     worker:
@@ -77,7 +91,7 @@ tasks:
             task lint-black
     run-on-tasks-for: ["github-push", "github-pull-request"]
 
-  lint:
+  lint-ruff:
     # Run ruff, a python linter.
     worker-type: b-cpu
     worker:

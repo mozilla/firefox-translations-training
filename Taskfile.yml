@@ -112,6 +112,16 @@ tasks:
       - >-
           cd inference/wasm/tests && npm install && npm run test
 
+  lint-eslint:
+    desc: Checks the styling of the JS code with eslint.
+    cmds:
+      - cd ./inference/wasm/tests && npm install && npm run lint
+
+  lint-eslint-fix:
+    desc: Fixes the styling of the JS code with eslint.
+    cmds:
+      - cd ./inference/wasm/tests && npm install && npm run lint:fix
+
   lint-black:
     desc: Checks the styling of the Python code with Black.
     deps: [poetry-install-black]
@@ -141,12 +151,14 @@ tasks:
   lint-fix:
     desc: Fix all automatically fixable errors. This is useful to run before pushing.
     cmds:
+      - task: lint-eslint-fix
       - task: lint-black-fix
       - task: lint-ruff-fix
 
   lint:
     desc: Run all available linting tools.
     cmds:
+      - task: lint-eslint
       - task: lint-black
       - task: lint-ruff
 
