@@ -9,6 +9,8 @@ RUN mkdir -p /builds && \
     mkdir /builds/worker/artifacts && \
     chown worker:worker /builds/worker/artifacts
 
+COPY known_hosts /etc/ssh/ssh_known_hosts
+
 WORKDIR /builds/worker/
 
 #----------------------------------------------------------------------------------------------------------------------
@@ -28,6 +30,7 @@ RUN apt-get update -qq \
                           python3-yaml \
                           locales \
                           git \
+                          git-lfs \
                           tmux \
                           htop \
                           vim \
@@ -46,7 +49,7 @@ RUN pip install zstandard
 # %include-run-task
 
 # Allow scripts to detect if they are running in docker
-ENV IS_DOCKER 1
+ENV IS_DOCKER=1
 
 ENV SHELL=/bin/bash \
     HOME=/builds/worker \
