@@ -11,9 +11,9 @@ foreach(test ${UNIT_TESTS})
   target_include_directories("run_${test}" PRIVATE ${CATCH_INCLUDE_DIR} "${CMAKE_SOURCE_DIR}/src")
 
   if(CUDA_FOUND)
-    target_link_libraries("run_${test}" ${EXT_LIBS} marian ${EXT_LIBS} marian_cuda ${EXT_LIBS} Catch bergamot-translator)
+    target_link_libraries("run_${test}" ${EXT_LIBS} marian ${EXT_LIBS} marian_cuda ${EXT_LIBS} Catch bergamot-translator-source)
   else(CUDA_FOUND)
-    target_link_libraries("run_${test}" marian ${EXT_LIBS} Catch bergamot-translator)
+    target_link_libraries("run_${test}" marian ${EXT_LIBS} Catch bergamot-translator-source)
   endif(CUDA_FOUND)
 
   if(msvc)

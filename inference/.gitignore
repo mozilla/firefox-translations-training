@@ -15,15 +15,18 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 
+# Build paths
+build
+build-local
+build-native
+build-wasm
 
-/build
-/build-local
-/build-native
-/build-wasm
-models
-wasm/test_page/node_modules
-wasm/module/worker/bergamot-translator-worker.*
-wasm/module/browsermt-bergamot-translator-*.tgz
+# WASM
+wasm/tests/generated
+wasm/tests/models/**/*.bin
+wasm/tests/models/**/*.spm
+wasm/tests/node_modules
+wasm/tests/.vitest-reports
 
 # VSCode
 .vscode

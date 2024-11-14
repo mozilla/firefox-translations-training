@@ -5,16 +5,19 @@ set -x
 
 source utils/tasks/docker-setup.sh
 
+DOCKER_BASE_PATH=taskcluster/docker/base
+DOCKER_TEST_PATH=taskcluster/docker/test
+
 docker build \
-  --file taskcluster/docker/base/Dockerfile \
-  --tag translations-base .
+  --file "$DOCKER_BASE_PATH/Dockerfile" \
+  --tag translations-base $DOCKER_BASE_PATH
 
 docker build \
   --build-arg DOCKER_IMAGE_PARENT=translations-base \
-  --file taskcluster/docker/test/Dockerfile \
-  --tag translations-test .
+  --file "$DOCKER_TEST_PATH/Dockerfile" \
+  --tag translations-test $DOCKER_TEST_PATH
 
 docker build \
   --build-arg DOCKER_IMAGE_PARENT=translations-test \
-  --file docker/Dockerfile \
+  --file "docker/Dockerfile" \
   --tag translations-local .
