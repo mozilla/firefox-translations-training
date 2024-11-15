@@ -1,5 +1,5 @@
 experiment:
-  name: distill-decoder
+  name: distill-inference-batch-4000
   src: da
   trg: en
   best-model: chrf
@@ -23,7 +23,18 @@ experiment:
   teacher-mode: two-stage
   teacher-decoder: marian
   student-model: tiny
-  pretrained-models: {}
+  pretrained-models:
+    train-backwards:
+      urls:
+        - https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/KZ4QcZ5pTMibfWNpExgY8g/artifacts/public/build
+      mode: use
+      type: default
+    train-teacher:
+      urls:
+        - https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/RWdR8IBTQd6BudSl2CHILg/artifacts/public/build
+        - https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/YZ386SPjQNmztSnPU2tuZw/artifacts/public/build
+      mode: use
+      type: default
 datasets:
   devtest:
   - mtdata_aug-mix_Neulab-tedtalks_dev-1-eng-dan
@@ -168,16 +179,18 @@ marian-args:
     early-stopping: '20'
   training-teacher:
     early-stopping: '20'
-target-stage: evaluate-student
-start-stage: train-student
+target-stage: translate-corpus
+start-stage: translate-corpus
 previous_group_ids:
-  - Q49vTgTOStWGio7axf-Gfg
-  - ZOWT1aQsQrqvHQ24x3anGA
-  - aV89TBTaTtiG0M39A5i04Q
-  - ZOWT1aQsQrqvHQ24x3anGA
+  - Q49vTgTOStWGio7axf-Gfg # evaluate-student, train-student
+  - ZOWT1aQsQrqvHQ24x3anGA # big run, failed at train-student
+  - aV89TBTaTtiG0M39A5i04Q # another big run
+  - ZOWT1aQsQrqvHQ24x3anGA # another big run
 wandb-publication: true
 taskcluster:
-  split-chunks: 20
+  # split-chunks: 20
+  # Use 5 for testing
+  split-chunks: 5
   worker-classes:
     default: gcp-spot
     alignments-original: gcp-standard
