@@ -37,6 +37,7 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.RawTextHelpFormatter,
 )
 parser.add_argument("--clobber", action="store_true", help="Clobber the build artifacts")
+parser.add_argument("--force-rebuild", action="store_true", help="Force rebuilding the artifacts")
 parser.add_argument(
     "--debug",
     action="store_true",
@@ -236,6 +237,7 @@ def main():
         and os.path.isdir(BUILD_PATH)
         and os.listdir(BUILD_PATH)
         and not args.clobber
+        and not args.force_rebuild
     ):
         print(f"\n🏗️  Build directory {BUILD_PATH} already exists and is non-empty.\n")
         print("   Pass the --clobber flag to rebuild if desired.")
