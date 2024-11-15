@@ -1,9 +1,11 @@
 normalize: 1.0
 word-penalty: 0
-mini-batch: 16
-mini-batch-words: 500
-maxi-batch: 1000
+precision: float16
+
+mini-batch-words: 500 # How many tokens to use to form a mini batch.
+maxi-batch: 1000 # sentences in the maxi batch.
 maxi-batch-sort: src
+
 max-length: 200
 max-length-crop: true
 beam-size: 8
