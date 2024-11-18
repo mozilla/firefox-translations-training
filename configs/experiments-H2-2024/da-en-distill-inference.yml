@@ -1,5 +1,5 @@
 experiment:
-  name: distill-inference-batch-4000
+  name: distill-e2e-marian-2
   src: da
   trg: en
   best-model: chrf
@@ -169,8 +169,8 @@ marian-args:
     beam-size: '12'
     mini-batch-words: '2000'
   decoding-teacher:
-    mini-batch-words: '4000'
-    precision: float16
+    mini-batch-words: '5000'
+    maxi-batch: '10000'
   training-backward:
     early-stopping: '5'
   training-student:
@@ -179,8 +179,8 @@ marian-args:
     early-stopping: '20'
   training-teacher:
     early-stopping: '20'
-target-stage: translate-corpus
-start-stage: translate-corpus
+target-stage: train-student
+start-stage: train-teacher
 previous_group_ids:
   - Q49vTgTOStWGio7axf-Gfg # evaluate-student, train-student
   - ZOWT1aQsQrqvHQ24x3anGA # big run, failed at train-student
