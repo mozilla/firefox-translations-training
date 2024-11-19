@@ -1,5 +1,5 @@
 experiment:
-  name: distill-e2e-marian-2
+  name: distill-e2e-ctranslate2
   src: da
   trg: en
   best-model: chrf
@@ -19,9 +19,9 @@ experiment:
     mono-trg: 0.9
   spm-sample-size: 10_000_000
   spm-vocab-size: 32000
-  teacher-ensemble: 2
+  teacher-ensemble: 1
   teacher-mode: two-stage
-  teacher-decoder: marian
+  teacher-decoder: ctranslate2
   student-model: tiny
   pretrained-models:
     train-backwards:
@@ -32,7 +32,6 @@ experiment:
     train-teacher:
       urls:
         - https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/RWdR8IBTQd6BudSl2CHILg/artifacts/public/build
-        - https://firefox-ci-tc.services.mozilla.com/api/queue/v1/task/YZ386SPjQNmztSnPU2tuZw/artifacts/public/build
       mode: use
       type: default
 datasets:
@@ -180,17 +179,9 @@ marian-args:
   training-teacher:
     early-stopping: '20'
 target-stage: train-student
-start-stage: train-teacher
-previous_group_ids:
-  - Q49vTgTOStWGio7axf-Gfg # evaluate-student, train-student
-  - ZOWT1aQsQrqvHQ24x3anGA # big run, failed at train-student
-  - aV89TBTaTtiG0M39A5i04Q # another big run
-  - ZOWT1aQsQrqvHQ24x3anGA # another big run
 wandb-publication: true
 taskcluster:
-  # split-chunks: 20
-  # Use 5 for testing
-  split-chunks: 5
+  split-chunks: 20
   worker-classes:
     default: gcp-spot
     alignments-original: gcp-standard
