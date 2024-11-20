@@ -137,7 +137,7 @@ def align(
 ):
     import eflomal
 
-    logger.info("Splitting corpus into parts")
+    logger.info(f"Splitting corpus into parts of {chunk_lines} lines")
     # align in chunks to prevent OOM
     # produces chunks of files, like "corpus.en.aa", "corpus.en.ab", "corpus.en.ac" etc.
     subprocess.check_call(["split", "--lines", str(chunk_lines), corpus_src, corpus_src + "."])
@@ -160,11 +160,13 @@ def align(
             src_input = stack.enter_context(open(f"{corpus_src}.{suffix}", "r", encoding="utf-8"))
             trg_input = stack.enter_context(open(f"{corpus_trg}.{suffix}", "r", encoding="utf-8"))
 
-            logger.info("Calculating alignments...")
+            n_samplers = multiprocessing.cpu_count()
+            logger.info(f"Calculating alignments with {n_samplers} samplers...")
+
             # We use eflomal aligner.
             # It is less memory intensive than fast_align.
             # fast_align failed with OOM in a large white-space tokenized corpus
-            aligner = eflomal.Aligner()
+            aligner = eflomal.Aligner(n_samplers=n_samplers)
             aligner.align(
                 src_input,
                 trg_input,

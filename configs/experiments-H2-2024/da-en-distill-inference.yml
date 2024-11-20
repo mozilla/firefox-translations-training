@@ -1,5 +1,5 @@
 experiment:
-  name: distill-e2e-ctranslate2
+  name: alignments-parallelized
   src: da
   trg: en
   best-model: chrf
@@ -178,7 +178,7 @@ marian-args:
     early-stopping: '20'
   training-teacher:
     early-stopping: '20'
-target-stage: train-student
+target-stage: all-pipeline
 wandb-publication: true
 taskcluster:
   split-chunks: 20
