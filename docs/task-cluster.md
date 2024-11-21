@@ -118,7 +118,7 @@ Note: This feature should _never_ be used for production training, as it complet
 
 All tasks eventually expire, and have their artifacts and metadata deleted from Taskcluster, typically 1 year after creation. This can cause problems if it happens while partway through a training session. This happens most commonly with tasks that are shared across multiple training runs, such as `toolchain` and `docker-image` tasks. When this happens you can use the "Rebuild Docker Images and Toolchains" action to rebuild these, and add the task group they are rebuilt in to the `previous_group_ids` when kicking off a training run.
 
-You may also use this action directly prior to kicking off the start of a new lanugage pair training to ensure that it uses fresh toolchains and docker images, which will typically avoid this problem altogether.
+You may also use this action directly prior to kicking off the start of a new language pair training to ensure that it uses fresh toolchains and docker images, which will typically avoid this problem altogether.
 
 ## Interactive Tasks
 
