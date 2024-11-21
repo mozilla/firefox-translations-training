@@ -160,7 +160,9 @@ def align(
             src_input = stack.enter_context(open(f"{corpus_src}.{suffix}", "r", encoding="utf-8"))
             trg_input = stack.enter_context(open(f"{corpus_trg}.{suffix}", "r", encoding="utf-8"))
 
-            n_samplers = multiprocessing.cpu_count()
+            # Default samplers is 3 in eflomal. Use half the available CPUs so we don't run out
+            # of memory.
+            n_samplers = max(3, multiprocessing.cpu_count() / 2)
             logger.info(f"Calculating alignments with {n_samplers} samplers...")
 
             # We use eflomal aligner.
