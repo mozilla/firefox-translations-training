@@ -2780,6 +2780,16 @@ files = [
 windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
+name = "pyicu"
+version = "2.8.1"
+description = "Python extension wrapping the ICU C++ API"
+optional = false
+python-versions = "*"
+files = [
+    {file = "PyICU-2.8.1.tar.gz", hash = "sha256:f0b9549a87f87ba7c413f13679d137271e0b37f1f39b0109ace38257d4d148d6"},
+]
+
+[[package]]
 name = "pyjwt"
 version = "2.10.0"
 description = "JSON Web Token implementation in Python"
@@ -4455,4 +4465,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "b606c6b062a090bfd360e0dd21b9f3b2f002fc6f9e4e5b47ec1110202b769b7d"
+content-hash = "1b5da096d3ad34cc603ffbcb8242f84d858bd6fc741430ed45517dd0f1f26c71"
