@@ -14,6 +14,7 @@ RUN apt-get update -qq \
                           pigz \
                           curl \
                           wget \
+                          python3-icu \
     && apt-get clean
 
 
