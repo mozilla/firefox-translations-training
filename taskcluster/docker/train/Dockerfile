@@ -11,6 +11,7 @@ RUN apt-get update -qq \
                           libboost-program-options1.74.0 \
                           libboost-filesystem1.74.0 \
                           libboost-iostreams1.74.0 \
+                          nvidia-utils-550 \
                           pigz \
                           curl \
                           wget \
