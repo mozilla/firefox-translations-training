@@ -98,7 +98,6 @@ tasks:
                 # 4) number of threads to use - auto means nproc
                 # 5) "pack dir" - which needs to be where the `bicleaner-src-trg` fetch was unpacked to
                 - >-
-                    pip install $MOZ_FETCHES_DIR/hunspell-0.5.5-cp310-cp310-linux_x86_64.whl &&
                     pip install $MOZ_FETCHES_DIR/cyhunspell-2.0.3-cp310-cp310-linux_x86_64.whl &&
                     pip install $MOZ_FETCHES_DIR/kenlm-0.0.0-cp310-cp310-linux_x86_64.whl &&
                     pip install -r {bicleaner_reqs} &&
@@ -114,8 +113,6 @@ tasks:
             bicleaner-model: bicleaner-model-{src_locale}-{trg_locale}
         fetches:
             toolchain:
-                - artifact: hunspell
-                  extract: false
                 - artifact: cyhunspell
                   extract: false
                 - artifact: kenlm
