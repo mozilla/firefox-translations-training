@@ -64,6 +64,7 @@ tasks:
 
         worker-type: b-largegpu-largedisk
         worker:
+            docker-image: {"in-tree": "train"}
             artifacts:
                 - name: public/build
                   path: artifacts
