@@ -49,8 +49,8 @@ sacrebleu="2.4.2"
 mtdata="0.4.1"
 requests="^2.26.0"
 pytest="7.4.3"
-# use the latest main, switch to PyPi when released
-opustrainer = {git = "https://github.com/hplt-project/OpusTrainer.git", rev="c966d7b353d6b3c6a09d9573f1ab6ba3221c1d21"}
+# ICU tokenizer commit
+opustrainer = {git = "https://github.com/mozilla/OpusTrainer.git", rev="ee534f34e2267c751f4686d7bae27673564c547b"}
 requests-mock = "^1.11.0"
 sh = "^2.0.6"
 zstandard = "^0.22.0"
