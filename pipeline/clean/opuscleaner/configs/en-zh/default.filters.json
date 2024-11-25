@@ -23,6 +23,33 @@
       "language": "<src>"
     },
     {
+      "_comment": "Normalize to full-width punctuation",
+      "filter": "opus.RegExpSub",
+      "parameters": {
+        "patterns": [
+          [
+            "([\\u3400-\\u4dbf\\u4e00-\\u9fff\\uf900-\\ufaff!\uff01\uff1f\\?])\\?",
+            "\\1\uff1f",
+            0,
+            ""
+          ],
+          [
+            "([\\u3400-\\u4dbf\\u4e00-\\u9fff\\uf900-\\ufaff!\uff01\uff1f\\?])\\!",
+            "\\1\uff01",
+            0,
+            ""
+          ],
+          [
+            "([\\u3400-\\u4dbf\\u4e00-\\u9fff\\uf900-\\ufaff])\\.\\s*(?!\\s*\\.)",
+            "\\1\uff61",
+            0,
+            ""
+          ]
+        ]
+      },
+      "language": null
+    },
+    {
       "filter": "max_length",
       "parameters": {
         "MAXLENGTH": 150,
@@ -52,14 +79,6 @@
         "TRGWORDRAT": 0.0,
         "SRCALPHARAT": 0.5,
         "TRGALPHARAT": 0.0,
-        "DEBUG": false
-      },
-      "language": null
-    },
-    {
-      "filter": "num_mismatch",
-      "parameters": {
-        "RATIO": 1,
         "DEBUG": false
       },
       "language": null
