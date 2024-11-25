@@ -23,7 +23,7 @@ kind-dependencies:
     - analyze-mono
 
 tasks:
-    all-pipeline:
+    all:
         description: Dummy task that ensures all parts of training pipeline will run
         attributes:
             stage: all-pipeline
