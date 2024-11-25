@@ -24,7 +24,7 @@ experiment:
     mono-trg: 0.9
   spm-sample-size: 10_000_000
   spm-vocab-size: 64000
-  teacher-ensemble: 2
+  teacher-ensemble: 1
   teacher-mode: two-stage
   student-model: tiny
   pretrained-models: {}
