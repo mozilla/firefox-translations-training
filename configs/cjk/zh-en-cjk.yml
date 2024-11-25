@@ -88,7 +88,8 @@ datasets:
   - opus_TED2013/v1.1 #                                     154,579 sentences
   - opus_News-Commentary/v16 #                              125,996 sentences
   - opus_bible-uedin/v1 #                                   124,378 sentences
-  - opus_PHP/v1 #                                            41,706 sentences
+# reported by Jaume as too noisy
+#  - opus_PHP/v1 #                                            41,706 sentences
   - opus_infopankki/v1 #                                     29,907 sentences
   - opus_TED2020/v1 #                                        16,382 sentences
   - opus_QED/v2.0a #                                         13,123 sentences
