@@ -141,8 +141,9 @@ struct AnnotatedText {
                       std::vector<string_view>::iterator tokens_end);
 
   /// Append the whitespace at the end of input. string_view must not be in
-  /// text.
-  void handleEndingWhitespace(string_view whitespace);
+  /// text. In WASM builds, whitespace may be omitted or inserted depending
+  /// on the script of the target language.
+  void handleEndingWhitespace(string_view whitespace, bool isBetweenSentences);
 
   /// Record the existence of a sentence that is already in text.  The
   /// iterators are over string_views for each token that must be in text
@@ -223,7 +224,8 @@ struct AnnotatedText {
       out.appendSentence(prefix, views.begin(), views.end());
     }
 
-    out.handleEndingWhitespace(fun(annotation.gap(numSentences()), gap(numSentences()), true));
+    out.handleEndingWhitespace(fun(annotation.gap(numSentences()), gap(numSentences()), true),
+                               /* isBetweenSentences */ false);
 
     return out;
   }
@@ -237,6 +239,38 @@ struct AnnotatedText {
   ///       simply including it in the program logic greatly reduces the number of locations
   ///       where preprocessor directives would be required.
   std::string targetLanguage_ = "";
+
+  /// Some languages do not utilize space between sentences. If we are translating from a language
+  /// that does utilize spaces into a language that does not utilize spaces, then we need to know whether
+  /// the space between sentences should be removed in the final text.
+  ///
+  /// Returns true if the translation should ensure that whitespace is omitted between sentences
+  /// in the target language. This is dependent on the script of the target language.
+  bool shouldOmitSpaceBetweenSentences() const;
+
+  /// Some languages utilize space between sentences. If we are translating from a language that
+  /// does not utilize spaces into a language that does utilize spaces, then we need to know whether
+  /// the space between sentences should be ensured in the final text.
+  ///
+  /// Returns true if the translation should ensure that whitespace is inserted between sentences
+  /// in the target language. This is dependent on the script of the target language.
+  bool shouldEnsureSpaceBetweenSentences() const;
+
+  /// The current algorithm annotates text into sentences separated by gaps. The gaps between sentences
+  /// may be empty, they may contain whitespace, they may contain parsed HTML tags that existed between
+  /// the sentences, or a combination of whitespace and tags.
+  ///
+  /// For example, the following annotated text will contain the following three gaps:
+  ///
+  ///      "<b>This is my bold sentence.</b> This is my regular sentence."
+  ///    │ │                           │</b> │                           │ │
+  ///    └┬┘                           └──┬──┘                           └┬┘
+  /// Empty gap                Gap with tag and space                 Empty gap
+  ///
+  /// In cases where we are translating from a language that utilizes whitespace between sentences into
+  /// a language that does not utilize whitespace between sentences, we need to extract the tags from
+  /// the gap and omit the whitespace in the gap.
+  void maybeAppendHTMLTagsFromGap(string_view gap);
 
   string_view asStringView(const ByteRange &byteRange) const {
     return string_view(text.data() + byteRange.begin, byteRange.size());
