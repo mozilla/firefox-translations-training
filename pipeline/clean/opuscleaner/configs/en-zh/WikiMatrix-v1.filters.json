@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "files": [
+  ],
+  "filters": [
+    {
+      "filter": "regexp",
+      "parameters": {
+        "PATTERN": "s#\\{(?:[^{}]++|(?R))*+\\}##g"
+      },
+      "language": "<src>"
+    },
+    {
+      "filter": "regexp",
+      "parameters": {
+        "PATTERN": "s#\\{(?:[^{}]++|(?R))*+\\}##g"
+      },
+      "language": "<trg>"
+    }
+  ]
+}
