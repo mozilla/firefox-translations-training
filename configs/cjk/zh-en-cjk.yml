@@ -96,20 +96,23 @@ datasets:
   - opus_NeuLab-TedTalks/v1 #                                 8,076 sentences
   - opus_tldr-pages/v2023-08-29 #                             4,167 sentences
   - opus_tico-19/v2020-10-28 #                                3,071 sentences
-  - mtdata_ELRC-hrw_dataset_v1-1-eng-zho #                ~631,760 sentences (71.4 MB)
-  - mtdata_Microsoft-ntrex-128-eng-zho_CN #       No Content-Length reported (https://github.com/MicrosoftTranslator/NTREX/archive/52b9c57c.tar.gz)
-  - mtdata_Microsoft-ntrex-128-eng-zho_TW #       No Content-Length reported (https://github.com/MicrosoftTranslator/NTREX/archive/52b9c57c.tar.gz)
-  - mtdata_Microsoft-ntrex-128-eng_GB-zho_CN #    No Content-Length reported (https://github.com/MicrosoftTranslator/NTREX/archive/52b9c57c.tar.gz)
-  - mtdata_Microsoft-ntrex-128-eng_GB-zho_TW #    No Content-Length reported (https://github.com/MicrosoftTranslator/NTREX/archive/52b9c57c.tar.gz)
-  - mtdata_Microsoft-ntrex-128-eng_IN-zho_CN #    No Content-Length reported (https://github.com/MicrosoftTranslator/NTREX/archive/52b9c57c.tar.gz)
-  - mtdata_Microsoft-ntrex-128-eng_IN-zho_TW #    No Content-Length reported (https://github.com/MicrosoftTranslator/NTREX/archive/52b9c57c.tar.gz)
-  - mtdata_Microsoft-ntrex-128-eng_US-zho_CN #    No Content-Length reported (https://github.com/MicrosoftTranslator/NTREX/archive/52b9c57c.tar.gz)
-  - mtdata_Microsoft-ntrex-128-eng_US-zho_TW #    No Content-Length reported (https://github.com/MicrosoftTranslator/NTREX/archive/52b9c57c.tar.gz)
+# failed to download/unpack
+#  - mtdata_ELRC-hrw_dataset_v1-1-eng-zho #                ~631,760 sentences (71.4 MB)
+#  - mtdata_Microsoft-ntrex-128-eng-zho_CN #       No Content-Length reported (https://github.com/MicrosoftTranslator/NTREX/archive/52b9c57c.tar.gz)
+#  - mtdata_Microsoft-ntrex-128-eng-zho_TW #       No Content-Length reported (https://github.com/MicrosoftTranslator/NTREX/archive/52b9c57c.tar.gz)
+#  - mtdata_Microsoft-ntrex-128-eng_GB-zho_CN #    No Content-Length reported (https://github.com/MicrosoftTranslator/NTREX/archive/52b9c57c.tar.gz)
+#  - mtdata_Microsoft-ntrex-128-eng_GB-zho_TW #    No Content-Length reported (https://github.com/MicrosoftTranslator/NTREX/archive/52b9c57c.tar.gz)
+#  - mtdata_Microsoft-ntrex-128-eng_IN-zho_CN #    No Content-Length reported (https://github.com/MicrosoftTranslator/NTREX/archive/52b9c57c.tar.gz)
+#  - mtdata_Microsoft-ntrex-128-eng_IN-zho_TW #    No Content-Length reported (https://github.com/MicrosoftTranslator/NTREX/archive/52b9c57c.tar.gz)
+#  - mtdata_Microsoft-ntrex-128-eng_US-zho_CN #    No Content-Length reported (https://github.com/MicrosoftTranslator/NTREX/archive/52b9c57c.tar.gz)
+#  - mtdata_Microsoft-ntrex-128-eng_US-zho_TW #    No Content-Length reported (https://github.com/MicrosoftTranslator/NTREX/archive/52b9c57c.tar.gz)
   - mtdata_Statmt-news_commentary_wmt18-13-zho-eng #    ~1,001,393 sentences (113.2 MB)
-  - mtdata_Statmt-newsdev_zhen-2017-zho-eng #             ~402,756 sentences (45.5 MB)
-  - mtdata_Statmt-newsdev_enzh-2017-eng-zho #             ~402,756 sentences (45.5 MB)
-  - mtdata_Statmt-ccaligned-1-eng-zho_CN #              ~5,669,496 sentences (640.7 MB)
-  - mtdata_Statmt-ccaligned-1-eng-zho_TW #              ~2,407,082 sentences (272.0 MB)
+# exclude wmt news
+#  - mtdata_Statmt-newsdev_zhen-2017-zho-eng #             ~402,756 sentences (45.5 MB)
+#  - mtdata_Statmt-newsdev_enzh-2017-eng-zho #             ~402,756 sentences (45.5 MB)
+# failed to download/unpack
+#  - mtdata_Statmt-ccaligned-1-eng-zho_CN #              ~5,669,496 sentences (640.7 MB)
+#  - mtdata_Statmt-ccaligned-1-eng-zho_TW #              ~2,407,082 sentences (272.0 MB)
 
   # The monolingual data contains:
   #   ~46,677,484 sentences
