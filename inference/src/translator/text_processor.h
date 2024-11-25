@@ -8,8 +8,13 @@
 #include "data/types.h"
 #include "data/vocab.h"
 #include "definitions.h"
-#include "ssplit.h"
 #include "vocabs.h"
+
+#if !defined(WASM)
+// The WASM implementation uses the Intl.Segmenter within the JavaScript environment.
+// Therefore we should only include ssplit for a local, non-WASM build.
+#include "ssplit.h"
+#endif // !defined(WASM)
 
 namespace marian {
 namespace bergamot {
