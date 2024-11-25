@@ -15,7 +15,7 @@ void AnnotatedText::appendSentence(string_view prefix, std::vector<string_view>:
   assert(annotation.token_begin_.back() == text.size());
 
   // prefix is just end of the previous one.
-  appendEndingWhitespace(prefix);
+  handleEndingWhitespace(prefix);
 
   // Appending sentence text.
   std::size_t offset = text.size();
@@ -29,12 +29,12 @@ void AnnotatedText::appendSentence(string_view prefix, std::vector<string_view>:
   }
 
   // Add the gap after the sentence.  This is empty for now, but will be
-  // extended with appendEndingWhitespace or another appendSentence.
+  // extended with handleEndingWhitespace or another appendSentence.
   annotation.gap_.push_back(annotation.token_begin_.size() - 1);
   annotation.token_begin_.push_back(offset);
 }
 
-void AnnotatedText::appendEndingWhitespace(string_view whitespace) {
+void AnnotatedText::handleEndingWhitespace(string_view whitespace) {
   text.append(whitespace.data(), whitespace.size());
   annotation.token_begin_.back() = text.size();
 }

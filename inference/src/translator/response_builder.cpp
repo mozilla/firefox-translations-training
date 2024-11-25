@@ -51,7 +51,7 @@ void ResponseBuilder::buildTranslatedText(Histories &histories, Response &respon
         // constructed, append the text till the end, which could be spaces or
         // empty.
         if (sentenceIdx + 1 == histories.size()) {
-          response.target.appendEndingWhitespace(response.source.gap(sentenceIdx + 1));
+          response.target.handleEndingWhitespace(response.source.gap(sentenceIdx + 1));
         }
         break;
       }

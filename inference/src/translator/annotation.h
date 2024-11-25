@@ -135,14 +135,14 @@ struct AnnotatedText {
 
   /// Appends a sentence to the existing text and transparently rebases
   /// string_views.  Since this tracks only prefix, remember
-  /// appendEndingWhitespace.
+  /// handleEndingWhitespace.
   /// The string_views must not already be in text.
   void appendSentence(string_view prefix, std::vector<string_view>::iterator tokens_begin,
                       std::vector<string_view>::iterator tokens_end);
 
   /// Append the whitespace at the end of input. string_view must not be in
   /// text.
-  void appendEndingWhitespace(string_view whitespace);
+  void handleEndingWhitespace(string_view whitespace);
 
   /// Record the existence of a sentence that is already in text.  The
   /// iterators are over string_views for each token that must be in text
@@ -215,7 +215,7 @@ struct AnnotatedText {
       out.appendSentence(prefix, views.begin(), views.end());
     }
 
-    out.appendEndingWhitespace(fun(annotation.gap(numSentences()), gap(numSentences()), true));
+    out.handleEndingWhitespace(fun(annotation.gap(numSentences()), gap(numSentences()), true));
 
     return out;
   }
