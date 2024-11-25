@@ -41,6 +41,22 @@ class TextProcessor {
   /// @param [in] memory: ssplit-prefix-file contents in memory, passed as a bytearray.
   TextProcessor(Ptr<Options>, const Vocabs &vocabs, const AlignedMemory &memory);
 
+#if defined(WASM)
+ public:
+  /// Constructs a TextProcessor object from the given vocabs.
+  TextProcessor(const Vocabs &vocabs): vocabs_(vocabs) {}
+
+  /// Registers the source language that the text processor will use for sentence segmentation.
+  void registerSourceLanguage(const std::string& language) {
+    sourceLanguage_ = language;
+  }
+
+ private:
+  /// The source language that the text processor will use for sentence segmentation.
+  std::string sourceLanguage_;
+#endif // defined(WASM)
+
+ public:
   /// Wrap into sentences of at most maxLengthBreak_ tokens and add to source.
   /// @param [in] blob: Input blob, will be bound to source and annotations on it stored.
   /// @param [out] source: AnnotatedText instance holding input and annotations of sentences and pieces

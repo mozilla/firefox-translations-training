@@ -185,6 +185,13 @@ struct AnnotatedText {
   /// Returns a ByteRange representing sentence corresponding to sentenceIdx.
   ByteRange sentenceAsByteRange(size_t sentenceIdx) const { return annotation.sentence(sentenceIdx); }
 
+  /// Registers the target language that the annotated text will be translated into.
+  /// For WASM builds that support CJK languages, this has an effect on the whitespace
+  /// that may or may not be inserted into the resulting text.
+  void registerTargetLanguage(const std::string& language) {
+    targetLanguage_ = language;
+  }
+
   /// Utility function to call `fun` on each word (subword token effectively) in
   /// an `AnnotatedText`. `fun` is called with the `ByteRange`, the `string_view`
   /// with the word, and a `bool` to indicate whether it is the last word in the
@@ -192,6 +199,7 @@ struct AnnotatedText {
   template <typename Fun>
   AnnotatedText apply(Fun fun) const {
     AnnotatedText out;
+    out.registerTargetLanguage(targetLanguage_);
 
     for (size_t sentenceIdx = 0; sentenceIdx < numSentences(); ++sentenceIdx) {
       std::string sentence;
@@ -221,6 +229,15 @@ struct AnnotatedText {
   }
 
  private:
+  /// The target language that this annotated text will be translated into.
+  /// This remains empty for non-WASM builds that use ssplit for segmentation.
+  /// This value is populated in WASM builds that utilize a locale-specific segmenter.
+  ///
+  /// Note: This is not excluded from non-WASM builds using preprocessor directives because
+  ///       simply including it in the program logic greatly reduces the number of locations
+  ///       where preprocessor directives would be required.
+  std::string targetLanguage_ = "";
+
   string_view asStringView(const ByteRange &byteRange) const {
     return string_view(text.data() + byteRange.begin, byteRange.size());
   }
