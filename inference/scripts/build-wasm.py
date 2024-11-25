@@ -154,7 +154,7 @@ def build_bergamot(args: Optional[list[str]]):
     if not os.path.exists(BUILD_PATH):
         os.mkdir(BUILD_PATH)
 
-    print("\n🖌️ Applying source code patches\n")
+    print("\n🖌️  Applying source code patches\n")
     for repo_path, patch_path in patches:
         apply_git_patch(repo_path, patch_path)
 
@@ -201,7 +201,7 @@ def build_bergamot(args: Optional[list[str]]):
             print("Please try running again with -j 1.")
             raise
 
-        print("\n🪚 Patching Bergamot for gemm support\n")
+        print("\n🪚  Patching Bergamot for gemm support\n")
         subprocess.check_call(["bash", GEMM_SCRIPT, BUILD_PATH])
 
         print("\n✅ Build complete\n")
@@ -224,7 +224,7 @@ def build_bergamot(args: Optional[list[str]]):
         prepare_js_artifact()
 
     finally:
-        print("\n🖌️ Reverting the source code patches\n")
+        print("\n🖌️  Reverting the source code patches\n")
         for repo_path, patch_path in patches[::-1]:
             revert_git_patch(repo_path, patch_path)
 
