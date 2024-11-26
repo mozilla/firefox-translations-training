@@ -105,6 +105,11 @@ workers:
             implementation: docker-worker
             os: linux
             worker-type: 'b-linux-v100-gpu-d2g-4'
+        b-linux-v100-gpu-4-300gb-d2g:
+            provisioner: '{trust-domain}-{level}'
+            implementation: generic-worker
+            os: linux
+            worker-type: 'b-linux-v100-gpu-d2g-4'
         b-linux-v100-gpu-4-300gb-standard:
             provisioner: '{trust-domain}-{level}'
             implementation: docker-worker
@@ -175,6 +180,10 @@ local-worker-aliases:
         by-worker-class:
             gcp-standard: 'b-linux-v100-gpu-4-300gb-standard'
             default: 'b-linux-v100-gpu-4-300gb'
+    b-largegpu-largedisk-d2g:
+        by-worker-class:
+            gcp-standard: 'b-linux-v100-gpu-4-300gb-standard'
+            default: 'b-linux-v100-gpu-4-300gb-d2g'
     # Use for tasks that need lots of GPU power and immensive amounts of disk space
     # eg: training
     b-largegpu-xlargedisk:
@@ -202,6 +211,11 @@ worker-configuration:
             WORKSPACE: "12000"
 
     b-linux-v100-gpu-4-300gb:
+        env:
+            GPUS: "0 1 2 3"
+            WORKSPACE: "12000"
+
+    b-linux-v100-gpu-4-300gb-d2g:
         env:
             GPUS: "0 1 2 3"
             WORKSPACE: "12000"
