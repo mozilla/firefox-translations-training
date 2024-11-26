@@ -54,6 +54,17 @@ const testCases = [
       "The blue <b>dog</b>. <i>It runs in the park</i>. It looks very happy.",
     isHTML: true,
   },
+  {
+    sourceLanguage: "en",
+    targetLanguage: "zh",
+    sourceText:
+      "<b>The blue</b> dog. <i>He's running</i> in the park. It looks very happy.",
+    expectedText:
+      // This is temporarily using a Spanish model until we have a trained enzh model.
+      // The relevance of the assertion is that whitespace has been omitted between sentences.
+      "<b>El</b> perro <b>azul</b>.<i>Está corrido</i> en el parque.Parece muy feliz.",
+    isHTML: true,
+  },
 ];
 
 describe("HTML Multi-Sentence Non-Pivot Translations", () => {

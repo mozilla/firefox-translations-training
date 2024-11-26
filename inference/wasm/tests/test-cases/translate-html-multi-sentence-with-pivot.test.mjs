@@ -20,6 +20,17 @@ const testCases = [
     isHTML: true,
   },
   {
+    sourceLanguage: "es",
+    targetLanguage: "zh",
+    sourceText:
+      "<b>El perro</b> azul. <i>Está corriendo</i> por el parque. Parece muy feliz.",
+    expectedText:
+      // This is temporarily using a Spanish model until we have a trained enzh model.
+      // The relevance of the assertion is that whitespace has been omitted between sentences.
+      "<b>El perro</b> azul.<i>Corre</i> por el parque.Parece muy feliz.",
+    isHTML: true,
+  },
+  {
     sourceLanguage: "fr",
     targetLanguage: "es",
     sourceText:
@@ -29,11 +40,32 @@ const testCases = [
     isHTML: true,
   },
   {
+    sourceLanguage: "fr",
+    targetLanguage: "zh",
+    sourceText:
+      "<b>Le chien</b> bleu. <i>Il court</i> dans le parc. Il semble très heureux.",
+    expectedText:
+      // This is temporarily using a Spanish model until we have a trained enzh model.
+      // The relevance of the assertion is that whitespace has been omitted between sentences.
+      "<b>El perro</b> azul.<i>Corre</i> en el parque.Parece muy feliz.",
+    isHTML: true,
+  },
+  {
     sourceLanguage: "zh",
     targetLanguage: "es",
     sourceText: "蓝色的<b>狗</b>。<i>它在公园里跑</i>。它看起来很开心。",
     expectedText:
       "El <b>perro</b> azul. <i>Corre en el parque</i>. Parece muy feliz.",
+    isHTML: true,
+  },
+  {
+    sourceLanguage: "zh",
+    targetLanguage: "zh",
+    sourceText: "蓝色的<b>狗</b>。<i>它在公园里跑</i>。它看起来很开心。",
+    expectedText:
+      // This is temporarily using a Spanish model until we have a trained enzh model.
+      // The relevance of the assertion is that whitespace has been omitted between sentences.
+      "El <b>perro</b> azul.<i>Corre en el parque</i>.Parece muy feliz.",
     isHTML: true,
   },
   {

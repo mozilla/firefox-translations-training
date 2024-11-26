@@ -27,6 +27,16 @@ const testCases = [
       "Hola mundo. Cómo estás?\n\nEspero que todo esté bien. Hasta pronto.",
   },
   {
+    sourceLanguage: "en",
+    targetLanguage: "zh",
+    sourceText:
+      "Hello world. How are you?\n\nI hope everything is well. See you soon.",
+    expectedText:
+      // This is temporarily using a Spanish model until we have a trained enzh model.
+      // The relevance of the assertion is that whitespace has been omitted between sentences.
+      "Hola mundo.Cómo estás?\n\nEspero que todo esté bien.Hasta pronto.",
+  },
+  {
     sourceLanguage: "fr",
     targetLanguage: "en",
     sourceText:

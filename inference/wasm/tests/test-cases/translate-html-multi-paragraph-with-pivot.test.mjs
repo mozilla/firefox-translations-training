@@ -20,12 +20,34 @@ const testCases = [
     isHTML: true,
   },
   {
+    sourceLanguage: "es",
+    targetLanguage: "zh",
+    sourceText:
+      "<b>El perro</b> azul. <u><i>Está corriendo</i> por el parque.\n\nParece muy feliz.</u> Juega con otros perros.",
+    expectedText:
+      // This is temporarily using a Spanish model until we have a trained enzh model.
+      // The relevance of the assertion is that whitespace has been omitted between sentences.
+      "<b>El perro</b> azul.<u><i>Corre</i> por el parque.\n\nParece muy feliz.</u>Juega con otros perros.",
+    isHTML: true,
+  },
+  {
     sourceLanguage: "fr",
     targetLanguage: "es",
     sourceText:
       "<b>Le chien</b> bleu. <u><i>Il court</i> dans le parc.\n\nIl semble très heureux.</u> Il joue avec d'autres chiens.",
     expectedText:
       "<b>El perro</b> azul. <u><i>Corre</i> en el parque.\n\nParece muy feliz.</u> Juega con otros perros.",
+    isHTML: true,
+  },
+  {
+    sourceLanguage: "fr",
+    targetLanguage: "zh",
+    sourceText:
+      "<b>Le chien</b> bleu. <u><i>Il court</i> dans le parc.\n\nIl semble très heureux.</u> Il joue avec d'autres chiens.",
+    expectedText:
+      // This is temporarily using a Spanish model until we have a trained enzh model.
+      // The relevance of the assertion is that whitespace has been omitted between sentences.
+      "<b>El perro</b> azul.<u><i>Corre</i> en el parque.\n\nParece muy feliz.</u>Juega con otros perros.",
     isHTML: true,
   },
   {

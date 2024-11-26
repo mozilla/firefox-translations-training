@@ -19,12 +19,32 @@ const testCases = [
       "Le chien bleu. Il court à travers le parc.\n\nIl a l'air très heureux. Jouez avec d'autres chiens.",
   },
   {
+    sourceLanguage: "es",
+    targetLanguage: "zh",
+    sourceText:
+      "El perro azul. Está corriendo por el parque.\n\nParece muy feliz. Juega con otros perros.",
+    expectedText:
+      // This is temporarily using a Spanish model until we have a trained enzh model.
+      // The relevance of the assertion is that whitespace has been omitted between sentences.
+      "El perro azul.Corre por el parque.\n\nParece muy feliz.Juega con otros perros.",
+  },
+  {
     sourceLanguage: "fr",
     targetLanguage: "es",
     sourceText:
       "Le chien bleu. Il court dans le parc.\n\nIl semble très heureux. Il joue avec d'autres chiens.",
     expectedText:
       "El perro azul. Corre en el parque.\n\nParece muy feliz. Juega con otros perros.",
+  },
+  {
+    sourceLanguage: "fr",
+    targetLanguage: "zh",
+    sourceText:
+      "Le chien bleu. Il court dans le parc.\n\nIl semble très heureux. Il joue avec d'autres chiens.",
+    expectedText:
+      // This is temporarily using a Spanish model until we have a trained enzh model.
+      // The relevance of the assertion is that whitespace has been omitted between sentences.
+      "El perro azul.Corre en el parque.\n\nParece muy feliz.Juega con otros perros.",
   },
   {
     sourceLanguage: "zh",
