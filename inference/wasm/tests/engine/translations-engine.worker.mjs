@@ -423,7 +423,30 @@ function cleanText(sourceText) {
   const whitespaceAfter = result[3];
   let cleanedSourceText = result[2];
 
-  cleanedSourceText = cleanedSourceText.replace(/\u00AD/g, "");
+  // Remove all soft hyphens from the text.
+  cleanedSourceText = cleanedSourceText.replaceAll(/\u00AD/g, "");
+
+  // At the time of writing, the Intl.Segmenter has a less-than-ideal segmentation pattern when
+  // a Left Double Quotation Mark (U+201C) is preceded by a full-width punctuation mark, in which
+  // it fails to segment the quotation mark with the sentence it logically belongs to.
+  //
+  // Example Source Text:
+  //   - 这是第一句话。“这是第二句话。”
+  //
+  // Expected Segmentation:
+  //   - Object { index: 0, segment: 这是第一句话。 }
+  //   - Object { index: 7, segment: “这是第二句话。” }
+  //
+  // Actual Segmentation:
+  //   - Object { index: 0, segment: 这是第一句话。“ }
+  //   - Object { index: 8, segment: 这是第二句话。” }
+  //
+  // By inserting a space between the full-width punctuation and the Left Double Quotation Mark,
+  // we can trick the segmenter into breaking the sentence at the correct location.
+  //
+  // This code may be able to be removed with further upstream improvements to Intl.Segmenter.
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter
+  cleanedSourceText = cleanedSourceText.replaceAll(/([。！？])“/g, "$1 “");
 
   return { whitespaceBefore, whitespaceAfter, cleanedSourceText };
 }
