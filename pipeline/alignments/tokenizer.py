@@ -100,22 +100,24 @@ class IcuTokenizer(Tokenizer):
 
     # Same character is used by SentencePiece
     SPACE_TOKEN = "▁"
-
+  
     def tokenize(self, text: str) -> List[str]:
         from icu import BreakIterator, Locale
-
+    
+        # Normalize line breaks
+        text = text.replace("\r\n", "\n").replace("\r", "\n")
+    
         bi = BreakIterator.createWordInstance(Locale(self.lang))
         bi.setText(text)
-
+    
         tokens = []
         start = bi.first()
         for end in bi:
             token = text[start:end]
-            if (
-                token and token != "\n"
-            ):  # exclude empty tokens, but leave whitespaces and replace them with a special token
+            if token:  # Preserve all tokens, including newlines
                 tokens.append(token.replace(" ", self.SPACE_TOKEN))
             start = end
+    
         return tokens
 
     def detokenize(self, tokens: List[str]) -> str:
