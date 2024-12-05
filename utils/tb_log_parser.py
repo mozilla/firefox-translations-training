@@ -159,6 +159,7 @@ class JobMonitor:
             # print("  no update needed")
             return
 
+        i = 0
         with open(self.train_log, "r") as f:
             for i, line in enumerate(f):
                 if i <= self.last_update_line:
