@@ -110,6 +110,11 @@ markers = [
 ]
 
 [tool.pyright]
-include = []
+# When adding directories, add the entire subfolder to "include", and then
+# exclude individual files that still need typing. This will make it so that all
+# new files default to being typed.
+include = [
+  "utils/**"
+]
 exclude = []
 pythonVersion="3.10"
