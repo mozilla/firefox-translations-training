@@ -129,8 +129,10 @@ tasks:
 
   lint-pyright:
     desc: Runs type checking on python files.
-    deps: [poetry-install-pyright]
+    deps:
     cmds:
+      # For type checking, all of the various packages need to be installed
+      - poetry install --no-root --only pyright --only utils
       - poetry run pyright {{.CLI_ARGS}}
 
   lint-ruff:

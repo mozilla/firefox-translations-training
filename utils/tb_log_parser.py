@@ -5,7 +5,10 @@ import pickle
 import time
 
 import click
-import tensorboardX as tb
+
+# This has a dependency conflict with protobuf versions when poetry installing.
+# To run this script run `poetry run pip install tensorboardX`.
+import tensorboardX as tb  # type: ignore
 
 
 def get_wall_time(date_str, time_str):
