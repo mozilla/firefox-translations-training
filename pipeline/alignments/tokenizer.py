@@ -100,24 +100,21 @@ class IcuTokenizer(Tokenizer):
 
     # Same character is used by SentencePiece
     SPACE_TOKEN = "▁"
-  
+
     def tokenize(self, text: str) -> List[str]:
         from icu import BreakIterator, Locale
-    
-        # Normalize line breaks
-        text = text.replace("\r\n", "\n").replace("\r", "\n")
-    
+
         bi = BreakIterator.createWordInstance(Locale(self.lang))
         bi.setText(text)
-    
+
         tokens = []
         start = bi.first()
         for end in bi:
             token = text[start:end]
-            if token:  # Preserve all tokens, including newlines
+            if token and token != "\n":
                 tokens.append(token.replace(" ", self.SPACE_TOKEN))
             start = end
-    
+
         return tokens
 
     def detokenize(self, tokens: List[str]) -> str:
@@ -130,7 +127,7 @@ def _read_file_in_chunks(file_path, chunk_size):
             lines = file.readlines(chunk_size)
             if not lines:
                 break
-            yield lines
+            yield [line.rstrip() for line in lines]
 
 
 def _tokenize_lines(params) -> List[str]:
