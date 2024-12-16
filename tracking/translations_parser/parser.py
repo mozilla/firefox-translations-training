@@ -213,7 +213,7 @@ class TrainingParser:
                 if not seq:
                     return None
                 if isinstance(seq[0], str):
-                    return "_".join(seq)
+                    return "_".join([item for item in seq if item is not None])
                 return _join([_join(item) for item in seq if item is not None])
 
             # Record logs depending on Marian headers
