@@ -128,7 +128,7 @@ def _read_file_in_chunks(file_path, chunk_size):
             lines = file.readlines(chunk_size)
             if not lines:
                 break
-            yield lines
+            yield [line.rstrip() for line in lines]
 
 
 def _tokenize_lines(params) -> List[str]:
