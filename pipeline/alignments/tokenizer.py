@@ -19,6 +19,7 @@ which allows lossless reconstruction of the original text on detokenization.
 """
 import argparse
 import multiprocessing
+from abc import ABC, abstractmethod
 from enum import Enum
 from typing import List
 
@@ -35,13 +36,15 @@ class TokenizerType(Enum):
     icu = "icu"
 
 
-class Tokenizer:
+class Tokenizer(ABC):
     def __init__(self, lang: str):
         self.lang = lang
 
+    @abstractmethod
     def tokenize(self, text: str) -> List[str]:
         pass
 
+    @abstractmethod
     def detokenize(self, tokens: List[str]) -> str:
         pass
 
