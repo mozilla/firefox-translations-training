@@ -47,7 +47,7 @@ tasks:
         worker-type: b-largegpu-largedisk
         worker:
             docker-image: {"in-tree": "train"}
-            max-run-time: 2592000
+            max-run-time: 2591100
             env:
                 # TODO: what should we _actually_ use for the workspace value?
                 # and should we centralize this, since it seems to depend on available

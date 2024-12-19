@@ -59,7 +59,7 @@ tasks:
                 - name: public/build
                   path: /builds/worker/artifacts
                   type: directory
-            max-run-time: 2592000
+            max-run-time: 2591100
             env:
                 # This is a separate environment variable so tests can override it.
                 BMT_MARIAN: $MOZ_FETCHES_DIR
